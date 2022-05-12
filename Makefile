@@ -8,3 +8,5 @@ release:
 win-release:
 	go build -v
 	# cp 
+node:
+	docker build -t matmoa/amumax:amumax -f node.Dockerfile .
