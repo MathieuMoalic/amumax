@@ -82,8 +82,8 @@ func LoadFile(fname string) *data.Slice {
 	// in, err := httpfs.Open(fname)
 	// util.FatalErr(err)
 	var s *data.Slice
-	s, _ = zarr.Read(fname)
-	// util.FatalErr(err)
+	s, err := zarr.Read(fname)
+	util.FatalErr(err)
 	return s
 }
 

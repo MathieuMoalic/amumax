@@ -1,3 +1,25 @@
+# Builds mumax3 cuda kernels and create GO wrappers for the compute capabilities listed in $CUDA_CC. 
+# If $CUDA_CC is not defined, then $CUDA_CC is set to "30".
+#
+# The ${CUDA_HOME}/bin/nvcc compiler is used to compile the cuda kernels. If CUDA_HOME is not defined
+# it will look for an nvidia compiler in $PATH instead.
+#
+# Examples:
+#
+#    make
+#    make CUDA_CC=70
+#    make CUDA_CC="30 32 35 37 50 52 53 60 61 62 70"
+#    make CUDA_HOME="/usr/local/cuda-9.0" CUDA_CC="30 32 35 37 50 52 53 60 61 62 70"
+#
+# Different CUDA versions support different compute capabilities, as shown in the list below.
+# CUDA SDK  9.0 support for compute capability       30 32 35 37 50 52 53 60 61 62 70
+# CUDA SDK  9.1 support for compute capability       30 32 35 37 50 52 53 60 61 62 70
+# CUDA SDK  9.2 support for compute capability       30 32 35 37 50 52 53 60 61 62 70 72
+# CUDA SDK 10.0 support for compute capability       30 32 35 37 50 52 53 60 61 62 70 72 75
+# CUDA SDK 10.1 support for compute capability       30 32 35 37 50 52 53 60 61 62 70 72 75
+# CUDA SDK 10.2 support for compute capability       30 32 35 37 50 52 53 60 61 62 70 72 75
+# CUDA SDK 11.0 support for compute capability       30 32 35 37 50 52 53 60 61 62 70 72 75 80
+
 SHELL = /bin/bash
 
 # When CUDA_HOME is not an environment variable and is not set on the command line, use the nvcc compiler
@@ -15,7 +37,7 @@ endif
 
 # The gcc host compiler for nvcc
 ifeq ($(NVCC_CCBIN),)
-	NVCC_CCBIN=/usr/bin/gcc-8
+	NVCC_CCBIN=/usr/bin/gcc
 endif
 
 CUDA_VERSION := $(shell $(NVCC) --version | grep "Cuda compilation" | grep -Eo '[+-]?[0-9]+([.][0-9]+)?' | head -n 1)

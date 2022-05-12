@@ -4,7 +4,7 @@ rm -rf $BUILDDIR
 mkdir -p $BUILDDIR/$RPATH
 
 # cd cuda
-# rm -f *_wrapper.go *.ptx cuda2go
+# # rm -f *_wrapper.go *.ptx cuda2go
 # go build cuda2go.go
 # for file in *.cu; do
 #     echo $file
@@ -14,7 +14,7 @@ mkdir -p $BUILDDIR/$RPATH
 #         ./cuda2go $file
 #     done
 # done
-# cd ..
+# cd .. 
 
 go build -v
 mv ./amumax ./$BUILDDIR

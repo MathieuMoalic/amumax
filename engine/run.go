@@ -32,7 +32,8 @@ var (
 )
 
 func init() {
-	DeclFunc("Run", Run2, "Run the simulation for a time in seconds")
+	DeclFunc("Run", Run, "Run the simulation for a time in seconds")
+	DeclFunc("RunWithoutPrecession", RunWithoutPrecession, "Run the simulation for a time in seconds with precession disabled")
 	DeclFunc("Steps", Steps, "Run the simulation for a number of time steps")
 	DeclFunc("RunWhile", RunWhile, "Run while condition function is true")
 	DeclFunc("SetSolver", SetSolver, "Set solver type. 1:Euler, 2:Heun, 3:Bogaki-Shampine, 4: Runge-Kutta (RK45), 5: Dormand-Prince, 6: Fehlberg, -1: Backward Euler")
@@ -154,13 +155,16 @@ func adaptDt(corr float64) {
 
 // Run the simulation for a number of seconds.
 func Run(seconds float64) {
-	stop := Time + seconds
-	alarm = stop // don't have dt adapt to go over alarm
-	RunWhile(func() bool { return Time < stop })
+	ActualRun(seconds,true)
 }
 
 // Run the simulation for a number of seconds.
-func Run2(seconds float64) {
+func RunWithoutPrecession(seconds float64) {
+	ActualRun(seconds,false)
+}
+
+// Run the simulation for a number of seconds.
+func ActualRun(seconds float64, precession bool) {
 	start := Time
 	stop := Time + seconds
 	alarm = stop // don't have dt adapt to go over alarm

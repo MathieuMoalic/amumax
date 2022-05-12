@@ -2,6 +2,7 @@ package zarr
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"path"
 
@@ -33,8 +34,9 @@ func Read(fname string) (s *data.Slice, err error) {
 	sizex := zarray.Chunks[3]
 	sizec := zarray.Chunks[4]
 
-	var size = [3]int{sizex, sizey, sizez}
-	array := data.NewSlice(sizec, size)
+	fmt.Println(zarray.Chunks)
+	fmt.Println(sizez, sizey, sizex, sizec)
+	array := data.NewSlice(sizec, [3]int{sizex, sizey, sizez})
 	tensors := array.Tensors()
 	ncomp := array.NComp()
 	io_reader, err := httpfs.Open(fname)
@@ -50,9 +52,9 @@ func Read(fname string) (s *data.Slice, err error) {
 		panic(err)
 	}
 	count := 0
-	for iz := 0; iz < size[2]; iz++ {
-		for iy := 0; iy < size[1]; iy++ {
-			for ix := 0; ix < size[1]; ix++ {
+	for iz := 0; iz < sizez; iz++ {
+		for iy := 0; iy < sizey; iy++ {
+			for ix := 0; ix < sizex; ix++ {
 				for c := 0; c < ncomp; c++ {
 					tensors[c][iz][iy][ix] = BytesToFloat32(data[count*4 : (count+1)*4])
 					count++
