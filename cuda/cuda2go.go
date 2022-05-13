@@ -127,7 +127,6 @@ func wrapgen(filename, funcname string, argt, argn []string) {
 		if match {
 			cc, ei := strconv.Atoi(f[len(f)-len("00.ptx") : len(f)-len(".ptx")])
 			util.PanicErr(ei)
-			fmt.Println(basename, cc)
 			kernel.PTX[cc] = filterptx(f)
 		}
 	}

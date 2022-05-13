@@ -153,18 +153,16 @@ func adaptDt(corr float64) {
 	util.AssertMsg(Dt_si > 0, fmt.Sprint("Time step too small: ", Dt_si))
 }
 
-// Run the simulation for a number of seconds.
-func Run(seconds float64) {
-	ActualRun(seconds,true)
-}
 
 // Run the simulation for a number of seconds.
 func RunWithoutPrecession(seconds float64) {
-	ActualRun(seconds,false)
+	prevPrecess := Precess
+	Run(seconds)
+	Precess = prevPrecess
 }
 
 // Run the simulation for a number of seconds.
-func ActualRun(seconds float64, precession bool) {
+func Run(seconds float64) {
 	start := Time
 	stop := Time + seconds
 	alarm = stop // don't have dt adapt to go over alarm
