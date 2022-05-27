@@ -55,6 +55,9 @@ func (m *magnetization) Set(c Config) {
 func (m *magnetization) LoadFile(fname string) {
 	m.SetArray(LoadFile(fname))
 }
+func (m *magnetization) LoadOvfFile(fname string) {
+	m.SetArray(LoadOvfFile(fname))
+}
 
 func (m *magnetization) Slice() (s *data.Slice, recycle bool) {
 	return m.Buffer(), false

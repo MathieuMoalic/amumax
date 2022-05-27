@@ -12,6 +12,7 @@ import (
 	"github.com/MathieuMoalic/amumax/data"
 	"github.com/MathieuMoalic/amumax/httpfs"
 	"github.com/MathieuMoalic/amumax/mag"
+	"github.com/MathieuMoalic/amumax/oommf"
 	"github.com/MathieuMoalic/amumax/util"
 	"github.com/MathieuMoalic/amumax/zarr"
 )
@@ -25,6 +26,7 @@ func init() {
 	DeclConst("Mu0", mag.Mu0, "Permittivity of vaccum (Tm/A)")
 	DeclFunc("Print", myprint, "Print to standard output")
 	DeclFunc("LoadFile", LoadFile, "Load a zarr data file")
+	DeclFunc("LoadOvfFile", LoadOvfFile, "Load an ovf data file")
 	DeclFunc("Index2Coord", Index2Coord, "Convert cell index to x,y,z coordinate in meter")
 	DeclFunc("NewSlice", NewSlice, "Makes a 4D array with a specified number of components (first argument) "+
 		"and a specified size nx,ny,nz (remaining arguments)")
@@ -79,10 +81,17 @@ func Fprintln(filename string, msg ...interface{}) {
 	util.FatalErr(err)
 }
 func LoadFile(fname string) *data.Slice {
-	// in, err := httpfs.Open(fname)
-	// util.FatalErr(err)
 	var s *data.Slice
 	s, err := zarr.Read(fname)
+	util.FatalErr(err)
+	return s
+}
+
+func LoadOvfFile(fname string) *data.Slice {
+	in, err := httpfs.Open(fname)
+	util.FatalErr(err)
+	var s *data.Slice
+	s, _, err = oommf.Read(in)
 	util.FatalErr(err)
 	return s
 }
