@@ -50,7 +50,6 @@ func (ts *ZTablesStruct) WriteToBuffer() {
 	}
 }
 func (ts *ZTablesStruct) Flush() {
-	// fmt.Println(ts.Data)
 	for i := range ts.tables {
 		ts.tables[i].io.Write(ts.tables[i].buffer)
 		ts.tables[i].buffer = []byte{}
@@ -63,6 +62,7 @@ func (ts *ZTablesStruct) NeedSave() bool {
 }
 
 func TableInit() {
+	httpfs.Remove(OD() + "table")
 	zarr.MakeZgroup("table", OD(), &zGroups)
 	err := httpfs.Mkdir(OD() + "table/t")
 	util.FatalErr(err)
