@@ -2,7 +2,7 @@
     import Line from "svelte-chartjs/src/Line.svelte";
 
     import { onMount } from "svelte";
-    import { getTables } from "../api/crud";
+    import { getTables } from "../api";
 
     let xlabel = "";
     let ylabel = "";
