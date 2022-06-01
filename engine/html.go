@@ -44,6 +44,9 @@ const templText = `
 		  image-rendering: pixelated;
 		  display: none;
 		}
+		html body {
+			background: rgb(65, 65, 65);
+		}
 	</style>
 	<script type="text/javascript">
 		// image Loupe
@@ -99,19 +102,7 @@ const templText = `
 		  }
 		}
 	</script>
-
-</head>
-
-
-<body>
-<iframe src="http://mumax.github.io/header.html" width="100%" height="180" frameborder="0"></iframe>
-<span style="color:gray; font-weight:bold; font-size:1.5em" >
-	{{.Span "title" "mumax3"}} &nbsp; </span>
-	{{.Progress "progress" 100 0}} {{.Span "busy" "" }} &nbsp; {{.ErrorBox}} <br/>
-	<hr/>
-
-
-<script>
+	<script>
 	// auto scroll the console window down unless focused.
 	var console_focus = false;
 	function console_scrolldown(){
@@ -153,49 +144,46 @@ const templText = `
 	}	
 </script>
 
+</head>
 
 
-{{.Data.Div "console"}}
+<body>
 
-{{.Console "console" 16 84 "" "onfocus=\"console_focus=true\"" "onblur=\"console_focus=false\"" "onmouseover=\"console_focus=true\"" "onmouseout=\"console_focus=false\"" "readonly" "style=\"font-family:monospace; font-size:0.8em;\"" }}	<br/>
 
-{{.CliBox "cli" "" "onkeydown=\"clikeydown(event);\"" "placeholder=\"type commands here, or up/down\"" "size=86" "style=\"font-family:monospace; font-size:0.8em;\""  }}
-
-</div>
-
-<
-
-{{.Data.Div "mesh"}}
-
-		<table>
-			<tr> <td>gridsize: </td> <td>{{.TextBox "nx" "" "size=8"}} </td> <td> &times; {{.TextBox "ny" "" "size=8"}}</td> <td> &times; {{.TextBox "nz" "" "size=8"}}</td> <td>  cells            </td> </tr>
-			<tr> <td>cellsize: </td> <td>{{.TextBox "cx" "" "size=8"}} </td> <td> &times; {{.TextBox "cy" "" "size=8"}}</td> <td> &times; {{.TextBox "cz" "" "size=8"}}</td> <td>  m<sup>3</sup>    </td> </tr>
-			<tr> <td>PBC:      </td> <td>{{.TextBox "px" "" "size=8"}} </td> <td> &times; {{.TextBox "py" "" "size=8"}}</td> <td> &times; {{.TextBox "pz" "" "size=8"}}</td> <td>  repetitions </td> </tr>
-			<tr> <td>worldsize:</td> <td>{{.Span    "wx" ""}} </td> <td> &times; {{.Span    "wy" ""}}</td> <td> &times; {{.Span    "wz" ""}}</td> <td>  nm<sup>3</sup> </td> </tr>
-		</table>
-
-		{{.Button "setmesh" "update"}} {{.Span "setmeshwarn" ""}}
-
+<div class="header">
+<iframe src="http://mumax.github.io/header.html" width="100%" height="180" frameborder="0"></iframe>
+<span style="color:black; font-weight:bold; font-size:1.5em" >
+	{{.Span "title" "mumax3"}} &nbsp; </span>
+	{{.Progress "progress" 100 0}} {{.Span "busy" "" }} &nbsp; {{.ErrorBox}} <br/>
+	<hr/>
 </div>
 
 
+<div class="display">
+{{.Data.Div "display"}}
+<p> 
+	Quantity: {{.Data.QuantNames | .SelectArray "renderQuant" "m"}} {{.Select "renderComp" "" "" "x" "y" "z"}} {{.Span "renderDoc" "" "style=\"color:gray\""}} <br/>
+	<table>
+		<tr title="Slice through z layers">               <td> Slice: {{.Range "renderLayer" 0 0 0 }}  </td><td> {{.Span "renderLayerLabel" "0"}}    </td></tr>
+		<tr title="Zoom out large images">                <td> Scale: {{.Range "renderScale" 0 31 31}} </td><td> {{.Span "renderScaleLabel" "1/1"}}  </td></tr>
+	</table>
+</p>
 
-{{.Data.Div "geometry"}}
-
-SetGeom( {{.Data.Shapes | .SelectArray "geomselect" "Universe"}} {{.TextBox "geomargs" "()" }} ) {{.Button "setgeom" "Set"}} </br>
-{{.Span "geomdoc" "" "style=\"color:gray\""}}
-
+<p> 
+<div class="img-loupe-div" style="margin: 0">
+{{.Img "display" "/render/m" "alt=\"display\""}}
+<script>
+	/* Set loupe and update it as the image can change... */
+	magnify("display", 5);
+	setInterval(function () { updateLoupe("display", 5); }, tick*2);
+</script>
+</div>
+</p>
+</div>
 </div>
 
 
-{{.Data.Div "initial m"}}
-
-m = {{.Data.Configs | .SelectArray "mselect" "Uniform"}} {{.TextBox "margs" "(1, 0, 0)" }} {{.Button "setm" "Set"}} </br>
-{{.Span "mdoc" "" "style=\"color:gray\""}}
-
-</div>
-
-
+<div class="solver">
 {{.Data.Div "solver"}}
 
 	Type: {{.Select "solvertype" "rk45" "bw_euler" "euler" "heun" "rk4" "rk23" "rk45" "rkf56"}}
@@ -235,34 +223,55 @@ m = {{.Data.Configs | .SelectArray "mselect" "Uniform"}} {{.TextBox "margs" "(1,
 		</td></tr>
 	</table>
 </div>
-
-
-
-
-
-{{.Data.Div "display"}}
-
-<p> 
-	Quantity: {{.Data.QuantNames | .SelectArray "renderQuant" "m"}} {{.Select "renderComp" "" "" "x" "y" "z"}} {{.Span "renderDoc" "" "style=\"color:gray\""}} <br/>
-	<table>
-		<tr title="Slice through z layers">               <td> Slice: {{.Range "renderLayer" 0 0 0 }}  </td><td> {{.Span "renderLayerLabel" "0"}}    </td></tr>
-		<tr title="Zoom out large images">                <td> Scale: {{.Range "renderScale" 0 31 31}} </td><td> {{.Span "renderScaleLabel" "1/1"}}  </td></tr>
-	</table>
-</p>
-
-<p> 
-<div class="img-loupe-div" style="margin: 0">
-{{.Img "display" "/render/m" "alt=\"display\""}}
-<script>
-	/* Set loupe and update it as the image can change... */
-	magnify("display", 5);
-	setInterval(function () { updateLoupe("display", 5); }, tick*2);
-</script>
 </div>
-</p>
 
+
+{{.Data.Div "console"}}
+
+{{.Console "console" 16 84 "" "onfocus=\"console_focus=true\"" "onblur=\"console_focus=false\"" "onmouseover=\"console_focus=true\"" "onmouseout=\"console_focus=false\"" "readonly" "style=\"font-family:monospace; font-size:0.8em;\"" }}	<br/>
+
+{{.CliBox "cli" "" "onkeydown=\"clikeydown(event);\"" "placeholder=\"type commands here, or up/down\"" "size=86" "style=\"font-family:monospace; font-size:0.8em;\""  }}
 
 </div>
+
+{{.Data.Div "mesh"}}
+
+		<table>
+			<tr> <td>gridsize: </td> <td>{{.TextBox "nx" "" "size=8"}} </td> <td> &times; {{.TextBox "ny" "" "size=8"}}</td> <td> &times; {{.TextBox "nz" "" "size=8"}}</td> <td>  cells            </td> </tr>
+			<tr> <td>cellsize: </td> <td>{{.TextBox "cx" "" "size=8"}} </td> <td> &times; {{.TextBox "cy" "" "size=8"}}</td> <td> &times; {{.TextBox "cz" "" "size=8"}}</td> <td>  m<sup>3</sup>    </td> </tr>
+			<tr> <td>PBC:      </td> <td>{{.TextBox "px" "" "size=8"}} </td> <td> &times; {{.TextBox "py" "" "size=8"}}</td> <td> &times; {{.TextBox "pz" "" "size=8"}}</td> <td>  repetitions </td> </tr>
+			<tr> <td>worldsize:</td> <td>{{.Span    "wx" ""}} </td> <td> &times; {{.Span    "wy" ""}}</td> <td> &times; {{.Span    "wz" ""}}</td> <td>  nm<sup>3</sup> </td> </tr>
+		</table>
+
+		{{.Button "setmesh" "update"}} {{.Span "setmeshwarn" ""}}
+
+</div>
+
+
+
+{{.Data.Div "geometry"}}
+
+SetGeom( {{.Data.Shapes | .SelectArray "geomselect" "Universe"}} {{.TextBox "geomargs" "()" }} ) {{.Button "setgeom" "Set"}} </br>
+{{.Span "geomdoc" "" "style=\"color:gray\""}}
+
+</div>
+
+
+{{.Data.Div "initial m"}}
+
+m = {{.Data.Configs | .SelectArray "mselect" "Uniform"}} {{.TextBox "margs" "(1, 0, 0)" }} {{.Button "setm" "Set"}} </br>
+{{.Span "mdoc" "" "style=\"color:gray\""}}
+
+</div>
+
+
+
+
+
+
+
+
+
 
 
 
