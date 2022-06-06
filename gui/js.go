@@ -20,12 +20,8 @@ function showErr(err){
 	}else{
 		disconnects = 0;
 		document.getElementById("ErrorBox").innerHTML = "";
-		document.body.style.background = "#FFFFFF";
 	}
 	if (disconnects > 3){ // disconnected for some time, show error
-		var col = (256+3)-disconnects;   // gradually fade out background color
-		if(col<210){col=210;}            // not too dark
-		document.body.style.background = "rgb(" + col+"," + col+"," + col+")";
 		document.getElementById("ErrorBox").innerHTML = err;
 	}
 }

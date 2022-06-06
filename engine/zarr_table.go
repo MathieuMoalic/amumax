@@ -11,6 +11,7 @@ import (
 func init() {
 	DeclFunc("TableSave", ZTableSave, "Save the data table right now.")
 	DeclFunc("TableAdd", ZTableAdd, "Save the data table periodically.")
+	DeclFunc("TableAddAs", ZTableAddAs, "Save the data table periodically.")
 	DeclFunc("TableAutoSave", ZTableAutoSave, "Save the data table periodically.")
 	ZTables = ZTablesStruct{Data: make(map[string][]float64), Step: -1, AutoSavePeriod: 0.0, FlushInterval: 5 * time.Second}
 }
@@ -94,6 +95,9 @@ func CreateTable(name string) ZTable {
 }
 
 func ZTableAdd(q Quantity) {
+	ZTableAddAs(q, NameOf(q))
+}
+func ZTableAddAs(q Quantity, name string) {
 	if len(ZTables.tables) == 0 {
 		TableInit()
 	}
@@ -102,11 +106,11 @@ func ZTableAdd(q Quantity) {
 	}
 	ZTables.qs = append(ZTables.qs, q)
 	if q.NComp() == 1 {
-		ZTables.tables = append(ZTables.tables, CreateTable(NameOf(q)))
+		ZTables.tables = append(ZTables.tables, CreateTable(name))
 	} else {
 		suffixes := []string{"x", "y", "z"}
 		for comp := 0; comp < q.NComp(); comp++ {
-			ZTables.tables = append(ZTables.tables, CreateTable(NameOf(q)+suffixes[comp]))
+			ZTables.tables = append(ZTables.tables, CreateTable(name+suffixes[comp]))
 		}
 	}
 }

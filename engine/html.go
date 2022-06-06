@@ -149,14 +149,9 @@ const templText = `
 
 <body>
 
-
-<div class="header">
-<iframe src="http://mumax.github.io/header.html" width="100%" height="180" frameborder="0"></iframe>
 <span style="color:black; font-weight:bold; font-size:1.5em" >
 	{{.Span "title" "mumax3"}} &nbsp; </span>
 	{{.Progress "progress" 100 0}} {{.Span "busy" "" }} &nbsp; {{.ErrorBox}} <br/>
-	<hr/>
-</div>
 
 
 <div class="display">
@@ -315,6 +310,11 @@ Region: {{.Number "region" -1 255 -1}} </br>
 
 
 </div>
+<div class="header">
+<iframe src="http://mumax.github.io/header.html" width="100%" height="180" frameborder="0"></iframe>
+
+<hr/>
+</div>
 
 
 </body>
@@ -324,7 +324,7 @@ Region: {{.Number "region" -1 255 -1}} </br>
 const CSS = `
 	<style media="all" type="text/css">
 
-		body  { margin-left: 5%; margin-right:5%; font-family: sans-serif; font-size: 14px; }
+		body  { background:red;margin-left: 5%; margin-right:5%; font-family: sans-serif; font-size: 14px; }
 		img   { margin: 15px; min-height: 40px; min-width: 40px }
 		table { border-collapse: collapse; }
 		td        { padding: 1px 5px; }

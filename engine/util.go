@@ -32,6 +32,11 @@ func init() {
 		"and a specified size nx,ny,nz (remaining arguments)")
 	DeclFunc("NewVectorMask", NewVectorMask, "Makes a 3D array of vectors")
 	DeclFunc("NewScalarMask", NewScalarMask, "Makes a 3D array of scalars")
+	DeclFunc("RegionFromCoordinate", RegionFromCoordinate, "RegionFromCoordinate")
+}
+
+func RegionFromCoordinate(x, y, z int) int {
+	return regions.GetCell(x, y, z)
 }
 
 // Returns a new new slice (3D array) with given number of components and size.

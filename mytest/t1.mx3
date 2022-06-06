@@ -1,27 +1,81 @@
-setgridsize(256/2, 256/2, 1)
-setcellsize(2e-9, 2e-9, 1e-9)
-setgeom(rect(200e-9, 200e-9))
-Aex   = 13e-12
-Msat  = 800e3
-alpha = 0.02
-randseed(1)
-RandomMagSeed(1)
-fixdt=1.694e-13 
-// RelaxTorqueThreshold = 1e-16
-m  = uniform(1, 0, 0)
-saveas(m,"m2")
-relax()
-print(maxtorque)
-saveas(m,"m2")
+PBC := 32
+Tx := 500e-9
+Ty := 500e-9
+Tz := 13.20000e-9
+Nx := 128
+Ny := 128
+Nz := 1
+setgridsize(Nx,Ny,Nz)
+setcellsize(Tx/Nx,Ty/Ny,Tz/Nz)
+setpbc(PBC,PBC,0)
+edgesmooth=3
+    
+// CoPd film
+msat = 810e3
+aex = 13e-12
+ku1 = 453195
+anisu = vector(0,0,1)
+alpha = 1e-7
+gammall = 187e9
+m = uniform(0,0,1)
+setgeom(Universe())
 
-m  = uniform(1, 0, 0)
-saveas(m,"m1")
-relax()
-print(maxtorque)
-saveas(m,"m1")
+// Dynamics
+setsolver(5)
+maxdt = 1.42e-12
+mindt = 1e-14
+maxerr = 0.5e-7
+amps:= 5e-4
+f_cut := 20e9
+t_sampl := 0.5 / (f_cut * 1.5)
+t0 := 10/f_cut
 
-// m  = RandomMag()
-// m  = uniform(1, .1, 0)
-// saveas(m,"m2")
-// relax()
-// m.LoadFile("/home/mat/gh/amumax/mytest/t1.zarr/m/0.0.0.0.0")
+// Bmask
+seed := 0
+grainSize  := 40e-9 
+maxRegion  := 10
+ext_makegrains(grainSize, maxRegion, seed)
+mask:=newVectorMask(Nx,Ny,Nz) 
+for ix:=0; ix<Nx; ix++{
+	for iy:=0; iy<Ny; iy++{
+		for iz:=0; iz<Nz; iz++{
+			if RegionFromCoordinate(ix, iy, iz)==0{
+				mask.setVector(ix, iy, iz,vector(1,1,0))
+			}
+		}
+	}
+}
+b := (rand()-0.5)*0.2/f_cut
+print(b)
+B_ext.add(mask,5*sinc(2*pi*f_cut*(t-t0+b)))
+mask2:=newVectorMask(Nx,Ny,Nz) 
+for ix:=0; ix<Nx; ix++{
+	for iy:=0; iy<Ny; iy++{
+		for iz:=0; iz<Nz; iz++{
+			if RegionFromCoordinate(ix, iy, iz)==1{
+				mask2.setVector(ix, iy, iz,vector(1,1,0))
+			}
+		}
+	}
+}
+b = (rand()-0.5)*0.2/f_cut
+print(b)
+B_ext.add(mask2,5*sinc(2*pi*f_cut*(t-t0+b)))
+// for ir:=0; ir<6; ir++{
+// 	mask:=newVectorMask(Nx,Ny,Nz) 
+// 	for ix:=0; ix<Nx; ix++{
+// 		for iy:=0; iy<Ny; iy++{
+// 			for iz:=0; iz<Nz; iz++{
+// 				if RegionFromCoordinate(ix, iy, iz)==ir{
+// 					mask.setVector(ix, iy, iz,vector(1,1,0))
+// 				}
+// 			}
+// 		}
+// 	}
+// 	b := (rand()-0.5)*0.2/f_cut
+// 	print(b)
+// 	// B_ext.add(mask,amps*sinc(2*pi*f_cut*(t-t0+b)))
+// 	B_ext.add(mask,5*sinc(2*pi*f_cut*(t-t0+b)))
+// }
+autosave(b_ext,1e-11)
+run(1e-9)
