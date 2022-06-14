@@ -16,6 +16,7 @@ func init() {
 	DeclFunc("Cone", Cone, "3D Cone with diameter and height in meter. The top of the cone points in the +z direction.")
 	DeclFunc("Cylinder", Cylinder, "3D Cylinder with diameter and height in meter")
 	DeclFunc("Circle", Circle, "2D Circle with diameter in meter")
+	DeclFunc("Squircle", Squircle, "2D Squircle with diameter in meter")
 	DeclFunc("Cuboid", Cuboid, "Cuboid with sides in meter")
 	DeclFunc("Rect", Rect, "2D rectangle with size in meter")
 	DeclFunc("Triangle", Triangle, "Equilateral triangle with side in meter")
@@ -114,6 +115,14 @@ func Diamond(sidex, sidey float64) Shape {
 	return func(x, y, z float64) bool {
 		a, b := sidey/sidex, sidey/2
 		return y < a*x+b && y < -a*x+b && y > a*x-b && y > -a*x-b
+	}
+}
+
+// Squircle with given sides.
+func Squircle(diam, exp float64) Shape {
+	return func(x, y, z float64) bool {
+		return (math.Pow(math.Abs(x/(diam/2)),exp)+math.Pow(math.Abs(y/(diam/2)),exp)) <= 1
+		// return math.Pow(math.Abs(x/diam),exp) <= diam/2
 	}
 }
 
