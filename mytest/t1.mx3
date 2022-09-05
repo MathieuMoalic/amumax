@@ -1,3 +1,5 @@
+O
+wqd
 PBC := 32
 Tx := 500e-9
 Ty := 500e-9
@@ -35,47 +37,20 @@ seed := 0
 grainSize  := 40e-9 
 maxRegion  := 10
 ext_makegrains(grainSize, maxRegion, seed)
-mask:=newVectorMask(Nx,Ny,Nz) 
-for ix:=0; ix<Nx; ix++{
-	for iy:=0; iy<Ny; iy++{
-		for iz:=0; iz<Nz; iz++{
-			if RegionFromCoordinate(ix, iy, iz)==0{
-				mask.setVector(ix, iy, iz,vector(1,1,0))
+for i:=0; i<maxRegion; i++{
+		mask:=newVectorMask(Nx,Ny,Nz) 
+		for ix:=0; ix<Nx; ix++{
+			for iy:=0; iy<Ny; iy++{
+				for iz:=0; iz<Nz; iz++{
+					if RegionFromCoordinate(ix, iy, iz)==0{
+						mask.setVector(ix, iy, iz,vector(1,1,0))
+					}
+				}
 			}
 		}
+	b := rand()
+	print(b)
+	B_ext.add(mask,5*sinc(2*pi*f_cut*(t-t0+b)))
 	}
-}
-b := (rand()-0.5)*0.2/f_cut
-print(b)
-B_ext.add(mask,5*sinc(2*pi*f_cut*(t-t0+b)))
-mask2:=newVectorMask(Nx,Ny,Nz) 
-for ix:=0; ix<Nx; ix++{
-	for iy:=0; iy<Ny; iy++{
-		for iz:=0; iz<Nz; iz++{
-			if RegionFromCoordinate(ix, iy, iz)==1{
-				mask2.setVector(ix, iy, iz,vector(1,1,0))
-			}
-		}
-	}
-}
-b = (rand()-0.5)*0.2/f_cut
-print(b)
-B_ext.add(mask2,5*sinc(2*pi*f_cut*(t-t0+b)))
-// for ir:=0; ir<6; ir++{
-// 	mask:=newVectorMask(Nx,Ny,Nz) 
-// 	for ix:=0; ix<Nx; ix++{
-// 		for iy:=0; iy<Ny; iy++{
-// 			for iz:=0; iz<Nz; iz++{
-// 				if RegionFromCoordinate(ix, iy, iz)==ir{
-// 					mask.setVector(ix, iy, iz,vector(1,1,0))
-// 				}
-// 			}
-// 		}
-// 	}
-// 	b := (rand()-0.5)*0.2/f_cut
-// 	print(b)
-// 	// B_ext.add(mask,amps*sinc(2*pi*f_cut*(t-t0+b)))
-// 	B_ext.add(mask,5*sinc(2*pi*f_cut*(t-t0+b)))
-// }
 autosave(b_ext,1e-11)
 run(1e-9)
