@@ -1,13 +1,12 @@
-FROM nvidia/cuda:11.6.0-devel-ubuntu20.04
+FROM nvidia/cuda:11.2.2-devel-ubuntu20.04
 RUN apt-get update
 RUN apt-get install -y wget git
-RUN wget https://go.dev/dl/go1.18.1.linux-amd64.tar.gz
-RUN rm -rf /usr/local/go && tar -C /usr/local -xzf go1.18.1.linux-amd64.tar.gz
-RUN rm go1.18.1.linux-amd64.tar.gz
+RUN wget https://go.dev/dl/go1.19.1.linux-amd64.tar.gz
+RUN rm -rf /usr/local/go && tar -C /usr/local -xzf go1.19.1.linux-amd64.tar.gz
+RUN rm go1.19.1.linux-amd64.tar.gz
 ENV PATH /usr/local/go/bin:$PATH
 
 WORKDIR /src
-ENV PATH /usr/local/go/bin:$PATH
 ENV NVCC_CCBIN=/usr/bin/gcc
 ENV CGO_CFLAGS="-I${LD_LIBRARY_PATH}"
 ENV CGO_LDFLAGS="-lcufft -lcurand -lcuda -L${LD_LIBRARY_PATH} -Wl,-rpath -Wl,\$ORIGIN/$RPATH"
@@ -16,7 +15,7 @@ ENV NVCCFLAGS="-std=c++03 -ccbin=$NVCC_CCBIN --compiler-options -Werror --compil
 RUN git config --global --add safe.directory /src
 CMD cd cuda && ./build_cuda.sh && cd .. && \
   go build -v && \
-  rm -rfd /src/build/ && \
+  rm -rfd /src/build && \
   mkdir /src/build && \
   cp /src/amumax /src/build && \
   cp $( ldd /src/amumax | grep libcufft | awk '{print $3}' ) /src/build && \

@@ -1,2 +1,0 @@
-FROM matmoa/amumax:amumax
-
