@@ -325,7 +325,7 @@ const CSS = `
 	<style media="all" type="text/css">
 
 		body  { background:red;margin-left: 5%; margin-right:5%; font-family: sans-serif; font-size: 14px; }
-		img   { margin: 15px; min-height: 40px; min-width: 40px }
+		img   { margin: 0; min-height: 400px; min-width: 400px }
 		table { border-collapse: collapse; }
 		td        { padding: 1px 5px; }
 		hr        { border-style: none; border-top: 1px solid #CCCCCC; }
