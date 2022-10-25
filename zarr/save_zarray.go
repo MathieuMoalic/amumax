@@ -22,14 +22,18 @@ type zarrayFile struct {
 	ZarrFormat int             `json:"zarr_format"`
 }
 
-func SaveFileZarray(path string, size [3]int, ncomp int, time int) {
+func SaveFileZarray(path string, size [3]int, ncomp int, time int, chunky bool) {
 	z := zarrayFile{}
 	z.Compressor = compressorStruc{"zstd", 1}
 	z.Dtype = `<f4`
 	z.FillValue = 0.0
 	z.Order = "C"
 	z.ZarrFormat = 2
-	z.Chunks = [5]int{1, size[2], size[1], size[0], ncomp}
+	if chunky {
+		z.Chunks = [5]int{1, size[2], 1, size[0], ncomp}
+	} else {
+		z.Chunks = [5]int{1, size[2], size[1], size[0], ncomp}
+	}
 	z.Shape = [5]int{time + 1, size[2], size[1], size[0], ncomp}
 
 	f, err := httpfs.Create(path)

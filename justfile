@@ -9,3 +9,10 @@ copy_pcss:
 
 copy_local:
 	cp -r ./build/* ~/.local/bin
+
+test:
+	go build -v . && ./amumax -f mytest/chunky.mx3
+	ls -l mytest/chunky.zarr/m/
+	cat mytest/chunky.zarr/m/.zarray
+	. ~/ws/.env/bin/activate
+	python mytest/chunky.py

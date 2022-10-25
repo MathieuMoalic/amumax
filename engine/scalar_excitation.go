@@ -1,11 +1,12 @@
 package engine
 
 import (
+	"reflect"
+
 	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/data"
 	"github.com/MathieuMoalic/amumax/script"
 	"github.com/MathieuMoalic/amumax/util"
-	"reflect"
 )
 
 // An excitation, typically field or current,
@@ -59,7 +60,7 @@ func (e *ScalarExcitation) RemoveExtraTerms() {
 		return
 	}
 
-	LogOut("REMOVING EXTRA TERMS FROM", e.Name())
+	// LogOut("REMOVING EXTRA TERMS FROM", e.Name())
 	for _, m := range e.extraTerms {
 		m.mask.Free()
 	}
