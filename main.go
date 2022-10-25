@@ -157,7 +157,7 @@ func goServeGUI() string {
 		return ""
 	}
 	addr := engine.GoServe(*engine.Flag_port)
-	fmt.Print("//starting GUI at http://127.0.0.1", addr, " or at http://ubuntu.wsl", addr, "\n")
+	fmt.Print("//starting GUI at http://127.0.0.1", addr, "\n")
 	return addr
 }
 

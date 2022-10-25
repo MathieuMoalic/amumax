@@ -3,7 +3,8 @@ package zarr
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"os"
 	"path"
 
 	"github.com/MathieuMoalic/amumax/data"
@@ -25,7 +26,7 @@ type JsonHell struct {
 
 func Read(fname string) (s *data.Slice, err error) {
 	basedir := path.Dir(fname)
-	content, _ := ioutil.ReadFile(basedir + "/.zarray")
+	content, _ := os.ReadFile(basedir + "/.zarray")
 	var zarray JsonHell
 	json.Unmarshal([]byte(content), &zarray)
 
@@ -43,7 +44,7 @@ func Read(fname string) (s *data.Slice, err error) {
 	if err != nil {
 		panic(err)
 	}
-	compressedData, err := ioutil.ReadAll(io_reader)
+	compressedData, err := io.ReadAll(io_reader)
 	if err != nil {
 		panic(err)
 	}
