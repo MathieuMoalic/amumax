@@ -3,6 +3,7 @@ package zarr
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/MathieuMoalic/amumax/data"
@@ -27,6 +28,7 @@ type MetaStruct struct {
 	TotalTime  string  `json:"total_time"`
 	PBC        [3]int  `json:"PBC"`
 	Gpu        string  `json:"gpu"`
+	Host       string  `json:"host"`
 }
 
 func (meta *MetaStruct) Init(m data.Mesh, savepath string, gpu string) {
@@ -45,6 +47,13 @@ func (meta *MetaStruct) Init(m data.Mesh, savepath string, gpu string) {
 	meta.PBC = m.PBC()
 	meta.Gpu = gpu
 	meta.StartTime = time.Now().Format(time.UnixDate)
+	node := os.Getenv("SLURM_NODELIST")
+	if node == "" {
+		hostname, _ := os.Hostname()
+		meta.Host = hostname
+	} else {
+		meta.Host = node
+	}
 	meta.Save()
 }
 
