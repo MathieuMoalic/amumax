@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	"os"
 	"path"
 	"reflect"
 	"strconv"
@@ -450,7 +451,8 @@ func (g *guistate) prepareOnUpdate() {
 }
 
 // Returns documentation string for quantity name. E.g.:
-// 	"m" -> "Reduced magnetization"
+//
+//	"m" -> "Reduced magnetization"
 func (g *guistate) Doc(quant string) string {
 	doc, ok := World.Doc[quant]
 	if !ok {
@@ -460,7 +462,8 @@ func (g *guistate) Doc(quant string) string {
 }
 
 // Returns unit for quantity name. E.g.:
-// 	"Msat" -> "A/m"
+//
+//	"Msat" -> "A/m"
 func (g *guistate) UnitOf(quant string) string {
 	p := g.Params[quant]
 	if p != nil {
@@ -540,7 +543,12 @@ func GoServe(addr string) string {
 		l, err = net.Listen("tcp", addr)
 	}
 	go func() { LogErr(http.Serve(l, nil)) }()
-	httpfs.Put(OD()+"gui", []byte(l.Addr().String()))
+	node, node_is_set := os.LookupEnv("SLURM_NODELIST")
+	if !node_is_set {
+		node = "localhost"
+	}
+	_, port, _ := net.SplitHostPort(addr)
+	httpfs.Put(OD()+"gui", []byte(node+":"+port))
 	return addr
 }
 
