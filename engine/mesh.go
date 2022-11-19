@@ -66,7 +66,7 @@ func SmoothKernel(Nx, Ny int, cellSizeX, cellSizeY float64) (int, int, float64, 
 }
 
 func IsValidCellSize(cellSizeX, cellSizeY, cellSizeZ float64) bool {
-	threshold := 7e-10
+	threshold := 2.5e-10
 	if (cellSizeX < threshold) || (cellSizeY < threshold) || (cellSizeZ < threshold) {
 		return false
 	} else {
@@ -142,6 +142,15 @@ func SetMesh(Nx, Ny, Nz int, cellSizeX, cellSizeY, cellSizeZ float64, pbcx, pbcy
 	lazy_cellsize = []float64{cellSizeX, cellSizeY, cellSizeZ}
 	lazy_pbc = []int{pbcx, pbcy, pbcz}
 	ZarrMeta.Init(globalmesh_, OD(), cuda.GPUInfo)
+	if chunks.x.nb == 0 {
+		fmt.Println("no chunkcs")
+		chunks = Chunks{
+			Chunk{globalmesh_.Size()[X], 1},
+			Chunk{globalmesh_.Size()[Y], 1},
+			Chunk{globalmesh_.Size()[Z], 1},
+			Chunk{3, 1},
+		}
+	}
 }
 
 func printf(f float64) float32 {

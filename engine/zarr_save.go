@@ -21,12 +21,47 @@ func init() {
 	DeclFunc("AutoSave", zAutoSave, "Auto save space-dependent quantity every period (s) as the zarr standard.")
 	DeclFunc("SaveAs", zSaveAs, "Save space-dependent quantity as the zarr standard.")
 	DeclFunc("Save", zSave, "Save space-dependent quantity as the zarr standard.")
-	DeclVar("chunky", &chunky, "chunky")
+	DeclFunc("chunkxyzc", chunkxyzc, "chunkxyzc")
 }
 
-var chunky bool
 var zGroups []string
 var zArrays = make(map[string]*zArray)
+var chunks Chunks
+
+type Chunk struct {
+	len int
+	nb  int
+}
+
+type Chunks struct {
+	x Chunk
+	y Chunk
+	z Chunk
+	c Chunk
+}
+
+func chunkxyzc(x, y, z, c int) {
+	meshsize := globalmesh_.Size()
+	// fmt.Println(meshsize, x, y, z)
+	if meshsize[0] == 0 {
+		util.Fatal("Error: You have to define the mesh before defining the chunks")
+	} else if (z < 1) || (y < 1) || (x < 1) || (c < 1) {
+		util.Fatal("Error: Chunks must be strictly positive")
+	} else if (z > meshsize[Z]) || (y > meshsize[Y]) || (x > meshsize[X]) {
+		util.Fatal("Error: Chunks must be smaller or equal to the number of cells")
+	} else if (meshsize[Z]%z != 0) || (meshsize[Y]%y != 0) || (meshsize[X]%x != 0) {
+		util.Fatal("Error: Chunks must fit an integer number of times in the mesh")
+	} else if (c != 1) && (c != 3) {
+		util.Fatal("Error: Chunks for the magnetization components can only be 1 or 3")
+	} else {
+		chunks = Chunks{
+			Chunk{x, meshsize[X] / x},
+			Chunk{y, meshsize[Y] / y},
+			Chunk{z, meshsize[Z] / z},
+			Chunk{c, 3 / c},
+		}
+	}
+}
 
 type zArray struct {
 	name   string
@@ -82,11 +117,7 @@ func zSaveAs(q Quantity, name string) {
 	defer cuda.Recycle(buffer)
 	data := buffer.HostCopy() // must be copy (async io)
 	t := zArrays[name].count  // no desync this way
-	if chunky {
-		queOutput(func() { zSyncSaveChunky(data, name, t) })
-	} else {
-		queOutput(func() { zSyncSave(data, name, t) })
-	}
+	queOutput(func() { zSyncSave(data, name, t) })
 	zArrays[name].count++
 
 }
@@ -96,69 +127,65 @@ func zSave(q Quantity) {
 	zSaveAs(q, NameOf(q))
 }
 
-// synchronous save
-func zSyncSave(array *data.Slice, qname string, time int) {
-	f, err := httpfs.Create(fmt.Sprintf(OD()+"%s/%d.0.0.0.0", qname, time+1))
-	util.FatalErr(err)
-	defer f.Close()
-
-	data := array.Tensors()
-	size := array.Size()
-
-	var bdata []byte
-	var bytes []byte
-
-	ncomp := array.NComp()
-	for iz := 0; iz < size[Z]; iz++ {
-		for iy := 0; iy < size[Y]; iy++ {
-			for ix := 0; ix < size[X]; ix++ {
-				for c := 0; c < ncomp; c++ {
-					bytes = (*[4]byte)(unsafe.Pointer(&data[c][iz][iy][ix]))[:]
-					for k := 0; k < 4; k++ {
-						bdata = append(bdata, bytes[k])
-					}
-				}
-			}
-		}
+func IntToByteArray(num int32) []byte {
+	size := int(unsafe.Sizeof(num))
+	arr := make([]byte, size)
+	for i := 0; i < size; i++ {
+		byt := *(*uint8)(unsafe.Pointer(uintptr(unsafe.Pointer(&num)) + uintptr(i)))
+		arr[i] = byt
 	}
-	// CompressLevel(dst, src []byte, level int) // alternative with compress levels
-	compressedData, err := zstd.Compress(nil, bdata)
-	util.FatalErr(err)
-	f.Write(compressedData)
-
-	//.zarray file
-	zarr.SaveFileZarray(fmt.Sprintf(OD()+"%s/.zarray", qname), size, ncomp, time+1, chunky)
+	return arr
 }
 
 // synchronous chunky save
-func zSyncSaveChunky(array *data.Slice, qname string, time int) {
+func zSyncSave(array *data.Slice, qname string, time int) {
 	data := array.Tensors()
 	size := array.Size()
 	ncomp := array.NComp()
 
-	for iy := 0; iy < size[Y]; iy++ {
-		f, err := httpfs.Create(fmt.Sprintf(OD()+"%s/%d.0.%d.0.0", qname, time+1, iy))
-		util.FatalErr(err)
-		defer f.Close()
-
-		var bdata []byte
-		var bytes []byte
-
-		for iz := 0; iz < size[Z]; iz++ {
-			for ix := 0; ix < size[X]; ix++ {
-				for c := 0; c < ncomp; c++ {
-					bytes = (*[4]byte)(unsafe.Pointer(&data[c][iz][iy][ix]))[:]
-					for k := 0; k < 4; k++ {
-						bdata = append(bdata, bytes[k])
+	fmt.Println(chunks)
+	// for every chunk
+	count := 0
+	for icx := 0; icx < chunks.x.nb; icx++ {
+		for icy := 0; icy < chunks.y.nb; icy++ {
+			for icz := 0; icz < chunks.z.nb; icz++ {
+				for icc := 0; icc < chunks.c.nb; icc++ {
+					// fmt.Println("-----------------------")
+					// fmt.Println(icx, icy, icz, icc)
+					// fmt.Println("-----------------------")
+					// for every cell in that chunk
+					bdata := []byte{}
+					var bytes []byte
+					f, err := httpfs.Create(fmt.Sprintf(OD()+"%s/%d.%d.%d.%d.%d", qname, time+1, icz, icy, icx, icc))
+					util.FatalErr(err)
+					defer f.Close()
+					for iz := 0; iz < chunks.z.len; iz++ {
+						z := icz*chunks.z.len + iz
+						for iy := 0; iy < chunks.y.len; iy++ {
+							y := icy*chunks.y.len + iy
+							for ix := 0; ix < chunks.x.len; ix++ {
+								x := icx*chunks.x.len + ix
+								// fmt.Println(count, x, y, z)
+								for ic := 0; ic < chunks.c.len; ic++ {
+									c := icc*chunks.c.len + ic
+									bytes = (*[4]byte)(unsafe.Pointer(&data[c][z][y][x]))[:]
+									// bytes = IntToByteArray(int32(count))
+									// fmt.Println(count, int32(count), bytes, byte(count))
+									for k := 0; k < 4; k++ {
+										bdata = append(bdata, bytes[k])
+									}
+								}
+								count++
+							}
+						}
 					}
+					compressedData, err := zstd.Compress(nil, bdata)
+					util.FatalErr(err)
+					f.Write(compressedData)
 				}
 			}
 		}
-		// CompressLevel(dst, src []byte, level int) // alternative with compress levels
-		compressedData, err := zstd.Compress(nil, bdata)
-		util.FatalErr(err)
-		f.Write(compressedData)
 	}
 	//.zarray file
-	zarr.SaveFileZarray(fmt.Sprintf(OD()+"%s/.zarray", qname), size, ncomp, time+1, chunky)
+	zarr.SaveFileZarray(fmt.Sprintf(OD()+"%s/.zarray", qname), size, ncomp, time+1, chunks.z.len, chunks.y.len, chunks.x.len, chunks.c.len)
 }

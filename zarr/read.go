@@ -35,8 +35,8 @@ func Read(fname string) (s *data.Slice, err error) {
 	sizex := zarray.Chunks[3]
 	sizec := zarray.Chunks[4]
 
-	fmt.Println(zarray.Chunks)
-	fmt.Println(sizez, sizey, sizex, sizec)
+	fmt.Println("chunks:", zarray.Chunks)
+	fmt.Println("size:", sizez, sizey, sizex, sizec)
 	array := data.NewSlice(sizec, [3]int{sizex, sizey, sizez})
 	tensors := array.Tensors()
 	ncomp := array.NComp()
