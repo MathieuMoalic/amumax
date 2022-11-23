@@ -53,6 +53,8 @@ func chunkxyzc(x, y, z, c int) {
 		util.Fatal("Error: Chunks must fit an integer number of times in the mesh")
 	} else if (c != 1) && (c != 3) {
 		util.Fatal("Error: Chunks for the magnetization components can only be 1 or 3")
+	} else if x*y*z*c*4 < 1000 {
+		util.Fatal("Error: Chunks are too small, chunks around 1 MB give the best performance, current chunks: ", float32(x*y*z*c*4)/1e6, " MB")
 	} else {
 		chunks = Chunks{
 			Chunk{x, meshsize[X] / x},
@@ -60,6 +62,7 @@ func chunkxyzc(x, y, z, c int) {
 			Chunk{z, meshsize[Z] / z},
 			Chunk{c, 3 / c},
 		}
+		fmt.Println("Chunk size: ", float32(x*y*z*c*4)/1e6, " MB")
 	}
 }
 
@@ -143,7 +146,7 @@ func zSyncSave(array *data.Slice, qname string, time int) {
 	size := array.Size()
 	ncomp := array.NComp()
 
-	fmt.Println(chunks)
+	// fmt.Println(chunks)
 	// for every chunk
 	count := 0
 	for icx := 0; icx < chunks.x.nb; icx++ {

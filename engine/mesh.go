@@ -143,7 +143,6 @@ func SetMesh(Nx, Ny, Nz int, cellSizeX, cellSizeY, cellSizeZ float64, pbcx, pbcy
 	lazy_pbc = []int{pbcx, pbcy, pbcz}
 	ZarrMeta.Init(globalmesh_, OD(), cuda.GPUInfo)
 	if chunks.x.nb == 0 {
-		fmt.Println("no chunkcs")
 		chunks = Chunks{
 			Chunk{globalmesh_.Size()[X], 1},
 			Chunk{globalmesh_.Size()[Y], 1},
