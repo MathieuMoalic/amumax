@@ -148,11 +148,28 @@ func zSyncSave(array *data.Slice, qname string, time int) {
 
 	// fmt.Println(chunks)
 	// for every chunk
+	var icc_max int
+	var ic_max int
+
+	if ncomp == 1 {
+		icc_max = 1
+		ic_max = 1
+	} else {
+		if chunks.c.len == 1 {
+			icc_max = 3
+			ic_max = 1
+		} else {
+			icc_max = 1
+			ic_max = 3
+
+		}
+
+	}
 	count := 0
 	for icx := 0; icx < chunks.x.nb; icx++ {
 		for icy := 0; icy < chunks.y.nb; icy++ {
 			for icz := 0; icz < chunks.z.nb; icz++ {
-				for icc := 0; icc < chunks.c.nb; icc++ {
+				for icc := 0; icc < icc_max; icc++ {
 					// fmt.Println("-----------------------")
 					// fmt.Println(icx, icy, icz, icc)
 					// fmt.Println("-----------------------")
@@ -168,12 +185,9 @@ func zSyncSave(array *data.Slice, qname string, time int) {
 							y := icy*chunks.y.len + iy
 							for ix := 0; ix < chunks.x.len; ix++ {
 								x := icx*chunks.x.len + ix
-								// fmt.Println(count, x, y, z)
-								for ic := 0; ic < chunks.c.len; ic++ {
+								for ic := 0; ic < ic_max; ic++ {
 									c := icc*chunks.c.len + ic
 									bytes = (*[4]byte)(unsafe.Pointer(&data[c][z][y][x]))[:]
-									// bytes = IntToByteArray(int32(count))
-									// fmt.Println(count, int32(count), bytes, byte(count))
 									for k := 0; k < 4; k++ {
 										bdata = append(bdata, bytes[k])
 									}
