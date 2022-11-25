@@ -146,8 +146,6 @@ func zSyncSave(array *data.Slice, qname string, time int) {
 	size := array.Size()
 	ncomp := array.NComp()
 
-	// fmt.Println(chunks)
-	// for every chunk
 	var icc_max int
 	var ic_max int
 
@@ -170,10 +168,6 @@ func zSyncSave(array *data.Slice, qname string, time int) {
 		for icy := 0; icy < chunks.y.nb; icy++ {
 			for icz := 0; icz < chunks.z.nb; icz++ {
 				for icc := 0; icc < icc_max; icc++ {
-					// fmt.Println("-----------------------")
-					// fmt.Println(icx, icy, icz, icc)
-					// fmt.Println("-----------------------")
-					// for every cell in that chunk
 					bdata := []byte{}
 					var bytes []byte
 					f, err := httpfs.Create(fmt.Sprintf(OD()+"%s/%d.%d.%d.%d.%d", qname, time+1, icz, icy, icx, icc))
@@ -204,5 +198,5 @@ func zSyncSave(array *data.Slice, qname string, time int) {
 		}
 	}
 	//.zarray file
-	zarr.SaveFileZarray(fmt.Sprintf(OD()+"%s/.zarray", qname), size, ncomp, time+1, chunks.z.len, chunks.y.len, chunks.x.len, chunks.c.len)
+	zarr.SaveFileZarray(fmt.Sprintf(OD()+"%s/.zarray", qname), size, ncomp, time+1, chunks.z.len, chunks.y.len, chunks.x.len, ncomp)
 }
