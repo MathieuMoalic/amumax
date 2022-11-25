@@ -1,8 +1,8 @@
-Nx := 20
-Ny := 20
+Nx := 8192
+Ny := 1
 Nz := 1
 dx := 4e-9
-dy := 4e-9
+dy := 1e-9
 dz := 1e-9
 Tx := Nx*dx
 Ty := Ny*dy
@@ -11,22 +11,6 @@ Tz := Nz*dz
 setgridsize(Nx,Ny,Nz)
 setcellsize(dx,dy,dz)
 setpbc(2,256,0)
-chunkxyzc(Nx,Ny,Nz,1)
-msat = 956e3
-aex = 10e-12
-alpha = 0.03
-// setgeom(circle(600e-9))
-m = vortex(1,1)
-// m = uniform(1,0,0)
-save(regions)
+// chunkxyzc(Nx,1,Nz,3)
 save(m)
-// defregion(1,circle(50e-9).transl(50e-9,50e-9,0))
-// defregion(1,circle(50e-9))
-// saveas(m.region(1),"m")
-// minimize()
-// setsolver(5)
-// B_ext = vector(0, 1e-2*sin(2*pi*12e9*t), 0)
-// tableadd(m)
-// tableautosave(1e-11)
-// autosave(m,1e-12)
-// run(1e-12)
+save(msat)
