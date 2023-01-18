@@ -329,12 +329,13 @@ func (g *guistate) prepareParam() {
 // see prepareServer
 func (g *guistate) prepareDisplay() {
 	// plot
-	g.OnEvent("tableAutoSave", func() {
-		Inject <- func() {
-			g.EvalGUI("TableAutosave(" + g.StringValue("tableAutoSave") + ")")
-		}
-	})
-
+	util.Println("// >>>>>>>>>> 1")
+	// g.OnEvent("tableAutoSave", func() {
+	// 	Inject <- func() {
+	// 		g.EvalGUI("TableAutosave(" + g.StringValue("tableAutoSave") + ")")
+	// 	}
+	// })
+	util.Println("// >>>>>>>>>> 2")
 	// render
 	g.OnEvent("renderQuant", func() {
 		g.Render.Mutex.Lock()
@@ -413,7 +414,7 @@ func (g *guistate) prepareOnUpdate() {
 			}
 
 			// display
-			g.Set("tableAutoSave", Table.autosave.period)
+			// g.Set("tableAutoSave", Table.autosave.period)
 			quant := g.StringValue("renderQuant")
 			comp := g.StringValue("renderComp")
 			cachebreaker := "?" + g.StringValue("nsteps") + "_" + fmt.Sprint(g.cacheBreaker())
@@ -421,7 +422,7 @@ func (g *guistate) prepareOnUpdate() {
 			g.Set("display", "/render/"+quant+"/"+comp+cachebreaker)
 
 			// plot
-			GUI.Set("plot", "/plot/"+cachebreaker)
+			// GUI.Set("plot", "/plot/"+cachebreaker)
 
 			// parameters
 			for _, p := range g.Params {
@@ -547,6 +548,7 @@ func GoServe(addr string) string {
 	if !node_is_set {
 		node = "localhost"
 	}
+
 	_, port, _ := net.SplitHostPort(addr)
 	httpfs.Put(OD()+"gui", []byte(node+":"+port))
 	return addr
