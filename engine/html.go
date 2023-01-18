@@ -259,33 +259,6 @@ m = {{.Data.Configs | .SelectArray "mselect" "Uniform"}} {{.TextBox "margs" "(1,
 
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-{{.Data.Div "plot"}}
-
-<p title="{{$.Data.Doc "TableAutoSave"}}">
-	TableAutosave: {{.TextBox "tableAutoSave" "0" }}  s 
-</p>
-<p>
-	Plot columns {{.TextBox "usingx" "t" "size=1"}} and {{.TextBox "usingy" "B_demag" "size=1"}} of "table.txt".
-</p>
-<p class=ErrorBox>{{.Span "plotErr" ""}}</p>
-{{.Img "plot" "/plot/"}}
-
-</div>
-
-
-
-
 {{.Data.Div "parameters"}}
 
 Region: {{.Number "region" -1 255 -1}} </br>

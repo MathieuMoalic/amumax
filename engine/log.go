@@ -2,10 +2,11 @@ package engine
 
 import (
 	"fmt"
-	"github.com/MathieuMoalic/amumax/httpfs"
-	"github.com/MathieuMoalic/amumax/util"
 	"io"
 	"os"
+
+	"github.com/MathieuMoalic/amumax/httpfs"
+	"github.com/MathieuMoalic/amumax/util"
 )
 
 var (
@@ -33,7 +34,7 @@ func LogIn(msg ...interface{}) {
 }
 
 func LogOut(msg ...interface{}) {
-	str := "//" + sprint(msg...)
+	str := "// " + sprint(msg...)
 	log2GUI(str)
 	log2File(str)
 	fmt.Println(str)
@@ -57,11 +58,7 @@ func initLog() {
 		panic("log already inited")
 	}
 	// open log file and flush what was logged before the file existed
-	var err error
-	logfile, err = httpfs.Create(OD() + "log.txt")
-	if err != nil {
-		panic(err)
-	}
+	logfile, err := httpfs.Create(OD() + "log.txt")
 	util.FatalErr(err)
 	logfile.Write(([]byte)(hist))
 	logfile.Write([]byte{'\n'})

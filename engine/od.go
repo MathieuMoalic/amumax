@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/MathieuMoalic/amumax/httpfs"
+	"github.com/MathieuMoalic/amumax/util"
 	"github.com/MathieuMoalic/amumax/zarr"
 )
 
@@ -41,8 +42,8 @@ func InitIO(inputfile, od string, force bool) {
 		httpfs.Remove(od)
 	}
 
-	_ = httpfs.Mkdir(od)
-
+	err := httpfs.Mkdir(od)
+	util.FatalErr(err)
 	initLog()
 	zarr.InitZgroup(OD())
 }

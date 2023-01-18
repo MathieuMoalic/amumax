@@ -64,7 +64,7 @@ func (meta *MetaStruct) End() {
 }
 
 func (meta *MetaStruct) Save() {
-	zattrs, err := httpfs.Create(meta.root_path + "/.zattrs")
+	zattrs, err := httpfs.Create(meta.root_path + ".zattrs")
 	util.FatalErr(err)
 	defer zattrs.Close()
 	json_meta, err := json.MarshalIndent(meta, "", "\t")
