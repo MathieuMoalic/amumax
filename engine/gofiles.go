@@ -26,15 +26,15 @@ var (
 
 // Usage: in every Go input file, write:
 //
-// 	func main(){
-// 		defer InitAndClose()()
-// 		// ...
-// 	}
+//	func main(){
+//		defer InitAndClose()()
+//		// ...
+//	}
 //
 // This initialises the GPU, output directory, etc,
 // and makes sure pending output will get flushed.
 func InitAndClose() func() {
-
+	// ONLY FOR GO FILES
 	flag.Parse()
 
 	cuda.Init(*Flag_gpu)

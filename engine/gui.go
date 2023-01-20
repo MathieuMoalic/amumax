@@ -329,13 +329,11 @@ func (g *guistate) prepareParam() {
 // see prepareServer
 func (g *guistate) prepareDisplay() {
 	// plot
-	util.Println("// >>>>>>>>>> 1")
 	// g.OnEvent("tableAutoSave", func() {
 	// 	Inject <- func() {
 	// 		g.EvalGUI("TableAutosave(" + g.StringValue("tableAutoSave") + ")")
 	// 	}
 	// })
-	util.Println("// >>>>>>>>>> 2")
 	// render
 	g.OnEvent("renderQuant", func() {
 		g.Render.Mutex.Lock()
@@ -455,10 +453,7 @@ func (g *guistate) prepareOnUpdate() {
 //
 //	"m" -> "Reduced magnetization"
 func (g *guistate) Doc(quant string) string {
-	doc, ok := World.Doc[quant]
-	if !ok {
-		LogErr("no doc for", quant)
-	}
+	doc := World.Doc[quant]
 	return doc
 }
 
@@ -543,6 +538,8 @@ func GoServe(addr string) string {
 		addr = fmt.Sprint(h, ":", atoi(p)+1)
 		l, err = net.Listen("tcp", addr)
 	}
+	_, p, _ := net.SplitHostPort(addr)
+	LogOut(fmt.Sprintf("starting GUI at http://localhost:%s", p))
 	go func() { LogErr(http.Serve(l, nil)) }()
 	node, node_is_set := os.LookupEnv("SLURM_NODELIST")
 	if !node_is_set {

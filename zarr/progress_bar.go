@@ -30,5 +30,5 @@ func (bar *ProgressBar) Update(current float64) {
 }
 
 func (bar *ProgressBar) Finish() {
-	fmt.Println()
+	fmt.Printf("\r[%-50s]%3d%%\n", strings.Repeat("█", 50), 100)
 }
