@@ -1,9 +1,6 @@
 package main
 
-import (
-	"fmt"
-	// "os/exec"
-)
+// "os/exec"
 
 // Try to open url in a browser. Instruct to do so if it fails.
 func openbrowser(url string) {
@@ -14,7 +11,7 @@ func openbrowser(url string) {
 	// 		return
 	// 	}
 	// }
-	fmt.Println("//please open ", url, " in a browser")
+	// fmt.Println("//please open ", url, " in a browser")
 }
 
 // list of browsers to try.

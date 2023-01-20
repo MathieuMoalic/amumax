@@ -29,17 +29,16 @@ type Page struct {
 // to the template as additional arbitrary data, available as {{.Data}}.
 func NewPage(htmlTemplate string, data interface{}) *Page {
 	d := &Page{elems: make(map[string]*E), data: data}
-
-	// exec template (once)
-	t := template.Must(template.New("").Parse(htmlTemplate))
+	// t := template.Must(template.New("index.html").Parse(htmlTemplate))
+	t := template.Must(template.New("index.html").ParseFiles("gui/index.html"))
 	cache := bytes.NewBuffer(nil)
 	check(t.Execute(cache, d))
 	d.htmlCache = cache.Bytes()
 
 	// check if template contains {{.JS}}
-	if !d.haveJS {
-		log.Panic("template should call {{.JS}}")
-	}
+	// if !d.haveJS {
+	// 	log.Panic("template should call {{.JS}}")
+	// }
 	return d
 }
 

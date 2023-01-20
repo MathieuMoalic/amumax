@@ -1,11 +1,11 @@
 package engine
 
 import (
-	"fmt"
+	"math/rand"
+
 	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/data"
 	"github.com/MathieuMoalic/amumax/util"
-	"math/rand"
 )
 
 func init() {
@@ -89,7 +89,7 @@ func (geometry *geom) setGeom(s Shape) {
 	c := geometry.Mesh().CellSize()
 	cx, cy, cz := c[X], c[Y], c[Z]
 
-	fmt.Println("Initializing geometry")
+	LogOut("Initializing geometry")
 	var ok bool
 	for iz := 0; iz < n[Z]; iz++ {
 		for iy := 0; iy < n[Y]; iy++ {

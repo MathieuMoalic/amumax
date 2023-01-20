@@ -1,18 +1,17 @@
 package engine
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/data"
-	"github.com/MathieuMoalic/amumax/util"
 	"github.com/MathieuMoalic/amumax/zarr"
 )
 
 var globalmesh_ data.Mesh // mesh for m and everything that has the same size
 var ZarrMeta zarr.MetaStruct
 var AutoKernel bool
+var meshwarned bool
 
 func init() {
 	DeclFunc("SetGridSize", SetGridSize, `Sets the number of cells for X,Y,Z`)
@@ -86,16 +85,16 @@ func SetMesh(Nx, Ny, Nz int, cellSizeX, cellSizeY, cellSizeZ float64, pbcx, pbcy
 	arg("PBC", pbcx >= 0 && pbcy >= 0 && pbcz >= 0)
 
 	if !IsValidCellSize(cellSizeX, cellSizeY, cellSizeZ) {
-		util.Println("/!\\/!\\/!\\/!\\ Warning: Cell sizes might be too small. /!\\/!\\/!\\/!\\")
+		LogOut(" Warning: Cell sizes might be too small.")
 	}
 	if Nx*Ny > 10000 {
 		NewNx, NewNy, NewcellSizeX, NewcellSizeY := SmoothKernel(Nx, Ny, cellSizeX, cellSizeY)
 		if AutoKernel {
 			Nx, Ny, cellSizeX, cellSizeY = NewNx, NewNy, NewcellSizeX, NewcellSizeY
-			fmt.Println("Kernel smoothed to: ", Nx, Ny, cellSizeX, cellSizeY)
-		} else if (Nx != NewNx) || (Ny != NewNy) {
-			util.Println("/!\\/!\\/!\\/!\\ Warning: Your gridsize doesn't appear to be optimized, expect longer simulations /!\\/!\\/!\\/!\\")
-
+			LogOut("Kernel smoothed to: ", Nx, Ny, cellSizeX, cellSizeY)
+		} else if !meshwarned && ((Nx != NewNx) || (Ny != NewNy)) {
+			LogOut("Warning: Unoptimized gridsize (", Nx, Ny, Nz, "), expect longer simulations ")
+			meshwarned = true
 		}
 	}
 
@@ -109,7 +108,7 @@ func SetMesh(Nx, Ny, Nz int, cellSizeX, cellSizeY, cellSizeZ float64, pbcx, pbcy
 		regions.alloc()
 	} else {
 		// here be dragons
-		LogOut("resizing...")
+		// LogOut("resizing...")
 
 		// free everything
 		conv_.Free()

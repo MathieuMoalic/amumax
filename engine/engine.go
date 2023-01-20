@@ -7,7 +7,6 @@ param: region-dependent parameter (always input)
 field: fully space-dependent field
 
 TODO: godoc everything
-
 */
 package engine
 
@@ -52,7 +51,7 @@ func GetBusy() bool {
 // Cleanly exits the simulation, assuring all output is flushed.
 func Close() {
 	drainOutput()
-	LogOut("**************** Simulation Ended ******************//")
+	LogOut("**************** Simulation Ended ****************** //")
 	Table.flush()
 	ZTables.Flush()
 	if logfile != nil {
