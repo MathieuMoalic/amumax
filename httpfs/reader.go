@@ -5,6 +5,7 @@ package httpfs
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 )
@@ -16,6 +17,8 @@ func Create(URL string) (WriteCloseFlusher, error) {
 	_ = Remove(URL)
 	err := Touch(URL)
 	if err != nil {
+		fmt.Printf("Failed to create `%v` with error:\n", URL)
+		fmt.Println(err)
 		return nil, err
 	}
 	return &bufWriter{bufio.NewWriterSize(&appendWriter{URL, 0}, BUFSIZE)}, nil
