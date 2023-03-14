@@ -19,6 +19,7 @@ func init() {
 	DeclFunc("Squircle", Squircle, "2D Squircle with diameter in meter")
 	DeclFunc("Cuboid", Cuboid, "Cuboid with sides in meter")
 	DeclFunc("Rect", Rect, "2D rectangle with size in meter")
+	DeclFunc("Wave", Wave, "Wave with (Period, Min amplitude and Max amplitude) in meter")
 	DeclFunc("Triangle", Triangle, "Equilateral triangle with side in meter")
 	DeclFunc("RTriangle", RTriangle, "Rounded Equilateral triangle with side in meter")
 	DeclFunc("Diamond", Diamond, "Diamond with side in meter")
@@ -39,6 +40,14 @@ func init() {
 
 // geometrical shape for setting sample geometry
 type Shape func(x, y, z float64) bool
+
+// Wave with given diameters
+func Wave(period, amin, amax float64) Shape {
+	return func(x, y, z float64) bool {
+		wavex := (math.Cos(x/period*2*math.Pi)/2 - 0.5) * (amax - amin) / 2
+		return y > wavex-amin/2 && y < -wavex+amin/2
+	}
+}
 
 // Ellipsoid with given diameters
 func Ellipsoid(diamx, diamy, diamz float64) Shape {
@@ -121,7 +130,7 @@ func Diamond(sidex, sidey float64) Shape {
 // Squircle with given sides.
 func Squircle(diam, exp float64) Shape {
 	return func(x, y, z float64) bool {
-		return (math.Pow(math.Abs(x/(diam/2)),exp)+math.Pow(math.Abs(y/(diam/2)),exp)) <= 1
+		return (math.Pow(math.Abs(x/(diam/2)), exp) + math.Pow(math.Abs(y/(diam/2)), exp)) <= 1
 		// return math.Pow(math.Abs(x/diam),exp) <= diam/2
 	}
 }
