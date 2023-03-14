@@ -21,3 +21,10 @@ The solvers are unchanged, this is just list of massive quality of life improvem
 - Add metadata saving : root_path, start_time, Dx, Dy, Dz, Nx, Ny, Nz, Tx, Ty, Tz, StartTime, EndTime, TotalTime, PBC, Gpu, Host
 - Everytime the function `save` is used (from `autosave` for example), the current simulation time `t` is saved too as a zarray attribute
 - Save compressed arrays (zstd) by default
+
+# TODO
+ - Fix save(m.crop(...))
+ - Fix tablesave without tableadd before
+ - Get Nx,y,z from autokernel
+ - chunks, implement c chunks
+ - Readd the plot
