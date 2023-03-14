@@ -8,9 +8,14 @@ import (
 	"net/http"
 	"sync"
 	"text/template"
+
+	_ "embed"
 )
 
 var Debug = false
+
+//go:embed index.html
+var html_tmpl string
 
 // Page holds the state to serve a single GUI page to the browser
 type Page struct {
@@ -27,10 +32,11 @@ type Page struct {
 // NewPage constructs a Page based on an HTML template containing
 // element tags like {{.Button}}, {{.Textbox}}, etc. data is fed
 // to the template as additional arbitrary data, available as {{.Data}}.
-func NewPage(htmlTemplate string, data interface{}) *Page {
+func NewPage(data interface{}) *Page {
 	d := &Page{elems: make(map[string]*E), data: data}
-	// t := template.Must(template.New("index.html").Parse(htmlTemplate))
-	t := template.Must(template.New("index.html").ParseFiles("gui/index.html"))
+
+	t := template.Must(template.New("index.html").Parse(html_tmpl))
+	// t := template.Must(template.New("index.html").ParseFiles("gui/index.html"))
 	cache := bytes.NewBuffer(nil)
 	check(t.Execute(cache, d))
 	d.htmlCache = cache.Bytes()
