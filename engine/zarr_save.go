@@ -21,52 +21,10 @@ func init() {
 	DeclFunc("AutoSave", zAutoSave, "Auto save space-dependent quantity every period (s) as the zarr standard.")
 	DeclFunc("SaveAs", zSaveAs, "Save space-dependent quantity as the zarr standard.")
 	DeclFunc("Save", zSave, "Save space-dependent quantity as the zarr standard.")
-	DeclFunc("chunkxyzc", chunkxyzc, "chunkxyzc")
 }
 
 var zGroups []string
 var zArrays = make(map[string]*zArray)
-var chunks Chunks
-
-type Chunk struct {
-	len int
-	nb  int
-}
-
-type Chunks struct {
-	x Chunk
-	y Chunk
-	z Chunk
-	c Chunk
-}
-
-func chunkxyzc(x, y, z, c int) {
-	meshsize := globalmesh_.Size()
-	// fmt.Println(meshsize, x, y, z)
-	if meshsize[0] == 0 {
-		util.Fatal("Error: You have to define the mesh before defining the chunks")
-	} else if (z < 1) || (y < 1) || (x < 1) || (c < 1) {
-		util.Fatal("Error: Chunks must be strictly positive")
-	} else if (z > meshsize[Z]) || (y > meshsize[Y]) || (x > meshsize[X]) {
-		util.Fatal("Error: Chunks must be smaller or equal to the number of cells")
-	} else if (meshsize[Z]%z != 0) || (meshsize[Y]%y != 0) || (meshsize[X]%x != 0) {
-		util.Fatal("Error: Chunks must fit an integer number of times in the mesh")
-		// } else if (c != 1) && (c != 3) {
-		// 	util.Fatal("Error: Chunks for the magnetization components can only be 1 or 3")
-	} else if c != 3 {
-		util.Fatal("Error: Chunks for the magnetization components is not supported yet")
-	} else if x*y*z*c*4 < 1000 {
-		util.Fatal("Error: Chunks are too small, chunks around 1 MB give the best performance, current chunks: ", float32(x*y*z*c*4)/1e6, " MB")
-	} else {
-		chunks = Chunks{
-			Chunk{x, meshsize[X] / x},
-			Chunk{y, meshsize[Y] / y},
-			Chunk{z, meshsize[Z] / z},
-			Chunk{c, 3 / c},
-		}
-		fmt.Println("Chunk size: ", float32(x*y*z*c*4)/1e6, " MB")
-	}
-}
 
 type zArray struct {
 	name   string

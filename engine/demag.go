@@ -107,8 +107,8 @@ func demagConv() *cuda.DemagConvolution {
 		// these 2 lines make sure the progress bar doesn't break when calculating the kernel
 		fmt.Print("\r                                                        ")
 		fmt.Print("\r")
-		kernel := mag.DemagKernel(Mesh().Size(), Mesh().PBC(), Mesh().CellSize(), DemagAccuracy, *Flag_cachedir)
-		conv_ = cuda.NewDemag(Mesh().Size(), Mesh().PBC(), kernel, *Flag_selftest)
+		kernel := mag.DemagKernel(GetMesh().Size(), GetMesh().PBC(), GetMesh().CellSize(), DemagAccuracy, *Flag_cachedir)
+		conv_ = cuda.NewDemag(GetMesh().Size(), GetMesh().PBC(), kernel, *Flag_selftest)
 	}
 	return conv_
 }

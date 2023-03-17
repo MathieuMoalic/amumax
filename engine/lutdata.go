@@ -1,11 +1,12 @@
 package engine
 
 import (
+	"unsafe"
+
 	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/cuda/cu"
 	"github.com/MathieuMoalic/amumax/data"
 	"github.com/MathieuMoalic/amumax/util"
-	"unsafe"
 )
 
 // look-up table for region based parameters
@@ -81,7 +82,7 @@ func (b *lut) NComp() int { return len(b.cpu_buf) }
 
 // uncompress the table to a full array with parameter values per cell.
 func (p *lut) Slice() (*data.Slice, bool) {
-	b := cuda.Buffer(p.NComp(), Mesh().Size())
+	b := cuda.Buffer(p.NComp(), GetMesh().Size())
 	p.EvalTo(b)
 	return b, true
 }

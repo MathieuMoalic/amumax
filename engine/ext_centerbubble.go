@@ -1,8 +1,9 @@
 package engine
 
 import (
-	"github.com/MathieuMoalic/amumax/data"
 	"math"
+
+	"github.com/MathieuMoalic/amumax/data"
 )
 
 func init() {
@@ -10,7 +11,7 @@ func init() {
 }
 
 func centerBubble() {
-	c := Mesh().CellSize()
+	c := GetMesh().CellSize()
 
 	position := bubblePos()
 	var centerIdx [2]int

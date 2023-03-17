@@ -39,15 +39,6 @@ func (r *Regions) alloc() {
 	DefRegion(0, universe)
 }
 
-func (r *Regions) resize() {
-	newSize := Mesh().Size()
-	r.gpuCache.Free()
-	r.gpuCache = cuda.NewBytes(prod(newSize))
-	for _, f := range r.hist {
-		r.render(f)
-	}
-}
-
 // Define a region with id (0-255) to be inside the Shape.
 func DefRegion(id int, s Shape) {
 	defRegionId(id)
@@ -65,7 +56,7 @@ func DefRegion(id int, s Shape) {
 // renders (rasterizes) shape, filling it with region number #id, between x1 and x2
 // TODO: a tidbit expensive
 func (r *Regions) render(f func(x, y, z float64) int) {
-	n := Mesh().Size()
+	n := GetMesh().Size()
 	l := r.HostList() // need to start from previous state
 	arr := reshapeBytes(l, r.Mesh().Size())
 
@@ -109,7 +100,7 @@ func (r *Regions) HostList() []byte {
 
 func DefRegionCell(id int, x, y, z int) {
 	defRegionId(id)
-	index := data.Index(Mesh().Size(), x, y, z)
+	index := data.Index(GetMesh().Size(), x, y, z)
 	regions.gpuCache.Set(index, byte(id))
 }
 
@@ -125,13 +116,13 @@ func (r *Regions) Average() float64 { return r.average()[0] }
 
 // Set the region of one cell
 func (r *Regions) SetCell(ix, iy, iz int, region int) {
-	size := Mesh().Size()
+	size := GetMesh().Size()
 	i := data.Index(size, ix, iy, iz)
 	r.gpuCache.Set(i, byte(region))
 }
 
 func (r *Regions) GetCell(ix, iy, iz int) int {
-	size := Mesh().Size()
+	size := GetMesh().Size()
 	i := data.Index(size, ix, iy, iz)
 	return int(r.gpuCache.Get(i))
 }
@@ -208,7 +199,7 @@ func (b *Regions) shift(dx int) {
 	cuda.ShiftBytes(r2, r1, b.Mesh(), dx, newreg)
 	r1.Copy(r2)
 
-	n := Mesh().Size()
+	n := GetMesh().Size()
 	x1, x2 := shiftDirtyRange(dx)
 
 	for iz := 0; iz < n[Z]; iz++ {
@@ -233,7 +224,7 @@ func (b *Regions) shiftY(dy int) {
 	cuda.ShiftBytesY(r2, r1, b.Mesh(), dy, newreg)
 	r1.Copy(r2)
 
-	n := Mesh().Size()
+	n := GetMesh().Size()
 	y1, y2 := shiftDirtyRange(dy)
 
 	for iz := 0; iz < n[Z]; iz++ {
@@ -249,7 +240,7 @@ func (b *Regions) shiftY(dy int) {
 	}
 }
 
-func (r *Regions) Mesh() *data.Mesh { return Mesh() }
+func (r *Regions) Mesh() *data.Mesh { return GetMesh() }
 
 func prod(s [3]int) int {
 	return s[0] * s[1] * s[2]

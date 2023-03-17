@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+
 	"github.com/MathieuMoalic/amumax/data"
 )
 
@@ -18,7 +19,7 @@ func init() {
 func centerWall(c int) {
 	M := &M
 	mc := sAverageUniverse(M.Buffer().Comp(c))[0]
-	n := Mesh().Size()
+	n := GetMesh().Size()
 	tolerance := 4 / float64(n[X]) // x*2 * expected <m> change for 1 cell shift
 
 	zero := data.Vector{0, 0, 0}
@@ -41,7 +42,8 @@ func centerWall(c int) {
 
 // This post-step function centers the simulation window on a domain wall
 // between up-down (or down-up) domains (like in perpendicular media). E.g.:
-// 	PostStep(CenterPMAWall)
+//
+//	PostStep(CenterPMAWall)
 func CenterWall(magComp int) {
 	PostStep(func() { centerWall(magComp) })
 }
@@ -75,8 +77,8 @@ func getShiftSpeed() float64 {
 func GetDWxPos() float64 {
 	M := &M
 	mx := sAverageUniverse(M.Buffer().Comp(0))[0]
-	c := Mesh().CellSize()
-	n := Mesh().Size()
+	c := GetMesh().CellSize()
+	n := GetMesh().Size()
 	position := mx * c[0] * float64(n[0]) / 2.
 	return GetShiftPos() + position
 }

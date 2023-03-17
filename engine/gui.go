@@ -142,15 +142,15 @@ func (g *guistate) prepareMesh() {
 		g.Set("setmeshwarn", MESHWARN)
 	}
 
-	g.OnEvent("nx", func() { Inject <- func() { lazy_gridsize[X] = g.IntValue("nx"); warnmesh() } })
-	g.OnEvent("ny", func() { Inject <- func() { lazy_gridsize[Y] = g.IntValue("ny"); warnmesh() } })
-	g.OnEvent("nz", func() { Inject <- func() { lazy_gridsize[Z] = g.IntValue("nz"); warnmesh() } })
-	g.OnEvent("cx", func() { Inject <- func() { lazy_cellsize[X] = g.FloatValue("cx"); warnmesh() } })
-	g.OnEvent("cy", func() { Inject <- func() { lazy_cellsize[Y] = g.FloatValue("cy"); warnmesh() } })
-	g.OnEvent("cz", func() { Inject <- func() { lazy_cellsize[Z] = g.FloatValue("cz"); warnmesh() } })
-	g.OnEvent("px", func() { Inject <- func() { lazy_pbc[X] = g.IntValue("px"); warnmesh() } })
-	g.OnEvent("py", func() { Inject <- func() { lazy_pbc[Y] = g.IntValue("py"); warnmesh() } })
-	g.OnEvent("pz", func() { Inject <- func() { lazy_pbc[Z] = g.IntValue("pz"); warnmesh() } })
+	g.OnEvent("nx", func() { Inject <- func() { Nx = g.IntValue("nx"); warnmesh() } })
+	g.OnEvent("ny", func() { Inject <- func() { Ny = g.IntValue("ny"); warnmesh() } })
+	g.OnEvent("nz", func() { Inject <- func() { Nz = g.IntValue("nz"); warnmesh() } })
+	g.OnEvent("cx", func() { Inject <- func() { dx = g.FloatValue("cx"); warnmesh() } })
+	g.OnEvent("cy", func() { Inject <- func() { dy = g.FloatValue("cy"); warnmesh() } })
+	g.OnEvent("cz", func() { Inject <- func() { dz = g.FloatValue("cz"); warnmesh() } })
+	g.OnEvent("px", func() { Inject <- func() { PBCx = g.IntValue("px"); warnmesh() } })
+	g.OnEvent("py", func() { Inject <- func() { PBCy = g.IntValue("py"); warnmesh() } })
+	g.OnEvent("pz", func() { Inject <- func() { PBCz = g.IntValue("pz"); warnmesh() } })
 
 	g.OnEvent("setmesh", func() {
 		//g.Disable("setmesh", true)
@@ -160,12 +160,12 @@ func (g *guistate) prepareMesh() {
 				g.Value("cx"), g.Value("cy"), g.Value("cz"),
 				g.Value("px"), g.Value("py"), g.Value("pz")))
 			// update lazy_* sizes to be up-to date with proper mesh
-			n := Mesh().Size()
-			c := Mesh().CellSize()
-			p := Mesh().PBC()
-			lazy_gridsize = []int{n[X], n[Y], n[Z]}
-			lazy_cellsize = []float64{c[X], c[Y], c[Z]}
-			lazy_pbc = []int{p[X], p[Y], p[Z]}
+			// n := GetMesh().Size()
+			// c := GetMesh().CellSize()
+			// p := GetMesh().PBC()
+			// lazy_gridsize = []int{n[X], n[Y], n[Z]}
+			// lazy_cellsize = []float64{c[X], c[Y], c[Z]}
+			// lazy_pbc = []int{p[X], p[Y], p[Z]}
 
 		})
 		g.Set("setmeshwarn", "mesh up to date")
@@ -196,7 +196,7 @@ func (g *guistate) prepareGeom() {
 		for i := 0; i < t.NumIn(); i++ {
 			val := 0.0
 			if i < 3 {
-				val = Mesh().WorldSize()[i]
+				val = GetMesh().WorldSize()[i]
 			}
 			if i > 0 {
 				args += ", "
@@ -357,7 +357,7 @@ func (g *guistate) prepareDisplay() {
 		g.Render.Mutex.Lock()
 		defer g.Render.Mutex.Unlock()
 		g.Render.layer = g.IntValue("renderLayer")
-		g.Set("renderLayerLabel", fmt.Sprint(g.Render.layer, "/", Mesh().Size()[Z]))
+		g.Set("renderLayerLabel", fmt.Sprint(g.Render.layer, "/", GetMesh().Size()[Z]))
 	})
 	g.OnEvent("renderScale", func() {
 		g.Render.Mutex.Lock()
@@ -380,18 +380,18 @@ func (g *guistate) prepareOnUpdate() {
 			g.Set("console", hist)
 
 			// mesh
-			g.Set("nx", lazy_gridsize[X])
-			g.Set("ny", lazy_gridsize[Y])
-			g.Set("nz", lazy_gridsize[Z])
-			g.Set("cx", lazy_cellsize[X])
-			g.Set("cy", lazy_cellsize[Y])
-			g.Set("cz", lazy_cellsize[Z])
-			g.Set("px", lazy_pbc[X])
-			g.Set("py", lazy_pbc[Y])
-			g.Set("pz", lazy_pbc[Z])
-			g.Set("wx", printf(lazy_cellsize[X]*float64(lazy_gridsize[X])*1e9))
-			g.Set("wy", printf(lazy_cellsize[Y]*float64(lazy_gridsize[Y])*1e9))
-			g.Set("wz", printf(lazy_cellsize[Z]*float64(lazy_gridsize[Z])*1e9))
+			g.Set("nx", Nx)
+			g.Set("ny", Ny)
+			g.Set("nz", Nz)
+			g.Set("cx", dx)
+			g.Set("cy", dy)
+			g.Set("cz", dz)
+			g.Set("px", PBCx)
+			g.Set("py", PBCy)
+			g.Set("pz", PBCz)
+			g.Set("wx", printf(dx*float64(Nx)*1e9))
+			g.Set("wy", printf(dy*float64(Ny)*1e9))
+			g.Set("wz", printf(dz*float64(Nz)*1e9))
 
 			// solver
 			g.Set("nsteps", NSteps)
@@ -416,7 +416,7 @@ func (g *guistate) prepareOnUpdate() {
 			quant := g.StringValue("renderQuant")
 			comp := g.StringValue("renderComp")
 			cachebreaker := "?" + g.StringValue("nsteps") + "_" + fmt.Sprint(g.cacheBreaker())
-			g.Attr("renderLayer", "max", Mesh().Size()[Z]-1)
+			g.Attr("renderLayer", "max", GetMesh().Size()[Z]-1)
 			g.Set("display", "/render/"+quant+"/"+comp+cachebreaker)
 
 			// plot
