@@ -5,6 +5,7 @@ import (
 	"github.com/MathieuMoalic/amumax/cuda/curand"
 	"github.com/MathieuMoalic/amumax/data"
 	"github.com/MathieuMoalic/amumax/mag"
+
 	//"github.com/MathieuMoalic/amumax/util"
 	"math"
 )
@@ -80,9 +81,9 @@ func (b *thermField) update() {
 		return
 	}
 
-	N := Mesh().NCell()
+	N := GetMesh().NCell()
 	k2_VgammaDt := 2 * mag.Kb / (GammaLL * cellVolume() * Dt_si)
-	noise := cuda.Buffer(1, Mesh().Size())
+	noise := cuda.Buffer(1, GetMesh().Size())
 	defer cuda.Recycle(noise)
 
 	const mean = 0
@@ -119,7 +120,7 @@ func ThermSeed(seed int) {
 	}
 }
 
-func (b *thermField) Mesh() *data.Mesh       { return Mesh() }
+func (b *thermField) Mesh() *data.Mesh       { return GetMesh() }
 func (b *thermField) NComp() int             { return 3 }
 func (b *thermField) Name() string           { return "Thermal field" }
 func (b *thermField) Unit() string           { return "T" }

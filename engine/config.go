@@ -3,9 +3,10 @@ package engine
 // Utilities for setting magnetic configurations.
 
 import (
-	"github.com/MathieuMoalic/amumax/data"
 	"math"
 	"math/rand"
+
+	"github.com/MathieuMoalic/amumax/data"
 )
 
 func init() {
@@ -50,7 +51,8 @@ func randomDir(rng *rand.Rand) data.Vector {
 }
 
 // Returns a uniform magnetization state. E.g.:
-// 	M = Uniform(1, 0, 0)) // saturated along X
+//
+//	M = Uniform(1, 0, 0)) // saturated along X
 func Uniform(mx, my, mz float64) Config {
 	return func(x, y, z float64) data.Vector {
 		return data.Vector{mx, my, mz}
@@ -60,7 +62,7 @@ func Uniform(mx, my, mz float64) Config {
 // Make a vortex magnetization with given circulation and core polarization (+1 or -1).
 // The core is smoothed over a few exchange lengths and should easily relax to its ground state.
 func Vortex(circ, pol int) Config {
-	diam2 := 2 * sqr64(Mesh().CellSize()[X])
+	diam2 := 2 * sqr64(GetMesh().CellSize()[X])
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
 		r := math.Sqrt(r2)
@@ -72,7 +74,7 @@ func Vortex(circ, pol int) Config {
 }
 
 func NeelSkyrmion(charge, pol int) Config {
-	w := 8 * Mesh().CellSize()[X]
+	w := 8 * GetMesh().CellSize()[X]
 	w2 := w * w
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
@@ -85,7 +87,7 @@ func NeelSkyrmion(charge, pol int) Config {
 }
 
 func BlochSkyrmion(charge, pol int) Config {
-	w := 8 * Mesh().CellSize()[X]
+	w := 8 * GetMesh().CellSize()[X]
 	w2 := w * w
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
@@ -98,7 +100,7 @@ func BlochSkyrmion(charge, pol int) Config {
 }
 
 func AntiVortex(circ, pol int) Config {
-	diam2 := 2 * sqr64(Mesh().CellSize()[X])
+	diam2 := 2 * sqr64(GetMesh().CellSize()[X])
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
 		r := math.Sqrt(r2)
@@ -111,7 +113,7 @@ func AntiVortex(circ, pol int) Config {
 
 // Make a vortex wall configuration.
 func VortexWall(mleft, mright float64, circ, pol int) Config {
-	h := Mesh().WorldSize()[Y]
+	h := GetMesh().WorldSize()[Y]
 	v := Vortex(circ, pol)
 	return func(x, y, z float64) data.Vector {
 		if x < -h/2 {
@@ -137,11 +139,12 @@ func noNaN(v data.Vector, pol int) data.Vector {
 // (mxwall, mywall, mzwall) is the magnetization in the wall. The wall is smoothed over a few cells so it will
 // easily relax to its ground state.
 // E.g.:
-// 	TwoDomain(1,0,0,  0,1,0,  -1,0,0) // head-to-head domains with transverse (Néel) wall
-// 	TwoDomain(1,0,0,  0,0,1,  -1,0,0) // head-to-head domains with perpendicular (Bloch) wall
-// 	TwoDomain(0,0,1,  1,0,0,   0,0,-1)// up-down domains with Bloch wall
+//
+//	TwoDomain(1,0,0,  0,1,0,  -1,0,0) // head-to-head domains with transverse (Néel) wall
+//	TwoDomain(1,0,0,  0,0,1,  -1,0,0) // head-to-head domains with perpendicular (Bloch) wall
+//	TwoDomain(0,0,1,  1,0,0,   0,0,-1)// up-down domains with Bloch wall
 func TwoDomain(mx1, my1, mz1, mxwall, mywall, mzwall, mx2, my2, mz2 float64) Config {
-	ww := 2 * Mesh().CellSize()[X] // wall width in cells
+	ww := 2 * GetMesh().CellSize()[X] // wall width in cells
 	return func(x, y, z float64) data.Vector {
 		var m data.Vector
 		if x < 0 {
@@ -188,7 +191,8 @@ func Helical(q data.Vector) Config {
 }
 
 // Transl returns a translated copy of configuration c. E.g.:
-// 	M = Vortex(1, 1).Transl(100e-9, 0, 0)  // vortex with center at x=100nm
+//
+//	M = Vortex(1, 1).Transl(100e-9, 0, 0)  // vortex with center at x=100nm
 func (c Config) Transl(dx, dy, dz float64) Config {
 	return func(x, y, z float64) data.Vector {
 		return c(x-dx, y-dy, z-dz)
@@ -218,7 +222,9 @@ func (c Config) RotZ(θ float64) Config {
 
 // Returns a new magnetization equal to c + weight * other.
 // E.g.:
-// 	Uniform(1, 0, 0).Add(0.2, RandomMag())
+//
+//	Uniform(1, 0, 0).Add(0.2, RandomMag())
+//
 // for a uniform state with 20% random distortion.
 func (c Config) Add(weight float64, other Config) Config {
 	return func(x, y, z float64) data.Vector {

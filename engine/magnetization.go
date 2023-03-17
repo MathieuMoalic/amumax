@@ -18,7 +18,7 @@ type magnetization struct {
 	buffer_ *data.Slice
 }
 
-func (m *magnetization) Mesh() *data.Mesh    { return Mesh() }
+func (m *magnetization) Mesh() *data.Mesh    { return GetMesh() }
 func (m *magnetization) NComp() int          { return 3 }
 func (m *magnetization) Name() string        { return "m" }
 func (m *magnetization) Unit() string        { return "" }
@@ -145,13 +145,4 @@ func (m *magnetization) SetRegion(region int, conf Config) {
 		}
 	}
 	m.SetArray(host)
-}
-
-func (m *magnetization) resize() {
-	backup := m.Buffer().HostCopy()
-	s2 := Mesh().Size()
-	resized := data.Resample(backup, s2)
-	m.buffer_.Free()
-	m.buffer_ = cuda.NewSlice(VECTOR, s2)
-	data.Copy(m.buffer_, resized)
 }

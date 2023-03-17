@@ -10,6 +10,7 @@ in objects that provide:
 
 import (
 	"fmt"
+
 	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/data"
 )
@@ -106,7 +107,7 @@ type fieldFunc struct {
 	f func(*data.Slice)
 }
 
-func (c *fieldFunc) Mesh() *data.Mesh       { return Mesh() }
+func (c *fieldFunc) Mesh() *data.Mesh       { return GetMesh() }
 func (c *fieldFunc) average() []float64     { return qAverageUniverse(c) }
 func (c *fieldFunc) EvalTo(dst *data.Slice) { EvalTo(c, dst) }
 

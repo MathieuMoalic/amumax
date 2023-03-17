@@ -11,8 +11,8 @@ func dwTiltPMA() float64 {
 	m := Download(&M)
 	mz := m.Vectors()[Z][0] // slice0
 
-	nx := Mesh().Size()[X]
-	ny := Mesh().Size()[Y]
+	nx := GetMesh().Size()[X]
+	ny := GetMesh().Size()[Y]
 	// find domain wall at these y positions:
 	y1 := 4
 	y2 := ny - 5

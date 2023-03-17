@@ -1,9 +1,10 @@
 package engine
 
 import (
+	"reflect"
+
 	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/data"
-	"reflect"
 )
 
 // Arbitrary physical quantity.
@@ -13,7 +14,7 @@ type Quantity interface {
 }
 
 func MeshSize() [3]int {
-	return Mesh().Size()
+	return GetMesh().Size()
 }
 
 func SizeOf(q Quantity) [3]int {
@@ -67,7 +68,7 @@ func MeshOf(q Quantity) *data.Mesh {
 	}); ok {
 		return s.Mesh()
 	}
-	return Mesh()
+	return GetMesh()
 }
 
 func ValueOf(q Quantity) *data.Slice {

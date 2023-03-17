@@ -163,11 +163,11 @@ func ZRange(a, b float64) Shape {
 
 // Cell layers #a (inclusive) up to #b (exclusive).
 func Layers(a, b int) Shape {
-	Nz := Mesh().Size()[Z]
+	Nz := GetMesh().Size()[Z]
 	if a < 0 || a > Nz || b < 0 || b < a {
 		util.Fatal("layers ", a, ":", b, " out of bounds (0 - ", Nz, ")")
 	}
-	c := Mesh().CellSize()[Z]
+	c := GetMesh().CellSize()[Z]
 	z1 := Index2Coord(0, 0, a)[Z] - c/2
 	z2 := Index2Coord(0, 0, b)[Z] - c/2
 	return ZRange(z1, z2)
@@ -179,7 +179,7 @@ func Layer(index int) Shape {
 
 // Single cell with given index
 func Cell(ix, iy, iz int) Shape {
-	c := Mesh().CellSize()
+	c := GetMesh().CellSize()
 	pos := Index2Coord(ix, iy, iz)
 	x1 := pos[X] - c[X]/2
 	y1 := pos[Y] - c[Y]/2
@@ -228,9 +228,9 @@ func ImageShape(fname string) Shape {
 	}
 
 	// stretch the image onto the gridsize
-	c := Mesh().CellSize()
+	c := GetMesh().CellSize()
 	cx, cy := c[X], c[Y]
-	N := Mesh().Size()
+	N := GetMesh().Size()
 	nx, ny := float64(N[X]), float64(N[Y])
 	w, h := float64(width), float64(height)
 	return func(x, y, z float64) bool {

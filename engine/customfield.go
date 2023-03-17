@@ -1,6 +1,5 @@
 package engine
 
-
 // Add arbitrary terms to B_eff, Edens_total.
 
 import (
@@ -39,7 +38,7 @@ func init() {
 	DeclFunc("RemoveCustomFields", RemoveCustomFields, "Removes all custom fields again")
 }
 
-//Removes all customfields
+// Removes all customfields
 func RemoveCustomFields() {
 	customTerms = nil
 }
@@ -77,7 +76,7 @@ func AddCustomEnergyDensity(dst *data.Slice) {
 }
 
 func GetCustomEnergy() float64 {
-	buf := cuda.Buffer(1, Mesh().Size())
+	buf := cuda.Buffer(1, GetMesh().Size())
 	defer cuda.Recycle(buf)
 	cuda.Zero(buf)
 	AddCustomEnergyDensity(buf)
@@ -181,7 +180,8 @@ func (q *mulmv) NComp() int {
 
 // DotProduct creates a new quantity that is the dot product of
 // quantities a and b. E.g.:
-// 	DotProct(&M, &B_ext)
+//
+//	DotProct(&M, &B_ext)
 func Dot(a, b Quantity) Quantity {
 	return &dotProduct{fieldOp{a, b, 1}}
 }
@@ -197,7 +197,8 @@ func (d *dotProduct) EvalTo(dst *data.Slice) {
 
 // CrossProduct creates a new quantity that is the cross product of
 // quantities a and b. E.g.:
-// 	CrossProct(&M, &B_ext)
+//
+//	CrossProct(&M, &B_ext)
 func Cross(a, b Quantity) Quantity {
 	return &crossProduct{fieldOp{a, b, 3}}
 }
@@ -396,7 +397,7 @@ type masked struct {
 }
 
 func (q *masked) EvalTo(dst *data.Slice) {
-	if q.mesh != *Mesh() {
+	if q.mesh != *GetMesh() {
 		// When mesh is changed, mask needs an update
 		q.createMask()
 	}
@@ -410,7 +411,7 @@ func (q *masked) NComp() int {
 }
 
 func (q *masked) createMask() {
-	size := Mesh().Size()
+	size := GetMesh().Size()
 	// Prepare mask on host
 	maskhost := data.NewSlice(SCALAR, size)
 	defer maskhost.Free()
@@ -429,7 +430,7 @@ func (q *masked) createMask() {
 	q.mask.Free()
 	q.mask = cuda.NewSlice(SCALAR, size)
 	data.Copy(q.mask, maskhost)
-	q.mesh = *Mesh()
+	q.mesh = *GetMesh()
 	// Remove mask from host
 }
 

@@ -2,10 +2,11 @@ package engine
 
 import (
 	"fmt"
+	"math"
+
 	"github.com/MathieuMoalic/amumax/data"
 	"github.com/MathieuMoalic/amumax/mag"
 	"github.com/MathieuMoalic/amumax/util"
-	"math"
 )
 
 func init() {
@@ -23,7 +24,7 @@ func RemoveLRSurfaceCharge(region int, mxLeft, mxRight float64) {
 	util.Argument(mxRight == 1 || mxRight == -1)
 	bsat := Msat.GetRegion(region) * mag.Mu0
 	util.AssertMsg(bsat != 0, "RemoveSurfaceCharges: Msat is zero in region "+fmt.Sprint(region))
-	B_ext.Add(compensateLRSurfaceCharges(Mesh(), mxLeft, mxRight, bsat), nil)
+	B_ext.Add(compensateLRSurfaceCharges(GetMesh(), mxLeft, mxRight, bsat), nil)
 }
 
 func compensateLRSurfaceCharges(m *data.Mesh, mxLeft, mxRight float64, bsat float64) *data.Slice {

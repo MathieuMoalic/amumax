@@ -36,7 +36,7 @@ func (p *regionwise) init(nComp int, name, unit string, children []derived) {
 
 func (p *regionwise) MSlice() cuda.MSlice {
 	if p.IsUniform() {
-		return cuda.MakeMSlice(data.NilSlice(p.NComp(), Mesh().Size()), p.getRegion(0))
+		return cuda.MakeMSlice(data.NilSlice(p.NComp(), GetMesh().Size()), p.getRegion(0))
 	} else {
 		buf, r := p.Slice()
 		util.Assert(r)
@@ -46,7 +46,7 @@ func (p *regionwise) MSlice() cuda.MSlice {
 
 func (p *regionwise) Name() string     { return p.name }
 func (p *regionwise) Unit() string     { return p.unit }
-func (p *regionwise) Mesh() *data.Mesh { return Mesh() }
+func (p *regionwise) Mesh() *data.Mesh { return GetMesh() }
 
 func (p *regionwise) addChild(c ...derived) {
 	for _, c := range c {

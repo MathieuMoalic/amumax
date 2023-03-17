@@ -114,7 +114,7 @@ func (e *ScalarExcitation) IsUniform() bool         { return e.perRegion.IsUnifo
 func (e *ScalarExcitation) Name() string            { return e.name }
 func (e *ScalarExcitation) Unit() string            { return e.perRegion.Unit() }
 func (e *ScalarExcitation) NComp() int              { return e.perRegion.NComp() }
-func (e *ScalarExcitation) Mesh() *data.Mesh        { return Mesh() }
+func (e *ScalarExcitation) Mesh() *data.Mesh        { return GetMesh() }
 func (e *ScalarExcitation) Region(r int) *vOneReg   { return vOneRegion(e, r) }
 func (e *ScalarExcitation) Comp(c int) ScalarField  { return Comp(e, c) }
 func (e *ScalarExcitation) Eval() interface{}       { return e }
