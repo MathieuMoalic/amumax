@@ -118,7 +118,7 @@ func ValidateGridSize() {
 		if N == 0.0 {
 			util.Fatal("Error: You have to specify ", names[i])
 		} else if N > max_threshold {
-			util.Fatal("Error: ", names[i], "shouldn't be more than ", max_threshold)
+			util.Fatal("Error: ", names[i], " shouldn't be more than ", max_threshold)
 		}
 	}
 }
