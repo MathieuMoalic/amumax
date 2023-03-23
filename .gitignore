@@ -24,3 +24,4 @@ build
 mytests
 *.exe
 mytest
+justfile
