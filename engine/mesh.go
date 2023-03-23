@@ -82,7 +82,7 @@ func closestSevenSmooth(n int) int {
 
 func SmoothMesh() {
 	if Nx*Ny*Nz < 10000 {
-		LogOut("No optmization to be made for small meshes")
+		LogOut("No optimization to be made for small meshes")
 		return
 	}
 	LogOut("Original mesh: ")
