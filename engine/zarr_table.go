@@ -82,6 +82,9 @@ func AutoFlush() {
 }
 
 func ZTableSave() {
+	if len(ZTables.tables) == 0 {
+		util.Fatal("Error: Add a variable to the table before saving")
+	}
 	ZTables.Step += 1
 	ZTables.WriteToBuffer()
 }
@@ -100,6 +103,11 @@ func ZTableAdd(q Quantity) {
 func ZTableAddAs(q Quantity, name string) {
 	if len(ZTables.tables) == 0 {
 		TableInit()
+	}
+	for _, z := range ZTables.tables {
+		if name == z.Name {
+			return
+		}
 	}
 	if ZTables.Step != -1 {
 		util.Fatal("Add Table Quantity BEFORE you save the table for the first time")
