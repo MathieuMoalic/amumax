@@ -22,10 +22,9 @@ func DoOutput() {
 			a.count++
 		}
 	}
-	for k, v := range zArrays {
-		if v.needSave() {
-			v.save(v.q, k)
-			// v.count++
+	for _, z := range zArrays {
+		if z.needSave() {
+			z.Save()
 		}
 	}
 	if Table.needSave() {
@@ -57,7 +56,8 @@ func autoSave(q Quantity, period float64, save func(Quantity)) {
 }
 
 // generate auto file name based on save count and FilenameFormat. E.g.:
-// 	m000001.ovf
+//
+//	m000001.ovf
 func autoFname(name string, format OutputFormat, num int) string {
 	return fmt.Sprintf(OD()+FilenameFormat+"."+StringFromOutputFormat[format], name, num)
 }
