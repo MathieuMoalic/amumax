@@ -1,7 +1,5 @@
 package engine
 
-// Bookkeeping for auto-saving quantities at given intervals.
-
 import (
 	"encoding/json"
 	"fmt"
@@ -17,29 +15,57 @@ import (
 )
 
 func init() {
-	DeclFunc("AutoSaveAs", zAutoSaveAs, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("AutoSave", zAutoSave, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("SaveAs", zSaveAs, "Save space-dependent quantity as the zarr standard.")
-	DeclFunc("Save", zSave, "Save space-dependent quantity as the zarr standard.")
+	DeclFunc("AutoSaveAs", Mx3AutoSaveAs, "Auto save space-dependent quantity every period (s) as the zarr standard.")
+	DeclFunc("AutoSaveAsChunk", Mx3AutoSaveAsChunk, "Auto save space-dependent quantity every period (s) as the zarr standard.")
+	DeclFunc("AutoSave", Mx3AutoSave, "Auto save space-dependent quantity every period (s) as the zarr standard.")
+	DeclFunc("SaveAs", Mx3SaveAs, "Save space-dependent quantity as the zarr standard.")
+	DeclFunc("SaveAsChunk", Mx3SaveAsChunk, "")
+	DeclFunc("Save", Mx3zSave, "Save space-dependent quantity as the zarr standard.")
+}
+
+func Mx3AutoSave(q Quantity, period float64) {
+	zVerifyAndSave(q, NameOf(q), RequestedChunking{1, 1, 1, 1}, period)
+}
+
+func Mx3AutoSaveAs(q Quantity, name string, period float64) {
+	zVerifyAndSave(q, name, RequestedChunking{1, 1, 1, 1}, period)
+}
+
+func Mx3AutoSaveAsChunk(q Quantity, name string, period float64, rchunks RequestedChunking) {
+	zVerifyAndSave(q, name, rchunks, period)
+}
+
+func Mx3SaveAs(q Quantity, name string) {
+	zVerifyAndSave(q, name, RequestedChunking{1, 1, 1, 1}, 0)
+}
+
+func Mx3zSave(q Quantity) {
+	zVerifyAndSave(q, NameOf(q), RequestedChunking{1, 1, 1, 1}, 0)
+}
+
+func Mx3SaveAsChunk(q Quantity, name string, rchunks RequestedChunking) {
+	zVerifyAndSave(q, name, rchunks, 0)
 }
 
 var zGroups []string
-var zArrays = make(map[string]*zArray)
+var zArrays []*zArray
 
 type zArray struct {
-	name   string
-	q      Quantity
-	period float64                // How often to save
-	start  float64                // Starting point
-	count  int                    // Number of times it has been autosaved
-	save   func(Quantity, string) // called to do the actual save
-	times  []float64
+	name    string
+	q       Quantity
+	period  float64 // How often to save
+	start   float64 // Starting point
+	count   int     // Number of times it has been autosaved
+	times   []float64
+	chunks  Chunks
+	rchunks RequestedChunking
 }
 
 // returns true when the time is right to save.
 func (a *zArray) needSave() bool {
 	return a.period != 0 && (Time-a.start)-float64(a.count)*a.period >= a.period
 }
+
 func (a *zArray) SaveAttrs() {
 	// it's stupid and wasteful but it works
 	// keeping the whole array of times wastes a few MB of RAM
@@ -47,89 +73,63 @@ func (a *zArray) SaveAttrs() {
 	util.FatalErr(err)
 	httpfs.Remove(OD() + a.name + "/.zattrs")
 	httpfs.Put(OD()+a.name+"/.zattrs", []byte(string(u)))
-
 }
 
-func zAutoSave(q Quantity, period float64) {
-	zAutoSaveAs(q, NameOf(q), period)
-}
-
-func zInitArray(name string, q Quantity, period float64) {
-	httpfs.Mkdir(OD() + name)
-	var b []float64
-	zArrays[name] = &zArray{name, q, period, Time, -1, zSaveAs, b} // init count to -1 allows save at t=0
-
-}
-
-// period == 0 stops autosaving.
-func zAutoSaveAs(q Quantity, name string, period float64) {
-	if period == 0 {
-		delete(zArrays, name)
-	} else {
-		zInitArray(name, q, period)
-	}
-}
-
-func zSaveAs(q Quantity, name string) {
-	if _, ok := zArrays[name]; !ok {
-		zInitArray(name, q, 0)
-	}
-	zArrays[name].times = append(zArrays[name].times, Time)
-	zArrays[name].SaveAttrs()
-	buffer := ValueOf(q)
+func (a *zArray) Save() {
+	a.times = append(a.times, Time)
+	a.SaveAttrs()
+	buffer := ValueOf(a.q)
 	defer cuda.Recycle(buffer)
 	data := buffer.HostCopy() // must be copy (async io)
-	t := zArrays[name].count  // no desync this way
-	queOutput(func() { zSyncSave(data, name, t) })
-	zArrays[name].count++
-
+	t := a.count              // no desync this way
+	queOutput(func() { SyncSave(data, a.name, t, a.chunks) })
+	a.count++
 }
 
-// Save once, with auto file name
-func zSave(q Quantity) {
-	zSaveAs(q, NameOf(q))
-}
-
-func IntToByteArray(num int32) []byte {
-	size := int(unsafe.Sizeof(num))
-	arr := make([]byte, size)
-	for i := 0; i < size; i++ {
-		byt := *(*uint8)(unsafe.Pointer(uintptr(unsafe.Pointer(&num)) + uintptr(i)))
-		arr[i] = byt
+// entrypoint of all the user facing save functions
+func zVerifyAndSave(q Quantity, name string, rchunks RequestedChunking, period float64) {
+	if zArrayExists(q, name, rchunks) {
+		for _, z := range zArrays {
+			if z.name == name {
+				z.period = period
+				z.Save()
+			}
+		}
+	} else {
+		httpfs.Mkdir(OD() + name)
+		var b []float64
+		a := zArray{name, q, period, Time, -1, b, NewChunks(q, rchunks), rchunks}
+		zArrays = append(zArrays, &a)
+		a.Save()
 	}
-	return arr
+}
+
+func zArrayExists(q Quantity, name string, rchunks RequestedChunking) bool {
+	for _, z := range zArrays {
+		if z.name == name {
+			if z.rchunks != rchunks {
+				util.Fatal("Error: The dataset `", name, "` has already been initialized with different chunks.")
+			} else if z.q != q {
+				util.Fatal("Error: The dataset `", name, "` has already been initialized with a different quantity.")
+			} else {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // synchronous chunky save
-func zSyncSave(array *data.Slice, qname string, time int) {
+func SyncSave(array *data.Slice, qname string, time int, chunks Chunks) {
 	data := array.Tensors()
 	size := array.Size()
 	ncomp := array.NComp()
-
-	var icc_max int
-	var ic_max int
-
-	if ncomp == 1 {
-		icc_max = 1
-		ic_max = 1
-	} else {
-		if chunks.c.len == 1 {
-			icc_max = 3
-			ic_max = 1
-		} else {
-			icc_max = 1
-			ic_max = 3
-
-		}
-
-	}
-	count := 0
+	var bytes []byte
 	for icx := 0; icx < chunks.x.nb; icx++ {
 		for icy := 0; icy < chunks.y.nb; icy++ {
 			for icz := 0; icz < chunks.z.nb; icz++ {
-				for icc := 0; icc < icc_max; icc++ {
+				for icc := 0; icc < chunks.c.nb; icc++ {
 					bdata := []byte{}
-					var bytes []byte
 					f, err := httpfs.Create(fmt.Sprintf(OD()+"%s/%d.%d.%d.%d.%d", qname, time+1, icz, icy, icx, icc))
 					util.FatalErr(err)
 					defer f.Close()
@@ -139,14 +139,13 @@ func zSyncSave(array *data.Slice, qname string, time int) {
 							y := icy*chunks.y.len + iy
 							for ix := 0; ix < chunks.x.len; ix++ {
 								x := icx*chunks.x.len + ix
-								for ic := 0; ic < ic_max; ic++ {
+								for ic := 0; ic < ncomp; ic++ {
 									c := icc*chunks.c.len + ic
 									bytes = (*[4]byte)(unsafe.Pointer(&data[c][z][y][x]))[:]
 									for k := 0; k < 4; k++ {
 										bdata = append(bdata, bytes[k])
 									}
 								}
-								count++
 							}
 						}
 					}
@@ -157,6 +156,5 @@ func zSyncSave(array *data.Slice, qname string, time int) {
 			}
 		}
 	}
-	//.zarray file
 	zarr.SaveFileZarray(fmt.Sprintf(OD()+"%s/.zarray", qname), size, ncomp, time+1, chunks.z.len, chunks.y.len, chunks.x.len, ncomp)
 }
