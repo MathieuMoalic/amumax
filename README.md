@@ -1,17 +1,21 @@
 # Amumax
-Personnal fork of [mumax3](https://github.com/mumax/3)
+fork of [mumax3](https://github.com/mumax/3)
 
-The solvers are unchanged, this is just list of massive quality of life improvements making working with the output data much more efficient and convenient.
+The solvers ( and results ) are unchanged, this is just list of massive quality of life improvements making working with the output data much more efficient and convenient.
 
 ## Changelog
 - Add saving as zarr
+- `Nx`,`Ny`,`Nz`,`dx`,`dy`,`dz` are now predefined variables. You define the Mesh through them. You can't redefine the Mesh.
 - Remove support for OVF1, OVF2, dump, anything that's not zarr
 - Add progress bar for `run`
 - Reorder GUI elements
 - Dark mode GUI
 - Check and warns the user for unoptimized mesh
-- `autokernel` will optimize the shape for you (this function slightly changes the size and number of cells while keeping the total size of the system constant)
-- Add chunking support as per the [zarr](https://zarr.readthedocs.io/en/stable/) documentation with the function `chunkxyzc`
+- `AutoMesh = True` will optimize the shape for you (this function slightly changes the size and number of cells while keeping the total size of the system constant)
+- Add chunking support as per the [zarr](https://zarr.readthedocs.io/en/stable/) documentation with the functions:
+    - `SaveAsChunk(q Quantity, name string, rchunks RequestedChunking)`
+    - `AutoSaveAsChunk(q Quantity, name string, period float64, rchunks RequestedChunking)`
+- `Chunk(x, y, z, c int) -> RequestedChunking` chunks must fix an integer number of times along the axes. The chunks will be modified to be valid and as closed as the chunks you requested
 - The graph plot in the GUI is probably broken
 - Add the `ShapeFromRegion` function
 - Add new shapes : `squircle`, `triangle`, `rtriangle`, `diamond` and `hexagon`
@@ -23,8 +27,5 @@ The solvers are unchanged, this is just list of massive quality of life improvem
 - Save compressed arrays (zstd) by default
 
 # TODO
- - Fix save(m.crop(...))
  - Fix tablesave without tableadd before
- - Get Nx,y,z from autokernel
- - chunks, implement c chunks
- - Readd the plot
+ - Re-add the plot
