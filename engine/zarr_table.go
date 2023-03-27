@@ -62,6 +62,24 @@ func (ts *ZTablesStruct) NeedSave() bool {
 	return ts.AutoSavePeriod != 0 && (Time-ts.AutoSaveStart)-float64(ts.Step)*ts.AutoSavePeriod >= ts.AutoSavePeriod
 }
 
+func (ts *ZTablesStruct) Exists(q Quantity, name string) bool {
+	suffixes := []string{"x", "y", "z"}
+	for _, i := range ZTables.tables {
+		if q.NComp() == 1 {
+			if i.Name == name {
+				return true
+			}
+		} else {
+			for comp := 0; comp < q.NComp(); comp++ {
+				if name+suffixes[comp] == i.Name {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 func TableInit() {
 	httpfs.Remove(OD() + "table")
 	zarr.MakeZgroup("table", OD(), &zGroups)
@@ -70,6 +88,7 @@ func TableInit() {
 	f, err := httpfs.Create(OD() + "table/t/0")
 	util.FatalErr(err)
 	ZTables.tables = append(ZTables.tables, ZTable{"t", []byte{}, f})
+	ZTableAdd(&M)
 	go AutoFlush()
 
 }
@@ -83,7 +102,7 @@ func AutoFlush() {
 
 func ZTableSave() {
 	if len(ZTables.tables) == 0 {
-		util.Fatal("Error: Add a variable to the table before saving")
+		TableInit()
 	}
 	ZTables.Step += 1
 	ZTables.WriteToBuffer()
@@ -101,22 +120,22 @@ func ZTableAdd(q Quantity) {
 	ZTableAddAs(q, NameOf(q))
 }
 func ZTableAddAs(q Quantity, name string) {
+	suffixes := []string{"x", "y", "z"}
+	if ZTables.Step != -1 {
+		util.Fatal("Add Table Quantity BEFORE you save the table for the first time")
+	}
 	if len(ZTables.tables) == 0 {
 		TableInit()
 	}
-	for _, z := range ZTables.tables {
-		if name == z.Name {
-			return
-		}
-	}
-	if ZTables.Step != -1 {
-		util.Fatal("Add Table Quantity BEFORE you save the table for the first time")
+
+	if ZTables.Exists(q, name) {
+		LogOut(name, " is already in the table. Ignoring.")
+		return
 	}
 	ZTables.qs = append(ZTables.qs, q)
 	if q.NComp() == 1 {
 		ZTables.tables = append(ZTables.tables, CreateTable(name))
 	} else {
-		suffixes := []string{"x", "y", "z"}
 		for comp := 0; comp < q.NComp(); comp++ {
 			ZTables.tables = append(ZTables.tables, CreateTable(name+suffixes[comp]))
 		}

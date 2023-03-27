@@ -1,8 +1,6 @@
 package zarr
 
 import (
-	"fmt"
-
 	"github.com/MathieuMoalic/amumax/httpfs"
 	"github.com/MathieuMoalic/amumax/util"
 )
@@ -12,7 +10,6 @@ type Zattrs struct {
 }
 
 func MakeZgroup(name string, od string, zGroups *[]string) {
-	fmt.Println(zGroups)
 	exists := false
 	for _, v := range *zGroups {
 		if name == v {

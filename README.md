@@ -20,12 +20,11 @@ The solvers ( and results ) are unchanged, this is just list of massive quality 
 - Add the `ShapeFromRegion` function
 - Add new shapes : `squircle`, `triangle`, `rtriangle`, `diamond` and `hexagon`
 - `m` is not added by default in the table anymore, only `t` is
-- Add the `autosaveas` function
-- Add the `round` function from the math library
+- Add the `AutoSaveAs` function
+- Add the `Round` function from the math library
 - Add metadata saving : root_path, start_time, Dx, Dy, Dz, Nx, Ny, Nz, Tx, Ty, Tz, StartTime, EndTime, TotalTime, PBC, Gpu, Host
-- Everytime the function `save` is used (from `autosave` for example), the current simulation time `t` is saved too as a zarray attribute
+- Everytime the function `Save` is used (from `AutoSave` for example), the current simulation time `t` is saved too as a zarray attribute
 - Save compressed arrays (zstd) by default
 
 # TODO
- - Fix tablesave without tableadd before
  - Re-add the plot
