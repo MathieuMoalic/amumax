@@ -52,7 +52,6 @@ func GetBusy() bool {
 func Close() {
 	drainOutput()
 	LogOut("**************** Simulation Ended ****************** //")
-	Table.flush()
 	ZTables.Flush()
 	if logfile != nil {
 		logfile.Close()

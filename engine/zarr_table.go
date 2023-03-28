@@ -50,6 +50,7 @@ func (ts *ZTablesStruct) WriteToBuffer() {
 		// ts.Tables[i].Data = append(ts.Tables[i].Data, b)
 	}
 }
+
 func (ts *ZTablesStruct) Flush() {
 	for i := range ts.tables {
 		ts.tables[i].io.Write(ts.tables[i].buffer)
@@ -58,6 +59,7 @@ func (ts *ZTablesStruct) Flush() {
 		zarr.SaveFileTableZarray(OD()+"table/"+ts.tables[i].Name+"/.zarray", ts.Step)
 	}
 }
+
 func (ts *ZTablesStruct) NeedSave() bool {
 	return ts.AutoSavePeriod != 0 && (Time-ts.AutoSaveStart)-float64(ts.Step)*ts.AutoSavePeriod >= ts.AutoSavePeriod
 }
@@ -119,6 +121,7 @@ func CreateTable(name string) ZTable {
 func ZTableAdd(q Quantity) {
 	ZTableAddAs(q, NameOf(q))
 }
+
 func ZTableAddAs(q Quantity, name string) {
 	suffixes := []string{"x", "y", "z"}
 	if ZTables.Step != -1 {

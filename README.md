@@ -26,5 +26,3 @@ The solvers ( and results ) are unchanged, this is just list of massive quality 
 - Everytime the function `Save` is used (from `AutoSave` for example), the current simulation time `t` is saved too as a zarray attribute
 - Save compressed arrays (zstd) by default
 
-# TODO
- - Re-add the plot

@@ -2,6 +2,8 @@ package engine
 
 import (
 	"fmt"
+	"image"
+	"image/png"
 	"math/rand"
 	"net"
 	"net/http"
@@ -36,7 +38,18 @@ type guistate struct {
 }
 
 func (g *guistate) ServePlot(w http.ResponseWriter, r *http.Request) {
-
+	err := tableplot.SelectDataColumns(g.StringValue("usingx"), g.StringValue("usingy"))
+	if err != nil {
+		g.Set("plotErr", "Plot Error: "+err.Error())
+	}
+	w.Header().Set("Content-Type", "image/png")
+	_, err = tableplot.WriteTo(w)
+	if err != nil {
+		png.Encode(w, image.NewNRGBA(image.Rect(0, 0, 4, 4)))
+		g.Set("plotErr", "Plot Error: "+err.Error())
+	} else {
+		g.Set("plotErr", "")
+	}
 }
 
 // Returns the time when updateKeepAlive was called.
@@ -153,19 +166,11 @@ func (g *guistate) prepareMesh() {
 	g.OnEvent("pz", func() { Inject <- func() { PBCz = g.IntValue("pz"); warnmesh() } })
 
 	g.OnEvent("setmesh", func() {
-		//g.Disable("setmesh", true)
 		Inject <- (func() {
 			g.EvalGUI(fmt.Sprintf("SetMesh(%v, %v, %v, %v, %v, %v, %v, %v, %v)",
 				g.Value("nx"), g.Value("ny"), g.Value("nz"),
 				g.Value("cx"), g.Value("cy"), g.Value("cz"),
 				g.Value("px"), g.Value("py"), g.Value("pz")))
-			// update lazy_* sizes to be up-to date with proper mesh
-			// n := GetMesh().Size()
-			// c := GetMesh().CellSize()
-			// p := GetMesh().PBC()
-			// lazy_gridsize = []int{n[X], n[Y], n[Z]}
-			// lazy_cellsize = []float64{c[X], c[Y], c[Z]}
-			// lazy_pbc = []int{p[X], p[Y], p[Z]}
 
 		})
 		g.Set("setmeshwarn", "mesh up to date")
@@ -329,11 +334,11 @@ func (g *guistate) prepareParam() {
 // see prepareServer
 func (g *guistate) prepareDisplay() {
 	// plot
-	// g.OnEvent("tableAutoSave", func() {
-	// 	Inject <- func() {
-	// 		g.EvalGUI("TableAutosave(" + g.StringValue("tableAutoSave") + ")")
-	// 	}
-	// })
+	g.OnEvent("tableAutoSave", func() {
+		Inject <- func() {
+			g.EvalGUI("TableAutosave(" + g.StringValue("tableAutoSave") + ")")
+		}
+	})
 	// render
 	g.OnEvent("renderQuant", func() {
 		g.Render.Mutex.Lock()
@@ -420,7 +425,7 @@ func (g *guistate) prepareOnUpdate() {
 			g.Set("display", "/render/"+quant+"/"+comp+cachebreaker)
 
 			// plot
-			// GUI.Set("plot", "/plot/"+cachebreaker)
+			GUI.Set("plot", "/plot/"+cachebreaker)
 
 			// parameters
 			for _, p := range g.Params {
@@ -578,10 +583,3 @@ func (g *guistate) EvalGUI(code string) {
 	Eval(code)
 	g.UpdateKeepAlive()
 }
-
-//
-//// round duration to 1s accuracy
-//func roundt(t time.Duration) time.Duration {
-//	return t - t%1e9
-//}
-//

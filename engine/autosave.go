@@ -27,11 +27,11 @@ func DoOutput() {
 			z.Save()
 		}
 	}
-	if Table.needSave() {
-		Table.Save()
-	}
 	if ZTables.NeedSave() {
 		ZTableSave()
+	}
+	if tableplot.NeedSave() {
+		tableplot.update()
 	}
 }
 
