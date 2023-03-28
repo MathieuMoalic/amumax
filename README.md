@@ -15,7 +15,7 @@ The solvers ( and results ) are unchanged, this is just list of massive quality 
 - Add chunking support as per the [zarr](https://zarr.readthedocs.io/en/stable/) documentation with the functions:
     - `SaveAsChunk(q Quantity, name string, rchunks RequestedChunking)`
     - `AutoSaveAsChunk(q Quantity, name string, period float64, rchunks RequestedChunking)`
-- `Chunk(x, y, z, c int) -> RequestedChunking` chunks must fix an integer number of times along the axes. The chunks will be modified to be valid and as closed as the chunks you requested
+- `Chunk(x, y, z, c int) -> RequestedChunking` chunks must fit an integer number of times along the axes. The chunks will be modified to be valid and as closed as the chunks you requested
 - The graph plot in the GUI is probably broken
 - Add the `ShapeFromRegion` function
 - Add new shapes : `squircle`, `triangle`, `rtriangle`, `diamond` and `hexagon`
