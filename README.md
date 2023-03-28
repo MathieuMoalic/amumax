@@ -1,7 +1,9 @@
 # Amumax
-fork of [mumax3](https://github.com/mumax/3)
+fork of [mumax3](https://github.com/mumax/3) meant to increase the integration with a python processing workflow. I made my own wrapper around zarr called [pyzfn](https://github.com/MathieuMoalic/pyzfn) which leverages the mumax data in the zarr format.
 
 The solvers ( and results ) are unchanged, this is just list of massive quality of life improvements making working with the output data much more efficient and convenient.
+
+It's not 100% compatible with the original `.mx3` files.
 
 ## Changelog
 - Add saving as zarr
@@ -16,7 +18,6 @@ The solvers ( and results ) are unchanged, this is just list of massive quality 
     - `SaveAsChunk(q Quantity, name string, rchunks RequestedChunking)`
     - `AutoSaveAsChunk(q Quantity, name string, period float64, rchunks RequestedChunking)`
 - `Chunk(x, y, z, c int) -> RequestedChunking` chunks must fit an integer number of times along the axes. The chunks will be modified to be valid and as closed as the chunks you requested
-- The graph plot in the GUI is probably broken
 - Add the `ShapeFromRegion` function
 - Add new shapes : `squircle`, `triangle`, `rtriangle`, `diamond` and `hexagon`
 - `m` is not added by default in the table anymore, only `t` is
@@ -25,4 +26,3 @@ The solvers ( and results ) are unchanged, this is just list of massive quality 
 - Add metadata saving : root_path, start_time, Dx, Dy, Dz, Nx, Ny, Nz, Tx, Ty, Tz, StartTime, EndTime, TotalTime, PBC, Gpu, Host
 - Everytime the function `Save` is used (from `AutoSave` for example), the current simulation time `t` is saved too as a zarray attribute
 - Save compressed arrays (zstd) by default
-
