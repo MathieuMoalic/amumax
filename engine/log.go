@@ -40,11 +40,16 @@ func LogOut(msg ...interface{}) {
 	fmt.Println(str)
 }
 
+// Safe fmt.Fprintln, will fail on error
+func fprintln(out io.Writer, x ...interface{}) {
+
+}
+
 func LogErr(msg ...interface{}) {
 	str := "//" + sprint(msg...)
 	log2GUI(str)
 	log2File(str)
-	fprintln(os.Stderr, str)
+	fmt.Fprintln(os.Stderr, str)
 }
 
 func log2File(msg string) {

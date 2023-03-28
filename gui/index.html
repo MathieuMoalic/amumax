@@ -13,11 +13,16 @@
         }
 
         html body {
-            background: rgb(65, 65, 65);
+            background: rgb(40, 42, 54);
+            color: rgb(248, 248, 242);
             margin-left: 5%;
             margin-right: 5%;
             font-family: sans-serif;
             font-size: 14px;
+        }
+
+        .section {
+            background-color: #44475a;
         }
 
         .img-loupe {
@@ -219,6 +224,7 @@
     {{.Progress "progress" 100 0}} {{.Span "busy" "" }} &nbsp; {{.ErrorBox}} <br />
 
 
+
     <div class="display">
         {{.Data.Div "display"}}
         <p>
@@ -248,8 +254,18 @@
         </p>
     </div>
     </div>
+    </div>
 
-
+    <div>
+        {{.Data.Div "gnuplot"}}
+        <p title="{{$.Data.Doc " TableAutoSave"}}">
+            TableAutosave: {{.TextBox "tableAutoSave" "0" }} s
+        </p>
+        <b>x: {{.TextBox "usingx" "t"}} y: {{.TextBox "usingy" "mx"}} </b><br />
+        <p class=ErrorBox>{{.Span "plotErr" ""}}</p>
+        {{.Img "plot" "/plot/"}}
+    </div>
+    </div>
     <div class="solver">
         {{.Data.Div "solver"}}
 
