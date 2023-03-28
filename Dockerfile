@@ -20,5 +20,4 @@ CMD cd cuda && ./build_cuda.sh && cd .. && \
   mkdir /src/build && \
   cp /src/amumax /src/build && \
   cp $( ldd /src/amumax | grep libcufft | awk '{print $3}' ) /src/build && \
-  cp $( ldd /src/amumax | grep libcurand | awk '{print $3}' ) /src/build &&\
-  chown -R 1000:1000 /src/build 
+  cp $( ldd /src/amumax | grep libcurand | awk '{print $3}' ) /src/build 
