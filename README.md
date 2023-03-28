@@ -7,7 +7,7 @@ It's not 100% compatible with the original `.mx3` files.
 
 ## Changelog
 - Add saving as zarr
-- `Nx`,`Ny`,`Nz`,`dx`,`dy`,`dz` are now predefined variables. You define the Mesh through them. You can't redefine the Mesh.
+- `Nx`,`Ny`,`Nz`,`dx`,`dy`,`dz` are now predefined variables. You define the Mesh through them. You don't need to call a function to initiate the Mesh, it is automatically done the first time you run a solver but you can't redefine the Mesh after that !
 - Remove support for OVF1, OVF2, dump, anything that's not zarr
 - Add progress bar for `run`
 - Reorder GUI elements
