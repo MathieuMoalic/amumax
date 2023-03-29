@@ -7,7 +7,7 @@ It's not 100% compatible with the original `.mx3` files.
 
 ## Changelog
 - Add saving as zarr
-- `Nx`,`Ny`,`Nz`,`dx`,`dy`,`dz` are now predefined variables. You define the Mesh through them. You don't need to call a function to initiate the Mesh, it is automatically done the first time you run a solver but you can't redefine the Mesh after that !
+- `Nx`,`Ny`,`Nz`,`dx`,`dy`,`dz`,`PBCx`,`PBCy`,`PBCz` are now predefined variables. You define the Mesh through them. You don't need to call a function to initiate the Mesh, it is automatically done the first time you run a solver but you can't redefine the Mesh after that !
 - Remove support for OVF1, OVF2, dump, anything that's not zarr
 - Add progress bar for `run`
 - Reorder GUI elements
@@ -20,7 +20,6 @@ It's not 100% compatible with the original `.mx3` files.
 - `Chunk(x, y, z, c int) -> RequestedChunking` chunks must fit an integer number of times along the axes. The chunks will be modified to be valid and as closed as the chunks you requested
 - Add the `ShapeFromRegion` function
 - Add new shapes : `squircle`, `triangle`, `rtriangle`, `diamond` and `hexagon`
-- `m` is not added by default in the table anymore, only `t` is
 - Add the `AutoSaveAs` function
 - Add the `Round` function from the math library
 - Add metadata saving : root_path, start_time, Dx, Dy, Dz, Nx, Ny, Nz, Tx, Ty, Tz, StartTime, EndTime, TotalTime, PBC, Gpu, Host
