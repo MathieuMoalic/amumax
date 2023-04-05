@@ -139,7 +139,8 @@ func SyncSave(array *data.Slice, qname string, time int, chunks Chunks) {
 							y := icy*chunks.y.len + iy
 							for ix := 0; ix < chunks.x.len; ix++ {
 								x := icx*chunks.x.len + ix
-								for ic := 0; ic < ncomp; ic++ {
+								for ic := 0; ic < chunks.c.len; ic++ {
+									// LogOut(ic,icc)
 									c := icc*chunks.c.len + ic
 									bytes = (*[4]byte)(unsafe.Pointer(&data[c][z][y][x]))[:]
 									for k := 0; k < 4; k++ {
