@@ -42,7 +42,8 @@ sudo mv amumax/* /bin/
     - Get linux: https://learn.microsoft.com/en-us/windows/wsl/install
     - Follow the steps above.
 
-## Changelog
+## Differences from mumax3
+- Remove the Google trackers in the GUI.
 - Add saving as zarr
 - `Nx`,`Ny`,`Nz`,`dx`,`dy`,`dz`,`PBCx`,`PBCy`,`PBCz` are now predefined variables. You define the Mesh through them. You don't need to call a function to initiate the Mesh, it is automatically done the first time you run a solver but you can't redefine the Mesh after that !
 - Mostly remove support for OVF1, OVF2, dump, anything that's not zarr.
