@@ -3,12 +3,49 @@ fork of [mumax3](https://github.com/mumax/3) meant to increase the integration w
 
 The solvers ( and results ) are unchanged, this is just list of massive quality of life improvements making working with the output data much more efficient and convenient.
 
-It's not 100% compatible with the original `.mx3` files.
+It's not 100% compatible with the original `.mx3` files. See changes below.
+
+This:
+```go
+SetGridSize(256,256,10)
+SetCellSize(1e-9,1e-9,1e-9)
+SetPBC(32,32,0)
+```
+
+Becomes this:
+```go
+Nx = 256
+Ny = 256
+Nz = 10
+dx = 1e-9
+dy = 1e-9
+dz = 1e-9
+PBCx = 32
+PBcy = 32
+PBCz = 0
+```
+
+## Installation
+### Linux
+Download the latest [release](https://github.com/MathieuMoalic/amumax/releases/), Unzip, run. Example:
+```bash
+wget https://github.com/mathieumoalic/amumax/releases/latest/download/amumax.zip
+unzip amumax.zip && cd amumax && chmod +x amumax
+amumax -i
+```
+`libcurand.so` and `libcufft.so` must always be on the same relative path to `amumax`, in this case, they must be in the same directory.
+To use amumax globaly you can add these 3 files in any folder referenced in $PATH. For example:
+```bash
+sudo mv amumax/* /bin/
+```
+### Windows
+    - Get linux: https://learn.microsoft.com/en-us/windows/wsl/install
+    - Follow the steps above.
 
 ## Changelog
 - Add saving as zarr
 - `Nx`,`Ny`,`Nz`,`dx`,`dy`,`dz`,`PBCx`,`PBCy`,`PBCz` are now predefined variables. You define the Mesh through them. You don't need to call a function to initiate the Mesh, it is automatically done the first time you run a solver but you can't redefine the Mesh after that !
-- Remove support for OVF1, OVF2, dump, anything that's not zarr
+- Mostly remove support for OVF1, OVF2, dump, anything that's not zarr.
 - Add progress bar for `run`
 - Reorder GUI elements
 - Dark mode GUI
@@ -22,6 +59,9 @@ It's not 100% compatible with the original `.mx3` files.
 - Add new shapes : `squircle`, `triangle`, `rtriangle`, `diamond` and `hexagon`
 - Add the `AutoSaveAs` function
 - Add the `Round` function from the math library
-- Add metadata saving : root_path, start_time, Dx, Dy, Dz, Nx, Ny, Nz, Tx, Ty, Tz, StartTime, EndTime, TotalTime, PBC, Gpu, Host
+- Add metadata saving : root_path, start_time, dx, dy, dz, Nx, Ny, Nz, Tx, Ty, Tz, StartTime, EndTime, TotalTime, PBC, Gpu, Host
 - Everytime the function `Save` is used (from `AutoSave` for example), the current simulation time `t` is saved too as a zarray attribute
 - Save compressed arrays (zstd) by default
+
+## Contribution
+I'm happy to consider any feature request. Don't hesitate to submit issues or PRs.
