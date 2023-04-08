@@ -157,5 +157,5 @@ func SyncSave(array *data.Slice, qname string, time int, chunks Chunks) {
 			}
 		}
 	}
-	zarr.SaveFileZarray(fmt.Sprintf(OD()+"%s/.zarray", qname), size, ncomp, time+1, chunks.z.len, chunks.y.len, chunks.x.len, ncomp)
+	zarr.SaveFileZarray(fmt.Sprintf(OD()+"%s/.zarray", qname), size, ncomp, time+1, chunks.z.len, chunks.y.len, chunks.x.len, chunks.c.len)
 }
