@@ -27,17 +27,19 @@ PBCz = 0
 
 ## Installation
 ### Linux
-Download the latest [release](https://github.com/MathieuMoalic/amumax/releases/), Unzip, run. Example:
+#### Install script
+Don't just run an script on the internet. Check what it does and then run: 
+curl -fsSL https://raw.githubusercontent.com/MathieuMoalic/amumax/main/install.sh | sh
+
+#### Manually
+Download [cufft](https://developer.download.nvidia.com/compute/cuda/redist/libcufft/linux-x86_64/) and [curand](https://developer.download.nvidia.com/compute/cuda/redist/libcurand/linux-x86_64/), unpack and add the shared objects to $PATH, or just install the full CUDA suite with your package manager. 
+Download the latest [release](https://github.com/MathieuMoalic/amumax/releases/):
 ```bash
-wget https://github.com/mathieumoalic/amumax/releases/latest/download/amumax.zip
-unzip amumax.zip && cd amumax && chmod +x amumax
-amumax -i
+curl -L https://github.com/mathieumoalic/amumax/releases/latest/download/amumax > amumax
+amumax -v
 ```
-`libcurand.so` and `libcufft.so` must always be on the same relative path to `amumax`, in this case, they must be in the same directory.
-To use amumax globaly you can add these 3 files in any folder referenced in $PATH. For example:
-```bash
-sudo mv amumax/* /bin/
-```
+`libcurand.so` and `libcufft.so` must either be in the same folder as `amumax` or on $PATH.
+
 ### Windows
     - Get linux: https://learn.microsoft.com/en-us/windows/wsl/install
     - Follow the steps above.
