@@ -64,11 +64,12 @@ func (meta *MetaStruct) End() {
 }
 
 func (meta *MetaStruct) Save() {
-	zattrs, err := httpfs.Create(meta.root_path + ".zattrs")
-	util.FatalErr(err)
-	defer zattrs.Close()
-	json_meta, err := json.MarshalIndent(meta, "", "\t")
-	util.FatalErr(err)
-	zattrs.Write([]byte(json_meta))
-
+	if meta.root_path != "" {
+		zattrs, err := httpfs.Create(meta.root_path + ".zattrs")
+		util.FatalErr(err)
+		defer zattrs.Close()
+		json_meta, err := json.MarshalIndent(meta, "", "\t")
+		util.FatalErr(err)
+		zattrs.Write([]byte(json_meta))
+	}
 }
