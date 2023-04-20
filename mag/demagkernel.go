@@ -336,7 +336,7 @@ func CalcDemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float6
 	kernel[Z][X] = kernel[X][Z]
 	kernel[Z][Y] = kernel[Y][Z]
 	fmt.Println("")
-	fmt.Println("Kernel Calculated.")
+	fmt.Println("// Kernel Calculated.")
 	return kernel
 }
 

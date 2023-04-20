@@ -24,11 +24,11 @@ func (bar *ProgressBar) Update(current float64) {
 	}
 	if p > bar.last {
 		bar.last = p
-		fmt.Printf("\r[%-50s]%3d%%", strings.Repeat("█", p/2), p)
+		fmt.Printf("\r// [%-50s]%3d%%", strings.Repeat("█", p/2), p)
 	}
 
 }
 
 func (bar *ProgressBar) Finish() {
-	fmt.Printf("\r[%-50s]%3d%%\n", strings.Repeat("█", 50), 100)
+	fmt.Printf("\r// [%-50s]%3d%%\n", strings.Repeat("█", 50), 100)
 }
