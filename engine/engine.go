@@ -50,6 +50,9 @@ func GetBusy() bool {
 
 // Cleanly exits the simulation, assuring all output is flushed.
 func Close() {
+	if outputdir == "" {
+		return
+	}
 	drainOutput()
 	LogOut("**************** Simulation Ended ****************** //")
 	ZTables.Flush()
