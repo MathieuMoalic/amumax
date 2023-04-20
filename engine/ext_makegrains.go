@@ -9,11 +9,11 @@ func init() {
 	DeclFunc("ext_makegrains", Voronoi, "Voronoi tesselation (grain size, num regions)")
 }
 
-func Voronoi(grainsize float64, numRegions, seed int) {
+func Voronoi(grainsize float64, minRegion, maxRegion, seed int) {
 	SetBusy(true)
 	defer SetBusy(false)
 
-	t := newTesselation(grainsize, numRegions, int64(seed))
+	t := newTesselation(grainsize, minRegion, maxRegion, int64(seed))
 	regions.hist = append(regions.hist, t.RegionOf)
 
 	regions.render(t.RegionOf)
@@ -22,6 +22,7 @@ func Voronoi(grainsize float64, numRegions, seed int) {
 type tesselation struct {
 	grainsize float64
 	tilesize  float64
+	minRegion int
 	maxRegion int
 	cache     map[int2][]center
 	seed      int64
@@ -38,10 +39,11 @@ type center struct {
 }
 
 // nRegion exclusive
-func newTesselation(grainsize float64, nRegion int, seed int64) *tesselation {
+func newTesselation(grainsize float64, minRegion, maxRegion int, seed int64) *tesselation {
 	return &tesselation{grainsize,
 		float64(float32(grainsize * TILE)), // expect 4 grains/block, 36 per 3x3 blocks = safe, relatively round number
-		nRegion,
+		minRegion,
+		maxRegion,
 		make(map[int2][]center),
 		seed,
 		rand.New(rand.NewSource(0))}
@@ -95,7 +97,7 @@ func (t *tesselation) centersInTile(tx, ty int) []center {
 			// random position inside tile
 			c[i].x = x0 + t.rnd.Float64()*t.tilesize
 			c[i].y = y0 + t.rnd.Float64()*t.tilesize
-			c[i].region = byte(t.rnd.Intn(t.maxRegion))
+			c[i].region = byte(t.rnd.Intn(t.maxRegion-t.minRegion) + t.minRegion)
 		}
 		t.cache[pos] = c
 		return c
