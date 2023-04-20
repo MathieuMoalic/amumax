@@ -29,7 +29,7 @@ var (
 )
 
 func main() {
-	checkUpdate()
+	go checkUpdate()
 	flag.Parse()
 	log.SetPrefix("")
 	log.SetFlags(0)
