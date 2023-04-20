@@ -2,6 +2,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -94,6 +95,9 @@ func runFileAndServe(fname string) {
 }
 
 func runScript(fname string) {
+	if _, err := os.Stat(fname); errors.Is(err, os.ErrNotExist) {
+		util.Fatal("Error: File `", fname, "` does not exist")
+	}
 	outDir := util.NoExt(fname) + ".zarr"
 	if *engine.Flag_od != "" {
 		outDir = *engine.Flag_od
