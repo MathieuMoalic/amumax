@@ -2,10 +2,13 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -26,6 +29,7 @@ var (
 )
 
 func main() {
+	checkUpdate()
 	flag.Parse()
 	log.SetPrefix("")
 	log.SetFlags(0)
@@ -60,6 +64,38 @@ func main() {
 		runFileAndServe(flag.Arg(0))
 	default:
 		RunQueue(flag.Args())
+	}
+}
+
+type Release struct {
+	TagName string `json:"tag_name"`
+}
+
+func checkUpdate() {
+	resp, err := http.Get("https://api.github.com/repos/mathieumoalic/amumax/releases/latest")
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	var release Release
+	err = json.Unmarshal(body, &release)
+	if err != nil {
+		return
+	}
+	if release.TagName != engine.VERSION {
+		exePath, err := os.Executable()
+		if err != nil {
+			return
+		}
+		fmt.Println("New amumax version available, run the following command to update amumax:")
+		fmt.Println()
+		fmt.Println("curl -L https://github.com/mathieumoalic/amumax/releases/latest/download/amumax >", exePath)
+		fmt.Println()
 	}
 }
 
