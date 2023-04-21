@@ -5,31 +5,11 @@ The solvers ( and results ) are unchanged, this is just list of massive quality 
 
 It's not 100% compatible with the original `.mx3` files. See changes below.
 
-This:
-```go
-SetGridSize(256,256,10)
-SetCellSize(1e-9,1e-9,1e-9)
-SetPBC(32,32,0)
-```
-
-Becomes this:
-```go
-Nx = 256
-Ny = 256
-Nz = 10
-dx = 1e-9
-dy = 1e-9
-dz = 1e-9
-PBCx = 32
-PBcy = 32
-PBCz = 0
-```
-
 ## Installation
 ### Linux
 #### Install script
-Don't just run an script on the internet. Check what it does and then run: 
-curl -fsSL https://raw.githubusercontent.com/MathieuMoalic/amumax/main/install.sh | sh
+Don't just run an script on the internet. Read it, check what it does and then you can run this command to install amumax: 
+`sh -c "$(curl -fsSL https://raw.githubusercontent.com/MathieuMoalic/amumax/main/install.sh)`
 
 #### Manually
 Download [cufft](https://developer.download.nvidia.com/compute/cuda/redist/libcufft/linux-x86_64/) and [curand](https://developer.download.nvidia.com/compute/cuda/redist/libcurand/linux-x86_64/), unpack and add the shared objects to $PATH, or just install the full CUDA suite with your package manager. 
@@ -45,9 +25,33 @@ amumax -v
     - Follow the steps above.
 
 ## Differences from mumax3
+### New way to define the mesh
+`Nx`,`Ny`,`Nz`,`dx`,`dy`,`dz`,`PBCx`,`PBCy`,`PBCz` are now predefined variables. You define the Mesh through them. You don't need to call a function to initiate the Mesh, it is automatically done the first time you run a solver but you can't redefine the Mesh after that !
+
+
+old:
+```go
+SetGridSize(256,256,10)
+SetCellSize(1e-9,1e-9,1e-9)
+SetPBC(32,32,0)
+```
+
+new:
+```go
+Nx = 256
+Ny = 256
+Nz = 10
+dx = 1e-9
+dy = 1e-9
+dz = 1e-9
+PBCx = 32
+PBcy = 32
+PBCz = 0
+```
+
+### Other changes
 - Remove the Google trackers in the GUI.
 - Add saving as zarr
-- `Nx`,`Ny`,`Nz`,`dx`,`dy`,`dz`,`PBCx`,`PBCy`,`PBCz` are now predefined variables. You define the Mesh through them. You don't need to call a function to initiate the Mesh, it is automatically done the first time you run a solver but you can't redefine the Mesh after that !
 - Mostly remove support for OVF1, OVF2, dump, anything that's not zarr.
 - Add progress bar for `run`
 - Reorder GUI elements
@@ -65,6 +69,7 @@ amumax -v
 - Add metadata saving : root_path, start_time, dx, dy, dz, Nx, Ny, Nz, Tx, Ty, Tz, StartTime, EndTime, TotalTime, PBC, Gpu, Host
 - Everytime the function `Save` is used (from `AutoSave` for example), the current simulation time `t` is saved too as a zarray attribute
 - Save compressed arrays (zstd) by default
+- `ext_makegrains` now also takes a new argument `minRegion`. ext_makegrains(grainsize, minRegion, maxRegion, seed)
 
 ## Contribution
 I'm happy to consider any feature request. Don't hesitate to submit issues or PRs.

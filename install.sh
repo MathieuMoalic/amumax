@@ -4,7 +4,7 @@ set -e
 printf "Where to install amumax? [Default=$HOME/.local/bin]: "
 read DEST
 if [ -z $DEST ];then
-    DEST=$HOME/.local/bin
+    DEST="$HOME/.local/bin"
 fi
 mkdir -p $DEST
 DEST=$(realpath $DEST)
@@ -14,11 +14,11 @@ case :$PATH:
 esac
 cd $DEST
 echo Downloading amumax
-curl -L https://github.com/mathieumoalic/amumax/releases/latest/download/amumax > amumax
+curl -Ls https://github.com/mathieumoalic/amumax/releases/latest/download/amumax > amumax
 echo Downloading CUDA fft
-curl -L https://developer.download.nvidia.com/compute/cuda/redist/libcufft/linux-x86_64/libcufft-linux-x86_64-11.0.2.54-archive.tar.xz > libcufft.tar.xz
+curl -Ls https://developer.download.nvidia.com/compute/cuda/redist/libcufft/linux-x86_64/libcufft-linux-x86_64-11.0.2.54-archive.tar.xz > libcufft.tar.xz
 echo Downloading CUDA rand
-curl -L https://developer.download.nvidia.com/compute/cuda/redist/libcurand/linux-x86_64/libcurand-linux-x86_64-10.3.2.106-archive.tar.xz > libcurand.tar.xz
+curl -Ls https://developer.download.nvidia.com/compute/cuda/redist/libcurand/linux-x86_64/libcurand-linux-x86_64-10.3.2.106-archive.tar.xz > libcurand.tar.xz
 
 echo Extracting CUDA fft
 tar xf libcufft.tar.xz  --wildcards "*/libcufft.so*"
