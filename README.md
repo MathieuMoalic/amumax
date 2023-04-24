@@ -8,9 +8,11 @@ It's not 100% compatible with the original `.mx3` files. See changes below.
 ## Installation
 ### Linux
 #### Install script
-Don't just run an script on the internet. Read it, check what it does and then you can run this command to install amumax: 
+Don't just run an script on the internet. [Read it](https://raw.githubusercontent.com/MathieuMoalic/amumax/main/install.sh), check what it does and then you can run this command to install amumax: 
 
-```sh -c "$(curl -fsSL https://raw.githubusercontent.com/MathieuMoalic/amumax/main/install.sh)```
+```bash
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/MathieuMoalic/amumax/main/install.sh)
+```
 
 #### Manually
 Download [cufft](https://developer.download.nvidia.com/compute/cuda/redist/libcufft/linux-x86_64/) and [curand](https://developer.download.nvidia.com/compute/cuda/redist/libcurand/linux-x86_64/), unpack and add the shared objects to $PATH, or just install the full CUDA suite with your package manager. 
@@ -22,8 +24,8 @@ amumax -v
 `libcurand.so` and `libcufft.so` must either be in the same folder as `amumax` or on $PATH.
 
 ### Windows
-    - Get linux: https://learn.microsoft.com/en-us/windows/wsl/install
-    - Follow the steps above.
+- Get linux: https://learn.microsoft.com/en-us/windows/wsl/install
+- Follow the steps above.
 
 ## Differences from mumax3
 ### New way to define the mesh
