@@ -11,6 +11,7 @@ require (
 require (
 	git.sr.ht/~sbinet/gg v0.3.1 // indirect
 	github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b // indirect
+	github.com/fatih/color v1.15.0
 	github.com/go-fonts/liberation v0.2.0 // indirect
 	github.com/go-latex/latex v0.0.0-20210823091927-c0d11ff05a81 // indirect
 	github.com/go-pdf/fpdf v0.6.0 // indirect
@@ -24,7 +25,7 @@ require (
 	golang.org/x/crypto v0.6.0 // indirect
 	golang.org/x/image v0.0.0-20220902085622-e7cb96979f69 // indirect
 	golang.org/x/net v0.7.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 )

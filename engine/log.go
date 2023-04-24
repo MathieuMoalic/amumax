@@ -7,6 +7,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/httpfs"
 	"github.com/MathieuMoalic/amumax/util"
+	"github.com/fatih/color"
 )
 
 var (
@@ -37,7 +38,7 @@ func LogOut(msg ...interface{}) {
 	str := "// " + sprint(msg...)
 	log2GUI(str)
 	log2File(str)
-	fmt.Println(str)
+	color.Green(str)
 }
 
 // Safe fmt.Fprintln, will fail on error

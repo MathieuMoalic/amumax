@@ -18,6 +18,7 @@ import (
 	"github.com/MathieuMoalic/amumax/engine"
 	"github.com/MathieuMoalic/amumax/script"
 	"github.com/MathieuMoalic/amumax/util"
+	"github.com/fatih/color"
 )
 
 var (
@@ -92,10 +93,8 @@ func checkUpdate() {
 		if err != nil {
 			return
 		}
-		fmt.Println("New amumax version available, run the following command to update amumax:")
-		fmt.Println()
-		fmt.Println("curl -L https://github.com/mathieumoalic/amumax/releases/latest/download/amumax >", exePath)
-		fmt.Println()
+		color.HiCyan("New amumax version available, run the following command to update amumax:")
+		color.HiCyan("curl -L https://github.com/mathieumoalic/amumax/releases/latest/download/amumax > %s", exePath)
 	}
 }
 
