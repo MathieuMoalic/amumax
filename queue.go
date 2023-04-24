@@ -26,7 +26,7 @@ var (
 func RunQueue(files []string) {
 	s := NewStateTab(files)
 	s.PrintTo(os.Stdout)
-	go s.ListenAndServe(*engine.Flag_port)
+	go s.ListenAndServe(*engine.Flag_webui_queue_addr)
 	s.Run()
 	fmt.Println(numOK.get(), "OK, ", numFailed.get(), "failed")
 	os.Exit(int(exitStatus))
@@ -86,7 +86,7 @@ func (s *stateTab) Run() {
 	idle := initGPUs(nGPU)
 	for {
 		gpu := <-idle
-		addr := fmt.Sprint(":", 35368+gpu)
+		addr := fmt.Sprint(":", 35367+gpu)
 		j, ok := s.StartNext(addr)
 		if !ok {
 			break
@@ -118,10 +118,13 @@ func run(inFile string, gpu int, webAddr string) {
 	flags := []string{gpuFlag, httpFlag}
 	flag.Visit(func(f *flag.Flag) {
 		if f.Name != "gpu" && f.Name != "http" && f.Name != "failfast" {
+			fmt.Println(flags)
 			flags = append(flags, fmt.Sprintf("-%v=%v", f.Name, f.Value))
+			fmt.Println(flags)
 		}
 	})
 	flags = append(flags, inFile)
+	fmt.Println(flags)
 
 	cmd := exec.Command(os.Args[0], flags...)
 	log.Println(os.Args[0], flags)
