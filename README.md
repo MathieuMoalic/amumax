@@ -73,6 +73,7 @@ PBCz = 0
 - Everytime the function `Save` is used (from `AutoSave` for example), the current simulation time `t` is saved too as a zarray attribute
 - Save compressed arrays (zstd) by default
 - `ext_makegrains` now also takes a new argument `minRegion`. ext_makegrains(grainsize, minRegion, maxRegion, seed)
+- Add colors for terminal logs 
 
 ## Contribution
 I'm happy to consider any feature request. Don't hesitate to submit issues or PRs.
