@@ -101,8 +101,6 @@ func checkUpdate() {
 
 func runInteractive() {
 	fmt.Println("//no input files: starting interactive session")
-	//initEngine()
-
 	// setup outut dir
 	now := time.Now()
 	outdir := fmt.Sprintf("./mumax-%v-%02d-%02d_%02dh%02d.out", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
