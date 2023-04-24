@@ -10,7 +10,7 @@ It's not 100% compatible with the original `.mx3` files. See changes below.
 #### Install script
 Don't just run an script on the internet. Read it, check what it does and then you can run this command to install amumax: 
 
-`sh -c "$(curl -fsSL https://raw.githubusercontent.com/MathieuMoalic/amumax/main/install.sh)`
+```sh -c "$(curl -fsSL https://raw.githubusercontent.com/MathieuMoalic/amumax/main/install.sh)```
 
 #### Manually
 Download [cufft](https://developer.download.nvidia.com/compute/cuda/redist/libcufft/linux-x86_64/) and [curand](https://developer.download.nvidia.com/compute/cuda/redist/libcurand/linux-x86_64/), unpack and add the shared objects to $PATH, or just install the full CUDA suite with your package manager. 
