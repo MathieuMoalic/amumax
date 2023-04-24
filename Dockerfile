@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.0.1-devel-ubuntu20.04
+FROM nvidia/cuda:12.1.0-devel-ubuntu22.04
 ENV GO_VERSION=1.20.1
 RUN apt-get update
 RUN apt-get install -y wget git
@@ -15,7 +15,7 @@ ENV CGO_CFLAGS_ALLOW='(-fno-schedule-insns|-malign-double|-ffast-math)'
 ENV NVCCFLAGS="-std=c++03 -ccbin=$NVCC_CCBIN --compiler-options -Werror --compiler-options -Wall -Xptxas -O3 -ptx"
 RUN git config --global --add safe.directory /src
 CMD cd cuda && ./build_cuda.sh && cd .. && \
-  go build -v && \
+  go build -v -ldflags "-X github.com/MathieuMoalic/amumax/engine.VERSION=$(date -u +'%Y.%m.%d')" && \
   rm -rfd /src/build && \
   mkdir /src/build && \
   cp /src/amumax /src/build && \
