@@ -9,6 +9,7 @@ It's not 100% compatible with the original `.mx3` files. See changes below.
 ### Linux
 #### Install script
 Don't just run an script on the internet. Read it, check what it does and then you can run this command to install amumax: 
+
 `sh -c "$(curl -fsSL https://raw.githubusercontent.com/MathieuMoalic/amumax/main/install.sh)`
 
 #### Manually
