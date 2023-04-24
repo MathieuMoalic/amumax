@@ -13,15 +13,16 @@ import (
 
 var (
 	// These flags are shared between cmd/mumax3 and Go input files.
-	Flag_cachedir    = flag.String("cache", os.TempDir(), "Kernel cache directory (empty disables caching)")
-	Flag_gpu         = flag.Int("gpu", 0, "Specify GPU")
-	Flag_interactive = flag.Bool("i", false, "Open interactive browser session")
-	Flag_od          = flag.String("o", "", "Override output directory")
-	Flag_port        = flag.String("http", ":35367", "Port to serve web gui")
-	Flag_selftest    = flag.Bool("paranoid", false, "Enable convolution self-test for cuFFT sanity.")
-	Flag_silent      = flag.Bool("s", false, "Silent") // provided for backwards compatibility
-	Flag_sync        = flag.Bool("sync", false, "Synchronize all CUDA calls (debug)")
-	Flag_forceclean  = flag.Bool("f", false, "Force start, clean existing output directory")
+	Flag_cachedir         = flag.String("cache", os.TempDir(), "Kernel cache directory (empty disables caching)")
+	Flag_gpu              = flag.Int("gpu", 0, "Specify GPU")
+	Flag_interactive      = flag.Bool("i", false, "Open interactive browser session")
+	Flag_od               = flag.String("o", "", "Override output directory")
+	Flag_webui_addr       = flag.String("http", ":35367", "Address to serve web gui")
+	Flag_webui_queue_addr = flag.String("qhttp", ":35366", "Address to serve web gui")
+	Flag_selftest         = flag.Bool("paranoid", false, "Enable convolution self-test for cuFFT sanity.")
+	Flag_silent           = flag.Bool("s", false, "Silent") // provided for backwards compatibility
+	Flag_sync             = flag.Bool("sync", false, "Synchronize all CUDA calls (debug)")
+	Flag_forceclean       = flag.Bool("f", false, "Force start, clean existing output directory")
 )
 
 // Usage: in every Go input file, write:
@@ -47,7 +48,7 @@ func InitAndClose() func() {
 	inFile := util.NoExt(od)
 	InitIO(inFile, od, *Flag_forceclean)
 
-	GoServe(*Flag_port)
+	GoServe(*Flag_webui_addr)
 
 	return func() {
 		Close()

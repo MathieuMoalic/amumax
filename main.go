@@ -154,7 +154,7 @@ func runScript(fname string) {
 	goServeGUI()
 
 	if *engine.Flag_interactive {
-		openbrowser("http://127.0.0.1" + *engine.Flag_port)
+		openbrowser("http://127.0.0.1" + *engine.Flag_webui_addr)
 	}
 
 	// start executing the tree, possibly injecting commands from web gui
@@ -192,11 +192,11 @@ func runGoFile(fname string) {
 
 // start Gui server and return server address
 func goServeGUI() string {
-	if *engine.Flag_port == "" {
+	if *engine.Flag_webui_addr == "" {
 		log.Println(`//not starting GUI (-http="")`)
 		return ""
 	}
-	addr := engine.GoServe(*engine.Flag_port)
+	addr := engine.GoServe(*engine.Flag_webui_addr)
 	return addr
 }
 
