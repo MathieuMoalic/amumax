@@ -118,13 +118,10 @@ func run(inFile string, gpu int, webAddr string) {
 	flags := []string{gpuFlag, httpFlag}
 	flag.Visit(func(f *flag.Flag) {
 		if f.Name != "gpu" && f.Name != "http" && f.Name != "failfast" {
-			fmt.Println(flags)
 			flags = append(flags, fmt.Sprintf("-%v=%v", f.Name, f.Value))
-			fmt.Println(flags)
 		}
 	})
 	flags = append(flags, inFile)
-	fmt.Println(flags)
 
 	cmd := exec.Command(os.Args[0], flags...)
 	log.Println(os.Args[0], flags)
