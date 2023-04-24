@@ -21,7 +21,7 @@ import (
 	"github.com/MathieuMoalic/amumax/timer"
 )
 
-var VERSION = time.Now().Format("2006.01.02")
+var VERSION = "NOT_SET"
 
 var UNAME = fmt.Sprintf("Amumax v.%s a fork of mumax 3.10 [%s_%s %s(%s) CUDA-%d.%d]",
 	VERSION, runtime.GOOS, runtime.GOARCH, runtime.Version(), runtime.Compiler,
