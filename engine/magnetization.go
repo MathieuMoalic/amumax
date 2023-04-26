@@ -48,7 +48,7 @@ func (b *magnetization) SetArray(src *data.Slice) {
 }
 
 func (m *magnetization) Set(c Config) {
-	checkMesh()
+	CreateMesh()
 	m.SetInShape(nil, c)
 }
 
@@ -95,7 +95,7 @@ func (m *magnetization) Quantity() []float64 { return slice(m.Average()) }
 
 // Sets the magnetization inside the shape
 func (m *magnetization) SetInShape(region Shape, conf Config) {
-	checkMesh()
+	CreateMesh()
 
 	if region == nil {
 		region = universe
