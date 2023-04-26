@@ -63,7 +63,16 @@ Tz = 10e-9
 PBCx = 32 // Optionnal
 PBcy = 32 // Optionnal
 ```
-
+### You can add metadata
+```go 
+Metadata("lattice_constant",500e-9)
+Metadata("ref paper","X et al. (2023)")
+```
+You can access it in the file `.zattrs`. Or using [pyzfn](https://github.com/MathieuMoalic/pyzfn):
+```python
+print(job.lattice_constant)
+print(job["ref paper"])
+```
 ### Other changes
 - Remove the Google trackers in the GUI.
 - Add saving as zarr

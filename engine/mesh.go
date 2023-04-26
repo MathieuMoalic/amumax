@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/data"
 	"github.com/MathieuMoalic/amumax/util"
-	"github.com/MathieuMoalic/amumax/zarr"
 )
 
 var (
@@ -25,7 +23,6 @@ var (
 	PBCz        int
 	AutoMesh    bool
 	globalmesh_ data.Mesh
-	ZarrMeta    zarr.MetaStruct
 )
 
 func init() {
@@ -162,6 +159,6 @@ func CreateMesh() {
 		globalmesh_ = *data.NewMesh(Nx, Ny, Nz, dx, dy, dz, PBCx, PBCy, PBCz)
 		M.alloc()
 		regions.alloc()
-		ZarrMeta.Init(globalmesh_, OD(), cuda.GPUInfo)
+		InitMetadata()
 	}
 }
