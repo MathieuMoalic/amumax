@@ -73,6 +73,9 @@ type Release struct {
 }
 
 func checkUpdate() {
+	if engine.VERSION == "NOT_SET" {
+		return
+	}
 	resp, err := http.Get("https://api.github.com/repos/mathieumoalic/amumax/releases/latest")
 	if err != nil {
 		return
@@ -93,7 +96,9 @@ func checkUpdate() {
 		if err != nil {
 			return
 		}
-		color.HiCyan("New amumax version available, run the following command to update amumax:")
+		color.HiCyan("Current amumax version: %s", engine.VERSION)
+		color.HiCyan("New amumax version    : %s", release.TagName)
+		color.HiCyan("Run the following command to update amumax:")
 		color.HiCyan("curl -L https://github.com/mathieumoalic/amumax/releases/latest/download/amumax > %s", exePath)
 	}
 }
