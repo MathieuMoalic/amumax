@@ -394,9 +394,9 @@ func (g *guistate) prepareOnUpdate() {
 			g.Set("px", PBCx)
 			g.Set("py", PBCy)
 			g.Set("pz", PBCz)
-			g.Set("wx", printf(dx*float64(Nx)*1e9))
-			g.Set("wy", printf(dy*float64(Ny)*1e9))
-			g.Set("wz", printf(dz*float64(Nz)*1e9))
+			g.Set("wx", float32(dx*float64(Nx)*1e9))
+			g.Set("wy", float32(dy*float64(Ny)*1e9))
+			g.Set("wz", float32(dz*float64(Nz)*1e9))
 
 			// solver
 			g.Set("nsteps", NSteps)
