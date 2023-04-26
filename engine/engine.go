@@ -62,5 +62,5 @@ func Close() {
 	if *Flag_sync {
 		timer.Print(os.Stdout)
 	}
-	ZarrMeta.End()
+	EndMetadata()
 }
