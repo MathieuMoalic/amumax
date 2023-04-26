@@ -29,8 +29,8 @@ amumax -v
 
 ## Differences from mumax3
 ### New way to define the mesh
-`Nx`,`Ny`,`Nz`,`dx`,`dy`,`dz`,`PBCx`,`PBCy`,`PBCz` are now predefined variables. You define the Mesh through them. You don't need to call a function to initiate the Mesh, it is automatically done the first time you run a solver but you can't redefine the Mesh after that !
-
+`Tx`,`Ty`,`Tz`,`Nx`,`Ny`,`Nz`,`dx`,`dy`,`dz`,`PBCx`,`PBCy`,`PBCz` are now predefined variables. You define the Mesh through them. You don't need to call a function to initiate the Mesh, it is automatically done the first time you run a solver but you can't redefine the Mesh after that !
+`Tx` is the total size along the x axis. `Nx` is the number of cells along the x axis. `dx` is the number of cells along the x axis. Keep in mind that variables in mx3 script files aren't case sensitive so `tx` is like `Tx` for example.
 
 old:
 ```go
@@ -47,9 +47,21 @@ Nz = 10
 dx = 1e-9
 dy = 1e-9
 dz = 1e-9
-PBCx = 32
-PBcy = 32
-PBCz = 0
+PBCx = 32 // Optionnal
+PBcy = 32 // Optionnal
+PBCz = 0 // Optionnal
+```
+
+new (alternative but equivalent):
+```go
+Nx = 256
+Ny = 256
+Nz = 10
+Tx = 256e-9
+Ty = 256e-9
+Tz = 10e-9
+PBCx = 32 // Optionnal
+PBcy = 32 // Optionnal
 ```
 
 ### Other changes
