@@ -2,7 +2,6 @@ package engine
 
 import (
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/MathieuMoalic/amumax/httpfs"
@@ -11,8 +10,8 @@ import (
 )
 
 var (
-	hist    string         // console history for GUI
-	logfile io.WriteCloser // saves history of input commands +  output
+	hist    string                   // console history for GUI
+	logfile httpfs.WriteCloseFlusher // saves history of input commands +  output
 )
 
 // Special error that is not fatal when paniced on and called from GUI
@@ -41,11 +40,6 @@ func LogOut(msg ...interface{}) {
 	color.Green(str)
 }
 
-// Safe fmt.Fprintln, will fail on error
-func fprintln(out io.Writer, x ...interface{}) {
-
-}
-
 func LogErr(msg ...interface{}) {
 	str := "//" + sprint(msg...)
 	log2GUI(str)
@@ -55,13 +49,15 @@ func LogErr(msg ...interface{}) {
 
 func log2File(msg string) {
 	if logfile != nil {
-		fprintln(logfile, msg)
+		logfile.Write([]byte(msg))
+		logfile.Flush()
 	}
+
 }
 
 func initLog() {
 	if logfile != nil {
-		panic("log already inited")
+		panic("log already initiated")
 	}
 	// open log file and flush what was logged before the file existed
 	logfile, err := httpfs.Create(OD() + "log.txt")
