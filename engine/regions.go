@@ -131,7 +131,7 @@ func defRegionId(id int) {
 	if id < 0 || id > NREGION {
 		util.Fatalf("region id should be 0 -%v, have: %v", NREGION, id)
 	}
-	checkMesh()
+	CreateMesh()
 }
 
 // normalized volume (0..1) of region.
