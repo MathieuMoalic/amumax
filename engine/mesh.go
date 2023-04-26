@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/MathieuMoalic/amumax/cuda"
@@ -16,6 +17,9 @@ var (
 	dx          float64
 	dy          float64
 	dz          float64
+	Tx          float64
+	Ty          float64
+	Tz          float64
 	PBCx        int
 	PBCy        int
 	PBCz        int
@@ -26,6 +30,9 @@ var (
 
 func init() {
 	DeclVar("AutoMesh", &AutoMesh, "")
+	DeclVar("Tx", &Tx, "")
+	DeclVar("Ty", &Ty, "")
+	DeclVar("Tz", &Tz, "")
 	DeclVar("Nx", &Nx, "")
 	DeclVar("Ny", &Ny, "")
 	DeclVar("Nz", &Nz, "")
@@ -38,7 +45,7 @@ func init() {
 }
 
 func GetMesh() *data.Mesh {
-	checkMesh()
+	CreateMesh()
 	return &globalmesh_
 }
 
@@ -123,15 +130,30 @@ func ValidateCellSize() {
 	}
 }
 
-func printf(f float64) float32 {
-	return float32(f)
+func IsMeshCreated() bool {
+	return globalmesh_.Size() == [3]int{0, 0, 0}
+}
+
+func SetTiDiNi(Ti, di *float64, Ni *int, comp string) {
+	if (*Ti != 0.0) && (*di != 0.0) && (*Ni != 0) {
+		util.Fatal(fmt.Sprintf("Error: Only 2 of [N%s,d%s,T%s] are needed to define the mesh, you can't define all 3 of them.", comp, comp, comp))
+	} else if (*Ti != 0.0) && (*di != 0.0) {
+		*Ni = int(*Ti / *di)
+	} else if (*Ni != 0) && (*di != 0.0) {
+		*Ti = *di * float64(*Ni)
+	} else if (*Ni != 0) && (*Ti != 0.0) {
+		*di = *Ti / float64(*Ni)
+	}
 }
 
 // check if mesh is set, otherwise, it creates it
-func checkMesh() {
-	if globalmesh_.Size() == [3]int{0, 0, 0} {
+func CreateMesh() {
+	if IsMeshCreated() {
 		SetBusy(true)
 		defer SetBusy(false)
+		SetTiDiNi(&Tx, &dx, &Nx, "x")
+		SetTiDiNi(&Ty, &dy, &Ny, "y")
+		SetTiDiNi(&Tz, &dz, &Nz, "z")
 		ValidateGridSize()
 		ValidateCellSize()
 		if AutoMesh {
