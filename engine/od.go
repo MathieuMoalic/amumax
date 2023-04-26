@@ -27,7 +27,6 @@ func InitIO(inputfile, od string, force bool) {
 	if outputdir != "" {
 		panic("output directory already set")
 	}
-	InputFile = inputfile
 	if !strings.HasSuffix(od, "/") {
 		od += "/"
 	}
@@ -42,7 +41,6 @@ func InitIO(inputfile, od string, force bool) {
 	}
 
 	httpfs.Mkdir(od)
-	// util.FatalErr(err)
 	initLog()
 	zarr.InitZgroup(OD())
 }
