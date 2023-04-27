@@ -59,6 +59,10 @@ func Close() {
 	if logfile != nil {
 		logfile.Close()
 	}
+	// newlogfile.Flush()
+	// newlogfilefile.Close()
+	// if newlogfilefile != nil {
+	// }
 	if *Flag_sync {
 		timer.Print(os.Stdout)
 	}
