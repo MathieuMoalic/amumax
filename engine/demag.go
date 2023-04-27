@@ -105,8 +105,7 @@ func demagConv() *cuda.DemagConvolution {
 		SetBusy(true)
 		defer SetBusy(false)
 		// these 2 lines make sure the progress bar doesn't break when calculating the kernel
-		fmt.Print("\r                                                        ")
-		fmt.Print("\r")
+		fmt.Print("\033[2K\r") // clearline ANSI escape code
 		kernel := mag.DemagKernel(GetMesh().Size(), GetMesh().PBC(), GetMesh().CellSize(), DemagAccuracy, *Flag_cachedir)
 		conv_ = cuda.NewDemag(GetMesh().Size(), GetMesh().PBC(), kernel, *Flag_selftest)
 	}
