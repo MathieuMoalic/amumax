@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 func Fatal(msg ...interface{}) {
@@ -36,12 +38,12 @@ func PanicErr(err error) {
 // Logs the error of non-nil, plus message
 func LogErr(err error, msg ...interface{}) {
 	if err != nil {
-		log.Println(append(msg, err)...)
+		color.Red(fmt.Sprint(msg...) + fmt.Sprint(err))
 	}
 }
 
 func Log(msg ...interface{}) {
-	log.Println(msg...)
+	color.Green(fmt.Sprint(msg...))
 }
 
 // Panics with "illegal argument" if test is false.
