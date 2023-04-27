@@ -8,7 +8,12 @@ require (
 	gonum.org/v1/plot v0.12.0
 )
 
-require golang.org/x/term v0.7.0
+require (
+	github.com/minio/selfupdate v0.6.0
+	golang.org/x/term v0.7.0
+)
+
+require aead.dev/minisign v0.2.0 // indirect
 
 require (
 	git.sr.ht/~sbinet/gg v0.3.1 // indirect

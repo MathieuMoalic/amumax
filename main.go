@@ -19,6 +19,7 @@ import (
 	"github.com/MathieuMoalic/amumax/script"
 	"github.com/MathieuMoalic/amumax/util"
 	"github.com/fatih/color"
+	"github.com/minio/selfupdate"
 )
 
 var (
@@ -26,12 +27,17 @@ var (
 	flag_test     = flag.Bool("test", false, "Cuda test (internal)")
 	flag_version  = flag.Bool("v", true, "Print version")
 	flag_vet      = flag.Bool("vet", false, "Check input files for errors, but don't run them")
+	flag_update   = flag.Bool("update", false, "Update the amumax binary from the latest github release")
 	// more flags in engine/gofiles.go
 )
 
 func main() {
-	go checkUpdate()
 	flag.Parse()
+	if *flag_update {
+		doUpdate()
+		return
+	}
+	go checkUpdate()
 	log.SetPrefix("")
 	log.SetFlags(0)
 
@@ -72,6 +78,19 @@ type Release struct {
 	TagName string `json:"tag_name"`
 }
 
+func doUpdate() error {
+	resp, err := http.Get("https://github.com/mathieumoalic/amumax/releases/latest/download/amumax")
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	err = selfupdate.Apply(resp.Body, selfupdate.Options{})
+	if err != nil {
+		color.Red("Error updating")
+	}
+	return err
+}
+
 func checkUpdate() {
 	if engine.VERSION == "NOT_SET" {
 		return
@@ -92,14 +111,10 @@ func checkUpdate() {
 		return
 	}
 	if release.TagName != engine.VERSION {
-		exePath, err := os.Executable()
-		if err != nil {
-			return
-		}
-		color.HiCyan("\rCurrent amumax version: %s", engine.VERSION)
-		color.HiCyan("New amumax version    : %s", release.TagName)
+		color.HiCyan("\rCurrent amumax version          : %s", engine.VERSION)
+		color.HiCyan("Latest amumax version on github : %s", release.TagName)
 		color.HiCyan("Run the following command to update amumax:")
-		color.HiCyan("curl -L https://github.com/mathieumoalic/amumax/releases/latest/download/amumax > %s", exePath)
+		color.Blue("amumax --update")
 	}
 }
 
