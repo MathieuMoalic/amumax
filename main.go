@@ -96,7 +96,7 @@ func checkUpdate() {
 		if err != nil {
 			return
 		}
-		color.HiCyan("Current amumax version: %s", engine.VERSION)
+		color.HiCyan("\rCurrent amumax version: %s", engine.VERSION)
 		color.HiCyan("New amumax version    : %s", release.TagName)
 		color.HiCyan("Run the following command to update amumax:")
 		color.HiCyan("curl -L https://github.com/mathieumoalic/amumax/releases/latest/download/amumax > %s", exePath)
