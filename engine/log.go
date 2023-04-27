@@ -3,9 +3,9 @@ package engine
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/MathieuMoalic/amumax/httpfs"
-	"github.com/MathieuMoalic/amumax/util"
 	"github.com/fatih/color"
 )
 
@@ -49,21 +49,24 @@ func LogErr(msg ...interface{}) {
 
 func log2File(msg string) {
 	if logfile != nil {
-		logfile.Write([]byte(msg))
-		logfile.Flush()
+		logfile.Write([]byte(msg + "\n"))
 	}
-
 }
 
 func initLog() {
-	if logfile != nil {
-		panic("log already initiated")
+	f, err := httpfs.Create(OD() + "log.txt")
+	if err != nil {
+		panic(err)
 	}
-	// open log file and flush what was logged before the file existed
-	logfile, err := httpfs.Create(OD() + "log.txt")
-	util.FatalErr(err)
-	logfile.Write(([]byte)(hist))
-	logfile.Write([]byte{'\n'})
+	logfile = f // otherwise f gets dropped
+	logfile.Write([]byte(hist))
+}
+
+func AutoFlushLog2File() {
+	for {
+		logfile.Flush()
+		time.Sleep(5 * time.Second)
+	}
 }
 
 func log2GUI(msg string) {
@@ -74,7 +77,6 @@ func log2GUI(msg string) {
 		hist += "\n"
 	}
 	hist += msg
-	// TODO: push to web ?
 }
 
 // like fmt.Sprint but with spaces between args

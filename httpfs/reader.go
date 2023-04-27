@@ -5,23 +5,27 @@ package httpfs
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"io"
-	"io/ioutil"
+
+	"github.com/MathieuMoalic/amumax/util"
 )
 
 const BUFSIZE = 16 * 1024 * 1024 // bufio buffer size
 
 // create a file for writing, clobbers previous content if any.
 func Create(URL string) (WriteCloseFlusher, error) {
-	_ = Remove(URL)
-	err := Touch(URL)
-	if err != nil {
-		fmt.Printf("Failed to create `%v` with error:\n", URL)
-		fmt.Println(err)
-		return nil, err
-	}
-	return &bufWriter{bufio.NewWriterSize(&appendWriter{URL, 0}, BUFSIZE)}, nil
+	// color.Red("httpfs Create %s", URL)
+	err := Remove(URL)
+	util.PanicErr(err)
+	err = Touch(URL)
+	util.PanicErr(err)
+	// color.Red("httpfs Create success")
+	writer := bufWriter{bufio.NewWriterSize(&appendWriter{URL, 0}, BUFSIZE)}
+	// wr := &appendWriter{URL, 0}
+	// bufwr := bufio.NewWriterSize(wr, BUFSIZE)
+	// bufwr.Write([]byte("hi"))
+	// bufwr.Flush()
+	return &writer, nil
 }
 
 func MustCreate(URL string) WriteCloseFlusher {
@@ -43,7 +47,7 @@ func Open(URL string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ioutil.NopCloser(bytes.NewReader(data)), nil
+	return io.NopCloser(bytes.NewReader(data)), nil
 }
 
 func MustOpen(URL string) io.ReadCloser {
@@ -58,7 +62,10 @@ type bufWriter struct {
 	buf *bufio.Writer
 }
 
-func (w *bufWriter) Write(p []byte) (int, error) { return w.buf.Write(p) }
+func (w *bufWriter) Write(p []byte) (int, error) {
+	return w.buf.Write(p)
+}
+
 func (w *bufWriter) Close() error {
 	err := w.buf.Flush()
 	w.buf = nil // Dangling pointer somewhere?
@@ -67,7 +74,9 @@ func (w *bufWriter) Close() error {
 	}
 	return nil
 }
-func (w *bufWriter) Flush() error { return w.buf.Flush() }
+func (w *bufWriter) Flush() error {
+	return w.buf.Flush()
+}
 
 type appendWriter struct {
 	URL       string
