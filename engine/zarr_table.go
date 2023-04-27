@@ -91,11 +91,11 @@ func TableInit() {
 	util.FatalErr(err)
 	ZTables.tables = append(ZTables.tables, ZTable{"t", []byte{}, f})
 	ZTableAdd(&M)
-	go AutoFlush()
+	go ZTablesAutoFlush()
 
 }
 
-func AutoFlush() {
+func ZTablesAutoFlush() {
 	for {
 		ZTables.Flush()
 		time.Sleep(ZTables.FlushInterval)
