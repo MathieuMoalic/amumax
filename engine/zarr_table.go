@@ -55,8 +55,10 @@ func (ts *ZTablesStruct) Flush() {
 	for i := range ts.tables {
 		ts.tables[i].io.Write(ts.tables[i].buffer)
 		ts.tables[i].buffer = []byte{}
-		ts.tables[i].io.Flush()
+		// saving .zarray before the data might help resolve some unsync
+		// errors when the simulation is running and the user loads data
 		zarr.SaveFileTableZarray(OD()+"table/"+ts.tables[i].Name+"/.zarray", ts.Step)
+		ts.tables[i].io.Flush()
 	}
 }
 
