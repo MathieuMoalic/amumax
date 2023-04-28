@@ -25,7 +25,7 @@ func determineCC() int {
 		}
 	}
 	if UseCC == 0 {
-		log.Fatalln("\nNo binary for GPU. Your nvidia driver may be out-of-date\n")
+		log.Fatal("\nNo binary for GPU. Your nvidia driver may be out-of-date\n")
 	}
 	return UseCC
 }
