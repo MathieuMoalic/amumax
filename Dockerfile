@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.1.0-devel-ubuntu22.04
+FROM nvidia/cuda:12.1.0-devel-ubuntu20.04
 ENV GO_VERSION=1.20.1
 RUN apt-get update
 RUN apt-get install -y wget git
