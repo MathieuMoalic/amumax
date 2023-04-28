@@ -124,6 +124,9 @@ func SyncSave(array *data.Slice, qname string, time int, chunks Chunks) {
 	data := array.Tensors()
 	size := array.Size()
 	ncomp := array.NComp()
+	// saving .zarray before the data might help resolve some unsync
+	// errors when the simulation is running and the user loads data
+	zarr.SaveFileZarray(fmt.Sprintf(OD()+"%s/.zarray", qname), size, ncomp, time+1, chunks.z.len, chunks.y.len, chunks.x.len, chunks.c.len)
 	var bytes []byte
 	for icx := 0; icx < chunks.x.nb; icx++ {
 		for icy := 0; icy < chunks.y.nb; icy++ {
@@ -157,5 +160,4 @@ func SyncSave(array *data.Slice, qname string, time int, chunks Chunks) {
 			}
 		}
 	}
-	zarr.SaveFileZarray(fmt.Sprintf(OD()+"%s/.zarray", qname), size, ncomp, time+1, chunks.z.len, chunks.y.len, chunks.x.len, chunks.c.len)
 }
