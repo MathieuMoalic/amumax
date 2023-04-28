@@ -7,24 +7,24 @@ import (
 	"github.com/MathieuMoalic/amumax/util"
 )
 
-type compressorStruc struct {
+type ZstdCompressor struct {
 	ID    string `json:"id"`
 	Level int    `json:"level"`
 }
 type zarrayFile struct {
-	Chunks     [5]int          `json:"chunks"`
-	Compressor compressorStruc `json:"compressor"`
-	Dtype      string          `json:"dtype"`
-	FillValue  float64         `json:"fill_value"`
-	Filters    []int           `json:"filters"`
-	Order      string          `json:"order"`
-	Shape      [5]int          `json:"shape"`
-	ZarrFormat int             `json:"zarr_format"`
+	Chunks     [5]int         `json:"chunks"`
+	Compressor ZstdCompressor `json:"compressor"`
+	Dtype      string         `json:"dtype"`
+	FillValue  float64        `json:"fill_value"`
+	Filters    []int          `json:"filters"`
+	Order      string         `json:"order"`
+	Shape      [5]int         `json:"shape"`
+	ZarrFormat int            `json:"zarr_format"`
 }
 
 func SaveFileZarray(path string, size [3]int, ncomp int, time int, cz int, cy int, cx int, cc int) {
 	z := zarrayFile{}
-	z.Compressor = compressorStruc{"zstd", 1}
+	z.Compressor = ZstdCompressor{"zstd", 1}
 	z.Dtype = `<f4`
 	z.FillValue = 0.0
 	z.Order = "C"
