@@ -44,6 +44,11 @@ func LogErr(err error, msg ...interface{}) {
 	}
 }
 
+func LogThenExit(msg string) {
+	color.Red(msg)
+	os.Exit(1)
+}
+
 func Log(msg ...interface{}) {
 	color.Green(fmt.Sprint(msg...))
 }
