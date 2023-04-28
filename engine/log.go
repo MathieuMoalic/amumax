@@ -41,10 +41,10 @@ func LogOut(msg ...interface{}) {
 }
 
 func LogErr(msg ...interface{}) {
-	str := "//" + sprint(msg...)
+	str := "// " + sprint(msg...)
 	log2GUI(str)
 	log2File(str)
-	fmt.Fprintln(os.Stderr, str)
+	color.New(color.FgRed).Fprintln(os.Stderr, str)
 }
 
 func log2File(msg string) {

@@ -164,6 +164,9 @@ func runScript(fname string) {
 	if fname != "" {
 		// first we compile the entire file into an executable tree
 		code, err2 = engine.CompileFile(fname)
+		if err2 != nil {
+			engine.LogErr("Error while parsing `", fname, "`")
+		}
 		util.FatalErr(err2)
 	}
 
