@@ -50,9 +50,7 @@ func Format(n ast.Node) string {
 	fset := token.NewFileSet()
 	format.Node(&buf, fset, n)
 	str := buf.String()
-	if strings.HasSuffix(str, "\n") {
-		str = str[:len(str)-1]
-	}
+	str = strings.TrimSuffix(str, "\n")
 	return str
 }
 

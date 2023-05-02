@@ -100,7 +100,6 @@ func TestLoop(t *testing.T) {
 }
 
 type test struct {
-	a, b, c int
 }
 
 func (t *test) A() int { return 41 }

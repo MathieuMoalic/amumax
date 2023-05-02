@@ -2,9 +2,10 @@ package script
 
 import (
 	"fmt"
-	"github.com/MathieuMoalic/amumax/data"
 	"go/token"
 	"reflect"
+
+	"github.com/MathieuMoalic/amumax/data"
 )
 
 // converts in to an expression of type OutT.
@@ -69,12 +70,10 @@ func inputType(e Expr) reflect.Type {
 var (
 	float64_t        = reflect.TypeOf(float64(0))
 	bool_t           = reflect.TypeOf(false)
-	func_float64_t   = reflect.TypeOf(func() float64 { panic(0) })
 	func_bool_t      = reflect.TypeOf(func() bool { panic(0) })
 	int_t            = reflect.TypeOf(int(0))
 	string_t         = reflect.TypeOf("")
 	vector_t         = reflect.TypeOf(data.Vector{})
-	func_vector_t    = reflect.TypeOf(func() data.Vector { panic(0) })
 	ScalarFunction_t = reflect.TypeOf(dummy_f).In(0)
 	VectorFunction_t = reflect.TypeOf(dummy_f3).In(0)
 	ScalarIf_t       = reflect.TypeOf(dummy_scalarif).In(0)
