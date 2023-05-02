@@ -30,9 +30,7 @@ func err(pos token.Pos, msg ...interface{}) *compileErr {
 // type string for value i
 func typ(i interface{}) string {
 	typ := reflect.TypeOf(reflect.ValueOf(i).Interface()).String()
-	if strings.HasPrefix(typ, "*ast.") {
-		typ = typ[len("*ast."):]
-	}
+	typ = strings.TrimPrefix(typ, "*ast.")
 	return typ
 }
 
