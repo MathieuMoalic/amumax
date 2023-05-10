@@ -16,7 +16,7 @@ cd $DEST
 echo Downloading amumax
 curl -Ls https://github.com/mathieumoalic/amumax/releases/latest/download/amumax > amumax
 echo Downloading CUDA fft
-curl -Ls https://developer.download.nvidia.com/compute/cuda/redist/libcufft/linux-x86_64/libcufft-linux-x86_64-11.0.2.54-archive.tar.xz > libcufft.tar.xz
+curl -Ls https://developer.download.nvidia.com/compute/cuda/redist/libcufft/linux-x86_64/libcufft-linux-x86_64-10.9.0.58-archive.tar.xz > libcufft.tar.xz
 echo Downloading CUDA rand
 curl -Ls https://developer.download.nvidia.com/compute/cuda/redist/libcurand/linux-x86_64/libcurand-linux-x86_64-10.3.2.106-archive.tar.xz > libcurand.tar.xz
 
