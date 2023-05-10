@@ -1,5 +1,7 @@
 #!/bin/bash
 NVCCFLAGS="-std=c++03 -ccbin=/usr/bin/gcc --compiler-options -Werror --compiler-options -Wall -Xptxas -O3 -ptx"
+cd $( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 rm -f *_wrapper.go *.ptx cuda2go
 go build -v cuda2go.go 
 for file in *.cu; do
