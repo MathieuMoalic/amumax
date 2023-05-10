@@ -26,3 +26,7 @@ mytests
 mytest
 justfile
 amumax.zip
+.gocache
+libcufft.so.10
+.gitignore
+libcurand.so.10
