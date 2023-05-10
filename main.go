@@ -123,7 +123,7 @@ func runInteractive() {
 	// setup outut dir
 	now := time.Now()
 	outdir := fmt.Sprintf("./mumax-%v-%02d-%02d_%02dh%02d.out", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
-	engine.InitIO(outdir, outdir, *engine.Flag_forceclean)
+	engine.InitIO(outdir, outdir)
 
 	engine.Timeout = 365 * 24 * time.Hour // basically forever
 
@@ -155,7 +155,7 @@ func runScript(fname string) {
 	if *engine.Flag_od != "" {
 		outDir = *engine.Flag_od
 	}
-	engine.InitIO(fname, outDir, *engine.Flag_forceclean)
+	engine.InitIO(fname, outDir)
 
 	fname = engine.InputFile
 

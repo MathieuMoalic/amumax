@@ -23,6 +23,7 @@ var (
 	Flag_silent           = flag.Bool("s", false, "Silent") // provided for backwards compatibility
 	Flag_sync             = flag.Bool("sync", false, "Synchronize all CUDA calls (debug)")
 	Flag_forceclean       = flag.Bool("f", false, "Force start, clean existing output directory")
+	Flag_skip_exists      = flag.Bool("skip-exist", false, "Don't run the simulation if the output directory exists ( if the simulation has been run before )")
 )
 
 // Usage: in every Go input file, write:
@@ -46,7 +47,7 @@ func InitAndClose() func() {
 		od = path.Base(os.Args[0]) + ".zarr"
 	}
 	inFile := util.NoExt(od)
-	InitIO(inFile, od, *Flag_forceclean)
+	InitIO(inFile, od)
 
 	GoServe(*Flag_webui_addr)
 
