@@ -4,6 +4,7 @@ package engine
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/MathieuMoalic/amumax/httpfs"
@@ -43,7 +44,7 @@ func InitIO(inputfile, od string) {
 			// cursed error check, not sure how to do better
 			if fmt.Sprint(err) == fmt.Sprintf("mkdir %s: file exists", od) {
 				LogErr(fmt.Sprintf("Directory `%s` exists, skipping `%s` because of --skip-exist flag.", od, inputfile))
-				Exit()
+				os.Exit(0)
 			} else {
 				util.FatalErr(err)
 			}
