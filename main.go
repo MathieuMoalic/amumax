@@ -55,7 +55,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	defer engine.Close() // flushes pending output, if any
+	defer engine.CleanExit() // flushes pending output, if any
 
 	if *flag_vet {
 		vet()

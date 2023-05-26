@@ -62,7 +62,7 @@ func Vector(x, y, z float64) data.Vector {
 func Expect(msg string, have, want, maxError float64) {
 	if math.IsNaN(have) || math.IsNaN(want) || math.Abs(have-want) > maxError {
 		LogOut(msg, ":", " have: ", have, " want: ", want, "±", maxError)
-		Close()
+		CleanExit()
 		os.Exit(1)
 	} else {
 		LogOut(msg, ":", have, "OK")

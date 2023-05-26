@@ -52,6 +52,6 @@ func InitAndClose() func() {
 	GoServe(*Flag_webui_addr)
 
 	return func() {
-		Close()
+		CleanExit()
 	}
 }

@@ -153,7 +153,6 @@ func adaptDt(corr float64) {
 	util.AssertMsg(Dt_si > 0, fmt.Sprint("Time step too small: ", Dt_si))
 }
 
-
 // Run the simulation for a number of seconds.
 func RunWithoutPrecession(seconds float64) {
 	prevPrecess := Precess
@@ -256,6 +255,6 @@ func SanityCheck() {
 }
 
 func Exit() {
-	Close()
+	CleanExit()
 	os.Exit(0)
 }
