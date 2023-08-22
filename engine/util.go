@@ -87,7 +87,7 @@ func Fprintln(filename string, msg ...interface{}) {
 }
 func LoadFile(fname string) *data.Slice {
 	var s *data.Slice
-	s, err := zarr.Read(fname)
+	s, err := zarr.Read(fname, OD())
 	util.FatalErr(err)
 	return s
 }

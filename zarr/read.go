@@ -2,6 +2,7 @@ package zarr
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -13,10 +14,21 @@ import (
 	"github.com/DataDog/zstd"
 )
 
-func Read(fname string) (s *data.Slice, err error) {
-	basedir := path.Dir(fname)
-	content, err := os.ReadFile(basedir + "/.zarray")
-	util.LogErr(err)
+func Read(binary_path string, pwd string) (s *data.Slice, err error) {
+	if !path.IsAbs(binary_path) {
+		binary_path = path.Dir(path.Dir(pwd)) + "/" + binary_path
+	}
+	zarray_path := path.Dir(binary_path) + "/.zarray"
+	io_reader, err := httpfs.Open(binary_path)
+	if err != nil {
+		util.Log("Please give either an absolute path or one relative to the .mx3 file")
+		util.LogThenExit(fmt.Sprint(err))
+	}
+
+	content, err := os.ReadFile(zarray_path)
+	if err != nil {
+		util.LogThenExit(fmt.Sprint(err))
+	}
 	var zarray zarrayFile
 	json.Unmarshal([]byte(content), &zarray)
 	if zarray.Compressor.ID != "zstd" {
@@ -33,10 +45,6 @@ func Read(fname string) (s *data.Slice, err error) {
 	array := data.NewSlice(sizec, [3]int{sizex, sizey, sizez})
 	tensors := array.Tensors()
 	ncomp := array.NComp()
-	io_reader, err := httpfs.Open(fname)
-	if err != nil {
-		panic(err)
-	}
 	compressedData, err := io.ReadAll(io_reader)
 	if err != nil {
 		panic(err)
