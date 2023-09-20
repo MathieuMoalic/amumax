@@ -2,6 +2,7 @@ package zarr
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/MathieuMoalic/amumax/httpfs"
 	"github.com/MathieuMoalic/amumax/util"
@@ -19,6 +20,9 @@ type ztableFile struct {
 }
 
 func SaveFileTableZarray(path string, zTableAutoSaveStep int) {
+	if !util.PathExists(path) {
+		util.FatalErr(fmt.Errorf("error: `%s` does not exist", path))
+	}
 	z := ztableFile{}
 	z.Dtype = `<f8`
 	z.FillValue = 0.0
@@ -27,7 +31,7 @@ func SaveFileTableZarray(path string, zTableAutoSaveStep int) {
 	z.Chunks = [1]int{zTableAutoSaveStep + 1}
 	z.Shape = [1]int{zTableAutoSaveStep + 1}
 
-	f, err := httpfs.Create(path)
+	f, err := httpfs.Create(path + "/.zarray")
 	util.FatalErr(err)
 	defer f.Close()
 	enc := json.NewEncoder(f)

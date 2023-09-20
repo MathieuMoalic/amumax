@@ -3,6 +3,7 @@ package util
 
 import (
 	"net"
+	"os"
 	"path"
 	"strings"
 )
@@ -22,4 +23,12 @@ func InterfaceAddrs() []string {
 		ips = append(ips, IpCidr[0])
 	}
 	return ips
+}
+
+func PathExists(path string) bool {
+	_, err := os.Stat(path)
+	if err != nil {
+		return os.IsExist(err)
+	}
+	return true
 }
