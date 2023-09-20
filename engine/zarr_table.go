@@ -3,7 +3,10 @@ package engine
 import (
 	"time"
 
+	"github.com/MathieuMoalic/amumax/cuda"
+	"github.com/MathieuMoalic/amumax/data"
 	"github.com/MathieuMoalic/amumax/httpfs"
+	"github.com/MathieuMoalic/amumax/script"
 	"github.com/MathieuMoalic/amumax/util"
 	"github.com/MathieuMoalic/amumax/zarr"
 )
@@ -11,6 +14,7 @@ import (
 func init() {
 	DeclFunc("TableSave", ZTableSave, "Save the data table right now.")
 	DeclFunc("TableAdd", ZTableAdd, "Save the data table periodically.")
+	DeclFunc("TableAddVar", ZTableAddVar, "Save the data table periodically.")
 	DeclFunc("TableAddAs", ZTableAddAs, "Save the data table periodically.")
 	DeclFunc("TableAutoSave", ZTableAutoSave, "Save the data table periodically.")
 	ZTables = ZTablesStruct{Data: make(map[string][]float64), Step: -1, AutoSavePeriod: 0.0, FlushInterval: 5 * time.Second}
@@ -20,7 +24,7 @@ var ZTables ZTablesStruct
 
 // the Table is kept in RAM and used for the API
 type ZTablesStruct struct {
-	qs             []Quantity
+	quantities     []Quantity
 	tables         []ZTable
 	Data           map[string][]float64 `json:"data"`
 	AutoSavePeriod float64              `json:"autoSavePeriod"`
@@ -40,7 +44,7 @@ func (ts *ZTablesStruct) WriteToBuffer() {
 	// always save the current time
 	buf = append(buf, Time)
 	// for each quantity we append each component to the buffer
-	for _, q := range ts.qs {
+	for _, q := range ts.quantities {
 		buf = append(buf, AverageOf(q)...)
 	}
 	// size of buf should be same as size of []Ztable
@@ -137,7 +141,7 @@ func ZTableAddAs(q Quantity, name string) {
 		LogOut(name, " is already in the table. Ignoring.")
 		return
 	}
-	ZTables.qs = append(ZTables.qs, q)
+	ZTables.quantities = append(ZTables.quantities, q)
 	if q.NComp() == 1 {
 		ZTables.tables = append(ZTables.tables, CreateTable(name))
 	} else {
@@ -150,4 +154,24 @@ func ZTableAddAs(q Quantity, name string) {
 func ZTableAutoSave(period float64) {
 	ZTables.AutoSaveStart = Time
 	ZTables.AutoSavePeriod = period
+}
+
+func ZTableAddVar(customvar script.ScalarFunction, name, unit string) {
+	ZTableAdd(&userVar{customvar, name, unit})
+}
+
+type userVar struct {
+	value      script.ScalarFunction
+	name, unit string
+}
+
+func (x *userVar) Name() string       { return x.name }
+func (x *userVar) NComp() int         { return 1 }
+func (x *userVar) Unit() string       { return x.unit }
+func (x *userVar) average() []float64 { return []float64{x.value.Float()} }
+func (x *userVar) EvalTo(dst *data.Slice) {
+	avg := x.average()
+	for c := 0; c < x.NComp(); c++ {
+		cuda.Memset(dst.Comp(c), float32(avg[c]))
+	}
 }
