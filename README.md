@@ -123,10 +123,12 @@ Using `podman` or `docker`:
 git clone https://github.com/MathieuMoalic/amumax
 cd amumax
 podman build -t matmoa/amumax:build .
+podman run --rm -v $PWD:/src matmoa/amumax:build bash cuda/build_cuda.sh
 podman run --rm -v $PWD:/src matmoa/amumax:build
+./build/amumax -v
 ```
 
-The binaries are then found in `build`.
+The amumax binary and cuda libraries are then found in `build`.
 
 ## Contribution
 
