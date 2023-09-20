@@ -17,7 +17,6 @@ var (
 	GPUInfo       string     // Human-readable GPU description
 	Synchronous   bool       // for debug: synchronize stream0 at every kernel launch
 	cudaCtx       cu.Context // global CUDA context
-	cudaCC        int        // compute capablity (used for fatbin)
 )
 
 // Locks to an OS thread and initializes CUDA for that thread.
@@ -33,7 +32,6 @@ func Init(gpu int) {
 	cudaCtx.SetCurrent()
 
 	M, m := dev.ComputeCapability()
-	cudaCC = 10*M + m
 	DriverVersion = cu.Version()
 	DevName = dev.Name()
 	TotalMem = dev.TotalMem()
@@ -58,7 +56,10 @@ func tryCuInit() {
 		if err == cu.ERROR_UNKNOWN {
 			log.Print("\n Try running: sudo nvidia-modprobe -u \n")
 		}
-		util.FatalErr(err)
+		util.Log(err == nil)
+		if err != nil {
+			util.FatalErr(fmt.Errorf(fmt.Sprint(err)))
+		}
 	}()
 	cu.Init(0)
 }

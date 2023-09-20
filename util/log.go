@@ -21,26 +21,24 @@ func Fatalf(format string, msg ...interface{}) {
 	log.Fatalf(format, msg...)
 }
 
-// If err != nil, trigger log.Fatal(msg, err)
-func FatalErr(err interface{}) {
-	_, file, line, _ := runtime.Caller(1)
+func FatalErr(err error) {
 	if err != nil {
+		_, file, line, _ := runtime.Caller(1)
 		color.Red(fmt.Sprint("// ", file, ":", line, err))
 		os.Exit(1)
 	}
 }
 
-// Panics if err is not nil. Signals a bug.
 func PanicErr(err error) {
 	if err != nil {
 		log.Panic(err)
 	}
 }
 
-// Logs the error of non-nil, plus message
-func LogErr(err error, msg ...interface{}) {
+func LogErr(err error) {
 	if err != nil {
-		color.Red(fmt.Sprint(msg...) + fmt.Sprint(err))
+		_, file, line, _ := runtime.Caller(1)
+		color.Red(fmt.Sprint("// ", file, ":", line, err))
 	}
 }
 
@@ -50,7 +48,7 @@ func LogThenExit(msg string) {
 }
 
 func Log(msg ...interface{}) {
-	color.Green(fmt.Sprint(msg...))
+	color.Green("// " + fmt.Sprint(msg...))
 }
 
 // Panics with "illegal argument" if test is false.
