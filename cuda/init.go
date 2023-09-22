@@ -56,7 +56,6 @@ func tryCuInit() {
 		if err == cu.ERROR_UNKNOWN {
 			log.Print("\n Try running: sudo nvidia-modprobe -u \n")
 		}
-		util.Log(err == nil)
 		if err != nil {
 			util.FatalErr(fmt.Errorf(fmt.Sprint(err)))
 		}
