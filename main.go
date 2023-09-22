@@ -123,6 +123,7 @@ func runInteractive() {
 	// setup outut dir
 	now := time.Now()
 	outdir := fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
+
 	engine.InitIO(outdir, outdir)
 
 	engine.Timeout = 365 * 24 * time.Hour // basically forever
