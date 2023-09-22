@@ -19,7 +19,7 @@ tmp/
 .vscode/
 *.zarr
 amumax
-cuda/*_wrapper.go
+# cuda/*_wrapper.go
 build
 mytests
 *.exe
