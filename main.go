@@ -122,18 +122,23 @@ func runInteractive() {
 	fmt.Println("//no input files: starting interactive session")
 	// setup outut dir
 	now := time.Now()
-	outdir := fmt.Sprintf("./mumax-%v-%02d-%02d_%02dh%02d.out", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
+	outdir := fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
 	engine.InitIO(outdir, outdir)
 
 	engine.Timeout = 365 * 24 * time.Hour // basically forever
 
 	// set up some sensible start configuration
-	engine.Eval(`SetGridSize(128, 64, 1)
-		SetCellSize(4e-9, 4e-9, 4e-9)
-		Msat = 1e6
-		Aex = 10e-12
-		alpha = 1
-		m = RandomMag()`)
+	engine.Eval(`
+Nx = 128
+Ny = 64
+Nz = 1
+dx = 4e-9
+dy = 4e-9
+dz = 4e-9
+Msat = 1e6
+Aex = 10e-12
+alpha = 1
+m = RandomMag()`)
 	addr := goServeGUI()
 	openbrowser("http://127.0.0.1" + addr)
 	engine.RunInteractive()
