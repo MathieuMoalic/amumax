@@ -17,26 +17,31 @@ jobs:
         with:
           go-version: "1.21"
 
+      - name: Setup CUDA
+        uses: Jimver/cuda-toolkit@v0.2.11
+        id: cuda-toolkit
+        with:
+          cuda: "12.1.0"
+
       - name: Build Binary
-        run: go build -o ./build/amumax
+        run: go build -v -o ./build/amumax
 
       - name: Prepare Release
         run: |
           RELEASE_NAME=$(date +'%Y.%m.%d')
           echo "RELEASE_NAME=${RELEASE_NAME}" >> $GITHUB_ENV
 
-      - name: Create Release
-        uses: actions/create-release@v1
-        with:
-          tag_name: ${{ env.RELEASE_NAME }}
-          release_name: ${{ env.RELEASE_NAME }}
-          draft: false
-          prerelease: false
+      - name: Get cuda libs
+        run: |
+          LIBCUFFT_PATH=$( ldd ./build/amumax | grep libcufft | awk '{print $3}' )
+          LIBCURAND_PATH=$( ldd ./build/amumax | grep libcurand | awk '{print $3}' )
+          echo "LIBCUFFT_PATH=${LIBCUFFT_PATH}" >> $GITHUB_ENV
+          echo "LIBCURAND_PATH=${LIBCURAND_PATH}" >> $GITHUB_ENV
 
-      - name: Upload Binary
-        uses: actions/upload-release-asset@v1
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/amumax
-          asset_name: amumax
-          asset_content_type: application/octet-stream
+          files: |
+            ${LIBCUFFT_PATH}
+            ${LIBCUFFT_PATH}
+            ./build/amumax
