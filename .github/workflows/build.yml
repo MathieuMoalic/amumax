@@ -47,7 +47,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${env.TAG_NAME}
+          tag_name: ${{ env.TAG_NAME }}
           files: |
             $( ldd ./build/amumax | grep libcurand | awk '{print $3}' )
             $( ldd ./build/amumax | grep libcufft | awk '{print $3}' )
