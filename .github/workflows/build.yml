@@ -26,7 +26,7 @@ jobs:
       - name: Build Binary
         run: go build -v -o ./build/amumax
 
-      - name: Get cuda libs
+      - name: Get CUDA Libs
         run: |
           LIBCUFFT_PATH=$( ldd ./build/amumax | grep libcufft | awk '{print $3}' )
           LIBCURAND_PATH=$( ldd ./build/amumax | grep libcurand | awk '{print $3}' )
@@ -36,6 +36,7 @@ jobs:
       - name: Create Tag
         run: |
           TAG_NAME=$(date +'%Y.%m.%d')
+          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
           git config --global user.name "GitHub Actions"
           git config --global user.email "github-actions@example.com"
           git tag $TAG_NAME
@@ -46,8 +47,8 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${TAG_NAME}
+          tag_name: ${env.TAG_NAME}
           files: |
-            ${LIBCUFFT_PATH}
-            ${LIBCUFFT_PATH}
+            $( ldd ./build/amumax | grep libcurand | awk '{print $3}' )
+            $( ldd ./build/amumax | grep libcufft | awk '{print $3}' )
             ./build/amumax
