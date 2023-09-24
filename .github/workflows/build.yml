@@ -7,7 +7,10 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -24,14 +27,15 @@ jobs:
           cuda: "12.1.0"
 
       - name: Build Binary
-        run: go build -v -o ./build/amumax
+        run: go build -v
 
-      - name: Get CUDA Libs
-        run: |
-          LIBCUFFT_PATH=$( ldd ./build/amumax | grep libcufft | awk '{print $3}' )
-          LIBCURAND_PATH=$( ldd ./build/amumax | grep libcurand | awk '{print $3}' )
-          echo "LIBCUFFT_PATH=${LIBCUFFT_PATH}" >> $GITHUB_ENV
-          echo "LIBCURAND_PATH=${LIBCURAND_PATH}" >> $GITHUB_ENV
+      # - name: Get CUDA Libs (Linux)
+      #   if: runner.os == 'Linux'
+      #   run: |
+      #     LIBCUFFT_PATH=$( ldd ./build/amumax-linux | grep libcufft | awk '{print $3}' )
+      #     LIBCURAND_PATH=$( ldd ./build/amumax-linux | grep libcurand | awk '{print $3}' )
+      #     echo "LIBCUFFT_PATH=${LIBCUFFT_PATH}" >> $GITHUB_ENV
+      #     echo "LIBCURAND_PATH=${LIBCURAND_PATH}" >> $GITHUB_ENV
 
       - name: Create Tag
         run: |
@@ -49,6 +53,7 @@ jobs:
         with:
           tag_name: ${{ env.TAG_NAME }}
           files: |
-            $( ldd ./build/amumax | grep libcurand | awk '{print $3}' )
-            $( ldd ./build/amumax | grep libcufft | awk '{print $3}' )
-            ./build/amumax
+            ./amumax
+            ./amumax.exe
+        # ${{ env.LIBCURAND_PATH }}
+        # ${{ env.LIBCUFFT_PATH }}
