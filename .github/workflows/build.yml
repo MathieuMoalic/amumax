@@ -29,9 +29,10 @@ jobs:
       - name: Build Binary
         run: go build -v -o ./build/amumax
         env:
+          VERSION: ${date +'%Y.%m.%d'}
           NVCC_CCBIN: /usr/bin/gcc
           CGO_CFLAGS: "-I${LD_LIBRARY_PATH}"
-          CGO_LDFLAGS: "-lcufft -lcurand -lcuda -L${LD_LIBRARY_PATH} -Wl,-rpath -Wl,$ORIGIN/$RPATH -X github.com/MathieuMoalic/amumax/engine.VERSION=$(date -u +'%Y.%m.%d')"
+          CGO_LDFLAGS: "-lcufft -lcurand -lcuda -L${LD_LIBRARY_PATH} -Wl,-rpath -Wl,$ORIGIN/$RPATH -X github.com/MathieuMoalic/amumax/engine.VERSION=${VERSION}"
           CGO_CFLAGS_ALLOW: '(-fno-schedule-insns|-malign-double|-ffast-math)'
           NVCCFLAGS: "-std=c++03 -ccbin=$NVCC_CCBIN --compiler-options -Werror --compiler-options -Wall -Xptxas -O3 -ptx"
 
