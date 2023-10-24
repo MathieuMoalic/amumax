@@ -30,7 +30,12 @@ jobs:
         run: echo "VERSION=$(date +'%Y.%m.%d')" >> $GITHUB_ENV
 
       - name: Build Binary
-        run: go build -v -o ./build/amumax -ldflags "-X github.com/MathieuMoalic/amumax/engine.VERSION=${{ env.VERSION }}"
+        run: |
+          VERSION=$(date +'%Y.%m.%d')
+          echo $VERSION
+          LDFLAGS="-X github.com/MathieuMoalic/amumax/engine.VERSION=$VERSION"
+          echo $LDFLAGS
+          go build -v -o ./build/amumax -ldflags $LDFLAGS
         env:
           VERSION: date +'%Y.%m.%d'
           NVCC_CCBIN: /usr/bin/gcc
