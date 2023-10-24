@@ -22,6 +22,8 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: "12.1.0"
+          sub-packages: '["cudart", "nvcc","cufft","curand"]'
+          method: 'network'
 
       - name: Build Binary
         run: go build -v -o ./build/amumax
