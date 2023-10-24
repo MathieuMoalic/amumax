@@ -22,7 +22,8 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: "12.1.0"
-          sub-packages: '["cudart", "nvcc","cufft","curand"]'
+          sub-packages: '["cudart", "nvcc"]'
+          non-cuda-sub-packages: '["cufft","curand"]'
           method: 'network'
 
       - name: Build Binary
