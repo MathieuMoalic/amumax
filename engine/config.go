@@ -13,6 +13,7 @@ func init() {
 	DeclFunc("Uniform", Uniform, "Uniform magnetization in given direction")
 	DeclFunc("Vortex", Vortex, "Vortex magnetization with given circulation and core polarization")
 	DeclFunc("Antivortex", AntiVortex, "Antivortex magnetization with given circulation and core polarization")
+	DeclFunc("Radial", Radial, "Radial magnetization with given charge and core polarization")
 	DeclFunc("NeelSkyrmion", NeelSkyrmion, "Néél skyrmion magnetization with given charge and core polarization")
 	DeclFunc("BlochSkyrmion", BlochSkyrmion, "Bloch skyrmion magnetization with given chirality and core polarization")
 	DeclFunc("TwoDomain", TwoDomain, "Twodomain magnetization with with given magnetization in left domain, wall, and right domain")
@@ -107,6 +108,17 @@ func AntiVortex(circ, pol int) Config {
 		mx := -x * float64(circ) / r
 		my := y * float64(circ) / r
 		mz := 1.5 * float64(pol) * math.Exp(-r2/diam2)
+		return noNaN(data.Vector{mx, my, mz}, pol)
+	}
+}
+
+func Radial(charge, pol int) Config {
+	return func(x, y, z float64) data.Vector {
+		r2 := x*x + y*y
+		r := math.Sqrt(r2)
+		mz := 0.0
+		mx := (x * float64(charge) / r)
+		my := (y * float64(charge) / r)
 		return noNaN(data.Vector{mx, my, mz}, pol)
 	}
 }
