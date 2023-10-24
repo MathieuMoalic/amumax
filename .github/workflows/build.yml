@@ -23,7 +23,7 @@ jobs:
         with:
           cuda: "12.1.0"
           sub-packages: '["cudart", "nvcc"]'
-          non-cuda-sub-packages: '["cufft","curand"]'
+          non-cuda-sub-packages: '["libcufft","libcurand"]'
           method: 'network'
 
       - name: Build Binary
