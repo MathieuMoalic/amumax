@@ -15,7 +15,7 @@ It's not 100% compatible with the original `.mx3` files. See changes below.
 Don't just run an script on the internet. [Read it](https://raw.githubusercontent.com/MathieuMoalic/amumax/main/install.sh), check what it does and then you can run this command to install amumax:
 
 ```bash
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/MathieuMoalic/amumax/main/install.sh)
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/MathieuMoalic/amumax/main/install.sh)"
 ```
 
 #### Manually
