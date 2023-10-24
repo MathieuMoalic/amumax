@@ -48,6 +48,7 @@ jobs:
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
           git config --global user.name "GitHub Actions"
           git config --global user.email "github-actions@example.com"
+          git fetch --tags
           if ! git rev-parse $TAG_NAME >/dev/null 2>&1; then
             git tag $TAG_NAME
             git push origin $TAG_NAME
