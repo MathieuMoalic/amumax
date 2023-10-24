@@ -21,12 +21,16 @@ var (
 	PBCx        int
 	PBCy        int
 	PBCz        int
-	AutoMesh    bool
+	AutoMeshx   bool
+	AutoMeshy   bool
+	AutoMeshz   bool
 	globalmesh_ data.Mesh
 )
 
 func init() {
-	DeclVar("AutoMesh", &AutoMesh, "")
+	DeclVar("AutoMeshx", &AutoMeshx, "")
+	DeclVar("AutoMeshy", &AutoMeshy, "")
+	DeclVar("AutoMeshz", &AutoMeshz, "")
 	DeclVar("Tx", &Tx, "")
 	DeclVar("Ty", &Ty, "")
 	DeclVar("Tz", &Tz, "")
@@ -77,15 +81,24 @@ func SmoothMesh() {
 	LogOut("Original mesh: ")
 	LogOut("Cell size: ", dx, dy, dz)
 	LogOut("Grid Size: ", Nx, Ny, Nz)
-	NewNx := closestSevenSmooth(Nx)
-	NewNy := closestSevenSmooth(Ny)
-	NewNz := closestSevenSmooth(Nz)
-	dx := dx * float64(Nx) / float64(NewNx)
-	dy := dy * float64(Ny) / float64(NewNy)
-	dz := dz * float64(Nz) / float64(NewNz)
-	Nx = NewNx
-	Ny = NewNy
-	Nz = NewNz
+	var dx float64
+	var dy float64
+	var dz float64
+	if AutoMeshx {
+		NewNx := closestSevenSmooth(Nx)
+		dx = dx * float64(Nx) / float64(NewNx)
+		Nx = NewNx
+	}
+	if AutoMeshy {
+		NewNy := closestSevenSmooth(Ny)
+		dy = dy * float64(Ny) / float64(NewNy)
+		Ny = NewNy
+	}
+	if AutoMeshz {
+		NewNz := closestSevenSmooth(Nz)
+		dz = dz * float64(Nz) / float64(NewNz)
+		Nz = NewNz
+	}
 	LogOut("Smoothed mesh: ")
 	LogOut("Cell size: ", dx, dy, dz)
 	LogOut("Grid Size: ", Nx, Ny, Nz)
@@ -153,7 +166,7 @@ func CreateMesh() {
 		SetTiDiNi(&Tz, &dz, &Nz, "z")
 		ValidateGridSize()
 		ValidateCellSize()
-		if AutoMesh {
+		if AutoMeshx || AutoMeshy || AutoMeshz {
 			SmoothMesh()
 		}
 		globalmesh_ = *data.NewMesh(Nx, Ny, Nz, dx, dy, dz, PBCx, PBCy, PBCz)
