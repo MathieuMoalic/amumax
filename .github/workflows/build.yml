@@ -60,6 +60,6 @@ jobs:
         with:
           tag_name: ${{ env.TAG_NAME }}
           files: |
-            $( ldd ./build/amumax | grep libcurand | awk '{print $3}' )
-            $( ldd ./build/amumax | grep libcufft | awk '{print $3}' )
+            ${{ env.LIBCURAND_PATH }}
+            ${{ env.LIBCUFFT_PATH }}
             ./build/amumax
