@@ -100,7 +100,7 @@ print(job["ref paper"])
 - Reorder GUI elements
 - Dark mode GUI
 - Check and warns the user for unoptimized mesh
-- `AutoMesh = True` will optimize the shape for you (this function slightly changes the size and number of cells while keeping the total size of the system constant)
+- `AutoMeshx = True`,`AutoMeshy = True`and `AutoMeshz = True` will optimize the corresponding mesh axis for you (this function slightly changes the size and number of cells while keeping the total size of the system constant)
 - Add chunking support as per the [zarr](https://zarr.readthedocs.io/en/stable/) documentation with the functions:
   - `SaveAsChunk(q Quantity, name string, rchunks RequestedChunking)`
   - `AutoSaveAsChunk(q Quantity, name string, period float64, rchunks RequestedChunking)`
