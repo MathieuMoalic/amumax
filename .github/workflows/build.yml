@@ -35,7 +35,7 @@ jobs:
           echo $VERSION
           LDFLAGS="-X github.com/MathieuMoalic/amumax/engine.VERSION=$VERSION"
           echo $LDFLAGS
-          go build -v -o ./build/amumax -ldflags $LDFLAGS
+          go build -v -o ./build/amumax -ldflags "$LDFLAGS"
         env:
           VERSION: date +'%Y.%m.%d'
           NVCC_CCBIN: /usr/bin/gcc
