@@ -29,7 +29,7 @@ jobs:
       - name: Build Binary
         run: go build -v -o ./build/amumax -ldflags "-X github.com/MathieuMoalic/amumax/engine.VERSION=${VERSION}"
         env:
-          VERSION: $(date +'%Y.%m.%d')
+          VERSION: date +'%Y.%m.%d'
           NVCC_CCBIN: /usr/bin/gcc
           CGO_CFLAGS: "-I${LD_LIBRARY_PATH}"
           CGO_LDFLAGS: "-lcufft -lcurand -lcuda -L${LD_LIBRARY_PATH} -Wl,-rpath -Wl,$ORIGIN/$RPATH"
