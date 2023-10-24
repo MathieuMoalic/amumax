@@ -26,8 +26,11 @@ jobs:
           non-cuda-sub-packages: '["libcufft-dev","libcurand-dev"]'
           method: 'network'
 
+      - name: Set VERSION variable
+        run: echo "VERSION=$(date +'%Y.%m.%d')" >> $GITHUB_ENV
+
       - name: Build Binary
-        run: go build -v -o ./build/amumax -ldflags "-X github.com/MathieuMoalic/amumax/engine.VERSION=${VERSION}"
+        run: go build -v -o ./build/amumax -ldflags "-X github.com/MathieuMoalic/amumax/engine.VERSION=${{ env.VERSION }}"
         env:
           VERSION: date +'%Y.%m.%d'
           NVCC_CCBIN: /usr/bin/gcc
