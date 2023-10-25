@@ -35,14 +35,12 @@ jobs:
           echo $VERSION
           LDFLAGS="-X github.com/MathieuMoalic/amumax/engine.VERSION=$VERSION"
           echo $LDFLAGS
+          NVCC_CCBIN=/usr/bin/gcc
+          CGO_CFLAGS="-I${LD_LIBRARY_PATH}"
+          CGO_LDFLAGS="-lcufft -lcurand -lcuda -L${LD_LIBRARY_PATH} -Wl,-rpath -Wl,\$ORIGIN/$RPATH"
+          CGO_CFLAGS_ALLOW='(-fno-schedule-insns|-malign-double|-ffast-math)'
+          NVCCFLAGS="-std=c++03 -ccbin=$NVCC_CCBIN --compiler-options -Werror --compiler-options -Wall -Xptxas -O3 -ptx"
           go build -v -o ./build/amumax -ldflags "$LDFLAGS"
-        env:
-          VERSION: date +'%Y.%m.%d'
-          NVCC_CCBIN: /usr/bin/gcc
-          CGO_CFLAGS: "-I${LD_LIBRARY_PATH}"
-          CGO_LDFLAGS: "-lcufft -lcurand -lcuda -L${LD_LIBRARY_PATH} -Wl,-rpath -Wl,$ORIGIN/$RPATH"
-          CGO_CFLAGS_ALLOW: '(-fno-schedule-insns|-malign-double|-ffast-math)'
-          NVCCFLAGS: "-std=c++03 -ccbin=$NVCC_CCBIN --compiler-options -Werror --compiler-options -Wall -Xptxas -O3 -ptx"
 
       - name: Get CUDA Libs
         run: |
