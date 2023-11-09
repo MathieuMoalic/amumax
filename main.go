@@ -87,6 +87,7 @@ func doUpdate() error {
 	err = selfupdate.Apply(resp.Body, selfupdate.Options{})
 	if err != nil {
 		color.Red("Error updating")
+		color.Red(fmt.Sprint(err))
 	}
 	return err
 }
