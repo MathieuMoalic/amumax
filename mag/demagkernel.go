@@ -87,9 +87,9 @@ func DemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float64, c
 		}
 	}
 	if errSave != nil {
-		util.Log("//Failed to cache kernel:", errSave)
+		util.Log("Failed to cache kernel:", errSave)
 	} else {
-		util.Log("//Cached kernel:", basename)
+		util.Log("Saved kernel at:", basename)
 	}
 
 	return kernel
@@ -335,8 +335,7 @@ func CalcDemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float6
 	kernel[Y][X] = kernel[X][Y]
 	kernel[Z][X] = kernel[X][Z]
 	kernel[Z][Y] = kernel[Y][Z]
-	fmt.Println("")
-	fmt.Println("// Kernel Calculated.")
+	util.Log("Kernel Calculated.")
 	return kernel
 }
 
