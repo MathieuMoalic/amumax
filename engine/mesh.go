@@ -81,9 +81,6 @@ func SmoothMesh() {
 	LogOut("Original mesh: ")
 	LogOut("Cell size: ", dx, dy, dz)
 	LogOut("Grid Size: ", Nx, Ny, Nz)
-	var dx float64
-	var dy float64
-	var dz float64
 	if AutoMeshx {
 		NewNx := closestSevenSmooth(Nx)
 		dx = dx * float64(Nx) / float64(NewNx)
