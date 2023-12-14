@@ -3,19 +3,26 @@ package engine
 // Minimize follows the steepest descent method as per Exl et al., JAP 115, 17D118 (2014).
 
 import (
+	"time"
+
 	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/data"
+	"github.com/MathieuMoalic/amumax/util"
 )
 
 var (
-	DmSamples int     = 10   // number of dm to keep for convergence check
-	StopMaxDm float64 = 1e-6 // stop minimizer if sampled dm is smaller than this
+	DmSamples              int     = 10   // number of dm to keep for convergence check
+	StopMaxDm              float64 = 1e-6 // stop minimizer if sampled dm is smaller than this
+	MinimizeMaxSteps       int     = 100000
+	MinimizeMaxTimeSeconds         = 60 * 60 * 24 * 7 // one week
 )
 
 func init() {
 	DeclFunc("Minimize", Minimize, "Use steepest conjugate gradient method to minimize the total energy")
 	DeclVar("MinimizerStop", &StopMaxDm, "Stopping max dM for Minimize")
 	DeclVar("MinimizerSamples", &DmSamples, "Number of max dM to collect for Minimize convergence check.")
+	DeclVar("MinimizeMaxSteps", &MinimizeMaxSteps, "")
+	DeclVar("MinimizeMaxTimeSeconds", &MinimizeMaxTimeSeconds, "")
 }
 
 // fixed length FIFO. Items can be added but not removed
@@ -119,7 +126,14 @@ func (mini *Minimizer) Free() {
 	mini.k.Free()
 }
 
+var (
+	MinimizeStartTime   time.Time
+	MinimizeTimeoutStep int
+)
+
 func Minimize() {
+	MinimizeStartTime = time.Now()
+	MinimizeTimeoutStep = NSteps + MinimizeMaxSteps
 	SanityCheck()
 	// Save the settings we are changing...
 	prevType := solvertype
@@ -153,9 +167,19 @@ func Minimize() {
 	stepper = &mini
 
 	cond := func() bool {
-		return (mini.lastDm.count < DmSamples || mini.lastDm.Max() > StopMaxDm)
+		maxStepsReached := MinimizeTimeoutStep < NSteps
+		maxTimeReached := int(time.Since(MinimizeStartTime).Seconds()) > MinimizeMaxTimeSeconds
+		maxDmSamplesReached := mini.lastDm.count < DmSamples
+		maxDmReached := mini.lastDm.Max() > StopMaxDm
+		out := !(maxStepsReached || maxTimeReached || !(maxDmSamplesReached || maxDmReached))
+		if maxStepsReached {
+			util.Log("Stopping `Minimize()`: Maximum time steps reached ( MinimizeMaxSteps=", MinimizeMaxSteps, " steps )")
+		}
+		if maxTimeReached {
+			util.Log("Stopping `Minimize()`: Maximum time reached ( MinimizeMaxTimeSeconds=", MinimizeMaxTimeSeconds, "s )")
+		}
+		return out
 	}
-
 	RunWhile(cond)
 	pause = true
 }
