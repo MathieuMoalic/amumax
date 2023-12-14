@@ -93,7 +93,7 @@ func doUpdate() error {
 }
 
 func checkUpdate() {
-	if engine.VERSION == "NOT_SET" {
+	if engine.VERSION == "dev" {
 		return
 	}
 	resp, err := http.Get("https://api.github.com/repos/mathieumoalic/amumax/releases/latest")
@@ -232,3 +232,23 @@ func printVersion() {
 	engine.LogOut(engine.UNAME)
 	engine.LogOut(fmt.Sprintf("GPU info: %s, using cc=%d PTX", cuda.GPUInfo, cuda.UseCC))
 }
+
+// ************************************************************
+// * Amumax Version    | v.NOT_SET                               *
+// ************************************************************
+// * Platform          | Linux (amd64)                           *
+// ************************************************************
+// * Go version        | 1.21.4 (gc)                             *
+// ************************************************************
+// * CUDA version      | 12.3                                    *
+// ************************************************************
+// * GPU               | NVIDIA GeForce RTX 3080 Ti (12042MB)    *
+// *                   | CUDA Driver version: 12.3              *
+// *                   | Compute Capability: 8.6                *
+// *                   | Using Compute Capability: 52 PTX       *
+// ************************************************************
+// * Output Directory  | mytest/t1.zarr/                         *
+// ************************************************************
+// * GUI               | Accessible at                            *
+// *                   | http://localhost:35369                  *
+// ************************************************************
