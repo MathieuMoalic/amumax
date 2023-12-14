@@ -1,73 +1,73 @@
-name: Build Release
+# name: Build Release
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  release:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+# jobs:
+#   release:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Setup Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: "1.21"
+#       - name: Setup Go
+#         uses: actions/setup-go@v4
+#         with:
+#           go-version: "1.21"
 
-      - name: Setup CUDA
-        uses: Jimver/cuda-toolkit@v0.2.11
-        id: cuda-toolkit
-        with:
-          cuda: "12.1.0"
-          sub-packages: '["cudart", "nvcc"]'
-          non-cuda-sub-packages: '["libcufft-dev","libcurand-dev"]'
-          method: 'network'
+#       - name: Setup CUDA
+#         uses: Jimver/cuda-toolkit@v0.2.11
+#         id: cuda-toolkit
+#         with:
+#           cuda: "12.1.0"
+#           sub-packages: '["cudart", "nvcc"]'
+#           non-cuda-sub-packages: '["libcufft-dev","libcurand-dev"]'
+#           method: 'network'
 
-      - name: Set VERSION variable
-        run: echo "VERSION=$(date +'%Y.%m.%d')" >> $GITHUB_ENV
+#       - name: Set VERSION variable
+#         run: echo "VERSION=$(date +'%Y.%m.%d')" >> $GITHUB_ENV
 
-      - name: Build Binary
-        run: |
-          export VERSION=$(date +'%Y.%m.%d')
-          echo $VERSION
-          export LDFLAGS="-X github.com/MathieuMoalic/amumax/engine.VERSION=$VERSION"
-          echo $LDFLAGS
-          export NVCC_CCBIN=/usr/bin/gcc
-          export CGO_CFLAGS="-I${LD_LIBRARY_PATH}"
-          export CGO_LDFLAGS="-lcufft -lcurand -lcuda -L${LD_LIBRARY_PATH} -Wl,-rpath -Wl,\$ORIGIN/$RPATH"
-          export CGO_CFLAGS_ALLOW='(-fno-schedule-insns|-malign-double|-ffast-math)'
-          NVCCFLAGS="-std=c++03 -ccbin=$NVCC_CCBIN --compiler-options -Werror --compiler-options -Wall -Xptxas -O3 -ptx"
-          go build -v -o ./build/amumax -ldflags "$LDFLAGS"
+#       - name: Build Binary
+#         run: |
+#           export VERSION=$(date +'%Y.%m.%d')
+#           echo $VERSION
+#           export LDFLAGS="-X github.com/MathieuMoalic/amumax/engine.VERSION=$VERSION"
+#           echo $LDFLAGS
+#           export NVCC_CCBIN=/usr/bin/gcc
+#           export CGO_CFLAGS="-I${LD_LIBRARY_PATH}"
+#           export CGO_LDFLAGS="-lcufft -lcurand -lcuda -L${LD_LIBRARY_PATH} -Wl,-rpath -Wl,\$ORIGIN/$RPATH"
+#           export CGO_CFLAGS_ALLOW='(-fno-schedule-insns|-malign-double|-ffast-math)'
+#           NVCCFLAGS="-std=c++03 -ccbin=$NVCC_CCBIN --compiler-options -Werror --compiler-options -Wall -Xptxas -O3 -ptx"
+#           go build -v -o ./build/amumax -ldflags "$LDFLAGS"
 
-      - name: Get CUDA Libs
-        run: |
-          LIBCUFFT_PATH=$( ldd ./build/amumax | grep libcufft | awk '{print $3}' )
-          LIBCURAND_PATH=$( ldd ./build/amumax | grep libcurand | awk '{print $3}' )
-          echo "LIBCUFFT_PATH=${LIBCUFFT_PATH}" >> $GITHUB_ENV
-          echo "LIBCURAND_PATH=${LIBCURAND_PATH}" >> $GITHUB_ENV
+#       - name: Get CUDA Libs
+#         run: |
+#           LIBCUFFT_PATH=$( ldd ./build/amumax | grep libcufft | awk '{print $3}' )
+#           LIBCURAND_PATH=$( ldd ./build/amumax | grep libcurand | awk '{print $3}' )
+#           echo "LIBCUFFT_PATH=${LIBCUFFT_PATH}" >> $GITHUB_ENV
+#           echo "LIBCURAND_PATH=${LIBCURAND_PATH}" >> $GITHUB_ENV
 
-      - name: Create Tag
-        run: |
-          TAG_NAME=$(date +'%Y.%m.%d')
-          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "github-actions@example.com"
-          git fetch --tags
-          if ! git rev-parse $TAG_NAME >/dev/null 2>&1; then
-            git tag $TAG_NAME
-            git push origin $TAG_NAME
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Create Tag
+#         run: |
+#           TAG_NAME=$(date +'%Y.%m.%d')
+#           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
+#           git config --global user.name "GitHub Actions"
+#           git config --global user.email "github-actions@example.com"
+#           git fetch --tags
+#           if ! git rev-parse $TAG_NAME >/dev/null 2>&1; then
+#             git tag $TAG_NAME
+#             git push origin $TAG_NAME
+#           fi
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ env.TAG_NAME }}
-          files: |
-            ${{ env.LIBCURAND_PATH }}
-            ${{ env.LIBCUFFT_PATH }}
-            ./build/amumax
+#       - name: Create Release
+#         uses: softprops/action-gh-release@v1
+#         with:
+#           tag_name: ${{ env.TAG_NAME }}
+#           files: |
+#             ${{ env.LIBCURAND_PATH }}
+#             ${{ env.LIBCUFFT_PATH }}
+#             ./build/amumax
