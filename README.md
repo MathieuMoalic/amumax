@@ -110,6 +110,7 @@ print(job["ref paper"])
 - Add the `AutoSaveAs` function
 - Add the `Round` function from the math library
 - Add metadata saving : root_path, start_time, dx, dy, dz, Nx, Ny, Nz, Tx, Ty, Tz, StartTime, EndTime, TotalTime, PBC, Gpu, Host
+- Add `MinimizeMaxSteps` and `MinimizeMaxTimeSeconds` to timeout long `Minimize()` runs.
 - Everytime the function `Save` is used (from `AutoSave` for example), the current simulation time `t` is saved too as a zarray attribute
 - Save compressed arrays (zstd) by default
 - `ext_makegrains` now also takes a new argument `minRegion`. ext_makegrains(grainsize, minRegion, maxRegion, seed)
@@ -133,3 +134,6 @@ The amumax binary and cuda libraries are then found in `build`.
 ## Contribution
 
 I'm happy to consider any feature request. Don't hesitate to submit issues or PRs.
+
+## TODO
+- Calculate the mesh when enough arguments are given instead of when `SetGeom` is called
