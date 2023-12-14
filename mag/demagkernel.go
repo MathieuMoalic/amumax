@@ -25,14 +25,14 @@ func DemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float64, c
 	sanityCheck(cellsize, pbc)
 	// Cache disabled
 	if cacheDir == "" {
-		util.Log(`//Not using kernel cache (-cache="")`)
+		util.Log(`Kernel cache disabled.`)
 		return CalcDemagKernel(inputSize, pbc, cellsize, accuracy)
 	}
 
 	// Error-resilient kernel cache: if anything goes wrong, return calculated kernel.
 	defer func() {
 		if err := recover(); err != nil {
-			util.Log("//Unable to use kernel cache:", err)
+			util.Log("Unable to use kernel cache:", err)
 			kernel = CalcDemagKernel(inputSize, pbc, cellsize, accuracy)
 		}
 	}()
@@ -62,7 +62,7 @@ func DemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float64, c
 	if errLoad != nil {
 		util.Log("Did not use cached kernel:", errLoad)
 	} else {
-		util.Log("Using cached kernel: ", basename, "*.ovf")
+		// util.Log("Using cached kernel: ", basename, "*.ovf")
 		return kernel
 	}
 
@@ -152,6 +152,7 @@ func CalcDemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float6
 	progress, progmax := 0, (1+(r2[Y]-r1[Y]))*(1+(r2[Z]-r1[Z])) // progress bar
 	done := make(chan struct{}, 3)                              // parallel calculation of one component done?
 
+	util.Log("progress bar kernel")
 	ProgressBar := zarr.ProgressBar{}
 	ProgressBar.New(0, float64(progmax))
 	// Start brute integration
@@ -335,6 +336,7 @@ func CalcDemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float6
 	kernel[Y][X] = kernel[X][Y]
 	kernel[Z][X] = kernel[X][Z]
 	kernel[Z][Y] = kernel[Y][Z]
+	ProgressBar.Finish()
 	util.Log("Kernel Calculated.")
 	return kernel
 }
