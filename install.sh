@@ -16,7 +16,7 @@ cd $DEST
 echo Downloading amumax
 curl -Ls https://github.com/mathieumoalic/amumax/releases/latest/download/amumax > amumax
 echo Downloading CUDA fft
-curl -Ls https://github.com/mathieumoalic/amumax/releases/latest/download/libcufft.so.11 > libcufft.so.11
+curl -Ls https://github.com/mathieumoalic/amumax/releases/latest/download/libcufft.so.10 > libcufft.so.10
 echo Downloading CUDA rand
 curl -Ls https://github.com/mathieumoalic/amumax/releases/latest/download/libcurand.so.10 > libcurand.so.10
 
