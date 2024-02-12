@@ -15,6 +15,7 @@ func (w *World) LoadStdlib() {
 	w.declare("false", boolLit(false))
 
 	// math
+	w.Func("bessel",math.Yn)
 	w.Func("round",math.Round)
 	w.Func("abs", math.Abs)
 	w.Func("acos", math.Acos)
