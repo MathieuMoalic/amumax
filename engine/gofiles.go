@@ -24,6 +24,7 @@ var (
 	Flag_sync             = flag.Bool("sync", false, "Synchronize all CUDA calls (debug)")
 	Flag_forceclean       = flag.Bool("f", false, "Force start, clean existing output directory")
 	Flag_skip_exists      = flag.Bool("skip-exist", false, "Don't run the simulation if the output directory exists ( if the simulation has been run before )")
+	Flag_magnets          = flag.Bool("magnets", true, "Show magnets progress bar")
 )
 
 // Usage: in every Go input file, write:

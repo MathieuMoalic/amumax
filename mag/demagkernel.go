@@ -15,7 +15,7 @@ import (
 
 // Obtains the demag kernel either from cacheDir/ or by calculating (and then storing in cacheDir for next time).
 // Empty cacheDir disables caching.
-func DemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float64, cacheDir string) (kernel [3][3]*data.Slice) {
+func DemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float64, cacheDir string, showMagnets bool) (kernel [3][3]*data.Slice) {
 	timer.Start("kernel_init")
 	timer.Stop("kernel_init") // warm-up
 
@@ -26,14 +26,14 @@ func DemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float64, c
 	// Cache disabled
 	if cacheDir == "" {
 		util.Log(`Kernel cache disabled.`)
-		return CalcDemagKernel(inputSize, pbc, cellsize, accuracy)
+		return CalcDemagKernel(inputSize, pbc, cellsize, accuracy, showMagnets)
 	}
 
 	// Error-resilient kernel cache: if anything goes wrong, return calculated kernel.
 	defer func() {
 		if err := recover(); err != nil {
 			util.Log("Unable to use kernel cache:", err)
-			kernel = CalcDemagKernel(inputSize, pbc, cellsize, accuracy)
+			kernel = CalcDemagKernel(inputSize, pbc, cellsize, accuracy, showMagnets)
 		}
 	}()
 
@@ -68,7 +68,7 @@ func DemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float64, c
 
 	// Could not load kernel: calculate it and save
 	var errSave error
-	kernel = CalcDemagKernel(inputSize, pbc, cellsize, accuracy)
+	kernel = CalcDemagKernel(inputSize, pbc, cellsize, accuracy, showMagnets)
 	for i := 0; i < 3; i++ {
 		for j := i; j < 3; j++ {
 			if inputSize[Z] == 1 && ((i == X && j == Z) || (i == Y && j == Z)) {
@@ -113,7 +113,7 @@ func SaveKernel(fname string, kernel *data.Slice, info data.Meta) error {
 
 // Calculates the magnetostatic kernel by brute-force integration
 // of magnetic charges over the faces and averages over cell volumes.
-func CalcDemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float64) (kernel [3][3]*data.Slice) {
+func CalcDemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float64, showMagnets bool) (kernel [3][3]*data.Slice) {
 
 	// Add zero-padding in non-PBC directions
 	size := padSize(inputSize, pbc)
@@ -154,7 +154,7 @@ func CalcDemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float6
 
 	util.Log("progress bar kernel")
 	ProgressBar := zarr.ProgressBar{}
-	ProgressBar.New(0, float64(progmax))
+	ProgressBar.New(0, float64(progmax), showMagnets)
 	// Start brute integration
 	// 9 nested loops, does that stress you out?
 	// Fortunately, the 5 inner ones usually loop over just one element.
