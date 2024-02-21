@@ -37,6 +37,7 @@ func InitMetadata() {
 
 func AddMetadata(key string, val interface{}) {
 	Metadata[key] = val
+	SaveMetadata()
 
 }
 func EndMetadata() {
