@@ -6,19 +6,16 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = {
-    nixpkgs,
-    flake-utils,
-    ...
-  }:
-    flake-utils.lib.eachDefaultSystem (
-      system: let
+  outputs = { self, nixpkgs, flake-utils, ... }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
         pkgs = import nixpkgs {
           inherit system;
           config = {
             allowUnfree = true; # if your dependencies are unfree
           };
         };
+
         buildAmumax = pkgs:
           pkgs.buildGoModule rec {
             pname = "amumax";
@@ -71,9 +68,38 @@
               mainProgram = "amumax";
             };
           };
+
+        devEnv = pkgs.mkShell {
+          buildInputs = [
+            pkgs.go
+            pkgs.gopls
+            pkgs.cudaPackages.cuda_cudart
+            pkgs.cudaPackages.cuda_nvcc.dev
+            pkgs.cudaPackages.cuda_nvcc
+            pkgs.cudaPackages.libcufft
+            pkgs.cudaPackages.libcurand
+            pkgs.addDriverRunpath
+            # Add any other dependencies you need for development
+          ];
+          CGO_CFLAGS = [
+              "-lcufft"
+              "-lcurand"
+            ];
+
+          CGO_LDFLAGS = ["-L${pkgs.cudaPackages.cuda_cudart.lib}/lib/stubs/"];
+
+          ldflags = [
+              "-s"
+              "-w"
+            ];
+          # Set up any environment variables required for development
+          # For example, you might need to specify paths for CUDA libraries
+          # Environment variables like CGO_CFLAGS and CGO_LDFLAGS may go here if needed for development
+        };
       in {
         packages.amumax = buildAmumax pkgs;
-        defaultPackage = buildAmumax pkgs;
+        defaultPackage.amumax = buildAmumax pkgs;
+        devShell = devEnv; # Provide the development environment for use with `nix develop`
       }
     );
 }
