@@ -95,8 +95,8 @@ print(job["ref paper"])
 
 - Remove the Google trackers in the GUI.
 - Add saving as zarr
-- Mostly remove support for OVF1, OVF2, dump, anything that's not zarr.
-- Add progress bar for `run`
+- Rename the functions to save `.ovf` files as `SaveOvf` and `SaveOvfAs`. You cannot autosave ovf files anymore.
+- Add progress bar for `run`, can be turned off with `-magnets=false`
 - Reorder GUI elements
 - Dark mode GUI
 - Check and warns the user for unoptimized mesh
