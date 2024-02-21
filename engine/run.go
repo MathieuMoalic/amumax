@@ -172,7 +172,7 @@ func Run(seconds float64) {
 
 	DoOutput() // allow t=0 output
 	ProgressBar = zarr.ProgressBar{}
-	ProgressBar.New(start, stop)
+	ProgressBar.New(start, stop, *Flag_magnets)
 	for (Time < stop) && !pause {
 		select {
 		default:
