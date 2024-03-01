@@ -90,6 +90,26 @@ You can access it in the file `.zattrs`. Or using [pyzfn](https://github.com/Mat
 print(job.lattice_constant)
 print(job["ref paper"])
 ```
+### You can save data by chunks
+
+```go
+Nx = 16
+Ny = 32
+Nz = 10
+Tx = 16e-9
+Ty = 32e-9
+Tz = 10e-9
+SetGeom(Universe())
+sampling_interval = 5e-12
+AutoSaveAsChunk(m,"m_chunked", sampling_interval, Chunk(1, 1, Nz, 3))
+Run(1e-9)
+```
+This code will save the magnetization as chunks: 
+  - The `x` and `y` dimensions are unchunked ( set as 1 in Chunk() )
+  - The `z` dimension will have as many chunks as cells across the thickness ( 10 in  this case )
+  - `mz`, `my` and `mz` will be also chunked, saved separately.
+Why would you want it? Because it makes loading the data from disk MUCH faster if you chunk in a smart way.
+Say you want to calculate the FFT of the top layer of the `y` component of the magnetization, in this case, loading the data from disk will be around 30 times faster.
 
 ### Other changes
 
