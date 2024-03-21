@@ -127,11 +127,23 @@ func Diamond(sidex, sidey float64) Shape {
 	}
 }
 
-// Squircle with given sides.
-func Squircle(diam, exp float64) Shape {
+// Squircle creates a 3D rounded rectangle (a generalized squircle) with specified side lengths and thickness.
+func Squircle(sidex, sidey, sidez, exp float64) Shape {
 	return func(x, y, z float64) bool {
-		return (math.Pow(math.Abs(x/(diam/2)), exp) + math.Pow(math.Abs(y/(diam/2)), exp)) <= 1
-		// return math.Pow(math.Abs(x/diam),exp) <= diam/2
+		// Normalize x and y to range [-1, 1] based on their respective half-sides
+		normX := x / (sidex / 2)
+		normY := y / (sidey / 2)
+
+		// Check if the point is within the rounded rectangle boundary in the XY plane
+		inRoundedRect := (math.Pow(math.Abs(normX), exp) + math.Pow(math.Abs(normY), exp)) <= 1
+
+		// Half the thickness defines the range in the Z axis
+		rz := sidez / 2
+		// Check if the point is within the thickness range along the Z axis
+		inThickness := z >= -rz && z <= rz
+
+		// The point is in the shape if it's within both the rounded rectangle boundary and the thickness range
+		return inRoundedRect && inThickness
 	}
 }
 
