@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"time"
 
 	"github.com/MathieuMoalic/amumax/data"
 	"github.com/MathieuMoalic/amumax/httpfs"
@@ -15,22 +16,29 @@ import (
 )
 
 func Read(binary_path string, pwd string) (s *data.Slice, err error) {
-	if !path.IsAbs(binary_path) {
+	if binary_path[:5] == "self:" {
+		binary_path = path.Dir(pwd) +"/"+ binary_path[5:]
+	} else if !path.IsAbs(binary_path) {
 		binary_path = path.Dir(path.Dir(pwd)) + "/" + binary_path
 	}
 	zarray_path := path.Dir(binary_path) + "/.zarray"
 	io_reader, err := httpfs.Open(binary_path)
+	util.Log("Reading: ", binary_path)
 	if err != nil {
-		util.Log("Please give either an absolute path or one relative to the .mx3 file")
+		// util.Log("Please give either an absolute path or one relative to the .mx3 file")
 		util.LogThenExit(fmt.Sprint(err))
 	}
-
+	// sleep for 10 seconds
+	time.Sleep(1 * time.Second)
 	content, err := os.ReadFile(zarray_path)
 	if err != nil {
 		util.LogThenExit(fmt.Sprint(err))
 	}
 	var zarray zarrayFile
-	json.Unmarshal([]byte(content), &zarray)
+	err = json.Unmarshal([]byte(content), &zarray)
+	if err != nil {
+		util.LogThenExit(fmt.Sprint(err))
+	}
 	if zarray.Compressor.ID != "zstd" {
 		util.LogThenExit("Error: LoadFile: Only the Zstd compressor is supported")
 	}
