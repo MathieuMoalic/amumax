@@ -152,7 +152,6 @@ func CalcDemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float6
 	progress, progmax := 0, (1+(r2[Y]-r1[Y]))*(1+(r2[Z]-r1[Z])) // progress bar
 	done := make(chan struct{}, 3)                              // parallel calculation of one component done?
 
-	util.Log("progress bar kernel")
 	ProgressBar := zarr.ProgressBar{}
 	ProgressBar.New(0, float64(progmax), showMagnets)
 	// Start brute integration

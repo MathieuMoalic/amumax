@@ -37,7 +37,7 @@ func main() {
 		doUpdate()
 		return
 	}
-	go checkUpdate()
+	// go checkUpdate()
 	log.SetPrefix("")
 	log.SetFlags(0)
 
