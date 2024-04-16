@@ -122,8 +122,8 @@ func (q *cropped) Unit() string           { return UnitOf(q.parent) }
 func (q *cropped) EvalTo(dst *data.Slice) { EvalTo(q, dst) }
 
 func (q *cropped) Mesh() *data.Mesh {
-	c := MeshOf(q.parent).CellSize()
-	return data.NewMesh(q.x2-q.x1, q.y2-q.y1, q.z2-q.z1, c[X], c[Y], c[Z])
+	c := MeshOf(q.parent) // currentMesh
+	return data.NewMesh(q.x2-q.x1, q.y2-q.y1, q.z2-q.z1, c.Dx, c.Dy, c.Dz, c.PBCx, c.PBCy, c.PBCz)
 }
 
 func (q *cropped) average() []float64 { return qAverageUniverse(q) } // needed for table

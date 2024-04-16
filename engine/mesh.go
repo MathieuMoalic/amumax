@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/data"
+	"github.com/MathieuMoalic/amumax/mag"
+	"github.com/MathieuMoalic/amumax/script"
 	"github.com/MathieuMoalic/amumax/util"
 )
 
@@ -43,6 +46,7 @@ func init() {
 	DeclVar("PBCx", &PBCx, "")
 	DeclVar("PBCy", &PBCy, "")
 	DeclVar("PBCz", &PBCz, "")
+	DeclFunc("ReCreateMesh", ReCreateMesh, "")
 }
 
 func GetMesh() *data.Mesh {
@@ -169,6 +173,23 @@ func CreateMesh() {
 		globalmesh_ = *data.NewMesh(Nx, Ny, Nz, dx, dy, dz, PBCx, PBCy, PBCz)
 		M.alloc()
 		regions.alloc()
-		InitMetadata()
+		script.MMetadata.Init(OD(), StartTime, dx, dy, dz, Nx, Ny, Nz, Tx, Ty, Tz, PBCx, PBCy, PBCz, cuda.GPUInfo)
 	}
+}
+
+func ReCreateMesh(Nx, Ny, Nz int, dx, dy, dz float64, PBCx, PBCy, PBCz int) {
+	SetBusy(true)
+	defer SetBusy(false)
+	globalmesh_ = *data.NewMesh(Nx, Ny, Nz, dx, dy, dz, PBCx, PBCy, PBCz)
+	M.alloc()
+	regions.alloc()
+	script.MMetadata.Init(OD(), StartTime, dx, dy, dz, Nx, Ny, Nz, Tx, Ty, Tz, PBCx, PBCy, PBCz, cuda.GPUInfo)
+
+	SetBusy(true)
+	defer SetBusy(false)
+	// these 2 lines make sure the progress bar doesn't break when calculating the kernel
+	fmt.Print("\033[2K\r") // clearline ANSI escape code
+	kernel := mag.DemagKernel(GetMesh().Size(), GetMesh().PBC(), GetMesh().CellSize(), DemagAccuracy, *Flag_cachedir, *Flag_magnets)
+	conv_ = cuda.NewDemag(GetMesh().Size(), GetMesh().PBC(), kernel, *Flag_selftest)
+
 }
