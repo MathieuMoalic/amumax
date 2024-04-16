@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"time"
 
 	"github.com/MathieuMoalic/amumax/data"
 	"github.com/MathieuMoalic/amumax/httpfs"
@@ -23,6 +24,16 @@ func Read(binary_path string, pwd string) (s *data.Slice, err error) {
 		binary_path = wd + "/" + path.Dir(pwd) + "/" + binary_path
 	}
 	binary_path = path.Clean(binary_path)
+
+	// loop and wait until the file is saved
+	for {
+		if !isSaving {
+			break
+		}
+		util.Log("Waiting for all the files to be saved before reading...")
+		time.Sleep(1 * time.Second)
+	}
+
 	zarray_path := path.Dir(binary_path) + "/.zarray"
 	io_reader, err := httpfs.Open(binary_path)
 	util.Log("Reading: ", binary_path)
