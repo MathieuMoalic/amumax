@@ -6,9 +6,14 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+    ...
+  }:
+    flake-utils.lib.eachDefaultSystem (
+      system: let
         pkgs = import nixpkgs {
           inherit system;
           config = {
@@ -19,13 +24,13 @@
         buildAmumax = pkgs:
           pkgs.buildGoModule rec {
             pname = "amumax";
-            version = "2024.04.09";
+            version = "2024.04.16";
 
             src = pkgs.fetchFromGitHub {
               owner = "MathieuMoalic";
               repo = "amumax";
               rev = version;
-              hash = "sha256-vsOBj8CcGVonHbQJvPupVUbHCqdqZB3Ro+BCWEBtiiA=";
+              hash = "sha256-lzd5Cvzn7knxhzbaTZTta4sJlVK8TA2KtOpcNiEBsu4=";
             };
 
             vendorHash = "sha256-YqB7EofpTqDnqOQ+ARDJNvZVFltAy0j210lbSwEvifw=";
@@ -82,16 +87,16 @@
             # Add any other dependencies you need for development
           ];
           CGO_CFLAGS = [
-              "-lcufft"
-              "-lcurand"
-            ];
+            "-lcufft"
+            "-lcurand"
+          ];
 
           CGO_LDFLAGS = ["-L${pkgs.cudaPackages.cuda_cudart.lib}/lib/stubs/"];
 
           ldflags = [
-              "-s"
-              "-w"
-            ];
+            "-s"
+            "-w"
+          ];
           # Set up any environment variables required for development
           # For example, you might need to specify paths for CUDA libraries
           # Environment variables like CGO_CFLAGS and CGO_LDFLAGS may go here if needed for development
