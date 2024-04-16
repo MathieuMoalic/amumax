@@ -35,7 +35,7 @@ func (w *World) compileAssignStmt(a *ast.AssignStmt) Expr {
 // compile a = b
 func (w *World) compileAssign(a *ast.AssignStmt, lhs ast.Expr, r Expr) Expr {
 	l := w.compileLvalue(lhs)
-	return &assignStmt{lhs: l, rhs: typeConv(a.Pos(), r, inputType(l))}
+	return &assignStmt{lhs: l, rhs: typeConv(a.Pos(), r, inputType(l)), name: a.Lhs[0].(*ast.Ident).Name}
 }
 
 // compile a := b
@@ -53,12 +53,14 @@ func (w *World) compileDefine(a *ast.AssignStmt, lhs ast.Expr, r Expr) Expr {
 }
 
 type assignStmt struct {
-	lhs LValue
-	rhs Expr
+	lhs  LValue
+	rhs  Expr
+	name string
 	void
 }
 
 func (a *assignStmt) Eval() interface{} {
+	MMetadata.Add(a.name, a.rhs.Eval())
 	a.lhs.SetValue(a.rhs.Eval())
 	return nil
 }

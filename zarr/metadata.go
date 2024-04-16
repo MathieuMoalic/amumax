@@ -3,6 +3,7 @@ package zarr
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/MathieuMoalic/amumax/httpfs"
@@ -16,7 +17,9 @@ type Metadata struct {
 }
 
 func (m *Metadata) Init(currentDir string, StartTime time.Time, dx, dy, dz float64, Nx, Ny, Nz int, Tx, Ty, Tz float64, PBCx, PBCy, PBCz int, GPUInfo string) {
-	m.Fields = make(map[string]interface{})
+	if m.Fields == nil {
+		m.Fields = make(map[string]interface{})
+	}
 	m.Fields["start_time"] = StartTime
 	m.Fields["dx"] = dx
 	m.Fields["dy"] = dy
@@ -37,9 +40,17 @@ func (m *Metadata) Init(currentDir string, StartTime time.Time, dx, dy, dz float
 }
 
 func (m *Metadata) Add(key string, val interface{}) {
-	m.Fields[key] = val
-	m.Save()
+	if m.Fields == nil {
+		m.Fields = make(map[string]interface{})
+	}
+	val_type := reflect.TypeOf(val).Kind()
+	// if val is a float, int or string add it to the metadata
+	if val_type == reflect.Float64 || val_type == reflect.Int || val_type == reflect.String {
+		m.Fields[key] = val
+		m.Save()
+	}
 }
+
 func (m *Metadata) End() {
 	m.Fields["end_time"] = time.Now().Format(time.UnixDate)
 	m.Fields["total_time"] = fmt.Sprint(time.Since(m.startTime))
@@ -47,10 +58,12 @@ func (m *Metadata) End() {
 }
 
 func (m *Metadata) Save() {
-	zattrs, err := httpfs.Create(m.Path)
-	util.FatalErr(err)
-	defer zattrs.Close()
-	json_meta, err := json.MarshalIndent(m.Fields, "", "\t")
-	util.FatalErr(err)
-	zattrs.Write([]byte(json_meta))
+	if m.Path != "" {
+		zattrs, err := httpfs.Create(m.Path)
+		util.FatalErr(err)
+		defer zattrs.Close()
+		json_meta, err := json.MarshalIndent(m.Fields, "", "\t")
+		util.FatalErr(err)
+		zattrs.Write([]byte(json_meta))
+	}
 }
