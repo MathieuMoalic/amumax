@@ -5,10 +5,11 @@ package data
 import (
 	"bytes"
 	"fmt"
-	"github.com/MathieuMoalic/amumax/util"
 	"log"
 	"reflect"
 	"unsafe"
+
+	"github.com/MathieuMoalic/amumax/util"
 )
 
 // Slice is like a [][]float32, but may be stored in GPU or host memory.
@@ -26,6 +27,11 @@ var (
 	memFree, memFreeHost           func(unsafe.Pointer)
 	memCpy, memCpyDtoH, memCpyHtoD func(dst, src unsafe.Pointer, bytes int64)
 )
+
+// product of elements.
+func prod(size [3]int) int {
+	return size[0] * size[1] * size[2]
+}
 
 // Internal: enables slices on GPU. Called upon cuda init.
 func EnableGPU(free, freeHost func(unsafe.Pointer),
