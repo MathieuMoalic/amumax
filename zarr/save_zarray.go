@@ -7,6 +7,12 @@ import (
 	"github.com/MathieuMoalic/amumax/util"
 )
 
+var isSaving bool
+
+func init() {
+	isSaving = false
+}
+
 type ZstdCompressor struct {
 	ID    string `json:"id"`
 	Level int    `json:"level"`
@@ -23,6 +29,8 @@ type zarrayFile struct {
 }
 
 func SaveFileZarray(path string, size [3]int, ncomp int, time int, cz int, cy int, cx int, cc int) {
+	isSaving = true
+	defer func() { isSaving = false }()
 	z := zarrayFile{}
 	z.Compressor = ZstdCompressor{"zstd", 1}
 	z.Dtype = `<f4`
