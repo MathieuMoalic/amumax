@@ -20,7 +20,6 @@
             allowUnfree = true; # if your dependencies are unfree
           };
         };
-
         buildAmumax = pkgs:
           pkgs.buildGoModule rec {
             pname = "amumax";
@@ -57,6 +56,7 @@
             ldflags = [
               "-s"
               "-w"
+              "-X github.com/MathieuMoalic/amumax/engine.VERSION=${version}"
             ];
 
             doCheck = false;
@@ -96,6 +96,7 @@
           ldflags = [
             "-s"
             "-w"
+            "-X github.com/MathieuMoalic/amumax/engine.VERSION=$(date -u +'%Y.%m.%d')"
           ];
           # Set up any environment variables required for development
           # For example, you might need to specify paths for CUDA libraries
