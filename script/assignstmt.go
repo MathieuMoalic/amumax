@@ -4,7 +4,11 @@ import (
 	"go/ast"
 	"go/token"
 	"reflect"
+
+	"github.com/MathieuMoalic/amumax/zarr"
 )
+
+var MMetadata zarr.Metadata
 
 // compiles a (single) assign statement lhs = rhs
 func (w *World) compileAssignStmt(a *ast.AssignStmt) Expr {
