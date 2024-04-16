@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path"
-	"time"
 
 	"github.com/MathieuMoalic/amumax/data"
 	"github.com/MathieuMoalic/amumax/httpfs"
@@ -16,20 +15,20 @@ import (
 )
 
 func Read(binary_path string, pwd string) (s *data.Slice, err error) {
-	if binary_path[:5] == "self:" {
-		binary_path = path.Dir(pwd) +"/"+ binary_path[5:]
-	} else if !path.IsAbs(binary_path) {
-		binary_path = path.Dir(path.Dir(pwd)) + "/" + binary_path
+	if !path.IsAbs(binary_path) {
+		wd, err := os.Getwd()
+		if err != nil {
+			util.LogThenExit(fmt.Sprint(err))
+		}
+		binary_path = wd + "/" + path.Dir(pwd) + "/" + binary_path
 	}
+	binary_path = path.Clean(binary_path)
 	zarray_path := path.Dir(binary_path) + "/.zarray"
 	io_reader, err := httpfs.Open(binary_path)
 	util.Log("Reading: ", binary_path)
 	if err != nil {
-		// util.Log("Please give either an absolute path or one relative to the .mx3 file")
 		util.LogThenExit(fmt.Sprint(err))
 	}
-	// sleep for 10 seconds
-	time.Sleep(1 * time.Second)
 	content, err := os.ReadFile(zarray_path)
 	if err != nil {
 		util.LogThenExit(fmt.Sprint(err))
@@ -47,9 +46,6 @@ func Read(binary_path string, pwd string) (s *data.Slice, err error) {
 	sizex := zarray.Chunks[3]
 	sizec := zarray.Chunks[4]
 
-	util.Log("// chunks:", zarray.Chunks)
-	util.Log("// size:", sizez, sizey, sizex, sizec)
-	util.Log("// compressor:", zarray.Compressor.ID)
 	array := data.NewSlice(sizec, [3]int{sizex, sizey, sizez})
 	tensors := array.Tensors()
 	ncomp := array.NComp()
