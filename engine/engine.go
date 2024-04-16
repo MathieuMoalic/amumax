@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/cuda/cu"
+	"github.com/MathieuMoalic/amumax/script"
 	"github.com/MathieuMoalic/amumax/timer"
 )
 
@@ -59,12 +60,8 @@ func CleanExit() {
 	if logfile != nil {
 		logfile.Close()
 	}
-	// newlogfile.Flush()
-	// newlogfilefile.Close()
-	// if newlogfilefile != nil {
-	// }
 	if *Flag_sync {
 		timer.Print(os.Stdout)
 	}
-	EndMetadata()
+	script.MMetadata.End()
 }
