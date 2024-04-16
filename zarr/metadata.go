@@ -16,6 +16,7 @@ type Metadata struct {
 }
 
 func (m *Metadata) Init(currentDir string, StartTime time.Time, dx, dy, dz float64, Nx, Ny, Nz int, Tx, Ty, Tz float64, PBCx, PBCy, PBCz int, GPUInfo string) {
+	m.Fields = make(map[string]interface{})
 	m.Fields["start_time"] = StartTime
 	m.Fields["dx"] = dx
 	m.Fields["dy"] = dy
@@ -30,7 +31,7 @@ func (m *Metadata) Init(currentDir string, StartTime time.Time, dx, dy, dz float
 	m.Fields["PBCy"] = PBCy
 	m.Fields["PBCz"] = PBCz
 	m.Fields["gpu"] = GPUInfo
-	m.Path = currentDir + "/.zattrs"
+	m.Path = currentDir + ".zattrs"
 	m.startTime = StartTime
 	m.Save()
 }
@@ -46,7 +47,6 @@ func (m *Metadata) End() {
 }
 
 func (m *Metadata) Save() {
-	util.Log(m.Path)
 	zattrs, err := httpfs.Create(m.Path)
 	util.FatalErr(err)
 	defer zattrs.Close()
