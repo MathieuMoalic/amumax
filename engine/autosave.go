@@ -2,7 +2,9 @@ package engine
 
 // Bookkeeping for auto-saving quantities at given intervals.
 
-import "fmt"
+import (
+	"fmt"
+)
 
 var (
 	output  = make(map[Quantity]*autosave) // when to save quantities
@@ -15,7 +17,7 @@ func init() {
 }
 
 // Periodically called by run loop to save everything that's needed at this time.
-func DoOutput() {
+func SaveIfNeeded() {
 	for q, a := range output {
 		if a.needSave() {
 			a.save(q)
