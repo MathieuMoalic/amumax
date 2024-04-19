@@ -170,7 +170,7 @@ func Run(seconds float64) {
 	const output = true
 	stepper.Free() // start from a clean state
 
-	DoOutput() // allow t=0 output
+	SaveIfNeeded() // allow t=0 output
 	ProgressBar = zarr.ProgressBar{}
 	ProgressBar.New(start, stop, *Flag_magnets)
 	for (Time < stop) && !pause {
@@ -204,7 +204,7 @@ func RunWhile(condition func() bool) {
 }
 
 func RunWhileInner(condition func() bool, output bool) {
-	DoOutput() // allow t=0 output
+	SaveIfNeeded() // allow t=0 output
 	for condition() && !pause {
 		select {
 		default:
@@ -228,7 +228,7 @@ func step(output bool) {
 		f()
 	}
 	if output {
-		DoOutput()
+		SaveIfNeeded()
 	}
 }
 
