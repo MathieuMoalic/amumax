@@ -7,10 +7,10 @@ import (
 	"github.com/MathieuMoalic/amumax/util"
 )
 
-var isSaving bool
+var IsSaving bool
 
 func init() {
-	isSaving = false
+	IsSaving = false
 }
 
 type ZstdCompressor struct {
@@ -29,8 +29,8 @@ type zarrayFile struct {
 }
 
 func SaveFileZarray(path string, size [3]int, ncomp int, time int, cz int, cy int, cx int, cc int) {
-	isSaving = true
-	defer func() { isSaving = false }()
+	IsSaving = true
+	defer func() { IsSaving = false }()
 	z := zarrayFile{}
 	z.Compressor = ZstdCompressor{"zstd", 1}
 	z.Dtype = `<f4`

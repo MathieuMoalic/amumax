@@ -27,7 +27,7 @@ func Read(binary_path string, pwd string) (s *data.Slice, err error) {
 
 	// loop and wait until the file is saved
 	for {
-		if !isSaving {
+		if !IsSaving {
 			break
 		}
 		util.Log("Waiting for all the files to be saved before reading...")
