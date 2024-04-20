@@ -15,14 +15,14 @@ func MFMKernel(mesh *d.Mesh, lift, tipsize float64, cacheDir string) (kernel [3]
 
 	// Cache disabled
 	if cacheDir == "" {
-		util.Log(`//Not using kernel cache (-cache="")`)
+		util.Log(`Not using kernel cache (-cache="")`)
 		return CalcMFMKernel(mesh, lift, tipsize)
 	}
 
 	// Error-resilient kernel cache: if anything goes wrong, return calculated kernel.
 	defer func() {
 		if err := recover(); err != nil {
-			util.Log("//Unable to use kernel cache:", err)
+			util.Log("Unable to use kernel cache:", err)
 			kernel = CalcMFMKernel(mesh, lift, tipsize)
 		}
 	}()
@@ -37,9 +37,9 @@ func MFMKernel(mesh *d.Mesh, lift, tipsize float64, cacheDir string) (kernel [3]
 		}
 	}
 	if errLoad != nil {
-		util.Log("//Did not use cached kernel:", errLoad)
+		util.Log("Did not use cached kernel:", errLoad)
 	} else {
-		util.Log("//Using cached kernel:", basename)
+		util.Log("Using cached kernel:", basename)
 		return kernel
 	}
 
@@ -56,9 +56,9 @@ func MFMKernel(mesh *d.Mesh, lift, tipsize float64, cacheDir string) (kernel [3]
 		}
 	}
 	if errSave != nil {
-		util.Log("//Failed to cache kernel:", errSave)
+		util.Log("Failed to cache kernel:", errSave)
 	} else {
-		util.Log("//Cached kernel:", basename)
+		util.Log("Cached kernel:", basename)
 	}
 
 	return kernel
