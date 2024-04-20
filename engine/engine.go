@@ -20,8 +20,6 @@ import (
 	"github.com/MathieuMoalic/amumax/cuda/cu"
 	"github.com/MathieuMoalic/amumax/script"
 	"github.com/MathieuMoalic/amumax/timer"
-	"github.com/MathieuMoalic/amumax/util"
-	"github.com/MathieuMoalic/amumax/zarr"
 )
 
 var VERSION = "dev"
@@ -57,7 +55,6 @@ func CleanExit() {
 		return
 	}
 	drainOutput()
-	util.Log(zarr.IsSaving)
 	LogOut("**************** Simulation Ended ****************** //")
 	ZTables.Flush()
 	if logfile != nil {
