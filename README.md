@@ -77,18 +77,17 @@ PBCx = 32 // Optionnal
 PBcy = 32 // Optionnal
 ```
 
-### You can add metadata
-
+### Variables that you define are automatically saved:
 ```go
-Metadata("lattice_constant",500e-9)
-Metadata("ref paper","X et al. (2023)")
+lattice_constant := 500e-9
+ref_paper := "X et al. (2023)"
 ```
 
 You can access it in the file `.zattrs`. Or using [pyzfn](https://github.com/MathieuMoalic/pyzfn):
 
 ```python
 print(job.lattice_constant)
-print(job["ref paper"])
+print(job.ref_paper)
 ```
 ### You can save data by chunks
 
