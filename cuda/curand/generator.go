@@ -31,6 +31,11 @@ func CreateGenerator(rngType RngType) Generator {
 }
 
 func (g Generator) GenerateNormal(output uintptr, n int64, mean, stddev float32) {
+	// Ensure n is a multiple of 2 (or whatever base is required by cuRAND)
+	if n%2 != 0 {
+		n += 1 // Adjust n to be a multiple of 2
+	}
+
 	err := Status(C.curandGenerateNormal(
 		C.curandGenerator_t(unsafe.Pointer(uintptr(g))),
 		(*C.float)(unsafe.Pointer(output)),
