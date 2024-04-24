@@ -1,0 +1,101 @@
+<slot />
+
+<style>
+	:global(:root) {
+		--accent-color: #3d1999;
+		--accent-color-hover: #2f0e6e;
+		--date-picker-background: #1b1e27;
+		--date-picker-foreground: #f7f7f7;
+		color-scheme: dark;
+	}
+	* {
+		box-sizing: border-box;
+	}
+
+	html body {
+		background: rgb(40, 42, 54);
+		color: rgb(248, 248, 242);
+		margin-left: 5%;
+		margin-right: 5%;
+		font-family: sans-serif;
+		font-size: 14px;
+	}
+
+	.section {
+		background-color: #44475a;
+	}
+
+	.img-loupe {
+		position: absolute;
+		border: 1px solid #000;
+		border-radius: 2% 50% 50%;
+		box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
+		cursor: crosshair;
+		width: 300px;
+		height: 300px;
+		display: none;
+	}
+
+	.img-loupe-div {
+		position: relative;
+	}
+
+	#display {
+		max-height: 50vh;
+		width: 100%;
+		height: auto;
+		object-fit: contain;
+	}
+
+	table {
+		border-collapse: collapse;
+	}
+
+	td {
+		padding: 1px 5px;
+	}
+
+	hr {
+		border-style: none;
+		border-top: 1px solid #cccccc;
+	}
+
+	a {
+		color: #375eab;
+		text-decoration: none;
+	}
+
+	div {
+		margin-left: 20px;
+		margin-top: 5px;
+		margin-bottom: 20px;
+	}
+
+	div#footer {
+		color: gray;
+		font-size: 14px;
+		border: none;
+	}
+
+	.ErrorBox {
+		color: red;
+		font-weight: bold;
+		font-size: 1em;
+	}
+
+	.TextBox {
+		border: solid;
+		border-color: #bbbbbb;
+		border-width: 1px;
+		padding-left: 4px;
+	}
+
+	textarea {
+		border: solid;
+		border-color: #bbbbbb;
+		border-width: 1px;
+		padding-left: 4px;
+		color: gray;
+		font-size: 1em;
+	}
+</style>
