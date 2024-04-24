@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/MathieuMoalic/amumax/engine"
@@ -19,13 +20,12 @@ func getDir(c echo.Context) error {
 func getTables(c echo.Context) error {
 	return c.JSON(http.StatusOK, engine.ZTables)
 }
+
 func getImage(c echo.Context) error {
 	img := engine.GUI.GetRenderedImg()
 	return c.Stream(http.StatusOK, "image/png", img)
 }
 func getTimeout(c echo.Context) error {
-	// var new_timeout int
-	// Timeout = c.Bind(new_timeout)
 	return c.JSON(http.StatusOK, engine.Timeout)
 }
 func updateTimeout(c echo.Context) error {
@@ -39,8 +39,8 @@ func Start() {
 		AllowHeaders: []string{"*"},
 	}))
 
-	// e.Use(middleware.Static("/home/mat/go/src/test1/frontend/public"))
-	// e.Static("/", "index.html")
+	e.Logger.SetOutput(io.Discard)
+	e.Static("/", "static")
 	e.GET("/dir", getDir)
 	e.GET("/tables", getTables)
 	e.GET("/image", getImage)
