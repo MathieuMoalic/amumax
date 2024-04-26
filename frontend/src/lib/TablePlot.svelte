@@ -17,7 +17,7 @@
 				{/each}
 			</select>
 			y:
-			<select bind:value={$tablePlotx} on:change={refreshTablePlot}>
+			<select bind:value={$tablePloty} on:change={refreshTablePlot}>
 				{#each $tablePlotState.columns as q}
 					<option value={q}>{q}</option>
 				{/each}
