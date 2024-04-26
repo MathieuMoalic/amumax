@@ -132,8 +132,8 @@ func NewEngineState() *EngineState {
 			// Aex: engine.Aex.Average(),
 		},
 		TablePlot: TablePlot{
-			AutoSaveInterval: engine.ZTables.AutoSavePeriod,
-			Columns:          engine.ZTables.GetTableNames(),
+			AutoSaveInterval: engine.Table.AutoSavePeriod,
+			Columns:          engine.Table.GetTableNames(),
 		},
 	}
 	return &engineState

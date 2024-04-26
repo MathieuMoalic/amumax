@@ -12,20 +12,20 @@ import (
 )
 
 func init() {
-	DeclFunc("TableSave", ZTableSave, "Save the data table right now.")
-	DeclFunc("TableAdd", ZTableAdd, "Save the data table periodically.")
-	DeclFunc("TableAddVar", ZTableAddVar, "Save the data table periodically.")
-	DeclFunc("TableAddAs", ZTableAddAs, "Save the data table periodically.")
-	DeclFunc("TableAutoSave", ZTableAutoSave, "Save the data table periodically.")
-	ZTables = ZTablesStruct{Data: make(map[string][]float64), Step: -1, AutoSavePeriod: 0.0, FlushInterval: 5 * time.Second}
+	DeclFunc("TableSave", TableSave, "Save the data table right now.")
+	DeclFunc("TableAdd", TableAdd, "Save the data table periodically.")
+	DeclFunc("TableAddVar", TableAddVar, "Save the data table periodically.")
+	DeclFunc("TableAddAs", TableAddAs, "Save the data table periodically.")
+	DeclFunc("TableAutoSave", TableAutoSave, "Save the data table periodically.")
+	Table = TableStruct{Data: make(map[string][]float64), Step: -1, AutoSavePeriod: 0.0, FlushInterval: 5 * time.Second}
 }
 
-var ZTables ZTablesStruct
+var Table TableStruct
 
 // the Table is kept in RAM and used for the API
-type ZTablesStruct struct {
+type TableStruct struct {
 	quantities     []Quantity
-	tables         []ZTable
+	columns        []Column
 	Data           map[string][]float64 `json:"data"`
 	AutoSavePeriod float64              `json:"autoSavePeriod"`
 	AutoSaveStart  float64              `json:"autoSaveStart"`
@@ -33,13 +33,13 @@ type ZTablesStruct struct {
 	FlushInterval  time.Duration        `json:"flushInterval"`
 }
 
-type ZTable struct {
+type Column struct {
 	Name   string
 	buffer []byte
 	io     httpfs.WriteCloseFlusher
 }
 
-func (ts *ZTablesStruct) WriteToBuffer() {
+func (ts *TableStruct) WriteToBuffer() {
 	buf := []float64{}
 	// always save the current time
 	buf = append(buf, Time)
@@ -49,30 +49,29 @@ func (ts *ZTablesStruct) WriteToBuffer() {
 	}
 	// size of buf should be same as size of []Ztable
 	for i, b := range buf {
-		ts.tables[i].buffer = append(ts.tables[i].buffer, zarr.Float64ToByte(b)...)
-		ts.Data[ts.tables[i].Name] = append(ts.Data[ts.tables[i].Name], b)
-		// ts.Tables[i].Data = append(ts.Tables[i].Data, b)
+		ts.columns[i].buffer = append(ts.columns[i].buffer, zarr.Float64ToByte(b)...)
+		ts.Data[ts.columns[i].Name] = append(ts.Data[ts.columns[i].Name], b)
 	}
 }
 
-func (ts *ZTablesStruct) Flush() {
-	for i := range ts.tables {
-		ts.tables[i].io.Write(ts.tables[i].buffer)
-		ts.tables[i].buffer = []byte{}
+func (ts *TableStruct) Flush() {
+	for i := range ts.columns {
+		ts.columns[i].io.Write(ts.columns[i].buffer)
+		ts.columns[i].buffer = []byte{}
 		// saving .zarray before the data might help resolve some unsync
 		// errors when the simulation is running and the user loads data
-		zarr.SaveFileTableZarray(OD()+"table/"+ts.tables[i].Name, ts.Step)
-		ts.tables[i].io.Flush()
+		zarr.SaveFileTableZarray(OD()+"table/"+ts.columns[i].Name, ts.Step)
+		ts.columns[i].io.Flush()
 	}
 }
 
-func (ts *ZTablesStruct) NeedSave() bool {
+func (ts *TableStruct) NeedSave() bool {
 	return ts.AutoSavePeriod != 0 && (Time-ts.AutoSaveStart)-float64(ts.Step)*ts.AutoSavePeriod >= ts.AutoSavePeriod
 }
 
-func (ts *ZTablesStruct) Exists(q Quantity, name string) bool {
+func (ts *TableStruct) Exists(q Quantity, name string) bool {
 	suffixes := []string{"x", "y", "z"}
-	for _, i := range ZTables.tables {
+	for _, i := range Table.columns {
 		if q.NComp() == 1 {
 			if i.Name == name {
 				return true
@@ -88,9 +87,9 @@ func (ts *ZTablesStruct) Exists(q Quantity, name string) bool {
 	return false
 }
 
-func (ts *ZTablesStruct) GetTableNames() []string {
+func (ts *TableStruct) GetTableNames() []string {
 	names := []string{}
-	for _, i := range ts.tables {
+	for _, i := range ts.columns {
 		names = append(names, i.Name)
 	}
 	return names
@@ -103,69 +102,69 @@ func TableInit() {
 	util.FatalErr(err)
 	f, err := httpfs.Create(OD() + "table/t/0")
 	util.FatalErr(err)
-	ZTables.tables = append(ZTables.tables, ZTable{"t", []byte{}, f})
-	ZTableAdd(&M)
-	go ZTablesAutoFlush()
+	Table.columns = append(Table.columns, Column{"t", []byte{}, f})
+	TableAdd(&M)
+	go TablesAutoFlush()
 
 }
 
-func ZTablesAutoFlush() {
+func TablesAutoFlush() {
 	for {
-		ZTables.Flush()
-		time.Sleep(ZTables.FlushInterval)
+		Table.Flush()
+		time.Sleep(Table.FlushInterval)
 	}
 }
 
-func ZTableSave() {
-	if len(ZTables.tables) == 0 {
+func TableSave() {
+	if len(Table.columns) == 0 {
 		TableInit()
 	}
-	ZTables.Step += 1
-	ZTables.WriteToBuffer()
+	Table.Step += 1
+	Table.WriteToBuffer()
 }
 
-func CreateTable(name string) ZTable {
+func CreateTable(name string) Column {
 	err := httpfs.Mkdir(OD() + "table/" + name)
 	util.FatalErr(err)
 	f, err := httpfs.Create(OD() + "table/" + name + "/0")
 	util.FatalErr(err)
-	return ZTable{Name: name, buffer: []byte{}, io: f}
+	return Column{Name: name, buffer: []byte{}, io: f}
 }
 
-func ZTableAdd(q Quantity) {
-	ZTableAddAs(q, NameOf(q))
+func TableAdd(q Quantity) {
+	TableAddAs(q, NameOf(q))
 }
 
-func ZTableAddAs(q Quantity, name string) {
+func TableAddAs(q Quantity, name string) {
 	suffixes := []string{"x", "y", "z"}
-	if ZTables.Step != -1 {
+	if Table.Step != -1 {
 		util.Fatal("Add Table Quantity BEFORE you save the table for the first time")
 	}
-	if len(ZTables.tables) == 0 {
+	if len(Table.columns) == 0 {
 		TableInit()
 	}
 
-	if ZTables.Exists(q, name) {
+	if Table.Exists(q, name) {
 		LogOut(name, " is already in the table. Ignoring.")
 		return
 	}
-	ZTables.quantities = append(ZTables.quantities, q)
+	Table.quantities = append(Table.quantities, q)
 	if q.NComp() == 1 {
-		ZTables.tables = append(ZTables.tables, CreateTable(name))
+		Table.columns = append(Table.columns, CreateTable(name))
 	} else {
 		for comp := 0; comp < q.NComp(); comp++ {
-			ZTables.tables = append(ZTables.tables, CreateTable(name+suffixes[comp]))
+			Table.columns = append(Table.columns, CreateTable(name+suffixes[comp]))
 		}
 	}
 }
 
-func ZTableAutoSave(period float64) {
-	ZTables.AutoSaveStart = Time
-	ZTables.AutoSavePeriod = period
+func TableAutoSave(period float64) {
+	Table.AutoSaveStart = Time
+	Table.AutoSavePeriod = period
 }
 
-func ZTableAddVar(customvar script.ScalarFunction, name, unit string) {
-	ZTableAdd(&userVar{customvar, name, unit})
+func TableAddVar(customvar script.ScalarFunction, name, unit string) {
+	TableAdd(&userVar{customvar, name, unit})
 }
 
 type userVar struct {
