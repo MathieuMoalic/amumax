@@ -49,12 +49,12 @@ func (p *zTablePlot) NeedSave() bool {
 }
 
 func (p *zTablePlot) SelectDataColumns(xlabel, ylabel string) error {
-	if _, exists := ZTables.Data[xlabel]; exists {
+	if _, exists := Table.Data[xlabel]; exists {
 		p.X = xlabel
 	} else {
 		return errors.New("ylabel doesn't exist")
 	}
-	if _, exists := ZTables.Data[ylabel]; exists {
+	if _, exists := Table.Data[ylabel]; exists {
 		p.Y = ylabel
 	} else {
 		return errors.New("ylabel doesn't exist")
@@ -75,8 +75,8 @@ func (p *zTablePlot) WriteTo(w io.Writer) (int64, error) {
 // Updates the cached image if the cache is expired
 // Does nothing if the image is already being updated by another GO process
 func (p *zTablePlot) update() {
-	xdata := ZTables.Data[p.X]
-	ydata := ZTables.Data[p.Y][:len(xdata)]
+	xdata := Table.Data[p.X]
+	ydata := Table.Data[p.Y][:len(xdata)]
 	points := make(plotter.XYs, len(xdata))
 	for i := 0; i < len(xdata); i++ {
 		points[i].X = xdata[i]
@@ -120,8 +120,8 @@ func (p *zTablePlot) update() {
 
 func (p *zTablePlot) Render() (*bytes.Buffer, error) {
 
-	xdata := ZTables.Data[p.X]
-	ydata := ZTables.Data[p.Y][:len(xdata)]
+	xdata := Table.Data[p.X]
+	ydata := Table.Data[p.Y][:len(xdata)]
 	points := make(plotter.XYs, len(xdata))
 	for i := 0; i < len(xdata); i++ {
 		points[i].X = xdata[i]

@@ -56,7 +56,7 @@ func CleanExit() {
 	}
 	drainOutput()
 	LogOut("**************** Simulation Ended ****************** //")
-	ZTables.Flush()
+	Table.Flush()
 	if logfile != nil {
 		logfile.Close()
 	}
