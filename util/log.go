@@ -41,6 +41,9 @@ func LogErr(err error) {
 		color.Red(fmt.Sprint("// ", file, ":", line, err))
 	}
 }
+func LogWarn(msg string) {
+	color.Yellow(fmt.Sprint("// Warning: ", msg))
+}
 
 func LogThenExit(msg string) {
 	color.Red(msg)

@@ -138,7 +138,7 @@ func TableAdd(q Quantity) {
 func TableAddAs(q Quantity, name string) {
 	suffixes := []string{"x", "y", "z"}
 	if Table.Step != -1 {
-		util.Fatal("Add Table Quantity BEFORE you save the table for the first time")
+		util.LogWarn("You cannot add a new quantity to the table after the simulation has started. Ignoring.")
 	}
 	if len(Table.columns) == 0 {
 		TableInit()
