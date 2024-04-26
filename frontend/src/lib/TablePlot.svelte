@@ -1,18 +1,30 @@
+<script lang="ts">
+	import { tablePlotState, refreshTablePlot, TablePlotUrl, tablePlotx, tablePloty } from './api';
+</script>
+
 <div>
-	<span
-		title="Click to show/hide"
-		style="cursor:pointer; font-size:1.2em; font-weight:bold; color:gray">▾ gnuplot</span
-	> <br />
-	<div id="div_1479662310404379968">
-		<p title="">
-			TableAutosave: <input type="text" class="TextBox" id="tableAutoSave" style="color: black;" /> s
+	<span>▾ gnuplot</span>
+	<br />
+	<div>
+		<p>
+			Auto Save Interval: <input bind:value={$tablePlotState.autoSaveInterval} /> s
 		</p>
-		<b
-			>x: <input type="text" class="TextBox" id="usingx" style="color: black;" />
+		<b>
+			x:
+			<select bind:value={$tablePlotx} on:change={refreshTablePlot}>
+				{#each $tablePlotState.columns as q}
+					<option value={q}>{q}</option>
+				{/each}
+			</select>
 			y:
-			<input type="text" class="TextBox" id="usingy" style="color: black;" />
-		</b><br />
-		<p class="ErrorBox"><span id="plotErr"></span></p>
-		<img id="plot" src="/plot/?13149_0" alt="plot" />
+			<select bind:value={$tablePlotx} on:change={refreshTablePlot}>
+				{#each $tablePlotState.columns as q}
+					<option value={q}>{q}</option>
+				{/each}
+			</select>
+		</b>
+		<br />
+		<p><span></span></p>
+		<img src={$TablePlotUrl} alt="TablePlot" />
 	</div>
 </div>

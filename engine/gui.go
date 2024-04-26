@@ -38,12 +38,12 @@ type guistate struct {
 }
 
 func (g *guistate) ServePlot(w http.ResponseWriter, r *http.Request) {
-	err := tableplot.SelectDataColumns(g.StringValue("usingx"), g.StringValue("usingy"))
+	err := Tableplot.SelectDataColumns(g.StringValue("usingx"), g.StringValue("usingy"))
 	if err != nil {
 		g.Set("plotErr", "Plot Error: "+err.Error())
 	}
 	w.Header().Set("Content-Type", "image/png")
-	_, err = tableplot.WriteTo(w)
+	_, err = Tableplot.WriteTo(w)
 	if err != nil {
 		png.Encode(w, image.NewNRGBA(image.Rect(0, 0, 4, 4)))
 		g.Set("plotErr", "Plot Error: "+err.Error())
@@ -79,13 +79,13 @@ func (g *guistate) RunInteractive() {
 		}
 	}()
 
-	fmt.Println("//entering interactive mode")
+	util.Log("Entering interactive mode")
 	g.UpdateKeepAlive()
 	for time.Since(g.KeepAlive()) < Timeout {
 		f := <-Inject
 		f()
 	}
-	fmt.Println("//browser disconnected, exiting")
+	util.Log("Browser disconnected, exiting")
 }
 
 // displayable quantity in GUI Parameters section
@@ -158,9 +158,9 @@ func (g *guistate) prepareMesh() {
 	g.OnEvent("nx", func() { Inject <- func() { Nx = g.IntValue("nx"); warnmesh() } })
 	g.OnEvent("ny", func() { Inject <- func() { Ny = g.IntValue("ny"); warnmesh() } })
 	g.OnEvent("nz", func() { Inject <- func() { Nz = g.IntValue("nz"); warnmesh() } })
-	g.OnEvent("cx", func() { Inject <- func() { dx = g.FloatValue("cx"); warnmesh() } })
-	g.OnEvent("cy", func() { Inject <- func() { dy = g.FloatValue("cy"); warnmesh() } })
-	g.OnEvent("cz", func() { Inject <- func() { dz = g.FloatValue("cz"); warnmesh() } })
+	g.OnEvent("cx", func() { Inject <- func() { Dx = g.FloatValue("cx"); warnmesh() } })
+	g.OnEvent("cy", func() { Inject <- func() { Dy = g.FloatValue("cy"); warnmesh() } })
+	g.OnEvent("cz", func() { Inject <- func() { Dz = g.FloatValue("cz"); warnmesh() } })
 	g.OnEvent("px", func() { Inject <- func() { PBCx = g.IntValue("px"); warnmesh() } })
 	g.OnEvent("py", func() { Inject <- func() { PBCy = g.IntValue("py"); warnmesh() } })
 	g.OnEvent("pz", func() { Inject <- func() { PBCz = g.IntValue("pz"); warnmesh() } })
@@ -259,12 +259,12 @@ func (g *guistate) prepareM() {
 }
 
 var (
-	solvertypes = map[string]int{"bw_euler": -1, "euler": 1, "heun": 2, "rk23": 3, "rk4": 4, "rk45": 5, "rkf56": 6}
-	solvernames = map[int]string{-1: "bw_euler", 1: "euler", 2: "heun", 3: "rk23", 4: "rk4", 5: "rk45", 6: "rkf56"}
+	Solvertypes = map[string]int{"bw_euler": -1, "euler": 1, "heun": 2, "rk23": 3, "rk4": 4, "rk45": 5, "rkf56": 6}
+	Solvernames = map[int]string{-1: "bw_euler", 1: "euler", 2: "heun", 3: "rk23", 4: "rk4", 5: "rk45", 6: "rkf56"}
 )
 
 func Break() {
-	Inject <- func() { pause = true }
+	Inject <- func() { Pause = true }
 }
 
 // see prepareServer
@@ -279,7 +279,7 @@ func (g *guistate) prepareSolver() {
 	g.OnEvent("maxerr", func() { Inject <- func() { g.EvalGUI("MaxErr=" + g.StringValue("maxerr")) } })
 	g.OnEvent("solvertype", func() {
 		Inject <- func() {
-			typ := solvertypes[g.StringValue("solvertype")]
+			typ := Solvertypes[g.StringValue("solvertype")]
 
 			// euler must have fixed time step
 			if typ == EULER && FixDt == 0 {
@@ -382,21 +382,21 @@ func (g *guistate) prepareOnUpdate() {
 		}
 
 		Inject <- (func() { // sends to run loop to be executed in between time steps
-			g.Set("console", hist)
+			g.Set("console", Hist)
 
 			// mesh
 			g.Set("nx", Nx)
 			g.Set("ny", Ny)
 			g.Set("nz", Nz)
-			g.Set("cx", dx)
-			g.Set("cy", dy)
-			g.Set("cz", dz)
+			g.Set("cx", Dx)
+			g.Set("cy", Dy)
+			g.Set("cz", Dz)
 			g.Set("px", PBCx)
 			g.Set("py", PBCy)
 			g.Set("pz", PBCz)
-			g.Set("wx", float32(dx*float64(Nx)*1e9))
-			g.Set("wy", float32(dy*float64(Ny)*1e9))
-			g.Set("wz", float32(dz*float64(Nz)*1e9))
+			g.Set("wx", float32(Dx*float64(Nx)*1e9))
+			g.Set("wy", float32(Dy*float64(Ny)*1e9))
+			g.Set("wz", float32(Dz*float64(Nz)*1e9))
 
 			// solver
 			g.Set("nsteps", NSteps)
@@ -407,8 +407,8 @@ func (g *guistate) prepareOnUpdate() {
 			g.Set("mindt", MinDt)
 			g.Set("maxdt", MaxDt)
 			g.Set("fixdt", FixDt)
-			g.Set("solvertype", fmt.Sprint(solvernames[solvertype]))
-			if pause {
+			g.Set("solvertype", fmt.Sprint(Solvernames[Solvertype]))
+			if Pause {
 				g.Set("busy", "Paused")
 			} else {
 				g.Set("busy", "Running")

@@ -1,17 +1,55 @@
-<div class="solver">
-	<span
-		title="Click to show/hide"
-		style="cursor:pointer; font-size:1.2em; font-weight:bold; color:gray">▾ solver</span
-	> <br />
-	<div id="div_359618236257259938">
-		Type: <select id="solvertype">
-			<option value="bw_euler"> bw_euler </option>
-			<option value="euler"> euler </option>
-			<option value="heun"> heun </option>
-			<option value="rk4"> rk4 </option>
-			<option value="rk23"> rk23 </option>
-			<option value="rk45"> rk45 </option>
-			<option value="rkf56"> rkf56 </option>
+<script lang="ts">
+	import {
+		solverState,
+		postSolverType,
+		postRun,
+		postSteps,
+		postRelax,
+		postBreak,
+		headerState
+	} from './api';
+	let solvertypes = ['bw_euler', 'euler', 'heun', 'rk4', 'rk23', 'rk45', 'rkf56'];
+	let selectedSolver = $solverState.type;
+	function changeSolver() {
+		postSolverType(selectedSolver).catch((error) => {
+			console.error('Error posting solver type:', error);
+		});
+	}
+	let runSeconds = 1e-9;
+	let runSteps = 100;
+	function run() {
+		$headerState.Status = 'running';
+		postRun(runSeconds).catch((error) => {
+			console.error('Error posting run:', error);
+		});
+	}
+	function steps() {
+		postSteps(runSteps).catch((error) => {
+			console.error('Error posting steps:', error);
+		});
+	}
+	function relax() {
+		postRelax().catch((error) => {
+			console.error('Error posting relax:', error);
+		});
+	}
+	function pbreak() {
+		postBreak().catch((error) => {
+			console.error('Error posting break:', error);
+		});
+	}
+</script>
+
+<div>
+	<span>▾ solver</span> <br />
+	<div>
+		Type: <span>{$solverState.type}</span>
+		<select bind:value={selectedSolver} on:change={changeSolver}>
+			{#each solvertypes as solvertype}
+				<option value={solvertype}>
+					{solvertype}
+				</option>
+			{/each}
 		</select>
 		<table>
 			<tbody>
@@ -19,36 +57,22 @@
 					<td>
 						<table>
 							<tbody>
-								<tr title="">
-									<td> <button id="run" class="Button">Run</button></td>
-									<td>
-										<input
-											type="text"
-											class="TextBox"
-											id="runtime"
-											size="8"
-											style="color: black;"
-										/>s</td
-									>
+								<tr>
+									<td> <button on:click={run}>Run</button></td>
+									<td> <input bind:value={runSeconds} />s</td>
 								</tr>
-								<tr title="">
-									<td> <button id="steps" class="Button">Steps</button></td>
+								<tr>
+									<td> <button on:click={steps}>Steps</button></td>
 									<td>
-										<input
-											type="text"
-											class="TextBox"
-											id="runsteps"
-											size="8"
-											style="color: black;"
-										/>
+										<input bind:value={runSteps} />
 									</td>
 								</tr>
-								<tr title="">
-									<td> <button id="relax" class="Button">Relax</button></td>
+								<tr>
+									<td> <button on:click={relax}>Relax</button></td>
 									<td></td>
 								</tr>
-								<tr title="Break current run loop">
-									<td> <button id="break" class="Button">Break</button></td>
+								<tr>
+									<td> <button on:click={pbreak}>Break</button></td>
 									<td></td>
 								</tr>
 							</tbody>
@@ -58,25 +82,25 @@
 					<td>
 						<table>
 							<tbody>
-								<tr title="Time steps taken">
+								<tr>
 									<td>step: </td>
-									<td><span id="nsteps">13149</span> </td>
+									<td>{$solverState.steps} </td>
 								</tr>
-								<tr title="">
+								<tr>
 									<td>time: </td>
-									<td><span id="time">1.00000e-09</span> s </td>
+									<td><span>{$solverState.time.toExponential(3)}</span> s </td>
 								</tr>
-								<tr title="">
+								<tr>
 									<td>dt: </td>
-									<td><span id="dt">4.394e-14</span> s </td>
+									<td><span>{$solverState.dt.toExponential(3)}</span> s </td>
 								</tr>
-								<tr title="Maximum relative error/step">
+								<tr>
 									<td>err/step: </td>
-									<td><span id="lasterr">1.991e-09</span> </td>
+									<td><span>{$solverState.errPerStep.toExponential(3)}</span> </td>
 								</tr>
-								<tr title="Maximum absolute torque">
+								<tr>
 									<td>MaxTorque:</td>
-									<td><span id="maxtorque">6.667e+00 T</span> </td>
+									<td><span>{$solverState.maxTorque.toExponential(3)}</span> </td>
 								</tr>
 							</tbody>
 						</table>
@@ -85,38 +109,30 @@
 					<td>
 						<table>
 							<tbody>
-								<tr title="">
+								<tr>
 									<td>fixdt: </td>
 									<td
-										><input type="text" class="TextBox" id="fixdt" size="8" style="color: black;" />
+										><input placeholder=" {$solverState.fixdt.toExponential(3)}" />
 										s
 									</td>
 								</tr>
-								<tr title="">
+								<tr>
 									<td>mindt: </td>
 									<td
-										><input type="text" class="TextBox" id="mindt" size="8" style="color: black;" />
+										><input placeholder=" {$solverState.mindt.toExponential(3)}" />
 										s
 									</td>
 								</tr>
-								<tr title="">
+								<tr>
 									<td>maxdt: </td>
 									<td
-										><input type="text" class="TextBox" id="maxdt" size="8" style="color: black;" />
+										><input placeholder=" {$solverState.maxdt.toExponential(3)}" />
 										s
 									</td>
 								</tr>
-								<tr title="">
+								<tr>
 									<td>maxerr: </td>
-									<td
-										><input
-											type="text"
-											class="TextBox"
-											id="maxerr"
-											size="8"
-											style="color: black;"
-										/>/step</td
-									>
+									<td><input placeholder=" {$solverState.maxerr.toExponential(3)}" />/step</td>
 								</tr>
 							</tbody>
 						</table>
@@ -126,3 +142,9 @@
 		</table>
 	</div>
 </div>
+
+<style>
+	input {
+		size: 8;
+	}
+</style>

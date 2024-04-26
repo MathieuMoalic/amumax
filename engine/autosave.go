@@ -32,8 +32,8 @@ func SaveIfNeeded() {
 	if ZTables.NeedSave() {
 		ZTableSave()
 	}
-	if tableplot.NeedSave() {
-		tableplot.update()
+	if Tableplot.NeedSave() {
+		Tableplot.update()
 	}
 }
 
