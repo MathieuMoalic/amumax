@@ -8,7 +8,7 @@ import (
 	"github.com/MathieuMoalic/amumax/cuda"
 )
 
-//Stopping relax Maxtorque in T. The user can check MaxTorque for sane values (e.g. 1e-3).
+// Stopping relax Maxtorque in T. The user can check MaxTorque for sane values (e.g. 1e-3).
 // If set to 0, relax() will stop when the average torque is steady or increasing.
 var RelaxTorqueThreshold float64 = -1.
 
@@ -22,10 +22,10 @@ var relaxing = false
 
 func Relax() {
 	SanityCheck()
-	pause = false
+	Pause = false
 
 	// Save the settings we are changing...
-	prevType := solvertype
+	prevType := Solvertype
 	prevErr := MaxErr
 	prevFixDt := FixDt
 	prevPrecess := Precess
@@ -55,7 +55,7 @@ func Relax() {
 	E0 := GetTotalEnergy()
 	relaxSteps(N)
 	E1 := GetTotalEnergy()
-	for E1 < E0 && !pause {
+	for E1 < E0 && !Pause {
 		relaxSteps(N)
 		E0, E1 = E1, GetTotalEnergy()
 	}
@@ -74,8 +74,8 @@ func Relax() {
 
 	if RelaxTorqueThreshold > 0 {
 		// run as long as the max torque is above threshold. Then increase the accuracy and step more.
-		for !pause {
-			for maxTorque() > RelaxTorqueThreshold && !pause {
+		for !Pause {
+			for maxTorque() > RelaxTorqueThreshold && !Pause {
 				relaxSteps(N)
 			}
 			MaxErr /= math.Sqrt2
@@ -88,17 +88,17 @@ func Relax() {
 		// if MaxErr < 1e-9, this code won't run.
 		var T0, T1 float32 = 0, avgTorque()
 		// Step as long as torque goes down. Then increase the accuracy and step more.
-		for MaxErr > 1e-9 && !pause {
+		for MaxErr > 1e-9 && !Pause {
 			MaxErr /= math.Sqrt2
 			relaxSteps(N) // TODO: Play with other values
 			T0, T1 = T1, avgTorque()
-			for T1 < T0 && !pause {
+			for T1 < T0 && !Pause {
 				relaxSteps(N) // TODO: Play with other values
 				T0, T1 = T1, avgTorque()
 			}
 		}
 	}
-	pause = true
+	Pause = true
 }
 
 // take n steps without setting pause when done or advancing time

@@ -15,7 +15,7 @@ import (
 var (
 	Time                    float64                      // time in seconds
 	alarm                   float64                      // alarm clock marks end time of run, dt adaptation must not cross it!
-	pause                   = true                       // set pause at any time to stop running after the current step
+	Pause                   = true                       // set pause at any time to stop running after the current step
 	postStep                []func()                     // called on after every full time step
 	Inject                           = make(chan func()) // injects code in between time steps. Used by web interface.
 	Dt_si                   float64  = 1e-15             // time step = dt_si (seconds) *dt_mul, which should be nice float32
@@ -27,7 +27,7 @@ var (
 	NSteps, NUndone, NEvals int                          // number of good steps, undone steps
 	FixDt                   float64                      // fixed time step?
 	stepper                 Stepper                      // generic step, can be EulerStep, HeunStep, etc
-	solvertype              int
+	Solvertype              int
 	ProgressBar             zarr.ProgressBar
 )
 
@@ -92,7 +92,7 @@ func SetSolver(typ int) {
 	case FEHLBERG:
 		stepper = new(RK56)
 	}
-	solvertype = typ
+	Solvertype = typ
 }
 
 // write torque to dst and increment NEvals
@@ -166,14 +166,14 @@ func Run(seconds float64) {
 	stop := Time + seconds
 	alarm = stop // don't have dt adapt to go over alarm
 	SanityCheck()
-	pause = false // may be set by <-Inject
+	Pause = false // may be set by <-Inject
 	const output = true
 	stepper.Free() // start from a clean state
 
 	SaveIfNeeded() // allow t=0 output
 	ProgressBar = zarr.ProgressBar{}
 	ProgressBar.New(start, stop, *Flag_magnets)
-	for (Time < stop) && !pause {
+	for (Time < stop) && !Pause {
 		select {
 		default:
 			ProgressBar.Update(Time)
@@ -184,7 +184,7 @@ func Run(seconds float64) {
 		}
 	}
 	ProgressBar.Finish()
-	pause = true
+	Pause = true
 }
 
 // Run the simulation for a number of steps.
@@ -196,16 +196,16 @@ func Steps(n int) {
 // Runs as long as condition returns true, saves output.
 func RunWhile(condition func() bool) {
 	SanityCheck()
-	pause = false // may be set by <-Inject
+	Pause = false // may be set by <-Inject
 	const output = true
 	stepper.Free() // start from a clean state
 	RunWhileInner(condition, output)
-	pause = true
+	Pause = true
 }
 
 func RunWhileInner(condition func() bool, output bool) {
 	SaveIfNeeded() // allow t=0 output
-	for condition() && !pause {
+	for condition() && !Pause {
 		select {
 		default:
 			step(output)

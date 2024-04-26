@@ -15,9 +15,9 @@ var (
 	Nx          int
 	Ny          int
 	Nz          int
-	dx          float64
-	dy          float64
-	dz          float64
+	Dx          float64
+	Dy          float64
+	Dz          float64
 	Tx          float64
 	Ty          float64
 	Tz          float64
@@ -40,9 +40,9 @@ func init() {
 	DeclVar("Nx", &Nx, "")
 	DeclVar("Ny", &Ny, "")
 	DeclVar("Nz", &Nz, "")
-	DeclVar("dx", &dx, "")
-	DeclVar("dy", &dy, "")
-	DeclVar("dz", &dz, "")
+	DeclVar("dx", &Dx, "")
+	DeclVar("dy", &Dy, "")
+	DeclVar("dz", &Dz, "")
 	DeclVar("PBCx", &PBCx, "")
 	DeclVar("PBCy", &PBCy, "")
 	DeclVar("PBCz", &PBCz, "")
@@ -83,25 +83,25 @@ func SmoothMesh() {
 		return
 	}
 	LogOut("Original mesh: ")
-	LogOut("Cell size: ", dx, dy, dz)
+	LogOut("Cell size: ", Dx, Dy, Dz)
 	LogOut("Grid Size: ", Nx, Ny, Nz)
 	if AutoMeshx {
 		NewNx := closestSevenSmooth(Nx)
-		dx = dx * float64(Nx) / float64(NewNx)
+		Dx = Dx * float64(Nx) / float64(NewNx)
 		Nx = NewNx
 	}
 	if AutoMeshy {
 		NewNy := closestSevenSmooth(Ny)
-		dy = dy * float64(Ny) / float64(NewNy)
+		Dy = Dy * float64(Ny) / float64(NewNy)
 		Ny = NewNy
 	}
 	if AutoMeshz {
 		NewNz := closestSevenSmooth(Nz)
-		dz = dz * float64(Nz) / float64(NewNz)
+		Dz = Dz * float64(Nz) / float64(NewNz)
 		Nz = NewNz
 	}
 	LogOut("Smoothed mesh: ")
-	LogOut("Cell size: ", dx, dy, dz)
+	LogOut("Cell size: ", Dx, Dy, Dz)
 	LogOut("Grid Size: ", Nx, Ny, Nz)
 }
 
@@ -130,7 +130,7 @@ func ValidateCellSize() {
 	min_threshold := 0.25e-9
 	max_threshold := 500e-9
 	names := []string{"dx", "dy", "dz"}
-	for i, d := range []float64{dx, dy, dz} {
+	for i, d := range []float64{Dx, Dy, Dz} {
 		if d == 0.0 {
 			util.Fatal("Error: You have to specify ", names[i])
 		} else if d < min_threshold {
@@ -162,18 +162,18 @@ func CreateMesh() {
 	if IsMeshCreated() {
 		SetBusy(true)
 		defer SetBusy(false)
-		SetTiDiNi(&Tx, &dx, &Nx, "x")
-		SetTiDiNi(&Ty, &dy, &Ny, "y")
-		SetTiDiNi(&Tz, &dz, &Nz, "z")
+		SetTiDiNi(&Tx, &Dx, &Nx, "x")
+		SetTiDiNi(&Ty, &Dy, &Ny, "y")
+		SetTiDiNi(&Tz, &Dz, &Nz, "z")
 		ValidateGridSize()
 		ValidateCellSize()
 		if AutoMeshx || AutoMeshy || AutoMeshz {
 			SmoothMesh()
 		}
-		globalmesh_ = *data.NewMesh(Nx, Ny, Nz, dx, dy, dz, PBCx, PBCy, PBCz)
+		globalmesh_ = *data.NewMesh(Nx, Ny, Nz, Dx, Dy, Dz, PBCx, PBCy, PBCz)
 		M.alloc()
 		regions.alloc()
-		script.MMetadata.Init(OD(), StartTime, dx, dy, dz, Nx, Ny, Nz, Tx, Ty, Tz, PBCx, PBCy, PBCz, cuda.GPUInfo)
+		script.MMetadata.Init(OD(), StartTime, Dx, Dy, Dz, Nx, Ny, Nz, Tx, Ty, Tz, PBCx, PBCy, PBCz, cuda.GPUInfo)
 	}
 }
 

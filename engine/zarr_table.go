@@ -88,6 +88,14 @@ func (ts *ZTablesStruct) Exists(q Quantity, name string) bool {
 	return false
 }
 
+func (ts *ZTablesStruct) GetTableNames() []string {
+	names := []string{}
+	for _, i := range ts.tables {
+		names = append(names, i.Name)
+	}
+	return names
+}
+
 func TableInit() {
 	httpfs.Remove(OD() + "table")
 	zarr.MakeZgroup("table", OD(), &zGroups)

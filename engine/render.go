@@ -37,7 +37,8 @@ func (g *guistate) ServeRender(w http.ResponseWriter, r *http.Request) {
 	jpeg.Encode(w, g.Render.Img, &jpeg.Options{Quality: 100})
 }
 
-func (g *guistate) GetRenderedImg() *bytes.Buffer {
+func (g *guistate) GetRenderedImg(quant string) *bytes.Buffer {
+	g.Render.quant = g.Quants[quant]
 	g.Render.Mutex.Lock()
 	defer g.Render.Mutex.Unlock()
 

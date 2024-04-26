@@ -136,7 +136,7 @@ func Minimize() {
 	MinimizeTimeoutStep = NSteps + MinimizeMaxSteps
 	SanityCheck()
 	// Save the settings we are changing...
-	prevType := solvertype
+	prevType := Solvertype
 	prevFixDt := FixDt
 	prevPrecess := Precess
 	t0 := Time
@@ -181,5 +181,5 @@ func Minimize() {
 		return out
 	}
 	RunWhile(cond)
-	pause = true
+	Pause = true
 }

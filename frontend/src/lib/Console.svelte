@@ -1,22 +1,21 @@
-<span
-	title="Click to show/hide"
-	style="cursor:pointer; font-size:1.2em; font-weight:bold; color:gray">▾ console</span
-> <br />
-<div id="div_5939846145502593598">
-	<textarea
-		id="console"
-		rows="16"
-		cols="84"
-		class="TextBox"
-		style="font-family:monospace;font-size:0.8em;"
-	></textarea> <br />
+<script lang="ts">
+	import { consoleState, postCommand } from './api';
+	let command = '';
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			postCommand(command);
+			event.preventDefault(); // Prevent the default action to avoid form submission or newline in input
+		}
+	}
+</script>
 
+<span>▾ console</span> <br />
+<div>
+	<textarea rows="16" cols="84">{$consoleState.hist}</textarea> <br />
 	<input
-		type="text"
-		class="TextBox"
-		id="cli"
 		placeholder="type commands here, or up/down"
 		size="86"
-		style="font-family:monospace; font-size:0.8em;"
+		bind:value={command}
+		on:keydown={handleKeydown}
 	/>
 </div>

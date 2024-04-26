@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	hist    string                   // console history for GUI
+	Hist    string                   // console history for GUI
 	logfile httpfs.WriteCloseFlusher // saves history of input commands +  output
 )
 
@@ -59,7 +59,7 @@ func initLog() {
 		panic(err)
 	}
 	logfile = f // otherwise f gets dropped
-	logfile.Write([]byte(hist))
+	logfile.Write([]byte(Hist))
 }
 
 func AutoFlushLog2File() {
@@ -73,10 +73,10 @@ func log2GUI(msg string) {
 	if len(msg) > 1000 {
 		msg = msg[:1000-len("...")] + "..."
 	}
-	if hist != "" { // prepend newline
-		hist += "\n"
+	if Hist != "" { // prepend newline
+		Hist += "\n"
 	}
-	hist += msg
+	Hist += msg
 }
 
 // like fmt.Sprint but with spaces between args
