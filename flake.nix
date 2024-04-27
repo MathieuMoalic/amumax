@@ -7,7 +7,6 @@
   };
 
   outputs = {
-    self,
     nixpkgs,
     flake-utils,
     ...
@@ -23,13 +22,13 @@
         buildAmumax = pkgs:
           pkgs.buildGoModule rec {
             pname = "amumax";
-            version = "2024.04.16";
+            version = "2024.04.20";
 
             src = pkgs.fetchFromGitHub {
               owner = "MathieuMoalic";
               repo = "amumax";
               rev = version;
-              hash = "sha256-lzd5Cvzn7knxhzbaTZTta4sJlVK8TA2KtOpcNiEBsu4=";
+              hash = "sha256-qcxdyh+4S3onTwG4ZrC6skfEKMMlego2+Jms4kowQ6Y=";
             };
 
             vendorHash = "sha256-YqB7EofpTqDnqOQ+ARDJNvZVFltAy0j210lbSwEvifw=";
