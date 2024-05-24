@@ -37,8 +37,10 @@ func (g *guistate) ServeRender(w http.ResponseWriter, r *http.Request) {
 	jpeg.Encode(w, g.Render.Img, &jpeg.Options{Quality: 100})
 }
 
-func (g *guistate) GetRenderedImg(quant string) *bytes.Buffer {
+func (g *guistate) GetRenderedImg(quant, comp string, zlice int) *bytes.Buffer {
 	g.Render.quant = g.Quants[quant]
+	g.Render.comp = comp
+	g.Render.layer = zlice
 	g.Render.Mutex.Lock()
 	defer g.Render.Mutex.Unlock()
 
@@ -117,22 +119,22 @@ var arrowSize = 16
 func (ren *Render) Render() {
 	ren.download()
 	// imgBuf always has 3 components, we may need just one...
-	d := ren.imgBuf
+	imgBuf := ren.imgBuf
 	comp := ren.comp
 	quant := ren.quant
-	if comp == "" {
-		normalize(d)
+	if comp == "All" {
+		normalize(imgBuf)
 	}
 	if comp != "" && quant.NComp() > 1 { // ... if one has been selected by gui
-		d = d.Comp(compstr[comp])
+		imgBuf = imgBuf.Comp(compstr[comp])
 	}
 	if quant.NComp() == 1 { // ...or if the original data only had one (!)
-		d = d.Comp(0)
+		imgBuf = imgBuf.Comp(0)
 	}
 	if ren.Img == nil {
 		ren.Img = new(image.RGBA)
 	}
-	draw.On(ren.Img, d, "auto", "auto", arrowSize)
+	draw.On(ren.Img, imgBuf, "auto", "auto", arrowSize)
 }
 
 var compstr = map[string]int{"x": 0, "y": 1, "z": 2}

@@ -13,19 +13,12 @@
 	import { baseURL, paused } from '$lib/api';
 	import { wsConnect } from '$lib/websocket';
 
-	// let interval = 0;
 	onMount(() => {
 		try {
 			wsConnect();
 		} catch (error) {
 			console.error('Error connecting to websocket:', error);
 		}
-		// interval = setInterval(() => {
-		// 	if (!$paused) {
-		// 		refresh();
-		// 	}
-		// }, 1000);
-
 		// baseURL.set(window.location.origin);
 		baseURL.set('http://localhost:5001');
 		// console.log('baseURL:', get(baseURL));
@@ -33,18 +26,71 @@
 		// 	console.error('Error fetching engine state:', error);
 		// });
 	});
-	onDestroy(() => {
-		// clearInterval(interval);
-	});
 </script>
 
-<Header />
-<Display />
-<TablePlot />
-<Solver />
-<Console />
-<Mesh />
-<Geometry />
-<InitialMag />
-<Parameters />
-<Footer />
+<div class="grid-container">
+	<Header />
+	<Display />
+	<TablePlot />
+	<Solver />
+	<Console />
+	<Mesh />
+	<Geometry />
+	<InitialMag />
+	<Parameters />
+	<Footer />
+</div>
+
+<style>
+	.grid-container {
+		display: grid;
+		grid-template-areas:
+			'header header header header'
+			'display display tableplot tableplot'
+			'console console solver solver'
+			'parameters parameters mesh mesh'
+			'parameters parameters geometry geometry'
+			'parameters parameters initialmag initialmag'
+			'footer footer footer footer';
+		margin: 0;
+		grid-gap: 10px;
+		padding: 10px;
+		max-width: 100%;
+		box-sizing: border-box;
+	}
+	@media (max-width: 1200px) {
+		.grid-container {
+			grid-template-areas:
+				'header'
+				'display'
+				'tableplot'
+				'console'
+				'solver'
+				'mesh'
+				'geometry'
+				'initialmag'
+				'parameters'
+				'footer';
+		}
+	}
+	:global(section) {
+		border: 2px solid #f8f8f2;
+		padding: 10px;
+		padding-top: rem;
+		border-radius: 5px;
+		background-color: #282a36;
+		/* max-width: 30%; */
+		overflow: hidden;
+	}
+	:global(body) {
+		font-family: 'Arial', sans-serif;
+	}
+	:global(section > h2) {
+		background-color: #6272a4;
+		color: #f8f8f2;
+		padding: 1px;
+		padding-left: 1rem;
+		border-radius: 3px 3px 0 0;
+		margin-top: 0;
+	}
+</style>

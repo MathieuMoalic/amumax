@@ -4,98 +4,27 @@
 	:global(:root) {
 		--accent-color: #3d1999;
 		--accent-color-hover: #2f0e6e;
-		--date-picker-background: #1b1e27;
-		--date-picker-foreground: #f7f7f7;
 		color-scheme: dark;
 	}
 	* {
-		box-sizing: border-box;
-	}
-
-	html body {
-		background: rgb(40, 42, 54);
-		color: rgb(248, 248, 242);
-		margin-left: 5%;
-		margin-right: 5%;
-		font-family: sans-serif;
-		font-size: 14px;
-	}
-
-	.section {
-		background-color: #44475a;
-	}
-
-	.img-loupe {
-		position: absolute;
-		border: 1px solid #000;
-		border-radius: 2% 50% 50%;
-		box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
-		cursor: crosshair;
-		width: 300px;
-		height: 300px;
-		display: none;
-	}
-
-	.img-loupe-div {
-		position: relative;
-	}
-
-	#display {
-		max-height: 50vh;
-		width: 100%;
-		height: auto;
-		object-fit: contain;
-	}
-
-	table {
-		border-collapse: collapse;
-	}
-
-	td {
-		padding: 1px 5px;
-	}
-
-	hr {
-		border-style: none;
-		border-top: 1px solid #cccccc;
-	}
-
-	a {
-		color: #375eab;
-		text-decoration: none;
-	}
-
-	div {
-		margin-left: 20px;
-		margin-top: 5px;
-		margin-bottom: 20px;
-	}
-
-	div#footer {
-		color: gray;
-		font-size: 14px;
-		border: none;
-	}
-
-	.ErrorBox {
-		color: red;
-		font-weight: bold;
-		font-size: 1em;
-	}
-
-	.TextBox {
-		border: solid;
-		border-color: #bbbbbb;
-		border-width: 1px;
-		padding-left: 4px;
-	}
-
-	textarea {
-		border: solid;
-		border-color: #bbbbbb;
-		border-width: 1px;
-		padding-left: 4px;
-		color: gray;
-		font-size: 1em;
+		background-color: #69ff94;
+		background-color: #ffffa5;
+		background-color: #6272a4;
+		background-color: #d6acff;
+		background-color: #f8f8f2;
+		background-color: #69ff94;
+		background-color: #ff92df;
+		background-color: #ffffff;
+		background-color: #ff5555;
+		background-color: #ff6e6e;
+		background-color: #f1fa8c;
+		background-color: #50fa7b;
+		background-color: #8be9fd;
+		background-color: #bd93f9;
+		background-color: #ff79c6;
+		background-color: #a4ffff;
+		background-color: #ffb86c;
+		background-color: #6e9bcb;
+		background-color: #282a36;
 	}
 </style>
