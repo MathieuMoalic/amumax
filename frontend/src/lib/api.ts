@@ -3,13 +3,15 @@ import { writable, get } from "svelte/store";
 import type { Console, Solver, Mesh, Parameters, TablePlot } from "./types";
 
 export async function refreshTablePlot() {
-    let encodedQuery2 = encodeURIComponent(get(tablePlotx));
-    let encodedQuery3 = encodeURIComponent(get(tablePloty));
-    TablePlotUrl.set(`${get(baseURL)}/tableplot?x=${encodedQuery2}&y=${encodedQuery3}&` + Math.random())
+    let encodedXColumn = encodeURIComponent(get(tablePlotx));
+    let encodedYColumn = encodeURIComponent(get(tablePloty));
+    TablePlotUrl.set(`${get(baseURL)}/tableplot?x=${encodedXColumn}&y=${encodedYColumn}&` + Math.random())
 }
 export async function refreshImage() {
-    let encodedQuery = encodeURIComponent(get(renderQuant));
-    imageUrl.set(`${get(baseURL)}/image?quantity=${encodedQuery}&` + Math.random())
+    let encodedQuantity = encodeURIComponent(get(imageQuantity));
+    let encodedComponent = encodeURIComponent(get(imageComponent));
+    let encodedZSlice = encodeURIComponent(get(imageZSlize));
+    imageUrl.set(`${get(baseURL)}/image?quantity=${encodedQuantity}&component=${encodedComponent}&zslice=${encodedZSlice}&` + Math.random())
 }
 
 export const tablePlotx = writable('t');
@@ -17,15 +19,15 @@ export const tablePloty = writable('mx');
 export const imageUrl = writable('http://localhost:5001/image?quantity=m');
 export const TablePlotUrl = writable('http://localhost:5001/tableplot');
 export const baseURL = writable('http://localhost:5001');
-export const renderQuant = writable('m');
-export const renderComp = writable('All');
+export const imageQuantity = writable('m');
+export const imageComponent = writable('All');
+export const imageZSlize = writable(0);
 export const renderLayer = writable(0);
 export const paused = writable(false);
 
 export const headerState = writable({
-    Path: '',
-    Progress: 0,
-    Status: ''
+    path: '',
+    status: ''
 });
 export const solverState = writable<Solver>({
     type: "",

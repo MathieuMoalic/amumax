@@ -41,5 +41,5 @@ function parseMessage(message: string) {
     meshState.set(engineState.mesh);
     parametersState.set(engineState.parameters);
     tablePlotState.set(engineState.tablePlot);
-    paused.set(get(headerState).Status === 'Paused');
+    paused.set(get(headerState).status === 'Paused');
 }

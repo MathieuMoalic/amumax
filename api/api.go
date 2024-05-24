@@ -13,10 +13,19 @@ import (
 
 func getImage(c echo.Context) error {
 	quantity := c.QueryParam("quantity")
+	component := c.QueryParam("component")
+	zslice := c.QueryParam("zslice")
+	zsliceInt, err := strconv.Atoi(zslice)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid query parameter: zlice is not an integer"})
+	}
 	if quantity == "" {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Missing required query parameter: quantity"})
 	}
-	img := engine.GUI.GetRenderedImg(quantity)
+	if component == "" {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Missing required query parameter: component"})
+	}
+	img := engine.GUI.GetRenderedImg(quantity, component, zsliceInt)
 	return c.Stream(http.StatusOK, "image/png", img)
 }
 

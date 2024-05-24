@@ -95,9 +95,8 @@ func NewEngineState() *EngineState {
 	}
 	engineState := EngineState{
 		Header: Header{
-			Path:     engine.OD(),
-			Progress: 100.0,
-			Status:   status,
+			Path:   engine.OD(),
+			Status: status,
 		},
 		Solver: Solver{
 			Type:       engine.Solvernames[engine.Solvertype],

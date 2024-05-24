@@ -1,8 +1,7 @@
 
 export interface Header {
-    Path: string;
-    Progress: number;
-    Status: string;
+    path: string;
+    status: string;
 
 }
 export interface Solver {
