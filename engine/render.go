@@ -125,7 +125,7 @@ func (ren *Render) Render() {
 	if comp == "All" {
 		normalize(imgBuf)
 	}
-	if comp != "" && quant.NComp() > 1 { // ... if one has been selected by gui
+	if comp != "All" && quant.NComp() > 1 { // ... if one has been selected by gui
 		imgBuf = imgBuf.Comp(compstr[comp])
 	}
 	if quant.NComp() == 1 { // ...or if the original data only had one (!)
