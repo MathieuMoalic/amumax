@@ -37,7 +37,7 @@
 					<td><span>{$meshState.Tx} </span> </td>
 					<td> × <span> {$meshState.Ty} </span></td>
 					<td> × <span> {$meshState.Tz} </span></td>
-					<td> nm<sup>3</sup> </td>
+					<td> m<sup>3</sup> </td>
 				</tr>
 			</tbody>
 		</table>
