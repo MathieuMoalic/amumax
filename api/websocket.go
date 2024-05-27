@@ -25,7 +25,7 @@ func websocketEntrypoint(c echo.Context) error {
 			}
 
 			// Wait before sending the next state update
-			time.Sleep(5 * time.Second) // Adjust the interval as needed
+			time.Sleep(1 * time.Second) // Adjust the interval as needed
 		}
 	}).ServeHTTP(c.Response(), c.Request())
 	return nil
