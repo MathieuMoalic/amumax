@@ -70,14 +70,27 @@ export interface Parameters {
     temp: number;
     xi: number;
 }
-
+// type TablePlotData struct {
+// 	X float64 `json:"x"`
+// 	Y float64 `json:"y"`
+// }
+// type TablePlot struct {
+// 	AutoSaveInterval float64         `json:"autoSaveInterval"`
+// 	Columns          []string        `json:"columns"`
+// 	XColumn          string          `json:"xColumn"`
+// 	YColumn          string          `json:"yColumn"`
+// 	Data             []TablePlotData `json:"data"`
+// }
 export interface TablePlot {
     autoSaveInterval: number;
     columns: string[];
     xColumn: string;
     yColumn: string;
-    xdata: number[];
-    ydata: number[];
+    data: TablePlotData[];
+}
+export interface TablePlotData {
+    x: number;
+    y: number;
 }
 
 export interface EngineState {
