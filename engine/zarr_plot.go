@@ -50,12 +50,12 @@ func (p *zTablePlot) NeedSave() bool {
 
 func (p *zTablePlot) SelectDataColumns(xlabel, ylabel string) error {
 	if _, exists := Table.Data[xlabel]; exists {
-		p.X = xlabel
+		// p.X = xlabel
 	} else {
 		return errors.New("ylabel doesn't exist")
 	}
 	if _, exists := Table.Data[ylabel]; exists {
-		p.Y = ylabel
+		// p.Y = ylabel
 	} else {
 		return errors.New("ylabel doesn't exist")
 	}

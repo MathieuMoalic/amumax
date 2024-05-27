@@ -3,8 +3,8 @@ import { writable, get } from "svelte/store";
 import type { Console, Solver, Mesh, Parameters, TablePlot } from "./types";
 
 export async function refreshTablePlot() {
-    let encodedXColumn = encodeURIComponent(get(tablePlotx));
-    let encodedYColumn = encodeURIComponent(get(tablePloty));
+    let encodedXColumn = encodeURIComponent(get(tablePlotState).xColumn);
+    let encodedYColumn = encodeURIComponent(get(tablePlotState).yColumn);
     TablePlotUrl.set(`${get(baseURL)}/tableplot?x=${encodedXColumn}&y=${encodedYColumn}&` + Math.random())
 }
 export async function refreshImage() {
@@ -14,9 +14,7 @@ export async function refreshImage() {
     imageUrl.set(`${get(baseURL)}/image?quantity=${encodedQuantity}&component=${encodedComponent}&zslice=${encodedZSlice}&` + Math.random())
 }
 
-export const tablePlotx = writable('t');
-export const tablePloty = writable('mx');
-export const imageUrl = writable('http://localhost:5001/image?quantity=m');
+export const imageUrl = writable('http://localhost:5001/image?quantity=m&component=All&zslice=0&');
 export const TablePlotUrl = writable('http://localhost:5001/tableplot');
 export const baseURL = writable('http://localhost:5001');
 export const imageQuantity = writable('m');
@@ -95,6 +93,10 @@ export const parametersState = writable<Parameters>({
 export const tablePlotState = writable<TablePlot>({
     autoSaveInterval: 0,
     columns: [],
+    xColumn: 't',
+    yColumn: 'mx',
+    xdata: [],
+    ydata: []
 });
 
 export async function postSolverType(type: string) {
@@ -157,6 +159,21 @@ export async function postCommand(command: string) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ command })
+    });
+    if (!response.ok) {
+        throw new Error('Failed to post command');
+    }
+}
+
+export async function postTableColumns() {
+    let XColumn = get(tablePlotState).xColumn;
+    let YColumn = get(tablePlotState).yColumn;
+    const response = await fetch(`${get(baseURL)}/table`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ XColumn, YColumn })
     });
     if (!response.ok) {
         throw new Error('Failed to post command');
