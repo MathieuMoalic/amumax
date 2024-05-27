@@ -1,6 +1,7 @@
 import { type EngineState } from "./types";
 import { get } from "svelte/store";
 import { headerState, consoleState, solverState, meshState, parametersState, tablePlotState, paused, refreshImage, refreshTablePlot } from "./api";
+import { redraw } from "./tablePlot";
 
 let ws: WebSocket;
 let messages: any[] = [];
@@ -42,4 +43,5 @@ function parseMessage(message: string) {
     parametersState.set(engineState.parameters);
     tablePlotState.set(engineState.tablePlot);
     paused.set(get(headerState).status === 'Paused');
+    redraw()
 }
