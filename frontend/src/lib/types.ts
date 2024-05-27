@@ -74,6 +74,10 @@ export interface Parameters {
 export interface TablePlot {
     autoSaveInterval: number;
     columns: string[];
+    xColumn: string;
+    yColumn: string;
+    xdata: number[];
+    ydata: number[];
 }
 
 export interface EngineState {

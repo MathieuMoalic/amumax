@@ -120,6 +120,21 @@ func postConsole(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
 }
 
+func postTable(c echo.Context) error {
+	type Request struct {
+		XColumn string `json:"XColumn"`
+		YColumn string `json:"YColumn"`
+	}
+
+	req := new(Request)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
+	engine.Tableplot.X = req.XColumn
+	engine.Tableplot.Y = req.YColumn
+	return c.JSON(http.StatusOK, "")
+}
+
 func Start() {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -138,6 +153,7 @@ func Start() {
 	e.POST("/steps", postSteps)
 	e.POST("/relax", postRelax)
 	e.POST("/break", postBreak)
+	e.POST("/table", postTable)
 
 	// Start server
 	e.Logger.Fatal(e.Start(":5001"))

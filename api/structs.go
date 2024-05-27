@@ -1,6 +1,8 @@
 package api
 
-import "github.com/MathieuMoalic/amumax/engine"
+import (
+	"github.com/MathieuMoalic/amumax/engine"
+)
 
 type Header struct {
 	Path     string  `json:"path"`
@@ -73,8 +75,12 @@ type Parameters struct {
 	Xi                 float64 `json:"xi"`
 }
 type TablePlot struct {
-	AutoSaveInterval float64  `json:"autoSaveInterval"`
-	Columns          []string `json:"columns"`
+	AutoSaveInterval float64   `json:"autoSaveInterval"`
+	Columns          []string  `json:"columns"`
+	XColumn          string    `json:"xColumn"`
+	YColumn          string    `json:"yColumn"`
+	Xdata            []float64 `json:"xdata"`
+	Ydata            []float64 `json:"ydata"`
 }
 type EngineState struct {
 	Header    Header     `json:"header"`
@@ -133,6 +139,10 @@ func NewEngineState() *EngineState {
 		TablePlot: TablePlot{
 			AutoSaveInterval: engine.Table.AutoSavePeriod,
 			Columns:          engine.Table.GetTableNames(),
+			XColumn:          engine.Tableplot.X,
+			YColumn:          engine.Tableplot.Y,
+			Xdata:            engine.Table.Data[engine.Tableplot.X],
+			Ydata:            engine.Table.Data[engine.Tableplot.Y],
 		},
 	}
 	return &engineState
