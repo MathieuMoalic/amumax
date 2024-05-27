@@ -132,7 +132,8 @@ func postTable(c echo.Context) error {
 	}
 	engine.Tableplot.X = req.XColumn
 	engine.Tableplot.Y = req.YColumn
-	return c.JSON(http.StatusOK, "")
+	data := newTablePlot()
+	return c.JSON(http.StatusOK, data)
 }
 
 func Start() {

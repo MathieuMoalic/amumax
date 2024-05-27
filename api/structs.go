@@ -74,14 +74,36 @@ type Parameters struct {
 	Temp               float64 `json:"Temp"`
 	Xi                 float64 `json:"xi"`
 }
-type TablePlot struct {
-	AutoSaveInterval float64   `json:"autoSaveInterval"`
-	Columns          []string  `json:"columns"`
-	XColumn          string    `json:"xColumn"`
-	YColumn          string    `json:"yColumn"`
-	Xdata            []float64 `json:"xdata"`
-	Ydata            []float64 `json:"ydata"`
+type TablePlotData struct {
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
 }
+type TablePlot struct {
+	AutoSaveInterval float64         `json:"autoSaveInterval"`
+	Columns          []string        `json:"columns"`
+	XColumn          string          `json:"xColumn"`
+	YColumn          string          `json:"yColumn"`
+	Data             []TablePlotData `json:"data"`
+}
+
+func newTablePlot() *TablePlot {
+	tablePlotData := make([]TablePlotData, len(engine.Table.Data[engine.Tableplot.X]))
+	for i := range tablePlotData {
+		tablePlotData[i] = TablePlotData{
+			X: engine.Table.Data[engine.Tableplot.X][i],
+			Y: engine.Table.Data[engine.Tableplot.Y][i],
+		}
+	}
+	data := TablePlot{
+		AutoSaveInterval: engine.Table.AutoSavePeriod,
+		Columns:          engine.Table.GetTableNames(),
+		XColumn:          engine.Tableplot.X,
+		YColumn:          engine.Tableplot.Y,
+		Data:             tablePlotData,
+	}
+	return &data
+}
+
 type EngineState struct {
 	Header    Header     `json:"header"`
 	Solver    Solver     `json:"solver"`
@@ -136,14 +158,7 @@ func NewEngineState() *EngineState {
 		Params: Parameters{
 			// Aex: engine.Aex.Average(),
 		},
-		TablePlot: TablePlot{
-			AutoSaveInterval: engine.Table.AutoSavePeriod,
-			Columns:          engine.Table.GetTableNames(),
-			XColumn:          engine.Tableplot.X,
-			YColumn:          engine.Tableplot.Y,
-			Xdata:            engine.Table.Data[engine.Tableplot.X],
-			Ydata:            engine.Table.Data[engine.Tableplot.Y],
-		},
+		TablePlot: *newTablePlot(),
 	}
 	return &engineState
 }
