@@ -42,57 +42,91 @@
 
 <section>
 	<h2>Solvers</h2>
-	<div>
-		Type:{$solverState.type}
-		<select bind:value={selectedSolver} on:change={changeSolver}>
-			{#each solvertypes as solvertype}
-				<option value={solvertype}>
-					{solvertype}
-				</option>
-			{/each}
-		</select>
-	</div>
-	<div>
-		<button on:click={run}>Run</button>
-		<input bind:value={runSeconds} />s
-	</div>
-
-	<div>
-		<button on:click={steps}>Steps</button>
-		<input bind:value={runSteps} />
-	</div>
-	<div>
-		<button on:click={relax}>Relax</button>
-	</div>
-	<div>
-		<button on:click={pbreak}>Break</button>
-	</div>
-	<div>
-		step: {$solverState.steps}
-	</div>
-	<div>
-		time: {$solverState.time.toExponential(3)} s
-	</div>
-	<div>
-		dt: {$solverState.dt.toExponential(3)} s
-	</div>
-	<div>
-		err/step: {$solverState.errPerStep.toExponential(3)}
-	</div>
-	<div>
-		MaxTorque: {$solverState.maxTorque.toExponential(3)}
-	</div>
-	<div>
-		fixdt: <input placeholder=" {$solverState.fixdt.toExponential(3)}" />s
-	</div>
-	<div>
-		mindt: <input placeholder=" {$solverState.mindt.toExponential(3)}" />s
-	</div>
-	<div>
-		maxdt: <input placeholder=" {$solverState.maxdt.toExponential(3)}" />s
-	</div>
-	<div>
-		maxerr: <input placeholder=" {$solverState.maxerr.toExponential(3)}" />/step
+	<div class="flex-container">
+		<div class="grid-container">
+			<div>
+				<div class="header">Solver</div>
+				<div class="value">
+					<select bind:value={selectedSolver} on:change={changeSolver}>
+						{#each solvertypes as solvertype}
+							<option value={solvertype}>
+								{solvertype}
+							</option>
+						{/each}
+					</select>
+				</div>
+				<div class="unit"></div>
+			</div>
+			<div>
+				<div class="header"><button on:click={run}>Run</button></div>
+				<div class="value">
+					<input bind:value={runSeconds} />
+				</div>
+				<div class="unit">s</div>
+			</div>
+			<div>
+				<div class="header"><button on:click={steps}>Run Steps</button></div>
+				<div class="value"><input bind:value={runSteps} /></div>
+				<div class="unit"></div>
+			</div>
+			<div>
+				<div class="header"><button on:click={relax}>Relax</button></div>
+				<div class="value"></div>
+				<div class="unit"></div>
+			</div>
+			<div>
+				<div class="header"><button on:click={pbreak}>Break</button></div>
+				<div class="value"></div>
+				<div class="unit"></div>
+			</div>
+		</div>
+		<div class="grid-container">
+			<div>
+				<div class="header">steps:</div>
+				<div class="value">{$solverState.steps}</div>
+				<div class="unit"></div>
+			</div>
+			<div>
+				<div class="header">time:</div>
+				<div class="value">{$solverState.time.toExponential(3)}</div>
+				<div class="unit">s</div>
+			</div>
+			<div>
+				<div class="header">dt:</div>
+				<div class="value">{$solverState.dt.toExponential(3)}</div>
+				<div class="unit">s</div>
+			</div>
+			<div>
+				<div class="header">err/step:</div>
+				<div class="value">{$solverState.errPerStep.toExponential(3)}</div>
+				<div class="unit"></div>
+			</div>
+			<div>
+				<div class="header">maxTorque:</div>
+				<div class="value">{$solverState.maxTorque.toExponential(3)}</div>
+				<div class="unit">T</div>
+			</div>
+			<div>
+				<div class="header">fixdt:</div>
+				<div class="value"><input placeholder=" {$solverState.fixdt.toExponential(3)}" /></div>
+				<div class="unit">s</div>
+			</div>
+			<div>
+				<div class="header">mindt:</div>
+				<div class="value"><input placeholder=" {$solverState.mindt.toExponential(3)}" /></div>
+				<div class="unit">s</div>
+			</div>
+			<div>
+				<div class="header">maxdt:</div>
+				<div class="value"><input placeholder=" {$solverState.maxdt.toExponential(3)}" /></div>
+				<div class="unit">s</div>
+			</div>
+			<div>
+				<div class="header">maxerr:</div>
+				<div class="value"><input placeholder=" {$solverState.maxerr.toExponential(3)}" /></div>
+				<div class="unit">/step</div>
+			</div>
+		</div>
 	</div>
 </section>
 
@@ -100,7 +134,37 @@
 	section {
 		grid-area: solver;
 	}
+	.flex-container {
+		display: flex;
+		gap: 20px; /* Adjust the gap between the grid containers as needed */
+	}
+	.grid-container {
+		display: grid;
+		grid-template-columns: 100px 100px auto;
+		gap: 10px 10px; /* Adjust the gap as needed */
+		align-items: center;
+	}
+
+	.grid-container > div {
+		display: contents; /* Allows the divs to participate in the grid layout */
+	}
+
+	.header {
+		text-align: right;
+		padding-right: 10px;
+	}
+
+	.value {
+		text-align: left;
+	}
+
+	.unit {
+		text-align: left;
+		padding-left: 5px;
+	}
+
 	input {
-		size: 8;
+		width: 100px;
+		box-sizing: border-box;
 	}
 </style>
