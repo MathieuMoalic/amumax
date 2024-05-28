@@ -136,6 +136,11 @@ func postTable(c echo.Context) error {
 	return c.JSON(http.StatusOK, data)
 }
 
+func getVectorField(c echo.Context) error {
+	engine.InjectAndWait(engine.GetVectorField)
+	return c.Blob(http.StatusOK, "application/octet-stream", engine.DisplayVectorField)
+}
+
 func Start() {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -155,6 +160,7 @@ func Start() {
 	e.POST("/relax", postRelax)
 	e.POST("/break", postBreak)
 	e.POST("/table", postTable)
+	e.GET("/vectorfield", getVectorField)
 
 	// Start server
 	e.Logger.Fatal(e.Start(":5001"))
