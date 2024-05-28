@@ -98,6 +98,32 @@ export const tablePlotState = writable<TablePlot>({
     data: []
 });
 
+export async function fetchVectorField(): Promise<Array<{ x: number; y: number; z: number }>> {
+    const response = await fetch(`${get(baseURL)}/vectorfield`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/octet-stream'
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch vector field');
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const dataView = new DataView(arrayBuffer);
+    const numElements = arrayBuffer.byteLength / (3 * 4); // 3 float32 values per vector, 4 bytes per float32
+    const vectorField: Array<{ x: number; y: number; z: number }> = [];
+    for (let i = 0; i < numElements; i++) {
+        const x = dataView.getFloat32(i * 12, true); // true for little-endian
+        const y = dataView.getFloat32(i * 12 + 4, true);
+        const z = dataView.getFloat32(i * 12 + 8, true);
+        vectorField.push({ x, y, z });
+    }
+    return vectorField;
+}
+
+
 export async function postSolverType(type: string) {
     const response = await fetch(`${get(baseURL)}/solver`, {
         method: 'POST',
