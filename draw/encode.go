@@ -3,7 +3,6 @@ package draw
 import (
 	"bufio"
 	"fmt"
-	"github.com/MathieuMoalic/amumax/data"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -12,6 +11,8 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	"github.com/MathieuMoalic/amumax/data"
 )
 
 func RenderFile(fname string, f *data.Slice, min, max string, arrowSize int, colormap ...ColorMapSpec) error {
@@ -46,12 +47,12 @@ func Render(out io.Writer, f *data.Slice, min, max string, arrowSize int, encode
 
 // full-quality jpeg codec, passable to Render()
 func JPEG100(w io.Writer, img image.Image) error {
-	return jpeg.Encode(w, img, &jpeg.Options{100})
+	return jpeg.Encode(w, img, &jpeg.Options{Quality: 100})
 }
 
 // full quality gif coded, passable to Render()
 func GIF256(w io.Writer, img image.Image) error {
-	return gif.Encode(w, img, &gif.Options{256, nil, nil})
+	return gif.Encode(w, img, &gif.Options{NumColors: 256, Quantizer: nil, Drawer: nil})
 }
 
 // png codec, passable to Render()

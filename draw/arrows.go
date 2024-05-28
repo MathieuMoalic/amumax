@@ -1,11 +1,12 @@
 package draw
 
 import (
-	"github.com/MathieuMoalic/amumax/data"
-	"github.com/MathieuMoalic/amumax/freetype/raster"
 	"image"
 	"image/color"
 	"math"
+
+	"github.com/MathieuMoalic/amumax/data"
+	"github.com/MathieuMoalic/amumax/freetype/raster"
 )
 
 func drawArrows(img *image.RGBA, arr [3][][][]float32, sub int) {
@@ -86,7 +87,7 @@ func (c *Canvas) Arrow(x, y, mx, my, mz, size float32) {
 }
 
 func pt(x, y float32) raster.Point {
-	return raster.Point{fix32(x), fix32(y)}
+	return raster.Point{X: fix32(x), Y: fix32(y)}
 }
 
 func fix32(x float32) raster.Fix32 {
