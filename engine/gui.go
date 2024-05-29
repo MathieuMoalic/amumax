@@ -116,7 +116,6 @@ func (g *guistate) Add(name string, value interface{}) {
 // initialize the GUI Page (pre-renders template) and register http handlers
 func (g *guistate) PrepareServer() {
 	g.Page = gui.NewPage(g)
-	util.SetProgress(GUI.Prog)
 	g.OnAnyEvent(func() {
 		g.incCacheBreaker()
 	})
@@ -566,7 +565,6 @@ func atoi(a string) int {
 func (g *guistate) Prog(a, total int, msg string) {
 	g.Set("progress", (a*100)/total)
 	g.Set("busy", msg)
-	util.PrintProgress(a, total, msg)
 }
 
 // Eval code + update keepalive in case the code runs long
