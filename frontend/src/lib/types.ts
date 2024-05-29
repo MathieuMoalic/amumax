@@ -1,4 +1,7 @@
 
+
+export type VectorField = Array<{ x: number; y: number; z: number }>;
+
 export interface Header {
     path: string;
     status: string;

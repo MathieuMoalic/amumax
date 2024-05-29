@@ -1,27 +1,16 @@
 
 import { writable, get } from "svelte/store";
 import type { Console, Solver, Mesh, Parameters, TablePlot } from "./types";
+import { type VectorField } from "./types";
 
-export async function refreshTablePlot() {
-    let encodedXColumn = encodeURIComponent(get(tablePlotState).xColumn);
-    let encodedYColumn = encodeURIComponent(get(tablePlotState).yColumn);
-    TablePlotUrl.set(`${get(baseURL)}/tableplot?x=${encodedXColumn}&y=${encodedYColumn}&` + Math.random())
-}
-export async function refreshImage() {
-    let encodedQuantity = encodeURIComponent(get(imageQuantity));
-    let encodedComponent = encodeURIComponent(get(imageComponent));
-    let encodedZSlice = encodeURIComponent(get(imageZSlize));
-    imageUrl.set(`${get(baseURL)}/image?quantity=${encodedQuantity}&component=${encodedComponent}&zslice=${encodedZSlice}&` + Math.random())
-}
 
-export const imageUrl = writable('http://localhost:5001/image?quantity=m&component=All&zslice=0&');
-export const TablePlotUrl = writable('http://localhost:5001/tableplot');
 export const baseURL = writable('http://localhost:5001');
 export const imageQuantity = writable('m');
 export const imageComponent = writable('All');
 export const imageZSlize = writable(0);
 export const renderLayer = writable(0);
 export const paused = writable(false);
+export const displayData = writable<VectorField>([]);
 
 export const headerState = writable({
     path: '',
@@ -145,7 +134,7 @@ export async function postRun(duration: number) {
         body: JSON.stringify({ duration })
     });
     if (!response.ok) {
-        throw new Error('Failed to post run');
+        throw new Error(response.statusText);
     }
 }
 export async function postSteps(steps: number) {
