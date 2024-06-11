@@ -93,22 +93,13 @@ type Param interface {
 	NComp() int
 	Name() string
 	Unit() string
-	getRegion(int) []float64
+	GetRegion(int) []float64
 	IsUniform() bool
 }
 
-func GUIAdd(name string, value interface{}) {
-	GUI.Add(name, value)
-}
-
-// Internal:add a quantity to the GUI, will be visible in web interface.
-// Automatically called by Decl*(), still before PrepareServer()
-func (g *guistate) Add(name string, value interface{}) {
-	if v, ok := value.(Param); ok {
-		g.Params[name] = v
-	}
+func GUIAdd(name string, value interface{}, doc string) {
 	if v, ok := value.(Quantity); ok {
-		g.Quants[name] = v
+		GUI.Quants[name] = v
 	}
 }
 
@@ -320,14 +311,14 @@ func (g *guistate) prepareParam() {
 	}
 	// overwrite handler for temperature
 	// do not crash when we enter bogus values (see temperature.go)
-	g.OnEvent("Temp", func() {
-		Inject <- func() {
-			if FixDt == 0 {
-				g.EvalGUI("FixDt = 10e-14") // finite temperature requires fixed time step
-			}
-			g.EvalGUI("Temp = " + g.StringValue("Temp"))
-		}
-	})
+	// g.OnEvent("Temp", func() {
+	// 	Inject <- func() {
+	// 		if FixDt == 0 {
+	// 			g.EvalGUI("FixDt = 10e-14") // finite temperature requires fixed time step
+	// 		}
+	// 		g.EvalGUI("Temp = " + g.StringValue("Temp"))
+	// 	}
+	// })
 }
 
 // see prepareServer
@@ -427,20 +418,20 @@ func (g *guistate) prepareOnUpdate() {
 			GUI.Set("plot", "/plot/"+cachebreaker)
 
 			// parameters
-			for _, p := range g.Params {
-				n := p.Name()
-				r := g.IntValue("region")
-				if r == -1 && !p.IsUniform() {
-					g.Set(n, "")
+			for _, parameter := range g.Params {
+				name := parameter.Name()
+				region := g.IntValue("region")
+				if region == -1 && !parameter.IsUniform() {
+					g.Set(name, "")
 				} else {
-					if r == -1 {
-						r = 0 // uniform, so pick one
+					if region == -1 {
+						region = 0 // uniform, so pick one
 					}
-					v := p.getRegion(r)
-					if p.NComp() == 1 {
-						g.Set(n, float32(v[0]))
+					v := parameter.GetRegion(region)
+					if parameter.NComp() == 1 {
+						g.Set(name, float32(v[0]))
 					} else {
-						g.Set(n, fmt.Sprintf("(%v, %v, %v)", float32(v[X]), float32(v[Y]), float32(v[Z])))
+						g.Set(name, fmt.Sprintf("(%v, %v, %v)", float32(v[X]), float32(v[Y]), float32(v[Z])))
 					}
 				}
 			}
