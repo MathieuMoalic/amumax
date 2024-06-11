@@ -15,7 +15,7 @@ var (
 	Lambda                           = NewScalarParam("Lambda", "", "Slonczewski Λ parameter")
 	EpsilonPrime                     = NewScalarParam("EpsilonPrime", "", "Slonczewski secondairy STT term ε'")
 	FrozenSpins                      = NewScalarParam("frozenspins", "", "Defines spins that should be fixed") // 1 - frozen, 0 - free. TODO: check if it only contains 0/1 values
-	FreeLayerThickness               = NewScalarParam("FreeLayerThickness", "m", "Slonczewski free layer thickness (if set to zero (default), then the thickness will be deduced from the mesh size)")
+	FreeLayerThickness               = NewScalarParam("FreeLayerThickness", "m", "Slonczewski free layer thickness")
 	FixedLayer                       = NewExcitation("FixedLayer", "", "Slonczewski fixed layer polarization")
 	Torque                           = NewVectorField("torque", "T", "Total torque/γ0", SetTorque)
 	LLTorque                         = NewVectorField("LLtorque", "T", "Landau-Lifshitz torque/γ0", SetLLTorque)
@@ -114,7 +114,7 @@ func AddSTTorque(dst *data.Slice) {
 
 func FreezeSpins(dst *data.Slice) {
 	if !FrozenSpins.isZero() {
-		cuda.ZeroMask(dst, FrozenSpins.gpuLUT1(), regions.Gpu())
+		cuda.ZeroMask(dst, FrozenSpins.gpuLUT1(), Regions.Gpu())
 	}
 }
 
