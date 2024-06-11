@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -10,35 +11,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
-
-func getImage(c echo.Context) error {
-	quantity := c.QueryParam("quantity")
-	component := c.QueryParam("component")
-	zslice := c.QueryParam("zslice")
-	zsliceInt, err := strconv.Atoi(zslice)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid query parameter: zlice is not an integer"})
-	}
-	if quantity == "" {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Missing required query parameter: quantity"})
-	}
-	if component == "" {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Missing required query parameter: component"})
-	}
-	img := engine.GUI.GetRenderedImg(quantity, component, zsliceInt)
-	return c.Stream(http.StatusOK, "image/png", img)
-}
-
-func getTablePlot(c echo.Context) error {
-	x := c.QueryParam("x")
-	y := c.QueryParam("y")
-	engine.Tableplot.SelectDataColumns(x, y)
-	img, err := engine.Tableplot.Render()
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "Error rendering table plot")
-	}
-	return c.Stream(http.StatusOK, "image/png", img)
-}
 
 func postSolver(c echo.Context) error {
 	type Response struct {
@@ -136,9 +108,13 @@ func postTable(c echo.Context) error {
 	return c.JSON(http.StatusOK, data)
 }
 
-func getVectorField(c echo.Context) error {
-	engine.InjectAndWait(engine.GetVectorField)
-	return c.Blob(http.StatusOK, "application/octet-stream", engine.DisplayVectorField)
+func postFrontendState(c echo.Context) error {
+	req := new(engine.FrontendState)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
+	engine.Frontend = *req
+	return c.JSON(http.StatusOK, "")
 }
 
 func Start() {
@@ -148,11 +124,9 @@ func Start() {
 		AllowHeaders: []string{"*"},
 	}))
 
-	// e.Logger.SetOutput(io.Discard)
+	e.Logger.SetOutput(io.Discard)
 	e.Static("/", "static")
 	e.GET("/ws", websocketEntrypoint)
-	e.GET("/tableplot", getTablePlot)
-	e.GET("/image", getImage)
 	e.POST("/solver", postSolver)
 	e.POST("/run", postRun)
 	e.POST("/console", postConsole)
@@ -160,7 +134,7 @@ func Start() {
 	e.POST("/relax", postRelax)
 	e.POST("/break", postBreak)
 	e.POST("/table", postTable)
-	e.GET("/vectorfield", getVectorField)
+	e.POST("/frontendstate", postFrontendState)
 
 	// Start server
 	e.Logger.Fatal(e.Start(":5001"))

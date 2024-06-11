@@ -38,42 +38,7 @@ type Mesh struct {
 	PBCy int     `json:"PBCy"`
 	PBCz int     `json:"PBCz"`
 }
-type Parameters struct {
-	Aex                float64 `json:"Aex"`
-	Alpha              float64 `json:"alpha"`
-	AnisC1             float64 `json:"anisC1"`
-	AnisC2             float64 `json:"anisC2"`
-	AnisU              float64 `json:"anisU"`
-	B1                 float64 `json:"B1"`
-	B2                 float64 `json:"B2"`
-	B_ext              float64 `json:"B_ext"`
-	Dbulk              float64 `json:"Dbulk"`
-	Dind               float64 `json:"Dind"`
-	EpsilonPrime       float64 `json:"EpsilonPrime"`
-	Exx                float64 `json:"exx"`
-	Exy                float64 `json:"exy"`
-	Exz                float64 `json:"exz"`
-	Eyy                float64 `json:"eyy"`
-	Eyz                float64 `json:"eyz"`
-	Ezz                float64 `json:"ezz"`
-	FixedLayer         float64 `json:"FixedLayer"`
-	FreeLayerThickness float64 `json:"FreeLayerThickness"`
-	Frozenspins        float64 `json:"frozenspins"`
-	J                  float64 `json:"J"`
-	Kc1                float64 `json:"Kc1"`
-	Kc2                float64 `json:"Kc2"`
-	Kc3                float64 `json:"Kc3"`
-	Ku1                float64 `json:"Ku1"`
-	Ku2                float64 `json:"Ku2"`
-	Lambda             float64 `json:"Lambda"`
-	MFMDipole          float64 `json:"MFMDipole"`
-	MFMLift            float64 `json:"MFMLift"`
-	Msat               float64 `json:"Msat"`
-	NoDemagSpins       float64 `json:"NoDemagSpins"`
-	Pol                float64 `json:"Pol"`
-	Temp               float64 `json:"Temp"`
-	Xi                 float64 `json:"xi"`
-}
+
 type TablePlotData struct {
 	X float64 `json:"x"`
 	Y float64 `json:"y"`
@@ -155,9 +120,7 @@ func NewEngineState() *EngineState {
 			PBCy: engine.PBCy,
 			PBCz: engine.PBCz,
 		},
-		Params: Parameters{
-			// Aex: engine.Aex.Average(),
-		},
+		Params:    *newParameters(),
 		TablePlot: *newTablePlot(),
 	}
 	return &engineState
