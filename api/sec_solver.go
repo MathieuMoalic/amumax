@@ -2,17 +2,43 @@ package api
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/MathieuMoalic/amumax/engine"
 	"github.com/MathieuMoalic/amumax/util"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
-func postSolver(c echo.Context) error {
+type Solver struct {
+	Type       string  `json:"type"`
+	Steps      int     `json:"steps"`
+	Time       float64 `json:"time"`
+	Dt         float64 `json:"dt"`
+	ErrPerStep float64 `json:"errPerStep"`
+	MaxTorque  float64 `json:"maxTorque"`
+	Fixdt      float64 `json:"fixdt"`
+	Mindt      float64 `json:"mindt"`
+	Maxdt      float64 `json:"maxdt"`
+	Maxerr     float64 `json:"maxerr"`
+}
+
+func newSolver() *Solver {
+	return &Solver{
+		Type:       engine.Solvernames[engine.Solvertype],
+		Steps:      engine.NSteps,
+		Time:       engine.Time,
+		Dt:         engine.Dt_si,
+		ErrPerStep: engine.LastErr,
+		MaxTorque:  engine.LastTorque,
+		Fixdt:      engine.FixDt,
+		Mindt:      engine.MinDt,
+		Maxdt:      engine.MaxDt,
+		Maxerr:     engine.MaxErr,
+	}
+}
+
+func postSolverType(c echo.Context) error {
 	type Response struct {
 		Type string `json:"type"`
 	}
@@ -77,65 +103,4 @@ func postRelax(c echo.Context) error {
 func postBreak(c echo.Context) error {
 	engine.Break()
 	return c.JSON(http.StatusOK, "")
-}
-
-func postConsole(c echo.Context) error {
-	type Request struct {
-		Command string `json:"command"`
-	}
-
-	req := new(Request)
-	if err := c.Bind(req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
-	}
-	engine.Inject <- func() { engine.GUI.EvalGUI(req.Command) }
-	return c.JSON(http.StatusOK, "")
-}
-
-func postTable(c echo.Context) error {
-	type Request struct {
-		XColumn string `json:"XColumn"`
-		YColumn string `json:"YColumn"`
-	}
-
-	req := new(Request)
-	if err := c.Bind(req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
-	}
-	engine.Tableplot.X = req.XColumn
-	engine.Tableplot.Y = req.YColumn
-	data := newTablePlot()
-	return c.JSON(http.StatusOK, data)
-}
-
-func postFrontendState(c echo.Context) error {
-	req := new(engine.FrontendState)
-	if err := c.Bind(req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
-	}
-	engine.Frontend = *req
-	return c.JSON(http.StatusOK, "")
-}
-
-func Start() {
-	e := echo.New()
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{"*"},
-	}))
-
-	e.Logger.SetOutput(io.Discard)
-	e.Static("/", "static")
-	e.GET("/ws", websocketEntrypoint)
-	e.POST("/solver", postSolver)
-	e.POST("/run", postRun)
-	e.POST("/console", postConsole)
-	e.POST("/steps", postSteps)
-	e.POST("/relax", postRelax)
-	e.POST("/break", postBreak)
-	e.POST("/table", postTable)
-	e.POST("/frontendstate", postFrontendState)
-
-	// Start server
-	e.Logger.Fatal(e.Start(":5001"))
 }

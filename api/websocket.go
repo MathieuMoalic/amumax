@@ -48,8 +48,8 @@ func sendEngineState(ws *websocket.Conn) {
 }
 
 func sendDisplayVectorField(ws *websocket.Conn) {
-	engine.InjectAndWait(engine.GetVectorField)
-	err := websocket.Message.Send(ws, engine.DisplayVectorField)
+	engine.InjectAndWait(GetVectorField)
+	err := websocket.Message.Send(ws, DisplayVectorField)
 	if err != nil {
 		util.LogErr("Error sending binary data via WebSocket:", err)
 	}

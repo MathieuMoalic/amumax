@@ -123,7 +123,7 @@ func (ren *Render) Render() {
 	comp := ren.comp
 	quant := ren.quant
 	if comp == "All" {
-		normalize(imgBuf)
+		Normalize(imgBuf)
 	}
 	if comp != "All" && quant.NComp() > 1 { // ... if one has been selected by gui
 		imgBuf = imgBuf.Comp(compstr[comp])
@@ -139,7 +139,7 @@ func (ren *Render) Render() {
 
 var compstr = map[string]int{"x": 0, "y": 1, "z": 2}
 
-func normalize(f *data.Slice) {
+func Normalize(f *data.Slice) {
 	a := f.Vectors()
 	maxnorm := 0.
 	for i := range a[0] {

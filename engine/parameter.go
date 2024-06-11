@@ -26,6 +26,41 @@ type regionwise struct {
 	name, unit string
 }
 
+var Params map[string]Field
+
+type Field struct {
+	Name        string           `json:"name"`
+	Value       func(int) string `json:"value"`
+	Description string           `json:"description"`
+}
+
+func AddParameter(name string, value interface{}, doc string) {
+	if Params == nil {
+		Params = make(map[string]Field)
+	}
+	if v, ok := value.(*RegionwiseScalar); ok {
+		Params[name] = Field{
+			name,
+			v.GetRegionToString,
+			doc,
+		}
+	}
+	if v, ok := value.(*RegionwiseVector); ok {
+		Params[name] = Field{
+			name,
+			v.GetRegionToString,
+			doc,
+		}
+	}
+	if v, ok := value.(*inputValue); ok {
+		Params[name] = Field{
+			name,
+			v.GetRegionToString,
+			doc,
+		}
+	}
+}
+
 func (p *regionwise) init(nComp int, name, unit string, children []derived) {
 	p.lut.init(nComp, p)
 	p.name = name
