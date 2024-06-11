@@ -142,7 +142,7 @@ func ValidateCellSize() {
 }
 
 func IsMeshCreated() bool {
-	return globalmesh_.Size() == [3]int{0, 0, 0}
+	return globalmesh_.Size() != [3]int{0, 0, 0}
 }
 
 func SetTiDiNi(Ti, di *float64, Ni *int, comp string) {
@@ -159,7 +159,8 @@ func SetTiDiNi(Ti, di *float64, Ni *int, comp string) {
 
 // check if mesh is set, otherwise, it creates it
 func CreateMesh() {
-	if IsMeshCreated() {
+	if !IsMeshCreated() {
+		util.Log("Creating mesh")
 		SetBusy(true)
 		defer SetBusy(false)
 		SetTiDiNi(&Tx, &Dx, &Nx, "x")
@@ -172,7 +173,7 @@ func CreateMesh() {
 		}
 		globalmesh_ = *data.NewMesh(Nx, Ny, Nz, Dx, Dy, Dz, PBCx, PBCy, PBCz)
 		M.alloc()
-		regions.alloc()
+		Regions.alloc()
 		script.MMetadata.Init(OD(), StartTime, Dx, Dy, Dz, Nx, Ny, Nz, Tx, Ty, Tz, PBCx, PBCy, PBCz, cuda.GPUInfo)
 	}
 }
@@ -182,7 +183,7 @@ func ReCreateMesh(Nx, Ny, Nz int, dx, dy, dz float64, PBCx, PBCy, PBCz int) {
 	defer SetBusy(false)
 	globalmesh_ = *data.NewMesh(Nx, Ny, Nz, dx, dy, dz, PBCx, PBCy, PBCz)
 	M.alloc()
-	regions.alloc()
+	Regions.alloc()
 	script.MMetadata.Init(OD(), StartTime, dx, dy, dz, Nx, Ny, Nz, Tx, Ty, Tz, PBCx, PBCy, PBCz, cuda.GPUInfo)
 
 	SetBusy(true)
