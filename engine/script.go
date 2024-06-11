@@ -3,9 +3,10 @@ package engine
 // declare functionality for interpreted input scripts
 
 import (
+	"reflect"
+
 	"github.com/MathieuMoalic/amumax/httpfs"
 	"github.com/MathieuMoalic/amumax/script"
-	"reflect"
 )
 
 func CompileFile(fname string) (*script.BlockStmt, error) {
@@ -57,7 +58,7 @@ func DeclConst(name string, value float64, doc string) {
 // It can be changed, but not by the user.
 func DeclROnly(name string, value interface{}, doc string) {
 	World.ROnly(name, value, doc)
-	GUIAdd(name, value)
+	GUIAdd(name, value, doc)
 }
 
 func Export(q interface {
@@ -70,21 +71,22 @@ func Export(q interface {
 // Add a (pointer to) variable to the script world
 func DeclVar(name string, value interface{}, doc string) {
 	World.Var(name, value, doc)
-	GUIAdd(name, value)
+	GUIAdd(name, value, doc)
 }
 
 // Hack for fixing the closure caveat:
 // Defines "t", the time variable, handled specially by Fix()
 func DeclTVar(name string, value interface{}, doc string) {
 	World.TVar(name, value, doc)
-	GUIAdd(name, value)
+	GUIAdd(name, value, doc)
 }
 
 // Add an LValue to the script world.
 // Assign to LValue invokes SetValue()
 func DeclLValue(name string, value LValue, doc string) {
+	AddParameter(name, value, doc)
 	World.LValue(name, newLValueWrapper(value), doc)
-	GUIAdd(name, value)
+	GUIAdd(name, value, doc)
 }
 
 // LValue is settable
