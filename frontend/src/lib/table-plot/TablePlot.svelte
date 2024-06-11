@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { tablePlotState, postTableColumns } from './api';
+	import { tablePlotState, postTableColumns } from '$api/incoming/table-plot';
 	import { Chart, registerables } from 'chart.js';
 	import zoomPlugin from 'chartjs-plugin-zoom';
 	import { redraw, createChart, resetZoom, chart } from './tablePlot';

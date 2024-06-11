@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Header from '$lib/Header.svelte';
-	import Display from '$lib/Display.svelte';
-	import TablePlot from '$lib/TablePlot.svelte';
+	import Display from '$lib/preview/Preview.svelte';
+	import TablePlot from '$lib/table-plot/TablePlot.svelte';
 	import Solver from '$lib/Solver.svelte';
 	import Console from '$lib/Console.svelte';
 	import Mesh from '$lib/Mesh.svelte';
@@ -10,8 +10,8 @@
 	import Parameters from '$lib/Parameters.svelte';
 	import Footer from '$lib/Footer.svelte';
 	import { onDestroy, onMount } from 'svelte';
-	import { baseURL, paused } from '$lib/api';
-	import { wsConnect } from '$lib/websocket';
+	import { baseURL } from '$api/websocket';
+	import { wsConnect } from '../api/websocket';
 
 	onMount(() => {
 		try {
