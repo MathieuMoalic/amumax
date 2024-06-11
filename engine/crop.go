@@ -32,7 +32,7 @@ func CropRegion(parent Quantity, region int) *cropped {
 	// use -1 for unset values
 	x1, y1, z1 := -1, -1, -1
 	x2, y2, z2 := -1, -1, -1
-	r := regions.HostArray()
+	r := Regions.HostArray()
 	for iz := 0; iz < n[Z]; iz++ {
 		for iy := 0; iy < n[Y]; iy++ {
 			for ix := 0; ix < n[X]; ix++ {

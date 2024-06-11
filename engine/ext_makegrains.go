@@ -14,9 +14,11 @@ func Voronoi(grainsize float64, minRegion, maxRegion, seed int) {
 	defer SetBusy(false)
 
 	t := newTesselation(grainsize, minRegion, maxRegion, int64(seed))
-	regions.hist = append(regions.hist, t.RegionOf)
-
-	regions.render(t.RegionOf)
+	Regions.hist = append(Regions.hist, t.RegionOf)
+	for i := minRegion; i < maxRegion; i++ {
+		Regions.AddIndex(i)
+	}
+	Regions.render(t.RegionOf)
 }
 
 type tesselation struct {

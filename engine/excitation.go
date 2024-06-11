@@ -40,7 +40,7 @@ func (p *Excitation) MSlice() cuda.MSlice {
 
 func (e *Excitation) AddTo(dst *data.Slice) {
 	if !e.perRegion.isZero() {
-		cuda.RegionAddV(dst, e.perRegion.gpuLUT(), regions.Gpu())
+		cuda.RegionAddV(dst, e.perRegion.gpuLUT(), Regions.Gpu())
 	}
 
 	for _, t := range e.extraTerms {

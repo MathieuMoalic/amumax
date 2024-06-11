@@ -54,11 +54,11 @@ func AddExchangeField(dst *data.Slice) {
 	defer ms.Recycle()
 	switch {
 	case !inter && !bulk:
-		cuda.AddExchange(dst, M.Buffer(), lex2.Gpu(), ms, regions.Gpu(), M.Mesh())
+		cuda.AddExchange(dst, M.Buffer(), lex2.Gpu(), ms, Regions.Gpu(), M.Mesh())
 	case inter && !bulk:
-		cuda.AddDMI(dst, M.Buffer(), lex2.Gpu(), din2.Gpu(), ms, regions.Gpu(), M.Mesh(), OpenBC) // dmi+exchange
+		cuda.AddDMI(dst, M.Buffer(), lex2.Gpu(), din2.Gpu(), ms, Regions.Gpu(), M.Mesh(), OpenBC) // dmi+exchange
 	case bulk && !inter:
-		cuda.AddDMIBulk(dst, M.Buffer(), lex2.Gpu(), dbulk2.Gpu(), ms, regions.Gpu(), M.Mesh(), OpenBC) // dmi+exchange
+		cuda.AddDMIBulk(dst, M.Buffer(), lex2.Gpu(), dbulk2.Gpu(), ms, Regions.Gpu(), M.Mesh(), OpenBC) // dmi+exchange
 		// TODO: add ScaleInterDbulk and InterDbulk
 	case inter && bulk:
 		util.Fatal("Cannot have interfacial-induced DMI and bulk DMI at the same time")
@@ -67,12 +67,12 @@ func AddExchangeField(dst *data.Slice) {
 
 // Set dst to the average exchange coupling per cell (average of lex2 with all neighbors).
 func exchangeDecode(dst *data.Slice) {
-	cuda.ExchangeDecode(dst, lex2.Gpu(), regions.Gpu(), M.Mesh())
+	cuda.ExchangeDecode(dst, lex2.Gpu(), Regions.Gpu(), M.Mesh())
 }
 
 // Set dst to the average dmi coupling per cell (average of din2 with all neighbors).
 func dindDecode(dst *data.Slice) {
-	cuda.ExchangeDecode(dst, din2.Gpu(), regions.Gpu(), M.Mesh())
+	cuda.ExchangeDecode(dst, din2.Gpu(), Regions.Gpu(), M.Mesh())
 }
 
 // Returns the current exchange energy in Joules.
