@@ -36,7 +36,7 @@ func init() {
 }
 
 func RegionFromCoordinate(x, y, z int) int {
-	return regions.GetCell(x, y, z)
+	return Regions.GetCell(x, y, z)
 }
 
 // Returns a new new slice (3D array) with given number of components and size.

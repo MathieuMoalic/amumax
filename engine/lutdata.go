@@ -91,6 +91,6 @@ func (p *lut) Slice() (*data.Slice, bool) {
 func (p *lut) EvalTo(dst *data.Slice) {
 	gpu := p.gpuLUT()
 	for c := 0; c < p.NComp(); c++ {
-		cuda.RegionDecode(dst.Comp(c), cuda.LUTPtr(gpu[c]), regions.Gpu())
+		cuda.RegionDecode(dst.Comp(c), cuda.LUTPtr(gpu[c]), Regions.Gpu())
 	}
 }

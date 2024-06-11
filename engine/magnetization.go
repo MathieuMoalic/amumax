@@ -128,7 +128,7 @@ func (m *magnetization) SetRegion(region int, conf Config) {
 	n := m.Mesh().Size()
 	r := byte(region)
 
-	regionsArr := regions.HostArray()
+	regionsArr := Regions.HostArray()
 
 	for iz := 0; iz < n[Z]; iz++ {
 		for iy := 0; iy < n[Y]; iy++ {
