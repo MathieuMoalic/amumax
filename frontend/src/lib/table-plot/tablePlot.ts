@@ -1,4 +1,4 @@
-import { tablePlotState } from './api';
+import { tablePlotState } from '$api/incoming/table-plot';
 import { Chart } from 'chart.js';
 import { get, writable } from 'svelte/store';
 

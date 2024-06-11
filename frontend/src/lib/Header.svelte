@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { headerState } from './api';
+	import { headerState } from '$api/incoming/header';
 </script>
 
 <section>

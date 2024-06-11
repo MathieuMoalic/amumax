@@ -5,9 +5,9 @@
 		postRun,
 		postSteps,
 		postRelax,
-		postBreak,
-		headerState
-	} from './api';
+		postBreak
+	} from '$api/incoming/solver';
+	import { headerState } from '$api/incoming/header';
 	let solvertypes = ['bw_euler', 'euler', 'heun', 'rk4', 'rk23', 'rk45', 'rkf56'];
 	let selectedSolver = $solverState.type;
 	function changeSolver() {
@@ -41,7 +41,7 @@
 </script>
 
 <section>
-	<h2>Solvers</h2>
+	<h2>Solver</h2>
 	<div class="flex-container">
 		<div class="grid-container">
 			<div>

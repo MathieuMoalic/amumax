@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { consoleState, postCommand } from './api';
+	import { consoleState, postCommand } from '$api/incoming/console';
 
 	import Prism from 'prismjs';
 	import 'prismjs/components/prism-go'; // Ensure the import path is correct

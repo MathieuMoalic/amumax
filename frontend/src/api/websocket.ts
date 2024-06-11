@@ -1,12 +1,29 @@
-import { type EngineState } from "./types";
-import { get } from "svelte/store";
-import { headerState, consoleState, solverState, meshState, parametersState, tablePlotState, paused, displayData } from "./api";
-import { redraw } from "./tablePlot";
-import { update, parsingTime, init } from "./display";
-import { type VectorField } from "./types";
+import { get, writable } from "svelte/store";
+import { redraw } from "../lib/table-plot/tablePlot";
+import { update, init, display } from "./incoming/preview";
+
+import { type Header, headerState } from "./incoming/header";
+import { type Solver, solverState } from "./incoming/solver";
+import { type Console, consoleState } from "./incoming/console";
+import { type Mesh, meshState } from "./incoming/mesh";
+import { type Parameters, parametersState } from "./incoming/parameters";
+import { type TablePlot, tablePlotState } from "./incoming/table-plot";
+
+export const displayData = writable<VectorField>([]);
+export const baseURL = writable('http://localhost:5001');
+
+export type VectorField = Array<{ x: number; y: number; z: number }>;
+
+export interface EngineState {
+    header: Header;
+    solver: Solver;
+    console: Console;
+    mesh: Mesh;
+    parameters: Parameters;
+    tablePlot: TablePlot;
+}
 
 let ws: WebSocket;
-
 export function wsConnect() {
     ws = new WebSocket('ws://localhost:5001/ws');
 
@@ -19,6 +36,8 @@ export function wsConnect() {
     };
 
     ws.onmessage = async (e) => {
+        const startTime = performance.now(); // Start timing
+
         if (typeof e.data === 'string') {
             try {
                 parseJsonMessage(e.data);
@@ -38,6 +57,14 @@ export function wsConnect() {
                 console.error('Error parsing Binary message:', error);
             }
         }
+        const endTime = performance.now(); // End timing
+        const parsingTime = endTime - startTime;
+        display.update(currentDisplay => {
+            if (currentDisplay) {
+                return { ...currentDisplay, parsingTime: parsingTime };
+            }
+            return currentDisplay;
+        });
     };
 
     ws.onclose = (e) => {
@@ -50,13 +77,8 @@ export function wsConnect() {
 }
 
 async function parseBinaryMessage(data: Blob) {
-    const startTime = performance.now(); // Start timing
-
     const arrayBuffer = await blobToArrayBuffer(data);
     displayData.set(parseVectorField(arrayBuffer));
-
-    const endTime = performance.now(); // End timing
-    parsingTime.set(endTime - startTime);
 }
 
 function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
@@ -91,6 +113,6 @@ function parseJsonMessage(message: string) {
     meshState.set(engineState.mesh);
     parametersState.set(engineState.parameters);
     tablePlotState.set(engineState.tablePlot);
-    paused.set(get(headerState).status === 'Paused');
+    // paused.set(get(headerState).status === 'Paused');
     redraw()
 }

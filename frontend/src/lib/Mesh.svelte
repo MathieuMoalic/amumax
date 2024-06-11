@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { meshState } from './api';
+	import { meshState } from '$api/incoming/mesh';
 	function formatFloat(value: number): string {
 		return value.toFixed(3);
 	}
