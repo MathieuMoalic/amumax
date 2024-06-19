@@ -10,7 +10,7 @@ export const console = writable<Console>({
     command: "",
 });
 
-export async function postConsole() {
+export async function postCommand() {
     let t = get(console);
     let command = t.command;
     const response = await fetch(`${get(baseURL)}/console`, {

@@ -20,20 +20,3 @@ export const tablePlotState = writable<TablePlot>({
     yColumn: 'mx',
     data: []
 });
-
-export async function postTableColumns() {
-    let XColumn = get(tablePlotState).xColumn;
-    let YColumn = get(tablePlotState).yColumn;
-    const response = await fetch(`${get(baseURL)}/table`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ XColumn, YColumn })
-    });
-    if (!response.ok) {
-        throw new Error('Failed to post table columns');
-    }
-    let parsedData: TablePlot = await response.json();
-    tablePlotState.set(parsedData);
-}
