@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { consoleState, postCommand } from '$api/incoming/console';
+	import { consoleState } from '$api/incoming/console';
+	import { postCommand } from '$api/outgoing/console';
 
 	import Prism from 'prismjs';
 	import 'prismjs/components/prism-go'; // Ensure the import path is correct
@@ -7,7 +8,7 @@
 	let command = '';
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Enter') {
-			postCommand(command);
+			postCommand();
 			event.preventDefault(); // Prevent the default action to avoid form submission or newline in input
 		}
 	}

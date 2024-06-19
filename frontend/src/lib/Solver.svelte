@@ -1,12 +1,6 @@
 <script lang="ts">
-	import {
-		solverState,
-		postSolverType,
-		postRun,
-		postSteps,
-		postRelax,
-		postBreak
-	} from '$api/incoming/solver';
+	import { solverState } from '$api/incoming/solver';
+	import { postSolverType, postRun, postSteps, postRelax, postBreak } from '$api/outgoing/solver';
 	import { headerState } from '$api/incoming/header';
 	let solvertypes = ['bw_euler', 'euler', 'heun', 'rk4', 'rk23', 'rk45', 'rkf56'];
 	let selectedSolver = $solverState.type;
