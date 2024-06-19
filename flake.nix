@@ -22,7 +22,7 @@
         buildAmumax = pkgs:
           pkgs.buildGoModule rec {
             pname = "amumax";
-            version = "2024.04.20";
+            version = "2024.06.19";
 
             src = pkgs.fetchFromGitHub {
               owner = "MathieuMoalic";
@@ -102,6 +102,7 @@
         };
       in {
         packages.amumax = buildAmumax pkgs;
+        packages.default = buildAmumax pkgs;
         defaultPackage.amumax = buildAmumax pkgs;
         devShell = devEnv; # Provide the development environment for use with `nix develop`
       }
