@@ -1,6 +1,36 @@
+import msgpack from 'msgpack-lite';
+
+export let ws: WebSocket;
+
+export function initializeWebSocket(ws: WebSocket) {
+    ws = new WebSocket('ws://localhost:5001/ws');
+    ws.binaryType = 'arraybuffer';
+
+    ws.onmessage = function (event) {
+        const msg = msgpack.decode(new Uint8Array(event.data));
+
+        const engineState = msg.engine_state as EngineState;
+        // headerState.set(engineState.header);
+        // solverState.set(engineState.solver);
+        // consoleState.set(engineState.console);
+        // meshState.set(engineState.mesh);
+        // parametersState.set(engineState.parameters);
+        // tablePlotState.set(engineState.tablePlot);
+        // redraw();
+
+        displayData.set(parseVectorField(msg.preview_buffer))
+
+        console.log(engineState, get(displayData));
+    };
+}
+// const ws = new WebSocket('ws://localhost:5001/ws');
+
+
+
 import { get, writable } from "svelte/store";
 import { redraw } from "../lib/table-plot/tablePlot";
-import { update, init, display } from "./incoming/preview";
+import { update, init, display } from "$lib/preview/plot-vector-field"
+import { displayData, type VectorField } from "$api/incoming/preview";
 
 import { type Header, headerState } from "./incoming/header";
 import { type Solver, solverState } from "./incoming/solver";
@@ -9,10 +39,8 @@ import { type Mesh, meshState } from "./incoming/mesh";
 import { type Parameters, parametersState } from "./incoming/parameters";
 import { type TablePlot, tablePlotState } from "./incoming/table-plot";
 
-export const displayData = writable<VectorField>([]);
 export const baseURL = writable('http://localhost:5001');
 
-export type VectorField = Array<{ x: number; y: number; z: number }>;
 
 export interface EngineState {
     header: Header;
@@ -23,58 +51,58 @@ export interface EngineState {
     tablePlot: TablePlot;
 }
 
-let ws: WebSocket;
-export function wsConnect() {
-    ws = new WebSocket('ws://localhost:5001/ws');
+// let ws: WebSocket;
+// export function wsConnect() {
+//     ws = new WebSocket('ws://localhost:5001/ws');
 
-    ws.onopen = () => {
-        // console.log('Connected to the server');
-    };
+//     ws.onopen = () => {
+//         // console.log('Connected to the server');
+//     };
 
-    ws.onerror = (error) => {
-        // console.error('WebSocket Error:', error);
-    };
+//     ws.onerror = (error) => {
+//         // console.error('WebSocket Error:', error);
+//     };
 
-    ws.onmessage = async (e) => {
-        const startTime = performance.now(); // Start timing
+//     ws.onmessage = async (e) => {
+//         const startTime = performance.now(); // Start timing
 
-        if (typeof e.data === 'string') {
-            try {
-                parseJsonMessage(e.data);
-            } catch (error) {
-                console.error('Error parsing JSON message:', error);
-            }
-        } else if (e.data instanceof Blob) {
-            try {
-                if (get(displayData).length === 0) {
-                    await parseBinaryMessage(e.data);
-                    init()
-                } else {
-                    parseBinaryMessage(e.data);
-                    update();
-                }
-            } catch (error) {
-                console.error('Error parsing Binary message:', error);
-            }
-        }
-        const endTime = performance.now(); // End timing
-        const parsingTime = endTime - startTime;
-        display.update(currentDisplay => {
-            if (currentDisplay) {
-                return { ...currentDisplay, parsingTime: parsingTime };
-            }
-            return currentDisplay;
-        });
-    };
+//         if (typeof e.data === 'string') {
+//             try {
+//                 parseJsonMessage(e.data);
+//             } catch (error) {
+//                 console.error('Error parsing JSON message:', error);
+//             }
+//         } else if (e.data instanceof Blob) {
+//             try {
+//                 if (get(displayData).length === 0) {
+//                     await parseBinaryMessage(e.data);
+//                     init()
+//                 } else {
+//                     await parseBinaryMessage(e.data);
+//                     update();
+//                 }
+//             } catch (error) {
+//                 console.error('Error parsing Binary message:', error);
+//             }
+//         }
+//         const endTime = performance.now(); // End timing
+//         const parsingTime = endTime - startTime;
+//         display.update(currentDisplay => {
+//             if (currentDisplay) {
+//                 return { ...currentDisplay, parsingTime: parsingTime };
+//             }
+//             return currentDisplay;
+//         });
+//     };
 
-    ws.onclose = (e) => {
-        console.log('Socket is closed.');
-        // console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
-        // setTimeout(() => {
-        //     wsConnect();
-        // }, 1000);
-    };
-}
+//     ws.onclose = (e) => {
+//         console.log('Socket is closed.');
+//         // console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+//         // setTimeout(() => {
+//         //     wsConnect();
+//         // }, 1000);
+//     };
+// }
 
 async function parseBinaryMessage(data: Blob) {
     const arrayBuffer = await blobToArrayBuffer(data);
@@ -105,7 +133,7 @@ function parseVectorField(arrayBuffer: ArrayBuffer): VectorField {
     return vectors;
 }
 
-function parseJsonMessage(message: string) {
+function parseEngineStateMessage(message: string) {
     let engineState: EngineState = JSON.parse(message);
     headerState.set(engineState.header);
     solverState.set(engineState.solver);

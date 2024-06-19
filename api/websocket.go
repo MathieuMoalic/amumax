@@ -6,6 +6,7 @@ import (
 	"github.com/MathieuMoalic/amumax/engine"
 	"github.com/MathieuMoalic/amumax/util"
 	"github.com/labstack/echo/v4"
+	"github.com/vmihailenco/msgpack/v5"
 	"golang.org/x/net/websocket"
 )
 
@@ -17,6 +18,11 @@ type WebSocketState struct {
 	LastStep int
 }
 
+type WebSocketMessage struct {
+	EngineState   *EngineState `msgpack:"engine_state"`
+	PreviewBuffer *[]byte      `msgpack:"preview_buffer"`
+}
+
 // WebSocket handler for engine state updates
 func websocketEntrypoint(c echo.Context) error {
 	websocket.Handler(func(ws *websocket.Conn) {
@@ -24,13 +30,11 @@ func websocketEntrypoint(c echo.Context) error {
 		defer ws.Close()
 
 		// Send initial state when the client connects to the WebSocket
-		sendEngineState(ws)
-		sendDisplayVectorField(ws)
+		sendMessage(ws)
 
 		for {
 			if engine.NSteps != webSocketState.LastStep {
-				sendEngineState(ws)
-				sendDisplayVectorField(ws)
+				sendMessage(ws)
 				webSocketState.LastStep = engine.NSteps
 			}
 			time.Sleep(1 * time.Second)
@@ -39,18 +43,21 @@ func websocketEntrypoint(c echo.Context) error {
 	return nil
 }
 
-func sendEngineState(ws *websocket.Conn) {
-	engineState := NewEngineState()
-	err := websocket.JSON.Send(ws, engineState)
-	if err != nil {
-		util.LogErr("Error sending engine state via WebSocket:", err)
+func sendMessage(ws *websocket.Conn) {
+	engine.InjectAndWait(PreparePreviewBuffer)
+	rawMessage := WebSocketMessage{
+		EngineState:   NewEngineState(),
+		PreviewBuffer: &PreviewBuffer,
 	}
-}
 
-func sendDisplayVectorField(ws *websocket.Conn) {
-	engine.InjectAndWait(GetVectorField)
-	err := websocket.Message.Send(ws, DisplayVectorField)
+	msg, err := msgpack.Marshal(rawMessage)
 	if err != nil {
-		util.LogErr("Error sending binary data via WebSocket:", err)
+		util.LogErr("Error marshaling combined message:", err)
+		return
+	}
+
+	err = websocket.Message.Send(ws, msg)
+	if err != nil {
+		util.LogErr("Error sending combined message via WebSocket:", err)
 	}
 }

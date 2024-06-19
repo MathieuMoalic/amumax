@@ -10,12 +10,13 @@
 	import Parameters from '$lib/Parameters.svelte';
 	import Footer from '$lib/Footer.svelte';
 	import { onDestroy, onMount } from 'svelte';
-	import { baseURL } from '$api/websocket';
-	import { wsConnect } from '../api/websocket';
+	import { baseURL, initializeWebSocket, ws } from '$api/websocket';
+	// import { wsConnect } from '../api/websocket';
 
 	onMount(() => {
 		try {
-			wsConnect();
+			// wsConnect();
+			initializeWebSocket(ws);
 		} catch (error) {
 			console.error('Error connecting to websocket:', error);
 		}

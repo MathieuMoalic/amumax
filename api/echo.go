@@ -24,7 +24,7 @@ func Start() {
 	e.POST("/relax", postRelax)
 	e.POST("/break", postBreak)
 	e.POST("/table", postTable)
-	e.POST("/frontendstate", postPreviewState)
+	e.POST("/preview", postPreviewState)
 
 	// Start server
 	e.Logger.Fatal(e.Start(":5001"))

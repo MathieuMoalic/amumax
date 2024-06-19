@@ -35,3 +35,4 @@ cuda2go
 cuda2go.exe
 # *.orig
 .go-build
+*.ptx
