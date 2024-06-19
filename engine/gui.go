@@ -97,12 +97,6 @@ type Param interface {
 	IsUniform() bool
 }
 
-func GUIAdd(name string, value interface{}, doc string) {
-	if v, ok := value.(Quantity); ok {
-		GUI.Quants[name] = v
-	}
-}
-
 // Once Params/Quants have been declared and added,
 // initialize the GUI Page (pre-renders template) and register http handlers
 func (g *guistate) PrepareServer() {

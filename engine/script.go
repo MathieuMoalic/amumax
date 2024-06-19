@@ -58,7 +58,7 @@ func DeclConst(name string, value float64, doc string) {
 // It can be changed, but not by the user.
 func DeclROnly(name string, value interface{}, doc string) {
 	World.ROnly(name, value, doc)
-	GUIAdd(name, value, doc)
+	AddQuantity(name, value, doc)
 }
 
 func Export(q interface {
@@ -71,14 +71,14 @@ func Export(q interface {
 // Add a (pointer to) variable to the script world
 func DeclVar(name string, value interface{}, doc string) {
 	World.Var(name, value, doc)
-	GUIAdd(name, value, doc)
+	AddQuantity(name, value, doc)
 }
 
 // Hack for fixing the closure caveat:
 // Defines "t", the time variable, handled specially by Fix()
 func DeclTVar(name string, value interface{}, doc string) {
 	World.TVar(name, value, doc)
-	GUIAdd(name, value, doc)
+	AddQuantity(name, value, doc)
 }
 
 // Add an LValue to the script world.
@@ -86,7 +86,7 @@ func DeclTVar(name string, value interface{}, doc string) {
 func DeclLValue(name string, value LValue, doc string) {
 	AddParameter(name, value, doc)
 	World.LValue(name, newLValueWrapper(value), doc)
-	GUIAdd(name, value, doc)
+	AddQuantity(name, value, doc)
 }
 
 // LValue is settable

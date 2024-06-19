@@ -7,10 +7,18 @@ import (
 	"github.com/MathieuMoalic/amumax/data"
 )
 
+var Quantities = make(map[string]Quantity)
+
 // Arbitrary physical quantity.
 type Quantity interface {
 	NComp() int
 	EvalTo(dst *data.Slice)
+}
+
+func AddQuantity(name string, value interface{}, doc string) {
+	if v, ok := value.(Quantity); ok {
+		Quantities[name] = v
+	}
 }
 
 func MeshSize() [3]int {
