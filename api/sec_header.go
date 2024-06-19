@@ -3,9 +3,8 @@ package api
 import "github.com/MathieuMoalic/amumax/engine"
 
 type Header struct {
-	Path     string  `json:"path"`
-	Progress float64 `json:"progress"`
-	Status   string  `json:"status"`
+	Path   string `msgpack:"path"`
+	Status string `msgpack:"status"`
 }
 
 func newHeader() *Header {
