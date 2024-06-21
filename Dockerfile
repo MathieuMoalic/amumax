@@ -17,6 +17,4 @@ RUN git config --global --add safe.directory /src
 CMD go build -v -ldflags "-X github.com/MathieuMoalic/amumax/engine.VERSION=$(date -u +'%Y.%m.%d')" && \
   rm -rfd /src/build && \
   mkdir /src/build && \
-  cp /src/amumax /src/build && \
-  cp $( ldd /src/amumax | grep libcufft | awk '{print $3}' ) /src/build && \
-  cp $( ldd /src/amumax | grep libcurand | awk '{print $3}' ) /src/build 
+  cp /src/amumax /src/build
