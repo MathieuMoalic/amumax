@@ -8,7 +8,7 @@ import (
 )
 
 type Console struct {
-	Hist string `json:"hist"`
+	Hist string `msgpack:"hist"`
 }
 
 func newConsole() *Console {
@@ -19,7 +19,7 @@ func newConsole() *Console {
 
 func postConsole(c echo.Context) error {
 	type Request struct {
-		Command string `json:"command"`
+		Command string `msgpack:"command"`
 	}
 
 	req := new(Request)
