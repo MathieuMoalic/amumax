@@ -8,15 +8,15 @@ import (
 )
 
 type TablePlotData struct {
-	X float64 `json:"x"`
-	Y float64 `json:"y"`
+	X float64 `msgpack:"x"`
+	Y float64 `msgpack:"y"`
 }
 type TablePlot struct {
-	AutoSaveInterval float64         `json:"autoSaveInterval"`
-	Columns          []string        `json:"columns"`
-	XColumn          string          `json:"xColumn"`
-	YColumn          string          `json:"yColumn"`
-	Data             []TablePlotData `json:"data"`
+	AutoSaveInterval float64         `msgpack:"autoSaveInterval"`
+	Columns          []string        `msgpack:"columns"`
+	XColumn          string          `msgpack:"xColumn"`
+	YColumn          string          `msgpack:"yColumn"`
+	Data             []TablePlotData `msgpack:"data"`
 }
 
 func newTablePlot() *TablePlot {
@@ -39,8 +39,8 @@ func newTablePlot() *TablePlot {
 
 func postTable(c echo.Context) error {
 	type Request struct {
-		XColumn string `json:"XColumn"`
-		YColumn string `json:"YColumn"`
+		XColumn string `msgpack:"XColumn"`
+		YColumn string `msgpack:"YColumn"`
 	}
 
 	req := new(Request)

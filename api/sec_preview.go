@@ -25,18 +25,18 @@ func init() {
 }
 
 type Preview struct {
-	Quantity  engine.Quantity `json:"quantity"`
-	Component int             `json:"component"`
-	Layer     int             `json:"layer"`
-	MaxPoints int             `json:"maxPoints"`
+	Quantity  engine.Quantity `msgpack:"quantity"`
+	Component int             `msgpack:"component"`
+	Layer     int             `msgpack:"layer"`
+	MaxPoints int             `msgpack:"maxPoints"`
 }
 
 func postPreviewState(c echo.Context) error {
 	type Request struct {
-		Quantity  string `json:"quantity"`
-		Component string `json:"component"`
-		Layer     int    `json:"layer"`
-		MaxPoints int    `json:"maxPoints"`
+		Quantity  string `msgpack:"quantity"`
+		Component string `msgpack:"component"`
+		Layer     int    `msgpack:"layer"`
+		MaxPoints int    `msgpack:"maxPoints"`
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {

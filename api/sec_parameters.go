@@ -11,15 +11,15 @@ func init() {
 }
 
 type Field struct {
-	Name        string `json:"name"`
-	Value       string `json:"value"`
-	Description string `json:"description"`
+	Name        string `msgpack:"name"`
+	Value       string `msgpack:"value"`
+	Description string `msgpack:"description"`
 }
 
 type Parameters struct {
-	Regions        []int   `json:"regions"`
-	Fields         []Field `json:"fields"`
-	SelectedRegion int     `json:"selectedRegion"`
+	Regions        []int   `msgpack:"regions"`
+	Fields         []Field `msgpack:"fields"`
+	SelectedRegion int     `msgpack:"selectedRegion"`
 }
 
 func newParameters() *Parameters {

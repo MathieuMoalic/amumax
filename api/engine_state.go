@@ -1,12 +1,12 @@
 package api
 
 type EngineState struct {
-	Header    Header     `json:"header"`
-	Solver    Solver     `json:"solver"`
-	Console   Console    `json:"console"`
-	Mesh      Mesh       `json:"mesh"`
-	Params    Parameters `json:"parameters"`
-	TablePlot TablePlot  `json:"tablePlot"`
+	Header    Header     `msgpack:"header"`
+	Solver    Solver     `msgpack:"solver"`
+	Console   Console    `msgpack:"console"`
+	Mesh      Mesh       `msgpack:"mesh"`
+	Params    Parameters `msgpack:"parameters"`
+	TablePlot TablePlot  `msgpack:"tablePlot"`
 }
 
 func NewEngineState() *EngineState {

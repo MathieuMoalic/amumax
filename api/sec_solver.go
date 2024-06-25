@@ -11,16 +11,16 @@ import (
 )
 
 type Solver struct {
-	Type       string  `json:"type"`
-	Steps      int     `json:"steps"`
-	Time       float64 `json:"time"`
-	Dt         float64 `json:"dt"`
-	ErrPerStep float64 `json:"errPerStep"`
-	MaxTorque  float64 `json:"maxTorque"`
-	Fixdt      float64 `json:"fixdt"`
-	Mindt      float64 `json:"mindt"`
-	Maxdt      float64 `json:"maxdt"`
-	Maxerr     float64 `json:"maxerr"`
+	Type       string  `msgpack:"type"`
+	Steps      int     `msgpack:"steps"`
+	Time       float64 `msgpack:"time"`
+	Dt         float64 `msgpack:"dt"`
+	ErrPerStep float64 `msgpack:"errPerStep"`
+	MaxTorque  float64 `msgpack:"maxTorque"`
+	Fixdt      float64 `msgpack:"fixdt"`
+	Mindt      float64 `msgpack:"mindt"`
+	Maxdt      float64 `msgpack:"maxdt"`
+	Maxerr     float64 `msgpack:"maxerr"`
 }
 
 func newSolver() *Solver {
@@ -40,7 +40,7 @@ func newSolver() *Solver {
 
 func postSolverType(c echo.Context) error {
 	type Response struct {
-		Type string `json:"type"`
+		Type string `msgpack:"type"`
 	}
 
 	res := new(Response)
@@ -67,7 +67,7 @@ func postSolverType(c echo.Context) error {
 
 func postRun(c echo.Context) error {
 	type Request struct {
-		Duration float64 `json:"duration"`
+		Duration float64 `msgpack:"duration"`
 	}
 
 	req := new(Request)
@@ -81,7 +81,7 @@ func postRun(c echo.Context) error {
 
 func postSteps(c echo.Context) error {
 	type Request struct {
-		Steps int `json:"steps"`
+		Steps int `msgpack:"steps"`
 	}
 
 	req := new(Request)
