@@ -9,16 +9,17 @@
 			console.error('Error posting solver type:', error);
 		});
 	}
-	let runSeconds = 1e-9;
-	let runSteps = 100;
+	let runSeconds = '1e-9';
+	let runSteps = '100';
+
 	function run() {
 		$headerState.status = 'running';
-		postRun(runSeconds).catch((error) => {
+		postRun(parseFloat(runSeconds)).catch((error) => {
 			console.error('Error posting run:', error);
 		});
 	}
 	function steps() {
-		postSteps(runSteps).catch((error) => {
+		postSteps(parseInt(runSteps)).catch((error) => {
 			console.error('Error posting steps:', error);
 		});
 	}
