@@ -34,7 +34,7 @@
 	</p>
 	Max Points:<input bind:value={maxPointsField} on:change={onMaxPointsFieldChange} />
 	<div id="container"></div>
-	Parsing time: {$display?.parsingTime} ms
+	Parsing time: {$display?.parsingTime.toFixed(0)} ms
 </section>
 
 <style>
