@@ -1,4 +1,4 @@
-import { displayData } from '$api/incoming/preview';
+import { previewState } from '$api/incoming/preview';
 import * as THREE from 'three';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
@@ -18,6 +18,14 @@ interface Display {
 }
 
 export const display = writable<Display | null>(null);
+
+export function plotVectorField() {
+    if (get(display) === null) {
+        init();
+    } else {
+        update();
+    }
+}
 
 function createMesh(dimensions: Dimensions): THREE.InstancedMesh {
     const shaftGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.55, 8);
@@ -68,7 +76,7 @@ function createScene() {
 }
 
 function addArrowsToMesh(mesh: THREE.InstancedMesh, dimensions: Dimensions) {
-    const vectorField = get(displayData);
+    const vectorField = getVectorField();
     const dummy = new THREE.Object3D();
     vectorField.forEach((_, i) => {
         const posx = i % dimensions[0];
@@ -111,13 +119,29 @@ export function init() {
     animate();
 }
 
+function getVectorField(): Array<{ x: number; y: number; z: number }> {
+    const buffer = get(previewState).buffer;
+    console.log("getVectorField:" + buffer.byteLength);
+    const float32Array = new Float32Array(buffer);
+    const vectors: Array<{ x: number; y: number; z: number }> = [];
+
+    for (let i = 0; i < float32Array.length; i += 3) {
+        vectors.push({
+            x: float32Array[i],
+            y: float32Array[i + 1],
+            z: float32Array[i + 2]
+        });
+    }
+    console.log(vectors)
+    return vectors;
+}
 export function update() {
     let d = get(display);
     if (d) {
         const dummy = new THREE.Object3D();
         const defaultVector = new THREE.Vector3(0, 1, 0); // Default orientation of the arrow
         const mesh = d.mesh;
-        let vectorField = get(displayData);
+        let vectorField = getVectorField();
 
         vectorField.forEach((vector, i) => {
             if (vector.x === 0 && vector.y === 0 && vector.z === 0) {

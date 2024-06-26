@@ -4,13 +4,13 @@
 	import { postTableColumns } from '$api/outgoing/table-plot';
 	import { Chart, registerables } from 'chart.js';
 	import zoomPlugin from 'chartjs-plugin-zoom';
-	import { redraw, createChart, resetZoom, chart } from './tablePlot';
+	import { plotChart, createChart, resetZoom, chart } from './tablePlot';
 
 	Chart.register(...registerables, zoomPlugin);
 
 	async function onNewColumns() {
 		await postTableColumns();
-		redraw();
+		plotChart();
 	}
 	onMount(() => {
 		createChart();
@@ -37,7 +37,7 @@
 		</select>
 	</b>
 	<button on:click={resetZoom}>Reset Zoom</button>
-	<button on:click={redraw}>Redraw</button>
+	<button on:click={plotChart}>Redraw</button>
 	<div class="plot">
 		<canvas id="gd"></canvas>
 	</div>

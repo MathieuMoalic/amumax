@@ -10,7 +10,8 @@
 	import Parameters from '$lib/Parameters.svelte';
 	import Footer from '$lib/Footer.svelte';
 	import { onDestroy, onMount } from 'svelte';
-	import { baseURL, initializeWebSocket, ws } from '$api/websocket';
+	import { baseURL } from '$api/post';
+	import { initializeWebSocket, ws } from '$api/websocket';
 	// import { wsConnect } from '../api/websocket';
 
 	onMount(() => {

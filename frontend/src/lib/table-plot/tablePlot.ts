@@ -61,7 +61,7 @@ export function createChart() {
     }));
 }
 
-export function redraw() {
+export function plotChart() {
     const chartInstance = get(chart);
     if (chartInstance) {
         chartInstance.data.datasets[0].data = get(tablePlotState).data;

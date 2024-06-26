@@ -1,31 +1,23 @@
-import { writable } from "svelte/store";
+import { previewState } from "$api/incoming/preview";
+import { post } from "$api/post";
 import { get } from "svelte/store";
-import { baseURL } from "$api/websocket";
 
-export interface Preview {
-    quantity: string;
-    component: string;
-    layer: number;
-    maxPoints: number;
+export function postComponent() {
+    post('preview-component', get(previewState).component);
 }
-export const preview = writable<Preview>({
-    quantity: 'm',
-    component: 'All',
-    layer: 0,
-    maxPoints: 1000,
-});
 
-export async function postPreview() {
+export function postQuantity() {
+    post('preview-quantity', get(previewState).quantity);
+}
 
-    let data = get(preview);
-    const response = await fetch(`${get(baseURL)}/preview`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ ...data })
-    });
-    if (!response.ok) {
-        throw new Error('Failed to post preview');
-    }
+export function postLayer() {
+    post('preview-layer', get(previewState).layer);
+}
+
+export function postMaxPoints() {
+    post('preview-maxpoints', get(previewState).maxPoints);
+}
+
+export function postRefresh() {
+    post('preview-refresh', {});
 }

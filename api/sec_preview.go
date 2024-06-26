@@ -1,9 +1,10 @@
 package api
 
 import (
-	"net/http"
-
 	"encoding/binary"
+	"net/http"
+	"strconv"
+
 	"math"
 
 	"github.com/MathieuMoalic/amumax/cuda"
@@ -13,60 +14,120 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var preview Preview
+type Preview struct {
+	Quantity   string  `msgpack:"quantity"`
+	Component  string  `msgpack:"component"`
+	Layer      int     `msgpack:"layer"`
+	MaxPoints  int     `msgpack:"maxPoints"`
+	Dimensions [3]int  `msgpack:"dimensions"`
+	Type       string  `msgpack:"type"`
+	Buffer     *[]byte `msgpack:"buffer"`
+}
 
-func init() {
-	preview = Preview{
-		Quantity:  &engine.M,
-		Component: 0,
-		Layer:     0,
-		MaxPoints: 10000,
+func newPreview() *Preview {
+	return &Preview{
+		Quantity:   engine.NameOf(backendPreviewState.Quantity),
+		Component:  compIndexToString(backendPreviewState.Component),
+		Layer:      backendPreviewState.Layer,
+		MaxPoints:  backendPreviewState.MaxPoints,
+		Dimensions: backendPreviewState.Dimensions,
+		Type:       backendPreviewState.Type,
+		Buffer:     &backendPreviewState.Buffer,
 	}
 }
 
-type Preview struct {
-	Quantity  engine.Quantity `msgpack:"quantity"`
-	Component int             `msgpack:"component"`
-	Layer     int             `msgpack:"layer"`
-	MaxPoints int             `msgpack:"maxPoints"`
+var backendPreviewState BackendPreviewState
+
+func init() {
+	backendPreviewState = BackendPreviewState{
+		Quantity:   &engine.M,
+		Component:  0,
+		Layer:      0,
+		MaxPoints:  10000,
+		Dimensions: [3]int{0, 0, 0},
+		Type:       "vector",
+		Buffer:     []byte{},
+	}
 }
 
-func postPreviewState(c echo.Context) error {
+type BackendPreviewState struct {
+	Quantity   engine.Quantity `msgpack:"quantity"`
+	Component  int             `msgpack:"component"`
+	Layer      int             `msgpack:"layer"`
+	MaxPoints  int             `msgpack:"maxPoints"`
+	Dimensions [3]int          `msgpack:"dimensions"`
+	Type       string          `msgpack:"type"`
+	Buffer     []byte          `msgpack:"buffer"`
+}
+
+func postPreviewComponent(c echo.Context) error {
 	type Request struct {
-		Quantity  string `msgpack:"quantity"`
 		Component string `msgpack:"component"`
-		Layer     int    `msgpack:"layer"`
-		MaxPoints int    `msgpack:"maxPoints"`
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
 		util.LogErr(err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
+	backendPreviewState.Component = compStringToIndex(req.Component)
+	broadcastEngineState()
+	return c.JSON(http.StatusOK, nil)
+}
 
+func postPreviewQuantity(c echo.Context) error {
+	type Request struct {
+		Quantity string `msgpack:"quantity"`
+	}
+	req := new(Request)
+	if err := c.Bind(req); err != nil {
+		util.LogErr(err)
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
 	quantity, exists := engine.Quantities[req.Quantity]
 	if !exists {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Quantity not found"})
 	}
-	if quantity.NComp() == 3 {
-		// vector field
-		if req.Component == "All" {
-			// do nothing
-		}
-	} else if quantity.NComp() == 1 {
-		// scalar field
-	} else {
-		util.Fatal("Invalid quantity component count")
-	}
-	preview = Preview{
-		Quantity:  quantity,
-		Component: compStringToIndex(req.Component),
-		Layer:     req.Layer,
-		MaxPoints: req.MaxPoints,
-	}
-	util.Log("Preview state updated:", preview)
+	backendPreviewState.Quantity = quantity
+	broadcastEngineState()
+	return c.JSON(http.StatusOK, nil)
+}
 
-	return c.JSON(http.StatusOK, preview)
+func postPreviewLayer(c echo.Context) error {
+	type Request struct {
+		Layer int `msgpack:"layer"`
+	}
+	req := new(Request)
+	if err := c.Bind(req); err != nil {
+		util.LogErr(err)
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
+	backendPreviewState.Layer = req.Layer
+	broadcastEngineState()
+	return c.JSON(http.StatusOK, nil)
+}
+
+func postPreviewMaxPoints(c echo.Context) error {
+	type Request struct {
+		MaxPoints string `msgpack:"maxPoints"`
+	}
+	req := new(Request)
+	if err := c.Bind(req); err != nil {
+		util.LogErr(err)
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
+	MaxPoints, err := strconv.Atoi(req.MaxPoints)
+	if err != nil {
+		util.LogErr(err)
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Could not parse maxPoints as integer"})
+	}
+	backendPreviewState.MaxPoints = MaxPoints
+	broadcastEngineState()
+	return c.JSON(http.StatusOK, nil)
+}
+
+func postPreviewRefresh(c echo.Context) error {
+	broadcastEngineState()
+	return c.JSON(http.StatusOK, nil)
 }
 
 func compStringToIndex(comp string) int {
@@ -84,6 +145,21 @@ func compStringToIndex(comp string) int {
 	return -2
 }
 
+func compIndexToString(comp int) string {
+	switch comp {
+	case 0:
+		return "x"
+	case 1:
+		return "y"
+	case 2:
+		return "z"
+	case -1:
+		return "All"
+	}
+	util.Fatal("Invalid component index")
+	return ""
+}
+
 var PreviewBuffer []byte
 
 // scaleOutputBuffer scales down the image size until the number of points are < MaxVectors
@@ -92,7 +168,7 @@ func scaleOutputBuffer(originalSize [3]int) [3]int {
 	points := width * height
 
 	// Calculate the scaling factor
-	for points >= preview.MaxPoints {
+	for points >= backendPreviewState.MaxPoints {
 		width = (width + 1) / 2
 		height = (height + 1) / 2
 		points = width * height
@@ -150,46 +226,45 @@ func ConvertScalarFieldToBinary(scalarField [][][]float32) []byte {
 }
 
 func PreparePreviewBuffer() {
-	isVectorField := preview.Quantity.NComp() == 3 && preview.Component == -1
+	isVectorField := backendPreviewState.Quantity.NComp() == 3 && backendPreviewState.Component == -1
 
 	nComp := 1
 	if isVectorField {
 		nComp = 3
 	}
-	util.Log("PreparePreviewBuffer: ", engine.NameOf(preview.Quantity), ", component:", preview.Component, ",layer: ", preview.Layer, ", Max points:", preview.MaxPoints, ", isVectorField:", isVectorField)
+	util.Log("PreparePreviewBuffer: ", engine.NameOf(backendPreviewState.Quantity), ", component:", backendPreviewState.Component, ",layer: ", backendPreviewState.Layer, ", Max points:", backendPreviewState.MaxPoints, ", isVectorField:", isVectorField)
 
-	originalSize := engine.MeshOf(preview.Quantity).Size()
+	originalSize := engine.MeshOf(backendPreviewState.Quantity).Size()
 	outputSize := scaleOutputBuffer(originalSize)
+	backendPreviewState.Dimensions = outputSize
 	scaledSlice := data.NewSlice(nComp, outputSize)
 	tempBuffer := cuda.NewSlice(1, outputSize)
 
-	GPUBuffer := engine.ValueOf(preview.Quantity)
+	GPUBuffer := engine.ValueOf(backendPreviewState.Quantity)
 	defer cuda.Recycle(GPUBuffer)
 	defer tempBuffer.Free()
 
 	if isVectorField {
 		for c := 0; c < nComp; c++ {
-			cuda.Resize(tempBuffer, GPUBuffer.Comp(c), preview.Layer)
+			cuda.Resize(tempBuffer, GPUBuffer.Comp(c), backendPreviewState.Layer)
 			data.Copy(scaledSlice.Comp(c), tempBuffer)
 		}
 	} else {
-		if preview.Quantity.NComp() == 3 {
-			cuda.Resize(tempBuffer, GPUBuffer.Comp(nComp), preview.Layer)
+		if backendPreviewState.Quantity.NComp() == 3 {
+			cuda.Resize(tempBuffer, GPUBuffer.Comp(nComp), backendPreviewState.Layer)
 			data.Copy(scaledSlice.Comp(0), tempBuffer)
 		} else {
-			cuda.Resize(tempBuffer, GPUBuffer.Comp(0), preview.Layer)
+			cuda.Resize(tempBuffer, GPUBuffer.Comp(0), backendPreviewState.Layer)
 			data.Copy(scaledSlice.Comp(0), tempBuffer)
 		}
 	}
 
 	if isVectorField {
 		normalizeVectors(scaledSlice)
-		vectorField := scaledSlice.Vectors()
-		PreviewBuffer = ConvertVectorFieldToBinary(vectorField)
+		backendPreviewState.Buffer = ConvertVectorFieldToBinary(scaledSlice.Vectors())
 	} else {
 		normalizeScalars(scaledSlice)
-		scalarField := scaledSlice.Scalars()
-		PreviewBuffer = ConvertScalarFieldToBinary(scalarField)
+		backendPreviewState.Buffer = ConvertScalarFieldToBinary(scaledSlice.Scalars())
 	}
 }
 
