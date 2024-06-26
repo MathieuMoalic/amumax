@@ -1,6 +1,7 @@
 package api
 
 import (
+	"sync"
 	"time"
 
 	"github.com/MathieuMoalic/amumax/engine"
@@ -12,15 +13,44 @@ import (
 
 var (
 	webSocketState WebSocketState
+	connections    = &connectionManager{
+		conns: make(map[*websocket.Conn]bool),
+		mu:    sync.Mutex{},
+	}
 )
 
 type WebSocketState struct {
 	LastStep int
 }
 
-type WebSocketMessage struct {
-	EngineState   *EngineState `msgpack:"engine_state"`
-	PreviewBuffer *[]byte      `msgpack:"preview_buffer"`
+type connectionManager struct {
+	conns map[*websocket.Conn]bool
+	mu    sync.Mutex
+}
+
+func (cm *connectionManager) add(ws *websocket.Conn) {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	cm.conns[ws] = true
+}
+
+func (cm *connectionManager) remove(ws *websocket.Conn) {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	delete(cm.conns, ws)
+}
+
+func (cm *connectionManager) broadcast(msg []byte) {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	for ws := range cm.conns {
+		err := websocket.Message.Send(ws, msg)
+		if err != nil {
+			util.LogErr("Error sending message via WebSocket:", err)
+			ws.Close()
+			delete(cm.conns, ws)
+		}
+	}
 }
 
 // WebSocket handler for engine state updates
@@ -29,12 +59,16 @@ func websocketEntrypoint(c echo.Context) error {
 		util.Log("WebSocket client connected: ", ws.RemoteAddr().String(), "->", ws.LocalAddr().String())
 		defer ws.Close()
 
+		// Register the WebSocket connection
+		connections.add(ws)
+		defer connections.remove(ws)
+
 		// Send initial state when the client connects to the WebSocket
-		sendMessage(ws)
+		broadcastEngineState()
 
 		for {
 			if engine.NSteps != webSocketState.LastStep {
-				sendMessage(ws)
+				broadcastEngineState()
 				webSocketState.LastStep = engine.NSteps
 			}
 			time.Sleep(1 * time.Second)
@@ -43,21 +77,14 @@ func websocketEntrypoint(c echo.Context) error {
 	return nil
 }
 
-func sendMessage(ws *websocket.Conn) {
+func broadcastEngineState() {
 	engine.InjectAndWait(PreparePreviewBuffer)
-	rawMessage := WebSocketMessage{
-		EngineState:   NewEngineState(),
-		PreviewBuffer: &PreviewBuffer,
-	}
 
-	msg, err := msgpack.Marshal(rawMessage)
+	msg, err := msgpack.Marshal(NewEngineState())
 	if err != nil {
 		util.LogErr("Error marshaling combined message:", err)
 		return
 	}
 
-	err = websocket.Message.Send(ws, msg)
-	if err != nil {
-		util.LogErr("Error sending combined message via WebSocket:", err)
-	}
+	connections.broadcast(msg)
 }

@@ -38,7 +38,7 @@ func newSolver() *Solver {
 	}
 }
 
-func postSolverType(c echo.Context) error {
+func postSolverName(c echo.Context) error {
 	type Response struct {
 		Type string `msgpack:"type"`
 	}

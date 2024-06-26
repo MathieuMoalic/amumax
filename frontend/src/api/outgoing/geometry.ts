@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
 import { get } from "svelte/store";
-import { baseURL } from "$api/websocket";
+import { baseURL } from "$api/post";
 
 export interface Geometry {
     shape: string;

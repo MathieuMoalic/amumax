@@ -1,5 +1,4 @@
-import { writable, get } from "svelte/store";
-import { baseURL } from "../websocket";
+import { writable } from "svelte/store";
 
 export interface Solver {
     type: string;
