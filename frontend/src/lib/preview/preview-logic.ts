@@ -1,16 +1,23 @@
 import { previewState } from "$api/incoming/preview";
 import { get } from "svelte/store";
-import { plotVectorField } from "./plot-vector-field";
-import { plotScalarField } from "./plot-scalar-field";
+import { plotVectorField, disposeThreeJS } from "./plot-vector-field";
+import { plotScalarField, disposeECharts } from "./plot-scalar-field";
+
+let previousType = "";
 
 export function plotPreview() {
-    console.log(get(previewState));
     let type = get(previewState).type;
+    if (type !== previousType) {
+        if (previousType === 'vector') {
+            disposeThreeJS();
+        } else if (previousType === 'scalar') {
+            disposeECharts();
+        }
+    }
+    previousType = type;
     if (type === 'vector') {
-        console.log('Plotting vector field');
         plotVectorField();
     } else if (type === 'scalar') {
-        console.log('Plotting scalar field');
         plotScalarField();
     } else {
         console.log('Unknown field type');
