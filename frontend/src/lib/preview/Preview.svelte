@@ -2,7 +2,7 @@
 	import quantities from './quantities';
 	import { meshState } from '$api/incoming/mesh';
 	import { previewState as p } from '$api/incoming/preview';
-	import { display } from './plot-vector-field';
+	import { display, resetCamera } from './plot-vector-field';
 	import {
 		postComponent,
 		postLayer,
@@ -10,12 +10,6 @@
 		postQuantity,
 		postRefresh
 	} from '$api/outgoing/preview';
-	import { onMount } from 'svelte';
-
-	let maxPointsField = 'loading...';
-	onMount(() => {
-		maxPointsField = $p.maxPoints.toString();
-	});
 </script>
 
 <section>
@@ -43,9 +37,10 @@
 		{$p.layer}
 		<button on:click={postRefresh}>Refresh</button>
 	</p>
-	Max Points:<input bind:value={maxPointsField} on:change={postMaxPoints} />
+	Max Points:<input type="number" bind:value={$p.maxPoints} on:change={postMaxPoints} />
 	<div id="container"></div>
 	Parsing time: {$display?.parsingTime.toFixed(0)} ms
+	<button on:click={resetCamera}>Reset Camera</button>
 </section>
 
 <style>
