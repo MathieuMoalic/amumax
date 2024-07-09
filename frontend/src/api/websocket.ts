@@ -28,7 +28,6 @@ export function initializeWebSocket(ws: WebSocket) {
         previewState.set(msg.preview as Preview);
         solverState.set(msg.solver as Solver);
         tablePlotState.set(msg.tablePlot as TablePlot);
-        console.log(msg);
         plotChart();
         plotPreview();
 
