@@ -10,8 +10,9 @@ export interface Preview {
     maxPoints: number;
     dimensions: [number, number, number];
     type: string;
-    buffer: ArrayBuffer;
+    buffer: Uint8Array;
 }
+
 export const previewState = writable<Preview>({
     quantity: 'm',
     component: 'All',
@@ -19,5 +20,5 @@ export const previewState = writable<Preview>({
     maxPoints: 1000,
     dimensions: [0, 0, 0],
     type: 'vector',
-    buffer: new ArrayBuffer(0),
+    buffer: new Uint8Array(0),
 });
