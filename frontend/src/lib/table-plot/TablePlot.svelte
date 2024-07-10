@@ -38,8 +38,8 @@
 	</b>
 	<button on:click={resetZoom}>Reset Zoom</button>
 	<button on:click={plotChart}>Redraw</button>
-	<div class="plot">
-		<canvas id="gd"></canvas>
+	<div class="plot-container">
+		<canvas id="plot"></canvas>
 	</div>
 </section>
 
@@ -47,7 +47,10 @@
 	section {
 		grid-area: tableplot;
 	}
-	div.plot {
+	.plot-container {
+		position: relative;
+		margin: auto;
+		height: 70%;
 		padding: 20px;
 	}
 </style>

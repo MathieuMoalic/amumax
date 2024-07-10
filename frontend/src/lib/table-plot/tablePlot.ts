@@ -5,7 +5,7 @@ import { get, writable } from 'svelte/store';
 export let chart = writable<Chart | null>(null);
 
 export function createChart() {
-    chart.set(new Chart(document.getElementById('gd') as HTMLCanvasElement, {
+    chart.set(new Chart(document.getElementById('plot') as HTMLCanvasElement, {
         type: 'scatter',
         data: {
             datasets: [
@@ -21,6 +21,7 @@ export function createChart() {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 x: {
                     beginAtZero: false,
@@ -68,6 +69,7 @@ export function plotChart() {
         chartInstance.update();
     }
 }
+
 export function resetZoom() {
     get(chart)?.resetZoom('active');
     get(chart)?.update();
