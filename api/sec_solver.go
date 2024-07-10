@@ -38,7 +38,7 @@ func newSolver() *Solver {
 	}
 }
 
-func postSolverName(c echo.Context) error {
+func postSolverType(c echo.Context) error {
 	type Response struct {
 		Type string `msgpack:"type"`
 	}
@@ -65,9 +65,9 @@ func postSolverName(c echo.Context) error {
 	return c.JSON(http.StatusOK, engine.Solvertype)
 }
 
-func postRun(c echo.Context) error {
+func postSolverRun(c echo.Context) error {
 	type Request struct {
-		Duration float64 `msgpack:"duration"`
+		Runtime float64 `msgpack:"runtime"`
 	}
 
 	req := new(Request)
@@ -75,11 +75,11 @@ func postRun(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	engine.Break()
-	engine.Inject <- func() { engine.GUI.EvalGUI("Run(" + strconv.FormatFloat(req.Duration, 'f', -1, 64) + ")") }
+	engine.Inject <- func() { engine.GUI.EvalGUI("Run(" + strconv.FormatFloat(req.Runtime, 'f', -1, 64) + ")") }
 	return c.JSON(http.StatusOK, "")
 }
 
-func postSteps(c echo.Context) error {
+func postSolverSteps(c echo.Context) error {
 	type Request struct {
 		Steps int `msgpack:"steps"`
 	}
@@ -94,13 +94,69 @@ func postSteps(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
 }
 
-func postRelax(c echo.Context) error {
+func postSolverRelax(c echo.Context) error {
 	engine.Break()
 	engine.Inject <- func() { engine.GUI.EvalGUI("Relax()") }
 	return c.JSON(http.StatusOK, "")
 }
 
-func postBreak(c echo.Context) error {
+func postSolverBreak(c echo.Context) error {
 	engine.Break()
+	return c.JSON(http.StatusOK, "")
+}
+
+func postSolverFixDt(c echo.Context) error {
+	type Request struct {
+		Fixdt float64 `msgpack:"fixdt"`
+	}
+
+	req := new(Request)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
+
+	engine.Inject <- func() { engine.GUI.EvalGUI("FixDt = " + strconv.FormatFloat(req.Fixdt, 'f', -1, 64)) }
+	return c.JSON(http.StatusOK, "")
+}
+
+func postSolverMinDt(c echo.Context) error {
+	type Request struct {
+		Mindt float64 `msgpack:"mindt"`
+	}
+
+	req := new(Request)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
+
+	engine.Inject <- func() { engine.GUI.EvalGUI("MinDt = " + strconv.FormatFloat(req.Mindt, 'f', -1, 64)) }
+	return c.JSON(http.StatusOK, "")
+}
+
+func postSolverMaxDt(c echo.Context) error {
+	type Request struct {
+		Maxdt float64 `msgpack:"maxdt"`
+	}
+
+	req := new(Request)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
+
+	engine.Inject <- func() { engine.GUI.EvalGUI("MaxDt = " + strconv.FormatFloat(req.Maxdt, 'f', -1, 64)) }
+	return c.JSON(http.StatusOK, "")
+}
+
+func postSolverMaxErr(c echo.Context) error {
+	type Request struct {
+		Maxerr float64 `msgpack:"maxerr"`
+	}
+
+	req := new(Request)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
+
+	engine.Inject <- func() { engine.GUI.EvalGUI("MaxErr = " + strconv.FormatFloat(req.Maxerr, 'f', -1, 64)) }
 	return c.JSON(http.StatusOK, "")
 }

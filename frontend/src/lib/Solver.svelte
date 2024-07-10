@@ -1,38 +1,20 @@
 <script lang="ts">
 	import { solverState } from '$api/incoming/solver';
-	import { postSolverType, postRun, postSteps, postRelax, postBreak } from '$api/outgoing/solver';
-	import { headerState } from '$api/incoming/header';
-	let solvertypes = ['bw_euler', 'euler', 'heun', 'rk4', 'rk23', 'rk45', 'rkf56'];
-	let selectedSolver = $solverState.type;
-	function changeSolver() {
-		postSolverType(selectedSolver).catch((error) => {
-			console.error('Error posting solver type:', error);
-		});
-	}
-	let runSeconds = '1e-9';
-	let runSteps = '100';
+	import {
+		postSolverType,
+		postRun,
+		postSteps,
+		postRelax,
+		postBreak,
+		postFixdt,
+		postMindt,
+		postMaxdt,
+		postMaxerr
+	} from '$api/outgoing/solver';
 
-	function run() {
-		$headerState.status = 'running';
-		postRun(parseFloat(runSeconds)).catch((error) => {
-			console.error('Error posting run:', error);
-		});
-	}
-	function steps() {
-		postSteps(parseInt(runSteps)).catch((error) => {
-			console.error('Error posting steps:', error);
-		});
-	}
-	function relax() {
-		postRelax().catch((error) => {
-			console.error('Error posting relax:', error);
-		});
-	}
-	function pbreak() {
-		postBreak().catch((error) => {
-			console.error('Error posting break:', error);
-		});
-	}
+	let solvertypes = ['bw_euler', 'euler', 'heun', 'rk4', 'rk23', 'rk45', 'rkf56'];
+	let runSeconds = 1e-9;
+	let runSteps = 100;
 </script>
 
 <section>
@@ -42,7 +24,7 @@
 			<div>
 				<div class="header">Solver</div>
 				<div class="value">
-					<select bind:value={selectedSolver} on:change={changeSolver}>
+					<select bind:value={$solverState.type} on:change={postSolverType}>
 						{#each solvertypes as solvertype}
 							<option value={solvertype}>
 								{solvertype}
@@ -53,24 +35,36 @@
 				<div class="unit"></div>
 			</div>
 			<div>
-				<div class="header"><button on:click={run}>Run</button></div>
+				<div class="header">
+					<button
+						on:click={() => {
+							postRun(runSeconds);
+						}}>Run</button
+					>
+				</div>
 				<div class="value">
-					<input bind:value={runSeconds} />
+					<input type="number" bind:value={runSeconds} />
 				</div>
 				<div class="unit">s</div>
 			</div>
 			<div>
-				<div class="header"><button on:click={steps}>Run Steps</button></div>
-				<div class="value"><input bind:value={runSteps} /></div>
+				<div class="header">
+					<button
+						on:click={() => {
+							postSteps(runSteps);
+						}}>Run Steps</button
+					>
+				</div>
+				<div class="value"><input type="number" bind:value={runSteps} /></div>
 				<div class="unit"></div>
 			</div>
 			<div>
-				<div class="header"><button on:click={relax}>Relax</button></div>
+				<div class="header"><button on:click={postRelax}>Relax</button></div>
 				<div class="value"></div>
 				<div class="unit"></div>
 			</div>
 			<div>
-				<div class="header"><button on:click={pbreak}>Break</button></div>
+				<div class="header"><button on:click={postBreak}>Break</button></div>
 				<div class="value"></div>
 				<div class="unit"></div>
 			</div>
@@ -103,22 +97,24 @@
 			</div>
 			<div>
 				<div class="header">fixdt:</div>
-				<div class="value"><input placeholder=" {$solverState.fixdt.toExponential(3)}" /></div>
+				<div class="value">
+					<input type="number" bind:value={$solverState.fixdt} on:change={postFixdt} />
+				</div>
 				<div class="unit">s</div>
 			</div>
 			<div>
 				<div class="header">mindt:</div>
-				<div class="value"><input placeholder=" {$solverState.mindt.toExponential(3)}" /></div>
+				<input type="number" bind:value={$solverState.mindt} on:change={postMindt} />
 				<div class="unit">s</div>
 			</div>
 			<div>
 				<div class="header">maxdt:</div>
-				<div class="value"><input placeholder=" {$solverState.maxdt.toExponential(3)}" /></div>
+				<input type="number" bind:value={$solverState.maxdt} on:change={postMaxdt} />
 				<div class="unit">s</div>
 			</div>
 			<div>
 				<div class="header">maxerr:</div>
-				<div class="value"><input placeholder=" {$solverState.maxerr.toExponential(3)}" /></div>
+				<input type="number" bind:value={$solverState.maxerr} on:change={postMaxerr} />
 				<div class="unit">/step</div>
 			</div>
 		</div>

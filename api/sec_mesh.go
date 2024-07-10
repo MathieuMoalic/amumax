@@ -1,6 +1,12 @@
 package api
 
-import "github.com/MathieuMoalic/amumax/engine"
+import (
+	"net/http"
+	"strconv"
+
+	"github.com/MathieuMoalic/amumax/engine"
+	"github.com/labstack/echo/v4"
+)
 
 type Mesh struct {
 	Dx   float64 `msgpack:"dx"`
@@ -32,4 +38,18 @@ func newMesh() *Mesh {
 		PBCy: engine.PBCy,
 		PBCz: engine.PBCz,
 	}
+}
+
+func postMesh(c echo.Context) error {
+	type Request struct {
+		Runtime float64 `msgpack:"runtime"`
+	}
+
+	req := new(Request)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
+	engine.Break()
+	engine.Inject <- func() { engine.GUI.EvalGUI("Run(" + strconv.FormatFloat(req.Runtime, 'f', -1, 64) + ")") }
+	return c.JSON(http.StatusOK, "")
 }

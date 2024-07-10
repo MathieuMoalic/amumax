@@ -1,17 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { tablePlotState } from '$api/incoming/table-plot';
-	import { postTableColumns } from '$api/outgoing/table-plot';
+	import { postAutoSaveInterval, postXColumn, postYColumn } from '$api/outgoing/table-plot';
 	import { Chart, registerables } from 'chart.js';
 	import zoomPlugin from 'chartjs-plugin-zoom';
-	import { plotChart, createChart, resetZoom, chart } from './tablePlot';
+	import { plotChart, createChart, resetZoom } from './tablePlot';
 
 	Chart.register(...registerables, zoomPlugin);
 
-	async function onNewColumns() {
-		await postTableColumns();
-		plotChart();
-	}
 	onMount(() => {
 		createChart();
 	});
@@ -20,17 +16,21 @@
 <section>
 	<h2>Table Plot</h2>
 	<p>
-		Auto Save Interval: <input bind:value={$tablePlotState.autoSaveInterval} /> s
+		Auto Save Interval: <input
+			type="number"
+			bind:value={$tablePlotState.autoSaveInterval}
+			on:change={postAutoSaveInterval}
+		/> s
 	</p>
 	<b>
 		x:
-		<select bind:value={$tablePlotState.xColumn} on:change={onNewColumns}>
+		<select bind:value={$tablePlotState.xColumn} on:change={postXColumn}>
 			{#each $tablePlotState.columns as q}
 				<option value={q}>{q}</option>
 			{/each}
 		</select>
 		y:
-		<select bind:value={$tablePlotState.yColumn} on:change={onNewColumns}>
+		<select bind:value={$tablePlotState.yColumn} on:change={postYColumn}>
 			{#each $tablePlotState.columns as q}
 				<option value={q}>{q}</option>
 			{/each}

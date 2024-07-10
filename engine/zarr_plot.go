@@ -33,7 +33,6 @@ type ImagePlotCache struct {
 // or when the cache lifetime is exceeded.
 // If another GO routine is updating the image, the cached image will be written.
 type zTablePlot struct {
-	// updating   bool
 	X, Y  string
 	cache ImagePlotCache
 }
