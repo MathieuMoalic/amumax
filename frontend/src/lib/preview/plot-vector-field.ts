@@ -237,15 +237,6 @@ function update() {
     }
 }
 
-export function clearDisplay() {
-    display.set(null);
-    const container = document.getElementById('container');
-    if (!container) {
-        throw new Error('Container not found');
-    }
-    container.removeChild(container.children[0]);
-}
-
 export function resetCamera() {
     let dims = get(previewState).dimensions;
     let posx = dims[0] / 2;

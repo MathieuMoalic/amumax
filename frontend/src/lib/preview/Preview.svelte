@@ -27,14 +27,9 @@
 			{/each}
 		</select>
 		Z-layer: 1
-		<input
-			type="range"
-			min="0"
-			max={$meshState.Nz - 1}
-			bind:value={$p.layer}
-			on:change={postLayer}
-		/>
+		<input type="range" min="1" max={$meshState.Nz} bind:value={$p.layer} on:change={postLayer} />
 		{$p.layer}
+		{$meshState.Nz}
 		<button on:click={postRefresh}>Refresh</button>
 	</p>
 	Max Points:<input type="number" bind:value={$p.maxPoints} on:change={postMaxPoints} />

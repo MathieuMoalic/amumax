@@ -1,6 +1,5 @@
 import { previewState } from "$api/incoming/preview";
 import { post } from "$api/post";
-import { clearDisplay, display } from "$lib/preview/plot-vector-field";
 import { get } from "svelte/store";
 
 export function postComponent() {
@@ -16,7 +15,6 @@ export function postLayer() {
 }
 
 export function postMaxPoints() {
-    clearDisplay();
     post('preview-maxpoints', { maxPoints: get(previewState).maxPoints });
 }
 
