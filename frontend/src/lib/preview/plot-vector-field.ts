@@ -42,10 +42,12 @@ function createMesh(): THREE.InstancedMesh {
     return mesh;
 }
 
-
 function createCamera(): THREE.PerspectiveCamera {
     let fov = 50;
-    let aspect = 1;
+    let div = document.getElementById('container');
+    let width = div?.offsetWidth || 1;
+    let height = div?.offsetHeight || 1;
+    let aspect = width / height;
     let near = 0.1;
     let far = 100;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
