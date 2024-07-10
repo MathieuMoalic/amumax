@@ -1,8 +1,5 @@
 <script lang="ts">
 	import { meshState } from '$api/incoming/mesh';
-	function formatFloat(value: number): string {
-		return value.toFixed(3);
-	}
 </script>
 
 <section>
@@ -65,5 +62,8 @@
 	.header {
 		text-align: right;
 		padding-right: 10px;
+	}
+	section {
+		grid-area: mesh;
 	}
 </style>
