@@ -1,34 +1,16 @@
-import { writable } from "svelte/store";
 import { get } from "svelte/store";
-import { baseURL } from "$api/post";
+import { post } from "$api/post";
 
-export interface TablePlot {
-    autoSaveInterval: number;
-    xColumn: string;
-    yColumn: string;
+import { tablePlotState } from "$api/incoming/table-plot";
+
+export function postXColumn() {
+    post('tableplot-xcolumn', { XColumn: get(tablePlotState).xColumn });
 }
 
-export const tablePlot = writable<TablePlot>({
-    autoSaveInterval: 0,
-    xColumn: 't',
-    yColumn: 'mx',
-});
+export function postYColumn() {
+    post('tableplot-ycolumn', { YColumn: get(tablePlotState).yColumn });
+}
 
-export async function postTableColumns() {
-    let t = get(tablePlot);
-    let autoSaveInterval = t.autoSaveInterval;
-    let XColumn = t.xColumn;
-    let YColumn = t.yColumn;
-    const response = await fetch(`${get(baseURL)}/tableplot`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ XColumn, YColumn, autoSaveInterval })
-    });
-    if (!response.ok) {
-        throw new Error('Failed to post table columns');
-    }
-    let parsedData: TablePlot = await response.json();
-    tablePlot.set(parsedData);
+export function postAutoSaveInterval() {
+    post('tableplot-autosave-interval', { autoSaveInterval: get(tablePlotState).autoSaveInterval });
 }

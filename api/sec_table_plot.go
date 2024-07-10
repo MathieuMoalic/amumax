@@ -37,18 +37,41 @@ func newTablePlot() *TablePlot {
 	return &data
 }
 
-func postTable(c echo.Context) error {
+func postTablePlotAutoSaveInterval(c echo.Context) error {
+	type Request struct {
+		AutoSaveInterval float64 `msgpack:"autoSaveInterval"`
+	}
+	req := new(Request)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
+	engine.Table.AutoSavePeriod = req.AutoSaveInterval
+	broadcastEngineState()
+	return c.JSON(http.StatusOK, nil)
+}
+
+func postTablePlotXColumn(c echo.Context) error {
 	type Request struct {
 		XColumn string `msgpack:"XColumn"`
-		YColumn string `msgpack:"YColumn"`
 	}
-
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	engine.Tableplot.X = req.XColumn
+	broadcastEngineState()
+	return c.JSON(http.StatusOK, nil)
+}
+
+func postTablePlotYColumn(c echo.Context) error {
+	type Request struct {
+		YColumn string `msgpack:"YColumn"`
+	}
+	req := new(Request)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
 	engine.Tableplot.Y = req.YColumn
-	data := newTablePlot()
-	return c.JSON(http.StatusOK, data)
+	broadcastEngineState()
+	return c.JSON(http.StatusOK, nil)
 }

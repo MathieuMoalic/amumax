@@ -8,7 +8,7 @@
 	let command = '';
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Enter') {
-			postCommand();
+			postCommand(command);
 			event.preventDefault(); // Prevent the default action to avoid form submission or newline in input
 		}
 	}

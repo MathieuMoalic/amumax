@@ -1,40 +1,7 @@
-// import { writable } from "svelte/store";
-// import { get } from "svelte/store";
-// import { baseURL } from "$api/websocket";
+import { get } from "svelte/store";
+import { post } from "$api/post";
+import { meshState } from "$api/incoming/mesh";
 
-// export interface Mesh {
-//     solver: string;
-//     runTime: number;
-//     runSteps: number;
-//     fixdt: number;
-//     mindt: number;
-//     maxdt: number;
-//     maxerr: number;
-// }
-
-// export const solver = writable<Mesh>({
-//     solver: "",
-//     runTime: 0,
-//     runSteps: 0,
-//     fixdt: 0,
-//     mindt: 0,
-//     maxdt: 0,
-//     maxerr: 0
-// });
-
-// export async function postSolver() {
-//     let t = get(solver);
-//     let command = t.solver;
-//     const response = await fetch(`${get(baseURL)}/solver`, {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json'
-//         },
-//         body: JSON.stringify({ command })
-//     });
-//     if (!response.ok) {
-//         throw new Error('Failed to post solver');
-//     }
-//     let parsedData: Mesh = await response.json();
-//     solver.set(parsedData);
-// }
+export function postMesh() {
+    post('mesh', { mesh: get(meshState) });
+}

@@ -1,94 +1,41 @@
-import { writable } from "svelte/store";
 import { get } from "svelte/store";
-import { baseURL } from "$api/post";
+import { post } from "$api/post";
+import { solverState } from "$api/incoming/solver";
 
-export interface Solver {
-    solver: string;
-    runTime: number;
-    runSteps: number;
-    fixdt: number;
-    mindt: number;
-    maxdt: number;
-    maxerr: number;
+export function postSolverType() {
+    post('solver-type', { type: get(solverState).type });
 }
 
-export const solver = writable<Solver>({
-    solver: "",
-    runTime: 0,
-    runSteps: 0,
-    fixdt: 0,
-    mindt: 0,
-    maxdt: 0,
-    maxerr: 0
-});
-
-export async function postSolver() {
-    let t = get(solver);
-    let command = t.solver;
-    const response = await fetch(`${get(baseURL)}/solver`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ command })
-    });
-    if (!response.ok) {
-        throw new Error('Failed to post solver');
-    }
-    let parsedData: Solver = await response.json();
-    solver.set(parsedData);
+export function postRun(runtime: number) {
+    post('solver-run', { runtime });
 }
 
-export async function postSolverType(type: string) {
-    const response = await fetch(`${get(baseURL)}/solver`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ type })
-    });
-    if (!response.ok) {
-        throw new Error('Failed to post solver type');
-    }
+export function postSteps(steps: number) {
+    post('solver-steps', { steps });
 }
 
-export async function postRun(duration: number) {
-    const response = await fetch(`${get(baseURL)}/run`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ duration })
-    });
-    if (!response.ok) {
-        throw new Error(response.statusText);
-    }
+export function postRelax() {
+    post('solver-relax', {});
 }
-export async function postSteps(steps: number) {
-    const response = await fetch(`${get(baseURL)}/steps`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ steps })
-    });
-    if (!response.ok) {
-        throw new Error('Failed to post steps');
-    }
+
+export function postBreak() {
+    post('solver-break', {});
 }
-export async function postRelax() {
-    const response = await fetch(`${get(baseURL)}/relax`, {
-        method: 'POST'
-    });
-    if (!response.ok) {
-        throw new Error('Failed to post relax');
-    }
+
+export function postFixdt() {
+    post('solver-fixdt', { fixdt: get(solverState).fixdt });
 }
-export async function postBreak() {
-    const response = await fetch(`${get(baseURL)}/break`, {
-        method: 'POST'
-    });
-    if (!response.ok) {
-        throw new Error('Failed to post break');
-    }
+
+export function postMindt() {
+    post('solver-mindt', { mindt: get(solverState).mindt });
 }
+
+export function postMaxdt() {
+    post('solver-maxdt', { maxdt: get(solverState).maxdt });
+}
+
+export function postMaxerr() {
+    post('solver-maxerr', { maxerr: get(solverState).maxerr });
+}
+
+

@@ -17,7 +17,7 @@ func newConsole() *Console {
 	}
 }
 
-func postConsole(c echo.Context) error {
+func postConsoleCommand(c echo.Context) error {
 	type Request struct {
 		Command string `msgpack:"command"`
 	}
@@ -27,5 +27,6 @@ func postConsole(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	engine.Inject <- func() { engine.GUI.EvalGUI(req.Command) }
+	broadcastEngineState()
 	return c.JSON(http.StatusOK, "")
 }
