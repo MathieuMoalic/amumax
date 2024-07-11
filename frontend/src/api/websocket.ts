@@ -1,5 +1,4 @@
 import msgpack from 'msgpack-lite';
-import { writable } from "svelte/store";
 import { plotChart } from "../lib/table-plot/tablePlot";
 import { display } from "$lib/preview/plot-vector-field"
 
@@ -14,7 +13,7 @@ import { plotPreview } from '$lib/preview/preview-logic';
 
 export let ws: WebSocket;
 export function initializeWebSocket(ws: WebSocket) {
-    ws = new WebSocket('ws://localhost:5001/ws');
+    ws = new WebSocket(`/ws`);
     ws.binaryType = 'arraybuffer';
 
     ws.onmessage = function (event) {
@@ -41,18 +40,3 @@ export function initializeWebSocket(ws: WebSocket) {
         });
     };
 }
-
-// function parseVectorField(arrayBuffer: ArrayBuffer): VectorField {
-//     const float32Array = new Float32Array(arrayBuffer);
-//     const vectors: VectorField = [];
-
-//     for (let i = 0; i < float32Array.length; i += 3) {
-//         vectors.push({
-//             x: float32Array[i],
-//             y: float32Array[i + 1],
-//             z: float32Array[i + 2]
-//         });
-//     }
-
-//     return vectors;
-// }

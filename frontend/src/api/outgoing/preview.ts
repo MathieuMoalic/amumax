@@ -3,21 +3,21 @@ import { post } from "$api/post";
 import { get } from "svelte/store";
 
 export function postComponent() {
-    post('preview-component', { component: get(previewState).component });
+    post('preview/component', { component: get(previewState).component });
 }
 
 export function postQuantity() {
-    post('preview-quantity', { quantity: get(previewState).quantity });
+    post('preview/quantity', { quantity: get(previewState).quantity });
 }
 
 export function postLayer() {
-    post('preview-layer', { layer: get(previewState).layer });
+    post('preview/layer', { layer: get(previewState).layer });
 }
 
 export function postMaxPoints() {
-    post('preview-maxpoints', { maxPoints: get(previewState).maxPoints });
+    post('preview/maxpoints', { maxPoints: get(previewState).maxPoints });
 }
 
 export function postRefresh() {
-    post('preview-refresh', {});
+    post('preview/refresh', {});
 }

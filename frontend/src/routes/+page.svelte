@@ -9,24 +9,15 @@
 	import InitialMag from '$lib/InitialMag.svelte';
 	import Parameters from '$lib/Parameters.svelte';
 	import Footer from '$lib/Footer.svelte';
-	import { onDestroy, onMount } from 'svelte';
-	import { baseURL } from '$api/post';
+	import { onMount } from 'svelte';
 	import { initializeWebSocket, ws } from '$api/websocket';
-	// import { wsConnect } from '../api/websocket';
 
 	onMount(() => {
 		try {
-			// wsConnect();
 			initializeWebSocket(ws);
 		} catch (error) {
 			console.error('Error connecting to websocket:', error);
 		}
-		// baseURL.set(window.location.origin);
-		baseURL.set('http://localhost:5001');
-		// console.log('baseURL:', get(baseURL));
-		// fetchEngineState().catch((error) => {
-		// 	console.error('Error fetching engine state:', error);
-		// });
 	});
 </script>
 
