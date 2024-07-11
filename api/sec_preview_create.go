@@ -164,7 +164,6 @@ func PreparePreviewBuffer() {
 		normalizeVectors(scaledSlice)
 		bps.Buffer = ConvertVectorFieldToBinary(scaledSlice.Vectors())
 	} else {
-		normalizeScalars(scaledSlice)
 		bps.Buffer = ConvertScalarFieldToBinary(scaledSlice.Scalars())
 	}
 }
@@ -193,33 +192,6 @@ func normalizeVectors(f *data.Slice) {
 				a[0][i][j][k] *= factor
 				a[1][i][j][k] *= factor
 				a[2][i][j][k] *= factor
-
-			}
-		}
-	}
-}
-
-func normalizeScalars(f *data.Slice) {
-	a := f.Scalars()
-	maxnorm := 0.
-	for i := range a {
-		for j := range a[i] {
-			for k := range a[i][j] {
-
-				norm := math.Abs(float64(a[i][j][k]))
-				if norm > maxnorm {
-					maxnorm = norm
-				}
-
-			}
-		}
-	}
-	factor := float32(1 / maxnorm)
-
-	for i := range a {
-		for j := range a[i] {
-			for k := range a[i][j] {
-				a[i][j][k] *= factor
 
 			}
 		}
