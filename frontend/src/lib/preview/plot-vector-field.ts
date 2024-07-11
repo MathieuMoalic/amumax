@@ -49,7 +49,7 @@ function createCamera(): THREE.PerspectiveCamera {
     let height = div?.offsetHeight || 1;
     let aspect = width / height;
     let near = 0.1;
-    let far = 100;
+    let far = 1000;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
     let dims = get(previewState).dimensions;
@@ -90,7 +90,7 @@ function createScene() {
     return scene;
 }
 
-function addArrowsToMesh(mesh: THREE.InstancedMesh) {
+function addArrowsToMesh(mesh: THREE.InstancedMesh, scene: THREE.Scene) {
     const vectorField = getVectorField();
     const dummy = new THREE.Object3D();
     let dims = get(previewState).dimensions;
@@ -105,6 +105,9 @@ function addArrowsToMesh(mesh: THREE.InstancedMesh) {
 
 
     vectorField.forEach((vector, i) => {
+        if (vector.x === 0 && vector.y === 0 && vector.z === 0) {
+            return;
+        }
         const posx = i % dims[0];
         const posy = Math.floor(i / dims[0]) % dims[1];
         const posz = Math.floor(i / (dims[0] * dims[1]));
@@ -121,6 +124,7 @@ function addArrowsToMesh(mesh: THREE.InstancedMesh) {
         dummy.updateMatrix();
         mesh.matrix.makeScale(1, 1, 1)
         mesh.setMatrixAt(i, dummy.matrix);
+        // TODO: REMOVE DUMMY
     });
 
     mesh.instanceMatrix.needsUpdate = true;
@@ -134,7 +138,7 @@ function init() {
     let renderer = createRenderer();
     let controls = createControls(camera, renderer);
     let mesh = createMesh();
-    addArrowsToMesh(mesh);
+    addArrowsToMesh(mesh, scene);
     scene.add(mesh);
     update();
     display.set({
