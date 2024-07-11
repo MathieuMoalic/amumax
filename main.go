@@ -8,10 +8,12 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"path"
+	"strconv"
 	"time"
 
 	"github.com/MathieuMoalic/amumax/api"
@@ -62,7 +64,7 @@ func main() {
 		vet()
 		return
 	}
-	go api.Start()
+
 	switch flag.NArg() {
 	case 0:
 		if *engine.Flag_interactive {
@@ -142,8 +144,7 @@ Msat = 1e6
 Aex = 10e-12
 alpha = 1
 m = RandomMag()`)
-	addr := goServeGUI()
-	openbrowser("http://127.0.0.1" + addr)
+	goServeGUI()
 	engine.RunInteractive()
 }
 
@@ -181,10 +182,6 @@ func runScript(fname string) {
 	// now the parser is not used anymore so it can handle web requests
 	goServeGUI()
 
-	if *engine.Flag_interactive {
-		openbrowser("http://127.0.0.1" + *engine.Flag_webui_addr)
-	}
-
 	// start executing the tree, possibly injecting commands from web gui
 	engine.EvalFile(code)
 
@@ -218,14 +215,44 @@ func runGoFile(fname string) {
 	}
 }
 
-// start Gui server and return server address
-func goServeGUI() string {
-	if *engine.Flag_webui_addr == "" {
-		log.Println(`//not starting GUI (-http="")`)
-		return ""
+func findAvailablePort(startAddress string) (string, error) {
+	// Split the address to extract the host and port
+	host, portStr, err := net.SplitHostPort(startAddress)
+	if err != nil {
+		return "", fmt.Errorf("invalid start address: %v", err)
 	}
-	addr := engine.GoServe(*engine.Flag_webui_addr)
-	return addr
+
+	// Convert the port to an integer
+	startPort, err := strconv.Atoi(portStr)
+	if err != nil {
+		return "", fmt.Errorf("invalid port number: %v", err)
+	}
+
+	// Loop to find the first available port
+	for port := startPort; port <= 65535; port++ {
+		address := net.JoinHostPort(host, strconv.Itoa(port))
+		listener, err := net.Listen("tcp", address)
+		if err == nil {
+			// Close the listener immediately, we just wanted to check availability
+			listener.Close()
+			return address, nil
+		}
+	}
+	return "", fmt.Errorf("no available ports found")
+}
+
+// start Gui server and return server address
+func goServeGUI() {
+	if *engine.Flag_webui_addr == "" {
+		util.LogWarn(`WebUI is disabled (-http="")`)
+		return
+	}
+	addr, err := findAvailablePort(*engine.Flag_webui_addr)
+	if err != nil {
+		log.Fatalf("Failed to find available port: %v", err)
+	}
+	util.Log(fmt.Sprintf("starting GUI at http://%s", addr))
+	go api.Start(addr)
 }
 
 // print version to stdout
@@ -233,23 +260,3 @@ func printVersion() {
 	engine.LogOut(engine.UNAME)
 	engine.LogOut(fmt.Sprintf("GPU info: %s, using cc=%d PTX", cuda.GPUInfo, cuda.UseCC))
 }
-
-// ************************************************************
-// * Amumax Version    | v.NOT_SET                               *
-// ************************************************************
-// * Platform          | Linux (amd64)                           *
-// ************************************************************
-// * Go version        | 1.21.4 (gc)                             *
-// ************************************************************
-// * CUDA version      | 12.3                                    *
-// ************************************************************
-// * GPU               | NVIDIA GeForce RTX 3080 Ti (12042MB)    *
-// *                   | CUDA Driver version: 12.3              *
-// *                   | Compute Capability: 8.6                *
-// *                   | Using Compute Capability: 52 PTX       *
-// ************************************************************
-// * Output Directory  | mytest/t1.zarr/                         *
-// ************************************************************
-// * GUI               | Accessible at                            *
-// *                   | http://localhost:35369                  *
-// ************************************************************
