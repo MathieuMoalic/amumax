@@ -6,8 +6,13 @@ export default defineConfig({
 	server: {
 		proxy: {
 			'/api': {
-				target: 'http://amumax-backend-dev:5001',
+				target: 'http://amumax-backend-dev:35367',
 				changeOrigin: true,
+			},
+			'/ws': {
+				target: 'ws://amumax-backend-dev:35367',
+				changeOrigin: true,
+				ws: true,
 			},
 		}
 	}
