@@ -1,9 +1,5 @@
-import { get, writable } from "svelte/store";
-
-export const baseURL = writable('http://localhost:5001');
-
 export async function post(endpoint: string, data: any) {
-    const response = await fetch(`${get(baseURL)}/${endpoint}`, {
+    const response = await fetch(`/api/${endpoint}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

@@ -56,7 +56,6 @@ func (cm *connectionManager) broadcast(msg []byte) {
 // WebSocket handler for engine state updates
 func websocketEntrypoint(c echo.Context) error {
 	websocket.Handler(func(ws *websocket.Conn) {
-		util.Log("WebSocket client connected: ", ws.RemoteAddr().String(), "->", ws.LocalAddr().String())
 		defer ws.Close()
 
 		// Register the WebSocket connection
