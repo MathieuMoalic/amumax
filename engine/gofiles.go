@@ -17,8 +17,8 @@ var (
 	Flag_gpu              = flag.Int("gpu", 0, "Specify GPU")
 	Flag_interactive      = flag.Bool("i", false, "Open interactive browser session")
 	Flag_od               = flag.String("o", "", "Override output directory")
-	Flag_webui_addr       = flag.String("http", ":35367", "Address to serve web gui")
-	Flag_webui_queue_addr = flag.String("qhttp", ":35366", "Address to serve web gui")
+	Flag_webui_addr       = flag.String("http", "0.0.0.0:35367", "Address to serve web gui")
+	Flag_webui_queue_addr = flag.String("qhttp", "0.0.0.0:35366", "Address to serve web gui")
 	Flag_selftest         = flag.Bool("paranoid", false, "Enable convolution self-test for cuFFT sanity.")
 	Flag_silent           = flag.Bool("s", false, "Silent") // provided for backwards compatibility
 	Flag_sync             = flag.Bool("sync", false, "Synchronize all CUDA calls (debug)")
