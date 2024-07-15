@@ -528,7 +528,7 @@ func GoServe(addr string) string {
 		l, err = net.Listen("tcp", addr)
 	}
 	_, p, _ := net.SplitHostPort(addr)
-	LogOut(fmt.Sprintf("starting GUI at http://localhost:%s", p))
+	LogOut(fmt.Sprintf("Serving GUI at http://localhost:%s", p))
 	go func() { LogErr(http.Serve(l, nil)) }()
 	node, node_is_set := os.LookupEnv("SLURM_NODELIST")
 	if !node_is_set {
