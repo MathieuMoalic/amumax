@@ -36,6 +36,7 @@
 	"type": "module",
 	"dependencies": {
 		"@msgpack/msgpack": "^3.0.0-beta2",
+		"@types/echarts": "^4.9.22",
 		"chart.js": "^4.4.3",
 		"chartjs-plugin-zoom": "^2.0.1",
 		"echarts": "^5.5.1",
