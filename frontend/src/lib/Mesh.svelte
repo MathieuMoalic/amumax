@@ -78,10 +78,6 @@
 		align-items: center;
 		padding: 10px;
 	}
-	input {
-		width: 100%;
-		box-sizing: border-box;
-	}
 	.header {
 		text-align: right;
 		padding-right: 10px;
