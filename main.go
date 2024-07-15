@@ -123,7 +123,7 @@ func checkUpdate() {
 }
 
 func runInteractive() {
-	util.Log("//no input files: starting interactive session")
+	util.Log("No input files: starting interactive session")
 	// setup outut dir
 	now := time.Now()
 	outdir := fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
@@ -251,7 +251,7 @@ func goServeGUI() {
 	if err != nil {
 		log.Fatalf("Failed to find available port: %v", err)
 	}
-	util.Log(fmt.Sprintf("starting GUI at http://%s", addr))
+	util.Log(fmt.Sprintf("Serving GUI at http://%s", addr))
 	go api.Start(addr)
 }
 
