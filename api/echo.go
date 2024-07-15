@@ -3,6 +3,7 @@ package api
 import (
 	"io"
 
+	"github.com/MathieuMoalic/amumax/engine"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -14,9 +15,20 @@ func Start(addr string) {
 		AllowHeaders: []string{"*"},
 	}))
 
-	e.Logger.SetOutput(io.Discard)
+	e.HideBanner = true
+	if engine.VERSION == "dev" {
+		e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+			Format: "method=${method}, uri=${uri}, status=${status}\n",
+		}))
+	} else {
+		e.Logger.SetOutput(io.Discard)
+	}
 
-	e.Static("/", "frontend/build")
+	// Serve the `index.html` file at the root URL
+	e.GET("/", indexFileHandler())
+
+	// Serve the other embedded static files
+	e.GET("/*", echo.WrapHandler(staticFileHandler()))
 
 	e.GET("/ws", websocketEntrypoint)
 
@@ -46,5 +58,4 @@ func Start(addr string) {
 
 	// Start server
 	e.Logger.Fatal(e.Start(addr))
-	// e.Logger.Fatal(e.Start(":35367"))
 }
