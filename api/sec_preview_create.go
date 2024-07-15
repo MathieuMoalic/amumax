@@ -22,6 +22,8 @@ func init() {
 		Dimensions: [3]int{0, 0, 0},
 		Type:       "vector",
 		Buffer:     []byte{},
+		Min:        0,
+		Max:        0,
 	}
 }
 
@@ -33,6 +35,8 @@ type BackendPreviewState struct {
 	Dimensions [3]int          `msgpack:"dimensions"`
 	Type       string          `msgpack:"type"`
 	Buffer     []byte          `msgpack:"buffer"`
+	Min        float32         `msgpack:"min"`
+	Max        float32         `msgpack:"max"`
 }
 
 func compStringToIndex(comp string) int {
@@ -106,7 +110,6 @@ func ConvertVectorFieldToBinary(vectorField [3][][][]float32) []byte {
 			}
 		}
 	}
-
 	return buf
 }
 
@@ -126,8 +129,22 @@ func ConvertScalarFieldToBinary(scalarField [][][]float32) []byte {
 			}
 		}
 	}
-
 	return buf
+}
+
+func findMinAndMax(buf []byte) (min, max float32) {
+	min = math.MaxFloat32
+	max = -math.MaxFloat32
+	for i := 0; i < len(buf); i += 4 {
+		value := math.Float32frombits(binary.LittleEndian.Uint32(buf[i : i+4]))
+		if value < min {
+			min = value
+		}
+		if value > max {
+			max = value
+		}
+	}
+	return
 }
 
 func PreparePreviewBuffer() {
@@ -166,6 +183,7 @@ func PreparePreviewBuffer() {
 	} else {
 		bps.Buffer = ConvertScalarFieldToBinary(scaledSlice.Scalars())
 	}
+	bps.Min, bps.Max = findMinAndMax(bps.Buffer)
 }
 
 func normalizeVectors(f *data.Slice) {
@@ -196,4 +214,19 @@ func normalizeVectors(f *data.Slice) {
 			}
 		}
 	}
+}
+
+func getMinMaxFromBuffer(buffer []byte) (min, max float32) {
+	min = math.MaxFloat32
+	max = -math.MaxFloat32
+	for i := 0; i < len(buffer); i += 4 {
+		value := math.Float32frombits(binary.LittleEndian.Uint32(buffer[i : i+4]))
+		if value < min {
+			min = value
+		}
+		if value > max {
+			max = value
+		}
+	}
+	return
 }

@@ -10,23 +10,29 @@ import (
 
 type Preview struct {
 	Quantity   string  `msgpack:"quantity"`
+	Unit       string  `msgpack:"unit"`
 	Component  string  `msgpack:"component"`
 	Layer      int     `msgpack:"layer"`
 	MaxPoints  int     `msgpack:"maxPoints"`
 	Dimensions [3]int  `msgpack:"dimensions"`
 	Type       string  `msgpack:"type"`
 	Buffer     *[]byte `msgpack:"buffer"`
+	Min        float32 `msgpack:"min"`
+	Max        float32 `msgpack:"max"`
 }
 
 func newPreview() *Preview {
 	return &Preview{
 		Quantity:   engine.NameOf(bps.Quantity),
+		Unit:       engine.UnitOf(bps.Quantity),
 		Component:  compIndexToString(bps.Component),
 		Layer:      bps.Layer,
 		MaxPoints:  bps.MaxPoints,
 		Dimensions: bps.Dimensions,
 		Type:       bps.Type,
 		Buffer:     &bps.Buffer,
+		Min:        bps.Min,
+		Max:        bps.Max,
 	}
 }
 
