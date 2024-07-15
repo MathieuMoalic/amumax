@@ -3,13 +3,12 @@
 	import { meshState } from '$api/incoming/mesh';
 	import { previewState as p } from '$api/incoming/preview';
 	import { display, resetCamera } from './plot-vector-field';
-	import {
-		postComponent,
-		postLayer,
-		postMaxPoints,
-		postQuantity,
-		postRefresh
-	} from '$api/outgoing/preview';
+	import { resizeECharts } from './plot-scalar-field';
+	import { postComponent, postLayer, postMaxPoints, postQuantity } from '$api/outgoing/preview';
+	import { onMount } from 'svelte';
+	onMount(() => {
+		resizeECharts();
+	});
 </script>
 
 <section>
@@ -30,7 +29,6 @@
 		<input type="range" min="1" max={$meshState.Nz} bind:value={$p.layer} on:change={postLayer} />
 		{$p.layer}
 		{$meshState.Nz}
-		<button on:click={postRefresh}>Refresh</button>
 	</p>
 	Max Points:<input type="number" bind:value={$p.maxPoints} on:change={postMaxPoints} />
 	<div id="container"></div>
