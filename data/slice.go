@@ -79,9 +79,7 @@ func SliceFromPtrs(size [3]int, memType int8, ptrs []unsafe.Pointer) *Slice {
 	s := new(Slice)
 	s.ptrs = make([]unsafe.Pointer, nComp)
 	s.size = size
-	for c := range ptrs {
-		s.ptrs[c] = ptrs[c]
-	}
+	copy(s.ptrs, ptrs)
 	s.memType = memType
 	return s
 }
