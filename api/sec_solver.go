@@ -23,9 +23,14 @@ type Solver struct {
 	Maxerr     float64 `msgpack:"maxerr"`
 }
 
+var (
+	Solvertypes = map[string]int{"bw_euler": -1, "euler": 1, "heun": 2, "rk23": 3, "rk4": 4, "rk45": 5, "rkf56": 6}
+	Solvernames = map[int]string{-1: "bw_euler", 1: "euler", 2: "heun", 3: "rk23", 4: "rk4", 5: "rk45", 6: "rkf56"}
+)
+
 func newSolver() *Solver {
 	return &Solver{
-		Type:       engine.Solvernames[engine.Solvertype],
+		Type:       Solvernames[engine.Solvertype],
 		Steps:      engine.NSteps,
 		Time:       engine.Time,
 		Dt:         engine.Dt_si,
@@ -48,20 +53,19 @@ func postSolverType(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	engine.Inject <- func() {
-		solver := engine.Solvertypes[res.Type]
+		solver := Solvertypes[res.Type]
 
 		// euler must have fixed time step
 		if solver == engine.EULER && engine.FixDt == 0 {
-			engine.GUI.EvalGUI("FixDt = 1e-15")
+			EvalGUI("FixDt = 1e-15")
 		}
 		if solver == engine.BACKWARD_EULER && engine.FixDt == 0 {
-			engine.GUI.EvalGUI("FixDt = 1e-13")
+			EvalGUI("FixDt = 1e-13")
 		}
-		util.Log("SetSolver: %v", solver)
+		util.Log("SetSolver:", solver)
 
-		engine.GUI.EvalGUI(fmt.Sprint("SetSolver(", solver, ")"))
+		EvalGUI(fmt.Sprint("SetSolver(", solver, ")"))
 	}
-	// engine.Solvertype = engine.Solvertypes[res.Type]
 	return c.JSON(http.StatusOK, engine.Solvertype)
 }
 
@@ -75,7 +79,7 @@ func postSolverRun(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	engine.Break()
-	engine.Inject <- func() { engine.GUI.EvalGUI("Run(" + strconv.FormatFloat(req.Runtime, 'f', -1, 64) + ")") }
+	engine.Inject <- func() { EvalGUI("Run(" + strconv.FormatFloat(req.Runtime, 'f', -1, 64) + ")") }
 	return c.JSON(http.StatusOK, "")
 }
 
@@ -90,13 +94,13 @@ func postSolverSteps(c echo.Context) error {
 	}
 
 	engine.Break()
-	engine.Inject <- func() { engine.GUI.EvalGUI("Steps(" + strconv.Itoa(req.Steps) + ")") }
+	engine.Inject <- func() { EvalGUI("Steps(" + strconv.Itoa(req.Steps) + ")") }
 	return c.JSON(http.StatusOK, "")
 }
 
 func postSolverRelax(c echo.Context) error {
 	engine.Break()
-	engine.Inject <- func() { engine.GUI.EvalGUI("Relax()") }
+	engine.Inject <- func() { EvalGUI("Relax()") }
 	return c.JSON(http.StatusOK, "")
 }
 
@@ -115,7 +119,7 @@ func postSolverFixDt(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 
-	engine.Inject <- func() { engine.GUI.EvalGUI("FixDt = " + strconv.FormatFloat(req.Fixdt, 'f', -1, 64)) }
+	engine.Inject <- func() { EvalGUI("FixDt = " + strconv.FormatFloat(req.Fixdt, 'f', -1, 64)) }
 	return c.JSON(http.StatusOK, "")
 }
 
@@ -129,7 +133,7 @@ func postSolverMinDt(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 
-	engine.Inject <- func() { engine.GUI.EvalGUI("MinDt = " + strconv.FormatFloat(req.Mindt, 'f', -1, 64)) }
+	engine.Inject <- func() { EvalGUI("MinDt = " + strconv.FormatFloat(req.Mindt, 'f', -1, 64)) }
 	return c.JSON(http.StatusOK, "")
 }
 
@@ -143,7 +147,7 @@ func postSolverMaxDt(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 
-	engine.Inject <- func() { engine.GUI.EvalGUI("MaxDt = " + strconv.FormatFloat(req.Maxdt, 'f', -1, 64)) }
+	engine.Inject <- func() { EvalGUI("MaxDt = " + strconv.FormatFloat(req.Maxdt, 'f', -1, 64)) }
 	return c.JSON(http.StatusOK, "")
 }
 
@@ -157,6 +161,6 @@ func postSolverMaxErr(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 
-	engine.Inject <- func() { engine.GUI.EvalGUI("MaxErr = " + strconv.FormatFloat(req.Maxerr, 'f', -1, 64)) }
+	engine.Inject <- func() { EvalGUI("MaxErr = " + strconv.FormatFloat(req.Maxerr, 'f', -1, 64)) }
 	return c.JSON(http.StatusOK, "")
 }
