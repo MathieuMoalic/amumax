@@ -29,5 +29,6 @@ func InitZgroup(path string) {
 	zgroup, err := httpfs.Create(path + ".zgroup")
 	util.FatalErr(err)
 	defer zgroup.Close()
-	zgroup.Write([]byte("{\"zarr_format\": 2}"))
+	_, err = zgroup.Write([]byte("{\"zarr_format\": 2}"))
+	util.FatalErr(err)
 }

@@ -46,6 +46,6 @@ func SaveFileZarray(path string, size [3]int, ncomp int, time int, cz int, cy in
 	enc := json.NewEncoder(f)
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "\t")
-	enc.Encode(z)
+	util.FatalErr(enc.Encode(z))
 	f.Flush()
 }

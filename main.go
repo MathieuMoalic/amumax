@@ -2,11 +2,9 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
@@ -81,44 +79,16 @@ type Release struct {
 	TagName string `json:"tag_name"`
 }
 
-func doUpdate() error {
+func doUpdate() {
 	resp, err := http.Get("https://github.com/mathieumoalic/amumax/releases/latest/download/amumax")
 	if err != nil {
-		return err
+		util.FatalErr(err)
 	}
 	defer resp.Body.Close()
 	err = selfupdate.Apply(resp.Body, selfupdate.Options{})
 	if err != nil {
 		color.Red("Error updating")
 		color.Red(fmt.Sprint(err))
-	}
-	return err
-}
-
-func checkUpdate() {
-	if engine.VERSION == "dev" {
-		return
-	}
-	resp, err := http.Get("https://api.github.com/repos/mathieumoalic/amumax/releases/latest")
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-	var release Release
-	err = json.Unmarshal(body, &release)
-	if err != nil {
-		return
-	}
-	if release.TagName != engine.VERSION {
-		color.HiCyan("\rCurrent amumax version          : %s", engine.VERSION)
-		color.HiCyan("Latest amumax version on github : %s", release.TagName)
-		color.HiCyan("Run the following command to update amumax:")
-		color.Blue("amumax --update")
 	}
 }
 

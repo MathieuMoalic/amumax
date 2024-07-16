@@ -64,6 +64,7 @@ func (m *Metadata) Save() {
 		defer zattrs.Close()
 		json_meta, err := json.MarshalIndent(m.Fields, "", "\t")
 		util.FatalErr(err)
-		zattrs.Write([]byte(json_meta))
+		_, err = zattrs.Write([]byte(json_meta))
+		util.FatalErr(err)
 	}
 }

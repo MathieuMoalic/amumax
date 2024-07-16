@@ -124,7 +124,7 @@ func (t *tesselation3d) tabulateCells() []cellLocs {
 // assigned a region.
 func (t *tesselation3d) RegionOf(x, y, z float64) int {
 	if t.shape(x, y, z) {
-		nearest := center3d{x, y, z, 0}
+		nearest := center3d{}
 		mindist := math.Inf(1)
 		for _, c := range t.centers {
 			dist := sqr(x-c.x) + sqr(y-c.y) + sqr(z-c.z)

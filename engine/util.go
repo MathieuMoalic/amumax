@@ -5,7 +5,6 @@ import (
 	"math"
 	"os"
 	"path"
-	"sort"
 	"strings"
 
 	"github.com/MathieuMoalic/amumax/cuda"
@@ -81,8 +80,9 @@ func Fprintln(filename string, msg ...interface{}) {
 	if !path.IsAbs(filename) {
 		filename = OD() + filename
 	}
-	httpfs.Touch(filename)
-	err := httpfs.Append(filename, []byte(fmt.Sprintln(myFmt(msg)...)))
+	err := httpfs.Touch(filename)
+	util.FatalErr(err)
+	err = httpfs.Append(filename, []byte(fmt.Sprintln(myFmt(msg)...)))
 	util.FatalErr(err)
 }
 func LoadFile(fname string) *data.Slice {
@@ -173,17 +173,6 @@ func assureGPU(s *data.Slice) *data.Slice {
 	} else {
 		return cuda.GPUCopy(s)
 	}
-}
-
-type caseIndep []string
-
-func (s *caseIndep) Len() int           { return len(*s) }
-func (s *caseIndep) Less(i, j int) bool { return strings.ToLower((*s)[i]) < strings.ToLower((*s)[j]) }
-func (s *caseIndep) Swap(i, j int)      { (*s)[i], (*s)[j] = (*s)[j], (*s)[i] }
-
-func sortNoCase(s []string) {
-	i := caseIndep(s)
-	sort.Sort(&i)
 }
 
 func checkNaN1(x float64) {

@@ -61,7 +61,7 @@ func (t *tesselation) RegionOf(x, y, z float64) int {
 	tile := t.tileOf(x, y) // tile containing x,y
 
 	// look for nearest center in tile + neighbors
-	nearest := center{x, y, 0} // dummy initial value, but safe should the infinite impossibility strike.
+	nearest := center{} // dummy initial value, but safe should the infinite impossibility strike.
 	mindist := math.Inf(1)
 	for tx := tile.x - 1; tx <= tile.x+1; tx++ {
 		for ty := tile.y - 1; ty <= tile.y+1; ty++ {

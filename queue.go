@@ -16,6 +16,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/cuda/cu"
 	"github.com/MathieuMoalic/amumax/engine"
+	"github.com/MathieuMoalic/amumax/util"
 )
 
 var (
@@ -223,7 +224,9 @@ func (s *stateTab) RenderHTML(w io.Writer) {
 
 func (s *stateTab) ListenAndServe(addr string) {
 	http.Handle("/", s)
-	go http.ListenAndServe(addr, nil)
+	go func() {
+		util.FatalErr(http.ListenAndServe(addr, nil))
+	}()
 }
 
 func (s *stateTab) ServeHTTP(w http.ResponseWriter, r *http.Request) {

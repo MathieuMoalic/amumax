@@ -37,6 +37,6 @@ func SaveFileTableZarray(path string, zTableAutoSaveStep int) {
 	enc := json.NewEncoder(f)
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "\t")
-	enc.Encode(z)
+	util.FatalErr(enc.Encode(z))
 	f.Flush()
 }

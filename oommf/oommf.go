@@ -4,12 +4,13 @@ package oommf
 import (
 	"bufio"
 	"fmt"
-	"github.com/MathieuMoalic/amumax/data"
-	"github.com/MathieuMoalic/amumax/util"
 	"io"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/MathieuMoalic/amumax/data"
+	"github.com/MathieuMoalic/amumax/util"
 )
 
 // Read any OOMMF file, autodetect OVF1/OVF2 format
@@ -18,10 +19,6 @@ func Read(in io.Reader) (s *data.Slice, meta data.Meta, err error) {
 	info := readHeader(in)
 
 	n := info.Size
-	c := info.StepSize
-	if c == [3]float64{0, 0, 0} {
-		c = [3]float64{1, 1, 1} // default (presumably unitless) cell size
-	}
 	data_ := data.NewSlice(info.NComp, n)
 
 	format := strings.ToLower(info.Format)
@@ -85,7 +82,7 @@ func readHeader(in io.Reader) *Info {
 	info := new(Info)
 	info.Desc = desc
 
-	line, eof := readLine(in)
+	line, _ := readLine(in)
 	switch strings.ToLower(line) {
 	default:
 		panic("unknown header: " + line)
@@ -95,7 +92,7 @@ func readHeader(in io.Reader) *Info {
 		info.OVF = 1
 		info.NComp = 3 // OVF1 only supports vector
 	}
-	line, eof = readLine(in)
+	line, eof := readLine(in)
 	for !eof && !isHeaderEnd(line) {
 		key, value := parseHeaderLine(line)
 
@@ -223,7 +220,7 @@ func writeOVFText(out io.Writer, tens *data.Slice) (err error) {
 		for iy := 0; iy < gridsize[Y]; iy++ {
 			for ix := 0; ix < gridsize[X]; ix++ {
 				for c := 0; c < ncomp; c++ {
-					_, err = fmt.Fprint(out, data[c][iz][iy][ix], " ")
+					fmt.Fprint(out, data[c][iz][iy][ix], " ")
 				}
 				_, err = fmt.Fprint(out, "\n")
 			}

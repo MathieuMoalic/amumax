@@ -2,11 +2,13 @@ package oommf
 
 import (
 	"fmt"
-	"github.com/MathieuMoalic/amumax/data"
 	"io"
 	"log"
 	"strings"
 	"unsafe"
+
+	"github.com/MathieuMoalic/amumax/data"
+	"github.com/MathieuMoalic/amumax/util"
 )
 
 func WriteOVF2(out io.Writer, q *data.Slice, meta data.Meta, dataformat string) {
@@ -42,7 +44,7 @@ func writeOVF2Header(out io.Writer, q *data.Slice, meta data.Meta) {
 		labels = []interface{}{name}
 	} else {
 		for i := 0; i < q.NComp(); i++ {
-			labels = append(labels, name+"_"+string('x'+i))
+			labels = append(labels, fmt.Sprintf("%s_%d", name, i))
 		}
 	}
 	hdr(out, "valuedim", q.NComp())
@@ -79,7 +81,7 @@ func writeOVF2Data(out io.Writer, q *data.Slice, dataformat string) {
 	case "text":
 		canonicalFormat = "Text"
 		hdr(out, "Begin", "Data "+canonicalFormat)
-		writeOVFText(out, q)
+		util.FatalErr(writeOVFText(out, q))
 	case "binary", "binary 4":
 		canonicalFormat = "Binary 4"
 		hdr(out, "Begin", "Data "+canonicalFormat)
@@ -102,7 +104,8 @@ func writeOVF2DataBinary4(out io.Writer, array *data.Slice) {
 	// OOMMF requires this number to be first to check the format
 	var controlnumber float32 = OVF_CONTROL_NUMBER_4
 	bytes = (*[4]byte)(unsafe.Pointer(&controlnumber))[:]
-	out.Write(bytes)
+	_, err := out.Write(bytes)
+	util.FatalErr(err)
 
 	ncomp := array.NComp()
 	for iz := 0; iz < size[Z]; iz++ {
@@ -110,7 +113,8 @@ func writeOVF2DataBinary4(out io.Writer, array *data.Slice) {
 			for ix := 0; ix < size[X]; ix++ {
 				for c := 0; c < ncomp; c++ {
 					bytes = (*[4]byte)(unsafe.Pointer(&data[c][iz][iy][ix]))[:]
-					out.Write(bytes)
+					_, err := out.Write(bytes)
+					util.FatalErr(err)
 				}
 			}
 		}
@@ -145,7 +149,6 @@ func readFull(in io.Reader, buf []byte) {
 	if err != nil {
 		panic(err)
 	}
-	return
 }
 
 // read float32 in machine endianess, panic on error

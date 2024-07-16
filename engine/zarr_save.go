@@ -71,8 +71,10 @@ func (a *zArray) SaveAttrs() {
 	// keeping the whole array of times wastes a few MB of RAM
 	u, err := json.Marshal(zarr.Zattrs{Buffer: a.times})
 	util.FatalErr(err)
-	httpfs.Remove(OD() + a.name + "/.zattrs")
-	httpfs.Put(OD()+a.name+"/.zattrs", []byte(string(u)))
+	err = httpfs.Remove(OD() + a.name + "/.zattrs")
+	util.FatalErr(err)
+	err = httpfs.Put(OD()+a.name+"/.zattrs", []byte(string(u)))
+	util.FatalErr(err)
 }
 
 func (a *zArray) Save() {
@@ -96,7 +98,8 @@ func zVerifyAndSave(q Quantity, name string, rchunks RequestedChunking, period f
 			}
 		}
 	} else {
-		httpfs.Mkdir(OD() + name)
+		err := httpfs.Mkdir(OD() + name)
+		util.FatalErr(err)
 		var b []float64
 		a := zArray{name, q, period, Time, -1, b, NewChunks(q, rchunks), rchunks}
 		zArrays = append(zArrays, &a)
@@ -155,7 +158,8 @@ func SyncSave(array *data.Slice, qname string, time int, chunks Chunks) {
 					}
 					compressedData, err := zstd.Compress(nil, bdata)
 					util.FatalErr(err)
-					f.Write(compressedData)
+					_, err = f.Write(compressedData)
+					util.FatalErr(err)
 				}
 			}
 		}

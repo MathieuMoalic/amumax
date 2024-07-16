@@ -109,7 +109,6 @@ func (e *Excitation) AddGo(mask *data.Slice, mul func() float64) {
 func (e *Excitation) SetRegion(region int, f script.VectorFunction) { e.perRegion.SetRegion(region, f) }
 func (e *Excitation) SetValue(v interface{})                        { e.perRegion.SetValue(v) }
 func (e *Excitation) Set(v data.Vector)                             { e.perRegion.setRegions(0, NREGION, slice(v)) }
-func (e *Excitation) getRegion(region int) []float64                { return e.perRegion.getRegion(region) } // for gui
 
 func (e *Excitation) SetRegionFn(region int, f func() [3]float64) {
 	e.perRegion.setFunc(region, region+1, func() []float64 {

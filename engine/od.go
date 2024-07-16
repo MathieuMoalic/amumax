@@ -53,10 +53,16 @@ func InitIO(inputfile, od string) {
 	LogOut("output directory:", outputdir)
 
 	if *Flag_forceclean && !*Flag_skip_exists {
-		httpfs.Remove(od)
+		err := httpfs.Remove(od)
+		if err != nil {
+			util.FatalErr(err)
+		}
 	}
 
-	httpfs.Mkdir(od)
+	err := httpfs.Mkdir(od)
+	if err != nil {
+		util.FatalErr(err)
+	}
 	// util.FatalErr(err)
 	initLog()
 	zarr.InitZgroup(OD())
