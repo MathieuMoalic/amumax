@@ -1,0 +1,10 @@
+linters-settings:
+  staticcheck:
+    checks:
+      - all
+      - '-SA1019' # disable the rule SA1000
+
+
+run:
+  skip-dirs:
+    - cuda
