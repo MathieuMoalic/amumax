@@ -130,8 +130,6 @@ func runInteractive() {
 
 	engine.InitIO(outdir, outdir)
 
-	engine.Timeout = 365 * 24 * time.Hour // basically forever
-
 	// set up some sensible start configuration
 	engine.Eval(`
 Nx = 128
