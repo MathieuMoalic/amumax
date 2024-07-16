@@ -215,18 +215,3 @@ func normalizeVectors(f *data.Slice) {
 		}
 	}
 }
-
-func getMinMaxFromBuffer(buffer []byte) (min, max float32) {
-	min = math.MaxFloat32
-	max = -math.MaxFloat32
-	for i := 0; i < len(buffer); i += 4 {
-		value := math.Float32frombits(binary.LittleEndian.Uint32(buffer[i : i+4]))
-		if value < min {
-			min = value
-		}
-		if value > max {
-			max = value
-		}
-	}
-	return
-}

@@ -104,7 +104,11 @@ func snapshot_sync(fname string, output *data.Slice) {
 	f, err := httpfs.Create(fname)
 	util.FatalErr(err)
 	defer f.Close()
-	draw.RenderFormat(f, output, "auto", "auto", arrowSize, path.Ext(fname))
+	arrowSize := 16
+	err = draw.RenderFormat(f, output, "auto", "auto", arrowSize, path.Ext(fname))
+	if err != nil {
+		util.LogWarn("Error while rendering snapshot:", err)
+	}
 }
 
 // synchronous save

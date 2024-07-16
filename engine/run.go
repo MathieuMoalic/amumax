@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"time"
 
 	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/data"
@@ -216,9 +217,13 @@ func RunWhileInner(condition func() bool, output bool) {
 	}
 }
 
-// Runs as long as browser is connected to gui.
+// Runs indefinitely
 func RunInteractive() {
-	GUI.RunInteractive()
+	for {
+		f := <-Inject
+		f()
+		time.Sleep(100 * time.Millisecond)
+	}
 }
 
 // take one time step
@@ -236,6 +241,10 @@ func step(output bool) {
 // Typically used, e.g., to manipulate the magnetization.
 func PostStep(f func()) {
 	postStep = append(postStep, f)
+}
+
+func Break() {
+	Inject <- func() { Pause = true }
 }
 
 // inject code into engine and wait for it to complete.
