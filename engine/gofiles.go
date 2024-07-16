@@ -5,10 +5,6 @@ package engine
 import (
 	"flag"
 	"os"
-	"path"
-
-	"github.com/MathieuMoalic/amumax/cuda"
-	"github.com/MathieuMoalic/amumax/util"
 )
 
 var (
@@ -36,23 +32,31 @@ var (
 //
 // This initialises the GPU, output directory, etc,
 // and makes sure pending output will get flushed.
-func InitAndClose() func() {
-	// ONLY FOR GO FILES
-	flag.Parse()
+// func InitAndClose() func() {
+// 	// ONLY FOR GO FILES
+// 	flag.Parse()
 
-	cuda.Init(*Flag_gpu)
-	cuda.Synchronous = *Flag_sync
+// 	cuda.Init(*Flag_gpu)
+// 	cuda.Synchronous = *Flag_sync
 
-	od := *Flag_od
-	if od == "" {
-		od = path.Base(os.Args[0]) + ".zarr"
-	}
-	inFile := util.NoExt(od)
-	InitIO(inFile, od)
+// 	od := *Flag_od
+// 	if od == "" {
+// 		od = path.Base(os.Args[0]) + ".zarr"
+// 	}
+// 	inFile := util.NoExt(od)
+// 	InitIO(inFile, od)
 
-	GoServe(*Flag_webui_addr)
+// if *Flag_webui_addr == "" {
+// 	util.LogWarn(`WebUI is disabled (-http="")`)
+// }
+// addr, err := findAvailablePort(*Flag_webui_addr)
+// if err != nil {
+// 	log.Fatalf("Failed to find available port: %v", err)
+// }
+// util.Log(fmt.Sprintf("Serving GUI at http://%s", addr))
+// go api.Start(addr)
 
-	return func() {
-		CleanExit()
-	}
-}
+// 	return func() {
+// 		CleanExit()
+// 	}
+// }
