@@ -49,7 +49,10 @@ func LogErr(msg ...interface{}) {
 
 func log2File(msg string) {
 	if logfile != nil {
-		logfile.Write([]byte(msg + "\n"))
+		_, err := logfile.Write([]byte(msg + "\n"))
+		if err != nil {
+			LogErr("Error writing to log file:", err)
+		}
 	}
 }
 
@@ -59,7 +62,10 @@ func initLog() {
 		panic(err)
 	}
 	logfile = f // otherwise f gets dropped
-	logfile.Write([]byte(Hist))
+	_, err = logfile.Write([]byte(Hist))
+	if err != nil {
+		LogErr("Error writing to log file:", err)
+	}
 }
 
 func AutoFlushLog2File() {

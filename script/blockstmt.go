@@ -8,6 +8,8 @@ import (
 	"go/token"
 	"reflect"
 	"strings"
+
+	"github.com/MathieuMoalic/amumax/util"
 )
 
 // block statement is a list of statements.
@@ -48,7 +50,7 @@ func (b *BlockStmt) Child() []Expr {
 func Format(n ast.Node) string {
 	var buf bytes.Buffer
 	fset := token.NewFileSet()
-	format.Node(&buf, fset, n)
+	util.FatalErr(format.Node(&buf, fset, n))
 	str := buf.String()
 	str = strings.TrimSuffix(str, "\n")
 	return str
@@ -58,7 +60,7 @@ func (b *BlockStmt) Format() string {
 	var buf bytes.Buffer
 	fset := token.NewFileSet()
 	for i := range b.Children {
-		format.Node(&buf, fset, b.Node[i])
+		util.FatalErr(format.Node(&buf, fset, b.Node[i]))
 		fmt.Fprintln(&buf)
 	}
 	return buf.String()

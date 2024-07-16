@@ -57,7 +57,8 @@ func (ts *TableStruct) WriteToBuffer() {
 
 func (ts *TableStruct) Flush() {
 	for i := range ts.columns {
-		ts.columns[i].io.Write(ts.columns[i].buffer)
+		_, err := ts.columns[i].io.Write(ts.columns[i].buffer)
+		util.FatalErr(err)
 		ts.columns[i].buffer = []byte{}
 		// saving .zarray before the data might help resolve some unsync
 		// errors when the simulation is running and the user loads data
@@ -97,9 +98,10 @@ func (ts *TableStruct) GetTableNames() []string {
 }
 
 func TableInit() {
-	httpfs.Remove(OD() + "table")
+	err := httpfs.Remove(OD() + "table")
+	util.FatalErr(err)
 	zarr.MakeZgroup("table", OD(), &zGroups)
-	err := httpfs.Mkdir(OD() + "table/t")
+	err = httpfs.Mkdir(OD() + "table/t")
 	util.FatalErr(err)
 	f, err := httpfs.Create(OD() + "table/t/0")
 	util.FatalErr(err)
