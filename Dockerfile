@@ -1,5 +1,5 @@
 FROM nvidia/cuda:11.0.3-devel-ubuntu16.04
-ENV GO_VERSION=1.20.1
+ENV GO_VERSION=1.22.5
 RUN apt-get update
 RUN apt-get install -y wget git
 RUN wget https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz
