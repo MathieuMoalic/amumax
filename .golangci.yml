@@ -5,6 +5,6 @@ linters-settings:
       - '-SA1019' # disable the rule SA1000
 
 
-issues:
-  exclude-dirs:
+run:
+  skip-dirs:
     - cuda
