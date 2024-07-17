@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/httpfs"
+	"github.com/MathieuMoalic/amumax/util"
 	"github.com/fatih/color"
 )
 
@@ -58,9 +59,7 @@ func log2File(msg string) {
 
 func initLog() {
 	f, err := httpfs.Create(OD() + "log.txt")
-	if err != nil {
-		panic(err)
-	}
+	util.FatalErr(err)
 	logfile = f // otherwise f gets dropped
 	_, err = logfile.Write([]byte(Hist))
 	if err != nil {
