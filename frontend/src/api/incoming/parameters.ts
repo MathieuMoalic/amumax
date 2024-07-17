@@ -15,3 +15,10 @@ export const parametersState = writable<Parameters>({
     regions: [],
     fields: []
 });
+
+export function sortFieldsByName() {
+    parametersState.update(parameters => {
+        parameters.fields.sort((a, b) => a.name.localeCompare(b.name));
+        return parameters;
+    });
+}
