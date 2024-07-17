@@ -82,6 +82,15 @@ func Read(URL string) ([]byte, error) {
 	}
 }
 
+func Exists(URL string) bool {
+	_, err := Read(URL)
+	// if `is a directory` is in the error message, it means the URL is a directory
+	if err != nil && strings.Contains(err.Error(), "is a directory") {
+		return true
+	}
+	return false
+}
+
 // Append p to the file given by URL,
 // but first assure that the file had the expected size.
 // Used to avoid accidental concurrent writes by two processes to the same file.
