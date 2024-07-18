@@ -3,14 +3,21 @@ import * as echarts from 'echarts';
 import { get } from 'svelte/store';
 import { meshState } from '$api/incoming/mesh';
 
-export function plotScalarField() {
-    if (chart === undefined || chart.isDisposed()) {
+export function plotScalarField(newDimensions: boolean) {
+    if (chart === undefined) {
         init();
+    } else if (chart.isDisposed()) {
+        init();
+    } else if (newDimensions) {
+        disposeECharts();
+        init();
+    } else {
+        update();
     }
-    update();
 }
 
 let chart: echarts.ECharts;
+let previousDimension: number[];
 
 function getScalarField(): number[][] {
     // Convert Uint8Array to ArrayBuffer
@@ -59,6 +66,7 @@ function init() {
     chart = echarts.init(chartDom, undefined, { renderer: 'svg' });
     let ps = get(previewState);
     let dims = ps.dimensions;
+    previousDimension = dims;
     let mesh = get(meshState);
     let xData = Array.from({ length: dims[0] }, (_, i) => i * mesh.dx * 1e9);
     let yData = Array.from({ length: dims[1] }, (_, i) => i * mesh.dy * 1e9);
@@ -83,6 +91,9 @@ function init() {
         tooltip: {
             position: "top",
             formatter: function (params: any) {
+                if (params.value === undefined) {
+                    return "NaN";
+                }
                 return `${params.value[2]} ${ps.unit}`;
             },
             backgroundColor: '#282a36',
@@ -105,6 +116,9 @@ function init() {
                 backgroundColor: '#282a36',
                 color: '#fff',
                 formatter: function (params: any) {
+                    if (params.value === undefined) {
+                        return "NaN";
+                    }
                     return ` ${parseFloat(params.value).toFixed(0)} nm`;
                 },
                 padding: [8, 5, 8, 5],
