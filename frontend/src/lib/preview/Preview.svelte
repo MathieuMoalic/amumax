@@ -9,6 +9,13 @@
 	onMount(() => {
 		resizeECharts();
 	});
+	let maxPointsInput = '';
+	function maxPointsInputChanged() {
+		if (maxPointsInput === '') {
+			return;
+		}
+		postMaxPoints(parseInt(maxPointsInput));
+	}
 </script>
 
 <section>
@@ -30,7 +37,11 @@
 		{$p.layer}
 		{$meshState.Nz}
 	</p>
-	Max Points:<input type="number" bind:value={$p.maxPoints} on:change={postMaxPoints} />
+	Max Points:<input
+		bind:value={maxPointsInput}
+		on:change={maxPointsInputChanged}
+		placeholder=" {$p.maxPoints}"
+	/>
 	<div id="container"></div>
 	Parsing time: {$display?.parsingTime.toFixed(0)} ms
 	<button on:click={resetCamera}>Reset Camera</button>
