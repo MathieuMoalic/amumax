@@ -78,15 +78,12 @@
             cuda.cuda_nvcc
             cuda.libcufft
             cuda.libcurand
-            pkgs.addDriverRunpath
+            pkgs.gcc11
           ];
-          CGO_CFLAGS = ["-lcufft" "-lcurand"];
-          CGO_LDFLAGS = ["-L${cuda.cuda_cudart.lib}/lib/stubs/"];
+          CGO_LDFLAGS = "-lcufft -lcuda -lcurand -Wl,-rpath -Wl,\$ORIGIN";
+          CGO_CFLAGS_ALLOW = "(-fno-schedule-insns|-malign-double|-ffast-math)";
+          LD_LIBRARY_PATH = "${cuda.libcufft}/lib:${cuda.libcurand}/lib:/run/opengl-driver/lib/";
           ldflags = ["-s" "-w"];
-
-          shellHook = ''
-            export LD_LIBRARY_PATH=${cuda.libcufft}/lib:${cuda.libcurand}/lib:/run/opengl-driver/lib/:$LD_LIBRARY_PATH
-          '';
         };
       in {
         packages.amumax = buildAmumax pkgs;
