@@ -32,8 +32,14 @@
 				<option value={choice}>{choice}</option>
 			{/each}
 		</select>
-		Z-layer: 1
-		<input type="range" min="1" max={$meshState.Nz} bind:value={$p.layer} on:change={postLayer} />
+		Z-layer: 0
+		<input
+			type="range"
+			min="0"
+			max={$meshState.Nz - 1}
+			bind:value={$p.layer}
+			on:change={postLayer}
+		/>
 		{$p.layer}
 		{$meshState.Nz}
 	</p>
