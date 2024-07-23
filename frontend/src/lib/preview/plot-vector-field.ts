@@ -16,12 +16,14 @@ interface Display {
     parsingTime: number;
     dimensions: Dimensions;
 }
-
 export const display = writable<Display | null>(null);
 
-export function plotVectorField() {
+export function plotVectorField(newDimensions: boolean) {
     let disp = get(display);
     if (disp === null || !disp.isInitialized) {
+        init();
+    } else if (newDimensions) {
+        disposeThreeJS();
         init();
     }
     update();
