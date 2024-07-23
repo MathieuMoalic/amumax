@@ -37,3 +37,5 @@ cuda2go.exe
 .go-build
 *.ptx
 api/static
+.direnv
+.envrc
