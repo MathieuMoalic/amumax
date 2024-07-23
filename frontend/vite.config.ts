@@ -15,5 +15,8 @@ export default defineConfig({
 				ws: true,
 			},
 		}
-	}
+	},
+	esbuild: {
+		drop: ['console', 'debugger'],
+	},
 });
