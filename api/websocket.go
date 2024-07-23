@@ -36,7 +36,6 @@ func (cm *connectionManager) add(ws *websocket.Conn) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	cm.conns[ws] = struct{}{}
-	// broadcastEngineState()
 }
 
 func (cm *connectionManager) remove(ws *websocket.Conn) {
@@ -59,7 +58,9 @@ func (cm *connectionManager) broadcast(msg []byte) {
 }
 
 func websocketEntrypoint(c echo.Context) error {
-	util.Log("Websocket connection established")
+	if engine.VERSION == "dev" {
+		util.Log("Websocket connection established")
+	}
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	if err != nil {
 		return err
@@ -68,6 +69,7 @@ func websocketEntrypoint(c echo.Context) error {
 
 	connections.add(ws)
 	defer connections.remove(ws)
+	broadcastEngineState()
 
 	// Channel to signal when to stop the goroutine
 	done := make(chan struct{})
@@ -76,7 +78,9 @@ func websocketEntrypoint(c echo.Context) error {
 		for {
 			_, _, err := ws.ReadMessage()
 			if err != nil {
-				util.Log("WebSocket read error:", err)
+				if engine.VERSION == "dev" {
+					util.Log("WebSocket read error:", err)
+				}
 				close(done)
 				return
 			}
@@ -85,7 +89,9 @@ func websocketEntrypoint(c echo.Context) error {
 
 	select {
 	case <-done:
-		util.Log("Connection closed by client")
+		if engine.VERSION == "dev" {
+			util.Log("Connection closed by client")
+		}
 		return nil
 	case <-broadcastStop:
 		return nil
