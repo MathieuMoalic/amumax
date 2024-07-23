@@ -24,6 +24,7 @@ export function initializeWebSocket() {
         };
 
         ws.onmessage = function (event) {
+            console.log('WebSocket message received');
             parseMsgpack(event.data);
             ws?.send('ok');
         };
