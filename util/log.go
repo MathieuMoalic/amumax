@@ -12,7 +12,8 @@ import (
 )
 
 func Fatal(msg ...interface{}) {
-	log.Fatal(msg...)
+	color.Red(fmt.Sprint(msg...))
+	os.Exit(1)
 }
 
 func Fatalf(format string, msg ...interface{}) {
