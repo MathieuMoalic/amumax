@@ -14,8 +14,8 @@ export function postLayer() {
     post('preview/layer', { layer: get(previewState).layer });
 }
 
-export function postMaxPoints() {
-    post('preview/maxpoints', { maxPoints: get(previewState).maxPoints });
+export function postMaxPoints(value: number) {
+    post('preview/maxpoints', { maxPoints: value });
 }
 
 export function postRefresh() {

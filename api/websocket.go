@@ -1,37 +1,42 @@
 package api
 
 import (
+	"net/http"
 	"sync"
 	"time"
 
 	"github.com/MathieuMoalic/amumax/engine"
 	"github.com/MathieuMoalic/amumax/util"
+	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/vmihailenco/msgpack/v5"
-	"golang.org/x/net/websocket"
 )
 
 var (
-	webSocketState WebSocketState
-	connections    = &connectionManager{
-		conns: make(map[*websocket.Conn]bool),
+	upgrader = websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
+	connections = &connectionManager{
+		conns: make(map[*websocket.Conn]struct{}),
 		mu:    sync.Mutex{},
 	}
+	lastStep       int
+	broadcastStop  chan struct{}
+	broadcastStart sync.Once
 )
 
-type WebSocketState struct {
-	LastStep int
-}
-
 type connectionManager struct {
-	conns map[*websocket.Conn]bool
+	conns map[*websocket.Conn]struct{}
 	mu    sync.Mutex
 }
 
 func (cm *connectionManager) add(ws *websocket.Conn) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
-	cm.conns[ws] = true
+	cm.conns[ws] = struct{}{}
+	// broadcastEngineState()
 }
 
 func (cm *connectionManager) remove(ws *websocket.Conn) {
@@ -44,7 +49,7 @@ func (cm *connectionManager) broadcast(msg []byte) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	for ws := range cm.conns {
-		err := websocket.Message.Send(ws, msg)
+		err := ws.WriteMessage(websocket.BinaryMessage, msg)
 		if err != nil {
 			util.LogErr("Error sending message via WebSocket:", err)
 			ws.Close()
@@ -53,27 +58,38 @@ func (cm *connectionManager) broadcast(msg []byte) {
 	}
 }
 
-// WebSocket handler for engine state updates
 func websocketEntrypoint(c echo.Context) error {
-	websocket.Handler(func(ws *websocket.Conn) {
-		defer ws.Close()
+	util.Log("Websocket connection established")
+	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
+	if err != nil {
+		return err
+	}
+	defer ws.Close()
 
-		// Register the WebSocket connection
-		connections.add(ws)
-		defer connections.remove(ws)
+	connections.add(ws)
+	defer connections.remove(ws)
 
-		// Send initial state when the client connects to the WebSocket
-		broadcastEngineState()
+	// Channel to signal when to stop the goroutine
+	done := make(chan struct{})
 
+	go func() {
 		for {
-			if engine.NSteps != webSocketState.LastStep {
-				broadcastEngineState()
-				webSocketState.LastStep = engine.NSteps
+			_, _, err := ws.ReadMessage()
+			if err != nil {
+				util.Log("WebSocket read error:", err)
+				close(done)
+				return
 			}
-			time.Sleep(1 * time.Second)
 		}
-	}).ServeHTTP(c.Response(), c.Request())
-	return nil
+	}()
+
+	select {
+	case <-done:
+		util.Log("Connection closed by client")
+		return nil
+	case <-broadcastStop:
+		return nil
+	}
 }
 
 func broadcastEngineState() {
@@ -86,4 +102,30 @@ func broadcastEngineState() {
 	}
 
 	connections.broadcast(msg)
+}
+
+func startBroadcastLoop() {
+	broadcastStop = make(chan struct{})
+	broadcastStart.Do(func() {
+		go func() {
+			for {
+				select {
+				case <-broadcastStop:
+					return
+				default:
+					if engine.NSteps != lastStep {
+						if len(connections.conns) > 0 {
+							broadcastEngineState()
+							lastStep = engine.NSteps
+						}
+					}
+					time.Sleep(1 * time.Second)
+				}
+			}
+		}()
+	})
+}
+
+func init() {
+	startBroadcastLoop()
 }

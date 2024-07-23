@@ -11,33 +11,62 @@ import { type Parameters, parametersState, sortFieldsByName } from "./incoming/p
 import { type TablePlot, tablePlotState } from "./incoming/table-plot";
 import { plotPreview } from '$lib/preview/preview-logic';
 
-export let ws: WebSocket;
-export function initializeWebSocket(ws: WebSocket) {
-    ws = new WebSocket(`/ws`);
-    ws.binaryType = 'arraybuffer';
 
-    ws.onmessage = function (event) {
-        const startTime = performance.now(); // Start timing
+export function initializeWebSocket() {
+    let retryInterval = 1000;
+    let ws: WebSocket | null = null;
 
-        const msg = msgpack.decode(new Uint8Array(event.data));
-        consoleState.set(msg.console as Console);
-        headerState.set(msg.header as Header);
-        meshState.set(msg.mesh as Mesh);
-        parametersState.set(msg.parameters as Parameters);
-        sortFieldsByName();
-        previewState.set(msg.preview as Preview);
-        solverState.set(msg.solver as Solver);
-        tablePlotState.set(msg.tablePlot as TablePlot);
-        plotChart();
-        plotPreview();
+    function connect() {
+        ws = new WebSocket(`ws://localhost:35367/ws`);
+        ws.binaryType = 'arraybuffer';
 
-        const endTime = performance.now(); // End timing
-        const parsingTime = endTime - startTime;
-        display.update(currentDisplay => {
-            if (currentDisplay) {
-                return { ...currentDisplay, parsingTime: parsingTime };
+        ws.onopen = function () {
+            console.log('WebSocket connection established');
+        };
+
+        ws.onmessage = function (event) {
+            parseMsgpack(event.data);
+            ws?.send('ok');
+        };
+
+        ws.onclose = function () {
+            console.log('WebSocket closed. Attempting to reconnect in ' + retryInterval / 1000 + ' seconds...');
+            ws = null; // Ensure ws is set to null when it is closed
+            setTimeout(connect, retryInterval);
+        };
+
+        ws.onerror = function (event) {
+            console.error('WebSocket encountered error:', event);
+            if (ws) {
+                ws.close();
             }
-            return currentDisplay;
-        });
-    };
+        };
+    }
+
+    function tryConnect() {
+        console.log('Attempting WebSocket connection...');
+        try {
+            connect();
+        } catch (err) {
+            console.error('WebSocket connection failed:', err, 'Retrying in ' + retryInterval / 1000 + ' seconds...');
+            setTimeout(tryConnect, retryInterval);
+        }
+    }
+
+    tryConnect();
+}
+
+
+export function parseMsgpack(data: ArrayBuffer) {
+    const msg = msgpack.decode(new Uint8Array(data));
+    consoleState.set(msg.console as Console);
+    headerState.set(msg.header as Header);
+    meshState.set(msg.mesh as Mesh);
+    parametersState.set(msg.parameters as Parameters);
+    sortFieldsByName();
+    previewState.set(msg.preview as Preview);
+    solverState.set(msg.solver as Solver);
+    tablePlotState.set(msg.tablePlot as TablePlot);
+    plotChart();
+    plotPreview();
 }
