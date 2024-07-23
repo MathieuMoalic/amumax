@@ -1,6 +1,5 @@
 import msgpack from 'msgpack-lite';
 import { plotChart } from "../lib/table-plot/tablePlot";
-import { display } from "$lib/preview/plot-vector-field"
 
 import { type Preview, previewState } from "./incoming/preview";
 import { type Header, headerState } from "./incoming/header";
@@ -17,7 +16,7 @@ export function initializeWebSocket() {
     let ws: WebSocket | null = null;
 
     function connect() {
-        ws = new WebSocket(`ws://localhost:35367/ws`);
+        ws = new WebSocket(`/ws`);
         ws.binaryType = 'arraybuffer';
 
         ws.onopen = function () {
