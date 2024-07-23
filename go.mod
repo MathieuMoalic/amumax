@@ -17,6 +17,7 @@ require (
 require (
 	aead.dev/minisign v0.3.0 // indirect
 	github.com/campoy/embedmd v1.0.0 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 )
