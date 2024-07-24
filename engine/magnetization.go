@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/MathieuMoalic/amumax/cuda"
@@ -16,6 +17,11 @@ func init() { DeclLValue("m", &M, `Reduced magnetization (unit length)`) }
 // makes sure it's normalized etc.
 type magnetization struct {
 	buffer_ *data.Slice
+}
+
+func (m *magnetization) GetRegionToString(region int) string {
+	v := unslice(AverageOf(m))
+	return fmt.Sprintf("(%g,%g,%g)", v[0], v[1], v[2])
 }
 
 func (m *magnetization) Mesh() *data.Mesh    { return GetMesh() }

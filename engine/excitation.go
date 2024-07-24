@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"math"
 	"reflect"
 
@@ -129,6 +130,11 @@ func (e *Excitation) Eval() interface{}       { return e }
 func (e *Excitation) Type() reflect.Type      { return reflect.TypeOf(new(Excitation)) }
 func (e *Excitation) InputType() reflect.Type { return script.VectorFunction_t }
 func (e *Excitation) EvalTo(dst *data.Slice)  { EvalTo(e, dst) }
+
+func (e *Excitation) GetRegionToString(region int) string {
+	v := e.perRegion.GetRegion(region)
+	return fmt.Sprintf("(%g,%g,%g)", v[0], v[1], v[2])
+}
 
 func checkNaN(s *data.Slice, name string) {
 	h := s.Host()
