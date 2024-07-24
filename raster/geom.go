@@ -198,7 +198,7 @@ func (p Path) String() string {
 			s += "A3" + fmt.Sprint([]Fix32(p[i+1:i+7]))
 			i += 8
 		default:
-			panic("freetype/raster: bad path")
+			panic("raster: bad path")
 		}
 	}
 	return s
@@ -314,7 +314,7 @@ func addPathReversed(p Adder, q Path) {
 			i -= 8
 			p.Add3(Point{q[i+4], q[i+5]}, Point{q[i+2], q[i+3]}, Point{q[i-2], q[i-1]})
 		default:
-			panic("freetype/raster: bad path")
+			panic("raster: bad path")
 		}
 	}
 }
