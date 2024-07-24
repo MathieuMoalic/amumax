@@ -17,6 +17,10 @@ import (
 	"github.com/MathieuMoalic/amumax/util"
 )
 
+func init() {
+	AddParameter("B_ext", B_ext, "External magnetic field (T)")
+}
+
 // input parameter, settable by user
 type regionwise struct {
 	lut
@@ -44,15 +48,25 @@ func AddParameter(name string, value interface{}, doc string) {
 			v.GetRegionToString,
 			doc,
 		}
-	}
-	if v, ok := value.(*RegionwiseVector); ok {
+	} else if v, ok := value.(*RegionwiseVector); ok {
 		Params[name] = Field{
 			name,
 			v.GetRegionToString,
 			doc,
 		}
-	}
-	if v, ok := value.(*inputValue); ok {
+	} else if v, ok := value.(*inputValue); ok {
+		Params[name] = Field{
+			name,
+			v.GetRegionToString,
+			doc,
+		}
+	} else if v, ok := value.(*Excitation); ok {
+		Params[name] = Field{
+			name,
+			v.GetRegionToString,
+			doc,
+		}
+	} else if v, ok := value.(*ScalarExcitation); ok {
 		Params[name] = Field{
 			name,
 			v.GetRegionToString,

@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/MathieuMoalic/amumax/cuda"
@@ -23,6 +24,9 @@ func NewScalarExcitation(name, unit, desc string) *ScalarExcitation {
 	e.perRegion.init("_"+name+"_perRegion", unit, desc, nil) // name starts with underscore: unexported
 	DeclLValue(name, e, cat(desc, unit))
 	return e
+}
+func (e *ScalarExcitation) GetRegionToString(region int) string {
+	return fmt.Sprintf("%g", e.perRegion.GetRegion(region))
 }
 
 func (p *ScalarExcitation) MSlice() cuda.MSlice {
