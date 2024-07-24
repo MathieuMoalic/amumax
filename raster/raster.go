@@ -311,7 +311,7 @@ func (r *Rasterizer) Add2(b, c Point) {
 	// dev is 32-bit, and nsplit++ every time we shift off 2 bits, so maxNsplit is 16.
 	const maxNsplit = 16
 	if nsplit > maxNsplit {
-		panic("freetype/raster: Add2 nsplit too large: " + strconv.Itoa(nsplit))
+		panic("raster: Add2 nsplit too large: " + strconv.Itoa(nsplit))
 	}
 	// Recursively decompose the curve nSplit levels deep.
 	var (
@@ -368,7 +368,7 @@ func (r *Rasterizer) Add3(b, c, d Point) {
 	// devN is 32-bit, and nsplit++ every time we shift off 2 bits, so maxNsplit is 16.
 	const maxNsplit = 16
 	if nsplit > maxNsplit {
-		panic("freetype/raster: Add3 nsplit too large: " + strconv.Itoa(nsplit))
+		panic("raster: Add3 nsplit too large: " + strconv.Itoa(nsplit))
 	}
 	// Recursively decompose the curve nSplit levels deep.
 	var (
@@ -437,7 +437,7 @@ func (r *Rasterizer) AddPath(p Path) {
 			r.Add3(Point{p[i+1], p[i+2]}, Point{p[i+3], p[i+4]}, Point{p[i+5], p[i+6]})
 			i += 8
 		default:
-			panic("freetype/raster: bad path")
+			panic("raster: bad path")
 		}
 	}
 }

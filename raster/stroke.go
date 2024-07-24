@@ -392,7 +392,7 @@ func (k *stroker) Add2(b, c Point) {
 
 // Add3 adds a cubic segment to the stroker.
 func (k *stroker) Add3(b, c, d Point) {
-	panic("freetype/raster: stroke unimplemented for cubic segments")
+	panic("raster: stroke unimplemented for cubic segments")
 }
 
 // stroke adds the stroked Path q to p, where q consists of exactly one curve.
@@ -415,7 +415,7 @@ func (k *stroker) stroke(q Path) {
 			k.Add3(Point{q[i+1], q[i+2]}, Point{q[i+3], q[i+4]}, Point{q[i+5], q[i+6]})
 			i += 8
 		default:
-			panic("freetype/raster: bad path")
+			panic("raster: bad path")
 		}
 	}
 	if len(k.r) == 0 {
@@ -443,7 +443,7 @@ func Stroke(p Adder, q Path, width Fix32, cr Capper, jr Joiner) {
 		jr = RoundJoiner
 	}
 	if q[0] != 0 {
-		panic("freetype/raster: bad path")
+		panic("raster: bad path")
 	}
 	s := stroker{p: p, u: width / 2, cr: cr, jr: jr}
 	i := 0
@@ -459,7 +459,7 @@ func Stroke(p Adder, q Path, width Fix32, cr Capper, jr Joiner) {
 		case 3:
 			j += 8
 		default:
-			panic("freetype/raster: bad path")
+			panic("raster: bad path")
 		}
 	}
 	s.stroke(q[i:])
