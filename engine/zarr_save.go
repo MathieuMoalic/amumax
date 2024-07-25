@@ -98,6 +98,10 @@ func zVerifyAndSave(q Quantity, name string, rchunks RequestedChunking, period f
 			}
 		}
 	} else {
+		if httpfs.Exists(OD() + name) {
+			err := httpfs.Remove(OD() + name)
+			util.FatalErr(err)
+		}
 		err := httpfs.Mkdir(OD() + name)
 		util.FatalErr(err)
 		var b []float64
