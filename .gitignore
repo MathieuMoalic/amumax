@@ -39,3 +39,4 @@ cuda2go.exe
 api/static
 .direnv
 .envrc
+.helix
