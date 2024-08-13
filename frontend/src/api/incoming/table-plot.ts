@@ -5,11 +5,11 @@ export interface TablePlot {
     columns: string[];
     xColumn: string;
     yColumn: string;
-    data: TablePlotData[];
-}
-export interface TablePlotData {
-    x: number;
-    y: number;
+    xColumnUnit: string;
+    yColumnUnit: string;
+    data: number[][];
+    min: number;
+    max: number;
 }
 
 export const tablePlotState = writable<TablePlot>({
@@ -17,5 +17,9 @@ export const tablePlotState = writable<TablePlot>({
     columns: [],
     xColumn: 't',
     yColumn: 'mx',
-    data: []
+    xColumnUnit: 's',
+    yColumnUnit: '',
+    data: [],
+    min: 0,
+    max: 0
 });

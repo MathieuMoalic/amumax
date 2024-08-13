@@ -7,34 +7,49 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type TablePlotData struct {
-	X float64 `msgpack:"x"`
-	Y float64 `msgpack:"y"`
-}
 type TablePlot struct {
-	AutoSaveInterval float64         `msgpack:"autoSaveInterval"`
-	Columns          []string        `msgpack:"columns"`
-	XColumn          string          `msgpack:"xColumn"`
-	YColumn          string          `msgpack:"yColumn"`
-	Data             []TablePlotData `msgpack:"data"`
+	AutoSaveInterval float64     `msgpack:"autoSaveInterval"`
+	Columns          []string    `msgpack:"columns"`
+	XColumn          string      `msgpack:"xColumn"`
+	YColumn          string      `msgpack:"yColumn"`
+	XColumnUnit      string      `msgpack:"xColumnUnit"`
+	YColumnUnit      string      `msgpack:"yColumnUnit"`
+	Data             [][]float64 `msgpack:"data"`
+	Min              float64     `msgpack:"min"`
+	Max              float64     `msgpack:"max"`
 }
 
-func newTablePlot() *TablePlot {
-	tablePlotData := make([]TablePlotData, len(engine.Table.Data[engine.Tableplot.X]))
-	for i := range tablePlotData {
-		tablePlotData[i] = TablePlotData{
-			X: engine.Table.Data[engine.Tableplot.X][i],
-			Y: engine.Table.Data[engine.Tableplot.Y][i],
+func GetTablePlotData() ([][]float64, float64, float64) {
+	xData := engine.Table.GetXData()
+	yData := engine.Table.GetYData()
+	// xUnit := engine.Table.
+	data := make([][]float64, len(xData)) // [ [x1, y1], [x2, y2], ... ]
+	min := yData[0]
+	max := yData[0]
+	for i := 0; i < len(xData); i++ {
+		data[i] = []float64{xData[i], yData[i]}
+		if min > yData[i] {
+			min = yData[i]
+		}
+		if max < yData[i] {
+			max = yData[i]
 		}
 	}
-	data := TablePlot{
+	return data, min, max
+}
+func newTablePlot() *TablePlot {
+	data, min, max := GetTablePlotData()
+	return &TablePlot{
 		AutoSaveInterval: engine.Table.AutoSavePeriod,
 		Columns:          engine.Table.GetTableNames(),
-		XColumn:          engine.Tableplot.X,
-		YColumn:          engine.Tableplot.Y,
-		Data:             tablePlotData,
+		XColumn:          engine.Table.XColumn,
+		YColumn:          engine.Table.YColumn,
+		XColumnUnit:      engine.Table.GetUnit(engine.Table.XColumn),
+		YColumnUnit:      engine.Table.GetUnit(engine.Table.YColumn),
+		Data:             data,
+		Min:              min,
+		Max:              max,
 	}
-	return &data
 }
 
 func postTablePlotAutoSaveInterval(c echo.Context) error {
@@ -58,7 +73,10 @@ func postTablePlotXColumn(c echo.Context) error {
 	if err := c.Bind(req); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	engine.Tableplot.X = req.XColumn
+	if !engine.Table.ColumnExists(req.XColumn) {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Table column not found"})
+	}
+	engine.Table.XColumn = req.XColumn
 	broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
@@ -71,7 +89,10 @@ func postTablePlotYColumn(c echo.Context) error {
 	if err := c.Bind(req); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	engine.Tableplot.Y = req.YColumn
+	if !engine.Table.ColumnExists(req.YColumn) {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Table column not found"})
+	}
+	engine.Table.YColumn = req.YColumn
 	broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }

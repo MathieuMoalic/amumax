@@ -1,5 +1,4 @@
 import msgpack from 'msgpack-lite';
-import { plotChart } from "../lib/table-plot/tablePlot";
 
 import { type Preview, previewState } from "./incoming/preview";
 import { type Header, headerState } from "./incoming/header";
@@ -11,6 +10,7 @@ import { type TablePlot, tablePlotState } from "./incoming/table-plot";
 import { get } from 'svelte/store';
 import { preview3D } from '$lib/preview/preview3D';
 import { preview2D } from '$lib/preview/preview2D';
+import { plotTable } from '$lib/table-plot/table-plot';
 
 
 export function initializeWebSocket() {
@@ -63,14 +63,20 @@ export function initializeWebSocket() {
 export function parseMsgpack(data: ArrayBuffer) {
     const msg = msgpack.decode(new Uint8Array(data));
     consoleState.set(msg.console as Console);
+
     headerState.set(msg.header as Header);
+
     meshState.set(msg.mesh as Mesh);
+
     parametersState.set(msg.parameters as Parameters);
     sortFieldsByName();
-    previewState.set(msg.preview as Preview);
+
     solverState.set(msg.solver as Solver);
+
     tablePlotState.set(msg.tablePlot as TablePlot);
-    plotChart();
+    plotTable();
+
+    previewState.set(msg.preview as Preview);
     if (get(previewState).type === '3D') {
         preview3D();
     } else {
