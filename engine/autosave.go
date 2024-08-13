@@ -32,9 +32,6 @@ func SaveIfNeeded() {
 	if Table.NeedSave() {
 		TableSave()
 	}
-	if Tableplot.NeedSave() {
-		Tableplot.update()
-	}
 }
 
 // Register quant to be auto-saved every period.

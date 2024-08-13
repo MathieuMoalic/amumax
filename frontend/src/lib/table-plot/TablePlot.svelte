@@ -1,15 +1,10 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { tablePlotState } from '$api/incoming/table-plot';
 	import { postAutoSaveInterval, postXColumn, postYColumn } from '$api/outgoing/table-plot';
-	import { Chart, registerables } from 'chart.js';
-	import zoomPlugin from 'chartjs-plugin-zoom';
-	import { plotChart, createChart, resetZoom } from './tablePlot';
-
-	Chart.register(...registerables, zoomPlugin);
-
+	import { onMount } from 'svelte';
+	import { resizeECharts } from './table-plot';
 	onMount(() => {
-		createChart();
+		resizeECharts();
 	});
 </script>
 
@@ -36,21 +31,15 @@
 			{/each}
 		</select>
 	</b>
-	<button on:click={resetZoom}>Reset Zoom</button>
-	<button on:click={plotChart}>Redraw</button>
-	<div class="plot-container">
-		<canvas id="plot"></canvas>
-	</div>
+	<div id="table-plot"></div>
 </section>
 
 <style>
 	section {
 		grid-area: tableplot;
 	}
-	.plot-container {
-		position: relative;
-		margin: auto;
-		height: 70%;
-		padding: 20px;
+	#table-plot {
+		width: 100%;
+		height: 500px;
 	}
 </style>
