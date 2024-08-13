@@ -16,12 +16,12 @@ export function preview2D() {
     }
 }
 
-let chart: echarts.ECharts;
+let chartInstance: echarts.ECharts;
 
 function update() {
     let data = get(previewState).scalarField;
     let ps = get(previewState);
-    chart.setOption({
+    chartInstance.setOption({
         tooltip: {
             formatter: function (params: any) {
                 if (params.value === undefined) {
@@ -43,7 +43,7 @@ function update() {
 export function init() {
     var chartDom = document.getElementById('container')!;
     // https://apache.github.io/echarts-handbook/en/best-practices/canvas-vs-svg
-    chart = echarts.init(chartDom, undefined, { renderer: 'svg' });
+    chartInstance = echarts.init(chartDom, undefined, { renderer: 'svg' });
     let ps = get(previewState);
     let dims = ps.dimensions;
     let mesh = get(meshState);
@@ -66,7 +66,7 @@ export function init() {
     let data = get(previewState).scalarField;
 
     // @ts-ignore
-    chart.setOption({
+    chartInstance.setOption({
         tooltip: {
             position: "top",
             formatter: function (params: any) {
@@ -243,6 +243,6 @@ export function disposePreview2D() {
 
 export function resizeECharts() {
     window.addEventListener('resize', function () {
-        chart.resize();
+        chartInstance.resize();
     });
 }

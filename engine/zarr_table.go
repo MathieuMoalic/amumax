@@ -18,7 +18,14 @@ func init() {
 	DeclFunc("TableAddVar", TableAddVar, "Save the data table periodically.")
 	DeclFunc("TableAddAs", TableAddAs, "Save the data table periodically.")
 	DeclFunc("TableAutoSave", TableAutoSave, "Save the data table periodically.")
-	Table = TableStruct{Data: make(map[string][]float64), Step: -1, AutoSavePeriod: 0.0, FlushInterval: 5 * time.Second}
+	Table = TableStruct{
+		Data:           make(map[string][]float64),
+		Step:           -1,
+		AutoSavePeriod: 0.0,
+		FlushInterval:  5 * time.Second,
+		XColumn:        "t",
+		YColumn:        "mx",
+	}
 }
 
 var Table TableStruct
@@ -32,14 +39,42 @@ type TableStruct struct {
 	AutoSaveStart  float64              `json:"autoSaveStart"`
 	Step           int                  `json:"step"`
 	FlushInterval  time.Duration        `json:"flushInterval"`
+	XColumn        string               `json:"xColumn"`
+	YColumn        string               `json:"yColumn"`
 }
 
 type Column struct {
 	Name   string
+	Unit   string
 	buffer []byte
 	io     httpfs.WriteCloseFlusher
 }
 
+func (ts *TableStruct) GetXData() []float64 {
+	return ts.Data[ts.XColumn]
+}
+
+func (ts *TableStruct) GetYData() []float64 {
+	return ts.Data[ts.YColumn]
+}
+
+func (ts *TableStruct) GetUnit(name string) string {
+	for _, i := range ts.columns {
+		if i.Name == name {
+			return i.Unit
+		}
+	}
+	return ""
+}
+
+func (ts *TableStruct) ColumnExists(name string) bool {
+	for _, i := range ts.columns {
+		if i.Name == name {
+			return true
+		}
+	}
+	return false
+}
 func (ts *TableStruct) WriteToBuffer() {
 	buf := []float64{}
 	// always save the current time
@@ -97,6 +132,14 @@ func (ts *TableStruct) GetTableNames() []string {
 	return names
 }
 
+func (ts *TableStruct) AddColumn(name, unit string) {
+	err := httpfs.Mkdir(OD() + "table/" + name)
+	util.FatalErr(err)
+	f, err := httpfs.Create(OD() + "table/" + name + "/0")
+	util.FatalErr(err)
+	ts.columns = append(ts.columns, Column{Name: name, Unit: unit, buffer: []byte{}, io: f})
+}
+
 func TableInit() {
 	err := httpfs.Remove(OD() + "table")
 	util.FatalErr(err)
@@ -105,7 +148,7 @@ func TableInit() {
 	util.FatalErr(err)
 	f, err := httpfs.Create(OD() + "table/t/0")
 	util.FatalErr(err)
-	Table.columns = append(Table.columns, Column{"t", []byte{}, f})
+	Table.columns = append(Table.columns, Column{"t", "s", []byte{}, f})
 	TableAdd(&M)
 	go TablesAutoFlush()
 
@@ -124,14 +167,6 @@ func TableSave() {
 	}
 	Table.Step += 1
 	Table.WriteToBuffer()
-}
-
-func CreateTable(name string) Column {
-	err := httpfs.Mkdir(OD() + "table/" + name)
-	util.FatalErr(err)
-	f, err := httpfs.Create(OD() + "table/" + name + "/0")
-	util.FatalErr(err)
-	return Column{Name: name, buffer: []byte{}, io: f}
 }
 
 func TableAdd(q Quantity) {
@@ -153,10 +188,10 @@ func TableAddAs(q Quantity, name string) {
 	}
 	Table.quantities = append(Table.quantities, q)
 	if q.NComp() == 1 {
-		Table.columns = append(Table.columns, CreateTable(name))
+		Table.AddColumn(name, UnitOf(q))
 	} else {
 		for comp := 0; comp < q.NComp(); comp++ {
-			Table.columns = append(Table.columns, CreateTable(name+suffixes[comp]))
+			Table.AddColumn(name+suffixes[comp], UnitOf(q))
 		}
 	}
 }
