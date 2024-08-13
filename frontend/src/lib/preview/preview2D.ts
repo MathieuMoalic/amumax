@@ -2,14 +2,14 @@ import { previewState } from '$api/incoming/preview';
 import * as echarts from 'echarts';
 import { get } from 'svelte/store';
 import { meshState } from '$api/incoming/mesh';
+import { disposePreview3D } from './preview3D';
 
-export function plotScalarField(newDimensions: boolean) {
-    if (chart === undefined) {
-        init();
-    } else if (chart.isDisposed()) {
-        init();
-    } else if (newDimensions) {
-        disposeECharts();
+export function preview2D() {
+    const container = document.getElementById('container')!;
+
+    if (get(previewState).refresh || !container) {
+        disposePreview2D();
+        disposePreview3D();
         init();
     } else {
         update();
@@ -17,29 +17,9 @@ export function plotScalarField(newDimensions: boolean) {
 }
 
 let chart: echarts.ECharts;
-let previousDimension: number[];
-
-function getScalarField(): number[][] {
-    // Convert Uint8Array to ArrayBuffer
-    const buffer = get(previewState).buffer.buffer;
-    if (buffer.byteLength % 4 !== 0) {
-        throw new Error("Invalid buffer length. Buffer length must be a multiple of 4 bytes.");
-    }
-    const float32Array = new Float32Array(buffer);
-    let dims = get(previewState).dimensions;
-    const data: number[][] = [];
-    for (let i = 0; i < dims[0]; i++) {
-        for (let j = 0; j < dims[1]; j++) {
-            let v = float32Array[j * dims[0] + i];
-            if (v === 0) { v = NaN; }
-            data.push([i, j, v]);
-        }
-    }
-    return data;
-}
 
 function update() {
-    let data = getScalarField();
+    let data = get(previewState).scalarField;
     let ps = get(previewState);
     chart.setOption({
         tooltip: {
@@ -60,13 +40,12 @@ function update() {
     });
 }
 
-function init() {
+export function init() {
     var chartDom = document.getElementById('container')!;
     // https://apache.github.io/echarts-handbook/en/best-practices/canvas-vs-svg
     chart = echarts.init(chartDom, undefined, { renderer: 'svg' });
     let ps = get(previewState);
     let dims = ps.dimensions;
-    previousDimension = dims;
     let mesh = get(meshState);
     let xData = Array.from({ length: dims[0] }, (_, i) => i * mesh.dx * 1e9);
     let yData = Array.from({ length: dims[1] }, (_, i) => i * mesh.dy * 1e9);
@@ -84,7 +63,7 @@ function init() {
         gridHeight = '80%';
     }
 
-    let data = getScalarField();
+    let data = get(previewState).scalarField;
 
     // @ts-ignore
     chart.setOption({
@@ -101,7 +80,6 @@ function init() {
             textStyle: {
                 color: '#fff'
             }
-
         },
         axisPointer: {
             show: true,
@@ -210,7 +188,7 @@ function init() {
                         borderWidth: 1
                     },
                 },
-                selectedMode: true,
+                selectedMode: false,
                 progressive: 0,
                 animation: true
             }
@@ -253,7 +231,7 @@ function init() {
     });
 }
 
-export function disposeECharts() {
+export function disposePreview2D() {
     const container = document.getElementById('container')!;
     if (container) {
         const echartsInstance = echarts.getInstanceByDom(container);

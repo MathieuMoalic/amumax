@@ -4,9 +4,42 @@ import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUti
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 import { get } from 'svelte/store';
 import { writable } from 'svelte/store';
+import { disposePreview2D } from './preview2D';
+
+
+export function preview3D() {
+    if (get(previewState).refresh) {
+        disposePreview2D();
+        disposePreview3D();
+        init();
+        update();
+    } else {
+        update();
+    }
+}
+
+export function disposePreview3D() {
+    const container = document.getElementById('container');
+    const displayInstance = get(threeDPreview);
+    if (displayInstance && displayInstance.renderer) {
+        displayInstance.renderer.dispose();
+        displayInstance.scene.children.forEach(child => {
+            if (child instanceof THREE.Mesh) {
+                child.geometry.dispose();
+                if (child.material instanceof THREE.Material) {
+                    child.material.dispose();
+                }
+            }
+        });
+        threeDPreview.set(null); // Reset the display store
+        if (container) {
+            container.innerHTML = '';
+        }
+    }
+}
 
 type Dimensions = [number, number, number];
-interface Display {
+interface ThreeDPreview {
     mesh: THREE.InstancedMesh;
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
@@ -16,21 +49,20 @@ interface Display {
     parsingTime: number;
     dimensions: Dimensions;
 }
-export const display = writable<Display | null>(null);
+export const threeDPreview = writable<ThreeDPreview | null>(null);
 
 export function plotVectorField(newDimensions: boolean) {
-    let disp = get(display);
+    let disp = get(threeDPreview);
     if (disp === null || !disp.isInitialized) {
         init();
     } else if (newDimensions) {
-        disposeThreeJS();
+        disposePreview3D();
         init();
     }
     update();
 }
 
 function createMesh(): THREE.InstancedMesh {
-    let dims = get(previewState).dimensions;
     const shaftGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.55, 8);
     shaftGeometry.translate(0, -0.06, 0); // Center the shaft
     const headGeometry = new THREE.ConeGeometry(0.2, 0.4, 8);
@@ -39,8 +71,7 @@ function createMesh(): THREE.InstancedMesh {
 
     const arrowMaterial = new THREE.MeshBasicMaterial({ vertexColors: false });
 
-    const totalVectors = dims[0] * dims[1] * dims[2];
-    const mesh = new THREE.InstancedMesh(arrowGeometry, arrowMaterial, totalVectors);
+    const mesh = new THREE.InstancedMesh(arrowGeometry, arrowMaterial, get(previewState).vectorFieldValues.length);
     return mesh;
 }
 
@@ -93,41 +124,36 @@ function createScene() {
 }
 
 function addArrowsToMesh(mesh: THREE.InstancedMesh, scene: THREE.Scene) {
-    const vectorField = getVectorField();
-    const dummy = new THREE.Object3D();
-    let dims = get(previewState).dimensions;
+    const vectorFieldValues = get(previewState).vectorFieldValues;
+    const vectorFieldPositions = get(previewState).vectorFieldPositions;
 
-    // if (!mesh.instanceColor) {
-    //     mesh.instanceColor = new THREE.InstancedBufferAttribute(colors, 3);
-    // }
-    const totalVectors = dims[0] * dims[1] * dims[2];
-    let instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(totalVectors * 3), 3)
+    const dummy = new THREE.Object3D();
+
+    // Times 3 because each color has 3 components (RGB)
+    const instanceColorLength = vectorFieldPositions.length * 3;
+    let instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(instanceColorLength), 3)
     const colors = instanceColor.array;
     const color = new THREE.Color();
 
 
-    vectorField.forEach((vector, i) => {
-        if (vector.x === 0 && vector.y === 0 && vector.z === 0) {
-            return;
-        }
-        const posx = i % dims[0];
-        const posy = Math.floor(i / dims[0]) % dims[1];
-        const posz = Math.floor(i / (dims[0] * dims[1]));
-        dummy.position.set(posx, posy, posz);
+    for (let i = 0; i < vectorFieldValues.length; i++) {
+        const val = vectorFieldValues[i];
+        const pos = vectorFieldPositions[i];
+        dummy.position.set(pos.x, pos.y, pos.z);
 
-        let h = Math.atan2(vector.y, vector.x) / Math.PI / 2;
-        let s = Math.sqrt(vector.x ** 2 + vector.y ** 2 + vector.z ** 2);
-        let l = (vector.z + 1) / 2;
+        let h = Math.atan2(val.y, val.x) / Math.PI / 2;
+        let s = Math.sqrt(val.x ** 2 + val.y ** 2 + val.z ** 2);
+        let l = (val.z + 1) / 2;
         color.setHSL(h, s, l); // Map z to HSL for a smooth gradient
         colors[i * 3 + 0] = color.r;
         colors[i * 3 + 1] = color.g;
         colors[i * 3 + 2] = color.b;
 
         dummy.updateMatrix();
-        mesh.matrix.makeScale(1, 1, 1)
         mesh.setMatrixAt(i, dummy.matrix);
         // TODO: REMOVE DUMMY
-    });
+    };
+    mesh.matrix.makeScale(1, 1, 1)
 
     mesh.instanceMatrix.needsUpdate = true;
     instanceColor.needsUpdate = true; // Notify Three.js that colors need to be updated
@@ -143,7 +169,7 @@ function init() {
     addArrowsToMesh(mesh, scene);
     scene.add(mesh);
     update();
-    display.set({
+    threeDPreview.set({
         mesh,
         scene,
         camera,
@@ -162,43 +188,14 @@ function init() {
     animate();
 }
 
-function getVectorField(): Array<{ x: number; y: number; z: number }> {
-    // Convert Uint8Array to ArrayBuffer
-    const buffer = get(previewState).buffer.buffer;
-
-    // Ensure the buffer is a multiple of 4 bytes since each float32 is 4 bytes.
-    if (buffer.byteLength % 4 !== 0) {
-        throw new Error("Invalid buffer length. Buffer length must be a multiple of 4 bytes.");
-    }
-
-    // Create Float32Array from the buffer
-    const float32Array = new Float32Array(buffer);
-
-    // Ensure the array length is a multiple of 3 (since each vector has 3 components)
-    if (float32Array.length % 3 !== 0) {
-        throw new Error("Invalid Float32Array length. Length must be a multiple of 3.");
-    }
-
-    const vectors: Array<{ x: number; y: number; z: number }> = [];
-
-    for (let i = 0; i < float32Array.length; i += 3) {
-        vectors.push({
-            x: float32Array[i],
-            y: float32Array[i + 1],
-            z: float32Array[i + 2]
-        });
-    }
-
-    return vectors;
-}
 
 function update() {
-    let d = get(display);
+    let d = get(threeDPreview);
     if (d) {
         const dummy = new THREE.Object3D();
         const defaultVector = new THREE.Vector3(0, 1, 0); // Default orientation of the arrow
         const mesh = d.mesh;
-        let vectorField = getVectorField();
+        let vectorField = get(previewState).vectorFieldValues;
 
 
         let instanceColor = mesh.instanceColor;
@@ -234,7 +231,7 @@ function update() {
         mesh.instanceMatrix.needsUpdate = true;
         instanceColor.needsUpdate = true; // Notify Three.js that colors need to be updated
 
-        display.update(currentDisplay => {
+        threeDPreview.update(currentDisplay => {
             if (currentDisplay) {
                 return { ...currentDisplay, mesh: mesh };
             }
@@ -249,7 +246,7 @@ export function resetCamera() {
     let posy = dims[1] / 2;
     let posz = Math.max(dims[0], dims[1]) * 1.5;
 
-    let displayInstance = get(display);
+    let displayInstance = get(threeDPreview);
     if (displayInstance) {
         let camera = displayInstance.camera;
         let controls = displayInstance.controls;
@@ -267,22 +264,3 @@ export function resetCamera() {
     }
 }
 
-export function disposeThreeJS() {
-    const container = document.getElementById('container');
-    const displayInstance = get(display);
-    if (displayInstance && displayInstance.renderer) {
-        displayInstance.renderer.dispose();
-        displayInstance.scene.children.forEach(child => {
-            if (child instanceof THREE.Mesh) {
-                child.geometry.dispose();
-                if (child.material instanceof THREE.Material) {
-                    child.material.dispose();
-                }
-            }
-        });
-        display.set(null); // Reset the display store
-        if (container) {
-            container.innerHTML = '';
-        }
-    }
-}
