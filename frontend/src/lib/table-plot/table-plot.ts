@@ -34,6 +34,9 @@ function update() {
 
 export function init() {
     var chartDom = document.getElementById('table-plot')!;
+    if (chartDom === null) {
+        return;
+    }
     // https://apache.github.io/echarts-handbook/en/best-practices/canvas-vs-svg
     chartInstance = echarts.init(chartDom, undefined, { renderer: 'svg' });
     let t = get(tablePlotState);

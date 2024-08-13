@@ -24,6 +24,9 @@ func GetTablePlotData() ([][]float64, float64, float64) {
 	yData := engine.Table.GetYData()
 	// xUnit := engine.Table.
 	data := make([][]float64, len(xData)) // [ [x1, y1], [x2, y2], ... ]
+	if len(xData) == 0 {
+		return data, 0, 0
+	}
 	min := yData[0]
 	max := yData[0]
 	for i := 0; i < len(xData); i++ {
