@@ -33,12 +33,19 @@ type connectionManager struct {
 }
 
 func (cm *connectionManager) add(ws *websocket.Conn) {
+	if engine.VERSION == "dev" {
+		util.LogWarn("Websocket connection added")
+	}
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	cm.conns[ws] = struct{}{}
+	preview.Refresh = true
 }
 
 func (cm *connectionManager) remove(ws *websocket.Conn) {
+	if engine.VERSION == "dev" {
+		util.LogWarn("Websocket connection removed")
+	}
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	delete(cm.conns, ws)
@@ -58,9 +65,6 @@ func (cm *connectionManager) broadcast(msg []byte) {
 }
 
 func websocketEntrypoint(c echo.Context) error {
-	if engine.VERSION == "dev" {
-		util.Log("Websocket connection established")
-	}
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	if err != nil {
 		return err
@@ -78,9 +82,6 @@ func websocketEntrypoint(c echo.Context) error {
 		for {
 			_, _, err := ws.ReadMessage()
 			if err != nil {
-				if engine.VERSION == "dev" {
-					util.Log("WebSocket read error:", err)
-				}
 				close(done)
 				return
 			}
@@ -99,7 +100,7 @@ func websocketEntrypoint(c echo.Context) error {
 }
 
 func broadcastEngineState() {
-	engine.InjectAndWait(PreparePreviewBuffer)
+	preview.Update()
 
 	msg, err := msgpack.Marshal(NewEngineState())
 	if err != nil {
@@ -108,6 +109,8 @@ func broadcastEngineState() {
 	}
 
 	connections.broadcast(msg)
+	// Reset the refresh flag
+	preview.Refresh = false
 }
 
 func startBroadcastLoop() {
