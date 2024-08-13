@@ -8,7 +8,9 @@ import { type Console, consoleState } from "./incoming/console";
 import { type Mesh, meshState } from "./incoming/mesh";
 import { type Parameters, parametersState, sortFieldsByName } from "./incoming/parameters";
 import { type TablePlot, tablePlotState } from "./incoming/table-plot";
-import { plotPreview } from '$lib/preview/preview-logic';
+import { get } from 'svelte/store';
+import { preview3D } from '$lib/preview/preview3D';
+import { preview2D } from '$lib/preview/preview2D';
 
 
 export function initializeWebSocket() {
@@ -16,6 +18,7 @@ export function initializeWebSocket() {
     let ws: WebSocket | null = null;
 
     function connect() {
+        // ws = new WebSocket(`http://localhost:35367/ws`);
         ws = new WebSocket(`/ws`);
         ws.binaryType = 'arraybuffer';
 
@@ -24,7 +27,7 @@ export function initializeWebSocket() {
         };
 
         ws.onmessage = function (event) {
-            console.log('WebSocket message received');
+            // console.log('WebSocket message received');
             parseMsgpack(event.data);
             ws?.send('ok');
         };
@@ -68,5 +71,9 @@ export function parseMsgpack(data: ArrayBuffer) {
     solverState.set(msg.solver as Solver);
     tablePlotState.set(msg.tablePlot as TablePlot);
     plotChart();
-    plotPreview();
+    if (get(previewState).type === '3D') {
+        preview3D();
+    } else {
+        preview2D();
+    }
 }
