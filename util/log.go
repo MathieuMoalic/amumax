@@ -11,6 +11,8 @@ import (
 	"github.com/fatih/color"
 )
 
+var VERSION = "dev"
+
 func Fatal(msg ...interface{}) {
 	color.Red(fmt.Sprint(msg...))
 	os.Exit(1)
@@ -45,6 +47,12 @@ func LogErr(msg ...interface{}) {
 
 func Log(msg ...interface{}) {
 	color.Green("// " + fmt.Sprint(msg...))
+}
+
+func LogDev(msg ...interface{}) {
+	if VERSION == "dev" {
+		color.Blue(fmt.Sprint(msg...))
+	}
 }
 
 func LogWarn(msg ...interface{}) {
