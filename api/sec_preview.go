@@ -71,6 +71,7 @@ func (p *Preview) UpdateQuantityBuffer() {
 	p.ScaleDimensions()
 
 	GPU_in := engine.ValueOf(p.GetQuantity())
+
 	defer cuda.Recycle(GPU_in)
 	CPU_out := data.NewSlice(nComp, p.Dimensions)
 	GPU_out := cuda.NewSlice(1, p.Dimensions)
@@ -80,19 +81,40 @@ func (p *Preview) UpdateQuantityBuffer() {
 		for c := 0; c < nComp; c++ {
 			cuda.Resize(GPU_out, GPU_in.Comp(c), p.Layer)
 			data.Copy(CPU_out.Comp(c), GPU_out)
+			// data.Copy(CPU_out.Comp(c), GPU_in.Comp(c))
 		}
 		p.normalizeVectors(CPU_out)
 		p.UpdateVectorField(CPU_out.Vectors())
 	} else {
-		if p.GetQuantity().NComp() == 3 {
+		if p.GetQuantity().NComp() >= 1 {
 			cuda.Resize(GPU_out, GPU_in.Comp(p.GetComponent()), p.Layer)
 			data.Copy(CPU_out.Comp(0), GPU_out)
+			// data.Copy(CPU_out.Comp(0), GPU_in.Comp(p.GetComponent()))
 		} else {
 			cuda.Resize(GPU_out, GPU_in.Comp(0), p.Layer)
 			data.Copy(CPU_out.Comp(0), GPU_out)
+			// data.Copy(CPU_out.Comp(0), GPU_in.Comp(0))
 		}
 		p.UpdateScalarField(CPU_out.Scalars())
 	}
+}
+
+func (p *Preview) ScaleDimensions() {
+	originalSize := engine.MeshOf(p.GetQuantity()).Size()
+	width, height := float32(originalSize[0]), float32(originalSize[1])
+	points := width * height
+	if points <= float32(p.MaxPoints) {
+		p.Dimensions = [3]int{originalSize[0], originalSize[1], 1}
+		return
+	}
+
+	// Calculate the scaling factor
+	for points >= float32(p.MaxPoints) {
+		width = width / 2
+		height = height / 2
+		points = width * height
+	}
+	p.Dimensions = [3]int{int(width), int(height), 1}
 }
 
 func (p *Preview) normalizeVectors(f *data.Slice) {
@@ -162,8 +184,8 @@ func (p *Preview) UpdateVectorField(vectorField [3][][][]float32) {
 }
 
 func (p *Preview) UpdateScalarField(scalarField [][][]float32) {
-	yLen := len(scalarField[0][0])
-	xLen := len(scalarField[0])
+	xLen := len(scalarField[0][0])
+	yLen := len(scalarField[0])
 	min, max := scalarField[0][0][0], scalarField[0][0][0]
 	var valArray [][3]float32
 	for posx := 0; posx < xLen; posx++ {
@@ -186,21 +208,6 @@ func (p *Preview) UpdateScalarField(scalarField [][][]float32) {
 	p.ScalarField = valArray
 	p.VectorFieldValues = nil
 	p.VectorFieldPositions = nil
-}
-
-// ScaleDimensions scales down the image size until the number of points are < MaxVectors
-func (p *Preview) ScaleDimensions() {
-	originalSize := engine.MeshOf(p.GetQuantity()).Size()
-	width, height := float32(originalSize[0]), float32(originalSize[1])
-	points := width * height
-
-	// Calculate the scaling factor
-	for points >= float32(p.MaxPoints) {
-		width = width / 1.1
-		height = height / 1.1
-		points = width * height
-	}
-	p.Dimensions = [3]int{int(width), int(height), 1}
 }
 
 func compStringToIndex(comp string) int {
