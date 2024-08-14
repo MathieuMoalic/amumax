@@ -33,9 +33,7 @@ type connectionManager struct {
 }
 
 func (cm *connectionManager) add(ws *websocket.Conn) {
-	if engine.VERSION == "dev" {
-		util.LogWarn("Websocket connection added")
-	}
+	util.LogDev("Websocket connection added")
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	cm.conns[ws] = struct{}{}
@@ -43,18 +41,14 @@ func (cm *connectionManager) add(ws *websocket.Conn) {
 }
 
 func (cm *connectionManager) remove(ws *websocket.Conn) {
-	if engine.VERSION == "dev" {
-		util.LogWarn("Websocket connection removed")
-	}
+	util.LogDev("Websocket connection removed")
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	delete(cm.conns, ws)
 }
 
 func (cm *connectionManager) broadcast(msg []byte) {
-	if engine.VERSION == "dev" {
-		util.LogWarn("Broadcasting")
-	}
+	util.LogDev("Broadcasting to ", len(cm.conns), " connection(s)")
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	for ws := range cm.conns {
@@ -93,9 +87,7 @@ func websocketEntrypoint(c echo.Context) error {
 
 	select {
 	case <-done:
-		if engine.VERSION == "dev" {
-			util.Log("Connection closed by client")
-		}
+		util.LogDev("Connection closed by client")
 		return nil
 	case <-broadcastStop:
 		return nil
@@ -103,8 +95,6 @@ func websocketEntrypoint(c echo.Context) error {
 }
 
 func broadcastEngineState() {
-	preview.Update()
-
 	msg, err := msgpack.Marshal(NewEngineState())
 	if err != nil {
 		util.LogErr("Error marshaling combined message:", err)
