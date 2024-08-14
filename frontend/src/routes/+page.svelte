@@ -21,8 +21,8 @@
 	});
 </script>
 
+<Header />
 <div class="grid-container">
-	<Header />
 	<Display />
 	<TablePlot />
 	<Solver />
@@ -38,7 +38,6 @@
 	.grid-container {
 		display: grid;
 		grid-template-areas:
-			'header header header header'
 			'display display tableplot tableplot'
 			'console console solver solver'
 			'parameters parameters mesh mesh'

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { headerState } from '$api/incoming/header';
+	import { connected } from '$api/websocket';
 </script>
 
 <section>
@@ -43,6 +44,13 @@
 		<div class="title">
 			{$headerState.path}
 		</div>
+		<div class="connection">
+			{#if !$connected}
+				<div class="no">Connection lost</div>
+			{:else}
+				<div class="yes">Connected</div>
+			{/if}
+		</div>
 	</h1>
 </section>
 
@@ -52,7 +60,12 @@
 		color: #69ff94;
 	}
 	section {
-		grid-area: header;
+		position: sticky;
+		top: 0;
+		padding: 10px;
+		margin: 10px;
+		margin-bottom: 0;
+		z-index: 100;
 	}
 
 	h1 {
@@ -60,6 +73,20 @@
 		align-items: center;
 		gap: 10px;
 		margin: 0;
+		width: 100vw;
+	}
+
+	.connection {
+		margin-left: auto; /* Pushes connection to the right side */
+		font-size: 1em;
+		width: 20%;
+		color: #ff69b4; /* Optional: To make the connection status stand out */
+	}
+	.connection .no {
+		color: #ff5555;
+	}
+	.connection .yes {
+		color: #50fa7b;
 	}
 
 	.icon {

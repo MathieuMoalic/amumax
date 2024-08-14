@@ -7,11 +7,12 @@ import { type Console, consoleState } from "./incoming/console";
 import { type Mesh, meshState } from "./incoming/mesh";
 import { type Parameters, parametersState, sortFieldsByName } from "./incoming/parameters";
 import { type TablePlot, tablePlotState } from "./incoming/table-plot";
-import { get } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { preview3D } from '$lib/preview/preview3D';
 import { preview2D } from '$lib/preview/preview2D';
 import { plotTable } from '$lib/table-plot/table-plot';
 
+export let connected = writable(false);
 
 export function initializeWebSocket() {
     let retryInterval = 1000;
@@ -23,16 +24,17 @@ export function initializeWebSocket() {
         ws.binaryType = 'arraybuffer';
 
         ws.onopen = function () {
+            connected.set(true);
             console.log('WebSocket connection established');
         };
 
         ws.onmessage = function (event) {
-            // console.log('WebSocket message received');
             parseMsgpack(event.data);
             ws?.send('ok');
         };
 
         ws.onclose = function () {
+            connected.set(false);
             console.log('WebSocket closed. Attempting to reconnect in ' + retryInterval / 1000 + ' seconds...');
             ws = null; // Ensure ws is set to null when it is closed
             setTimeout(connect, retryInterval);
@@ -44,6 +46,7 @@ export function initializeWebSocket() {
                 ws.close();
             }
         };
+
     }
 
     function tryConnect() {
