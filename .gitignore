@@ -40,3 +40,4 @@ cuda2go.exe
 .direnv
 .envrc
 .helix
+.go

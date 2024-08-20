@@ -1,14 +1,20 @@
 package api
 
 import (
+	"fmt"
 	"io"
+	"log"
+	"net"
+	"strconv"
+	"time"
 
 	"github.com/MathieuMoalic/amumax/engine"
+	"github.com/MathieuMoalic/amumax/util"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func Start(addr string) {
+func Start() {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -56,6 +62,56 @@ func Start(addr string) {
 
 	e.POST("/mesh", postMesh)
 
-	// Start server
-	e.Logger.Fatal(e.Start(addr))
+	startGuiServer(e)
+}
+
+func startGuiServer(e *echo.Echo) {
+	const maxRetries = 5
+
+	for i := 0; i < maxRetries; i++ {
+		// Find an available port
+		addr, err := findAvailablePort()
+		if err != nil {
+			log.Fatalf("Failed to find available port: %v", err)
+		}
+		util.Log(fmt.Sprintf("Attempting to serve GUI at http://%s", addr))
+
+		// Attempt to start the server
+		err = e.Start(addr)
+		if err != nil {
+			if opErr, ok := err.(*net.OpError); ok && opErr.Op == "listen" {
+				// Port is already in use, retrying
+				time.Sleep(1 * time.Second) // Wait before retrying
+				continue
+			}
+			// If the error is not related to the port being busy, exit
+			util.LogErr("Failed to start server: ", err)
+			break
+		}
+
+		// If the server started successfully, break out of the loop
+		util.Log(fmt.Sprintf("Successfully started server at http://%s", addr))
+		return
+	}
+
+	// If the loop completes without successfully starting the server
+	util.LogErr("Failed to start server after multiple attempts")
+}
+
+func findAvailablePort() (string, error) {
+	// Split the address to extract the host and port
+	host := *engine.Flag_webui_host
+	startPort := *engine.Flag_webui_port
+
+	// Loop to find the first available port
+	for port := startPort; port <= 65535; port++ {
+		address := net.JoinHostPort(host, strconv.Itoa(port))
+		listener, err := net.Listen("tcp", address)
+		if err == nil {
+			// Close the listener immediately, we just wanted to check availability
+			listener.Close()
+			return address, nil
+		}
+	}
+	return "", fmt.Errorf("no available ports found")
 }

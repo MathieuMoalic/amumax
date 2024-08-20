@@ -27,7 +27,8 @@ var (
 func RunQueue(files []string) {
 	s := NewStateTab(files)
 	s.PrintTo(os.Stdout)
-	go s.ListenAndServe(*engine.Flag_webui_queue_addr)
+	addr := fmt.Sprint(*engine.Flag_webui_queue_host, ":", *engine.Flag_webui_queue_port)
+	go s.ListenAndServe(addr)
 	s.Run()
 	fmt.Println(numOK.get(), "OK, ", numFailed.get(), "failed")
 	os.Exit(int(exitStatus))

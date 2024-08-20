@@ -6,12 +6,10 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"path"
-	"strconv"
 	"time"
 
 	"github.com/MathieuMoalic/amumax/api"
@@ -112,7 +110,9 @@ Msat = 1e6
 Aex = 10e-12
 alpha = 1
 m = RandomMag()`)
-	goServeGUI()
+	if *engine.Flag_webui_enabled {
+		go api.Start()
+	}
 	engine.RunInteractive()
 }
 
@@ -148,8 +148,9 @@ func runScript(fname string) {
 	}
 
 	// now the parser is not used anymore so it can handle web requests
-	goServeGUI()
-
+	if *engine.Flag_webui_enabled {
+		go api.Start()
+	}
 	// start executing the tree, possibly injecting commands from web gui
 	engine.EvalFile(code)
 
@@ -181,46 +182,6 @@ func runGoFile(fname string) {
 	if err != nil {
 		os.Exit(1)
 	}
-}
-
-func findAvailablePort(startAddress string) (string, error) {
-	// Split the address to extract the host and port
-	host, portStr, err := net.SplitHostPort(startAddress)
-	if err != nil {
-		return "", fmt.Errorf("invalid start address: %v", err)
-	}
-
-	// Convert the port to an integer
-	startPort, err := strconv.Atoi(portStr)
-	if err != nil {
-		return "", fmt.Errorf("invalid port number: %v", err)
-	}
-
-	// Loop to find the first available port
-	for port := startPort; port <= 65535; port++ {
-		address := net.JoinHostPort(host, strconv.Itoa(port))
-		listener, err := net.Listen("tcp", address)
-		if err == nil {
-			// Close the listener immediately, we just wanted to check availability
-			listener.Close()
-			return address, nil
-		}
-	}
-	return "", fmt.Errorf("no available ports found")
-}
-
-// start Gui server and return server address
-func goServeGUI() {
-	if *engine.Flag_webui_addr == "" {
-		util.LogWarn(`WebUI is disabled (-http="")`)
-		return
-	}
-	addr, err := findAvailablePort(*engine.Flag_webui_addr)
-	if err != nil {
-		log.Fatalf("Failed to find available port: %v", err)
-	}
-	util.Log(fmt.Sprintf("Serving GUI at http://%s", addr))
-	go api.Start(addr)
 }
 
 // print version to stdout

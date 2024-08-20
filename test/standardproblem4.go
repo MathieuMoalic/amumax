@@ -11,8 +11,12 @@ func main() {
 
 	defer InitAndClose()()
 
-	SetGridSize(128, 32, 1)
-	SetCellSize(500e-9/128, 125e-9/32, 3e-9)
+	Nx = 128
+	Ny = 32
+	Nz = 1
+	Dx = 500e-9 / 128
+	Dy = 125e-9 / 32
+	Dz = 3e-9
 
 	Msat.Set(800e3)
 	Aex.Set(13e-12)
