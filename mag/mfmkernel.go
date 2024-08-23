@@ -1,88 +1,21 @@
 package mag
 
 import (
-	"bufio"
 	"fmt"
 	"math"
-	"os"
 
-	d "github.com/MathieuMoalic/amumax/data"
-	"github.com/MathieuMoalic/amumax/oommf"
+	"github.com/MathieuMoalic/amumax/data"
 	"github.com/MathieuMoalic/amumax/util"
 )
 
-func MFMKernel(mesh *d.Mesh, lift, tipsize float64, cacheDir string) (kernel [3]*d.Slice) {
+func MFMKernel(mesh *data.Mesh, lift, tipsize float64, cacheDir string) (kernel [3]*data.Slice) {
+	return CalcMFMKernel(mesh, lift, tipsize)
 
-	// Cache disabled
-	if cacheDir == "" {
-		util.Log(`Not using kernel cache (-cache="")`)
-		return CalcMFMKernel(mesh, lift, tipsize)
-	}
-
-	// Error-resilient kernel cache: if anything goes wrong, return calculated kernel.
-	defer func() {
-		if err := recover(); err != nil {
-			util.Log("Unable to use kernel cache:", err)
-			kernel = CalcMFMKernel(mesh, lift, tipsize)
-		}
-	}()
-
-	// Try to load kernel
-	basename := fmt.Sprint(cacheDir, "/", "mumax3MFMkernel_", mesh.Size(), "_", mesh.PBC(), "_", mesh.CellSize(), "_", lift, "_", tipsize, "_")
-	var errLoad error
-	for i := 0; i < 3; i++ {
-		kernel[i], errLoad = LoadKernel(fmt.Sprint(basename, i, ".ovf"))
-		if errLoad != nil {
-			break
-		}
-	}
-	if errLoad != nil {
-		util.Log("Did not use cached kernel:", errLoad)
-	} else {
-		util.Log("Using cached kernel:", basename)
-		return kernel
-	}
-
-	// Could not load kernel: calculate it and save
-	var errSave error
-	kernel = CalcMFMKernel(mesh, lift, tipsize)
-
-	for i := 0; i < 3; i++ {
-		compName := fmt.Sprint("Nmfm_", i)
-		info := d.Meta{Time: float64(0.0), Name: compName, Unit: "1", CellSize: mesh.CellSize(), MeshUnit: "m"}
-		errSave = SaveKernel(fmt.Sprint(basename, i, ".ovf"), kernel[i], info)
-		if errSave != nil {
-			break
-		}
-	}
-	if errSave != nil {
-		util.Log("Failed to cache kernel:", errSave)
-	} else {
-		util.Log("Cached kernel:", basename)
-	}
-
-	return kernel
-}
-
-func LoadMFMKernel(fname string) (kernel *d.Slice, err error) {
-	kernel, _, err = oommf.ReadFile(fname)
-	return
-}
-
-func SaveMFMKernel(fname string, kernel *d.Slice) error {
-	f, err := os.OpenFile(fname, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
-	if err != nil {
-		return err
-	}
-	out := bufio.NewWriter(f)
-	defer out.Flush()
-	oommf.WriteOVF2(out, kernel, d.Meta{}, "binary 4")
-	return nil
 }
 
 // Kernel for the vertical derivative of the force on an MFM tip due to mx, my, mz.
 // This is the 2nd derivative of the energy w.r.t. z.
-func CalcMFMKernel(mesh *d.Mesh, lift, tipsize float64) (kernel [3]*d.Slice) {
+func CalcMFMKernel(mesh *data.Mesh, lift, tipsize float64) (kernel [3]*data.Slice) {
 
 	const TipCharge = 1 / Mu0 // tip charge
 	const Δ = 1e-9            // tip oscillation, take 2nd derivative over this distance
@@ -92,7 +25,7 @@ func CalcMFMKernel(mesh *d.Mesh, lift, tipsize float64) (kernel [3]*d.Slice) {
 		pbc := mesh.PBC()
 		sz := padSize(mesh.Size(), pbc)
 		cs := mesh.CellSize()
-		mesh = d.NewMesh(sz[X], sz[Y], sz[Z], cs[X], cs[Y], cs[Z], pbc[0], pbc[1], pbc[2])
+		mesh = data.NewMesh(sz[X], sz[Y], sz[Z], cs[X], cs[Y], cs[Z], pbc[0], pbc[1], pbc[2])
 	}
 
 	// Shorthand
@@ -115,7 +48,7 @@ func CalcMFMKernel(mesh *d.Mesh, lift, tipsize float64) (kernel [3]*d.Slice) {
 	// Allocate only upper diagonal part. The rest is symmetric due to reciprocity.
 	var K [3][][][]float32
 	for i := 0; i < 3; i++ {
-		kernel[i] = d.NewSlice(1, mesh.Size())
+		kernel[i] = data.NewSlice(1, mesh.Size())
 		K[i] = kernel[i].Scalars()
 	}
 
@@ -134,18 +67,18 @@ func CalcMFMKernel(mesh *d.Mesh, lift, tipsize float64) (kernel [3]*d.Slice) {
 				xw := wrap(ix, size[X])
 
 				for s := 0; s < 3; s++ { // source index Ksxyz
-					m := d.Vector{0, 0, 0}
+					m := data.Vector{0, 0, 0}
 					m[s] = 1
 
 					var E [3]float64 // 3 energies for 2nd derivative
 
 					for i := -1; i <= 1; i++ {
 						I := float64(i)
-						R := d.Vector{-x, -y, z - (lift + (I * Δ))}
+						R := data.Vector{-x, -y, z - (lift + (I * Δ))}
 						r := R.Len()
 						B := R.Mul(TipCharge / (4 * math.Pi * r * r * r))
 
-						R = d.Vector{-x, -y, z - (lift + tipsize + (I * Δ))}
+						R = data.Vector{-x, -y, z - (lift + tipsize + (I * Δ))}
 						r = R.Len()
 						B = B.Add(R.Mul(-TipCharge / (4 * math.Pi * r * r * r)))
 
