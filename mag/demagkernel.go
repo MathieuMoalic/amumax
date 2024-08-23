@@ -6,8 +6,9 @@ import (
 	"math"
 	"os"
 
+	"github.com/DataDog/zstd"
 	"github.com/MathieuMoalic/amumax/data"
-	"github.com/MathieuMoalic/amumax/oommf"
+	"github.com/MathieuMoalic/amumax/httpfs"
 	"github.com/MathieuMoalic/amumax/timer"
 	"github.com/MathieuMoalic/amumax/util"
 	"github.com/MathieuMoalic/amumax/zarr"
@@ -15,7 +16,7 @@ import (
 
 // Obtains the demag kernel either from cacheDir/ or by calculating (and then storing in cacheDir for next time).
 // Empty cacheDir disables caching.
-func DemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float64, cacheDir string, showMagnets bool) (kernel [3][3]*data.Slice) {
+func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cacheDir string, showMagnets bool) (kernel [3][3]*data.Slice) {
 	timer.Start("kernel_init")
 	timer.Stop("kernel_init") // warm-up
 
@@ -25,98 +26,151 @@ func DemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float64, c
 	sanityCheck(cellsize)
 	// Cache disabled
 	if cacheDir == "" {
-		util.Log(`Kernel cache disabled.`)
-		return CalcDemagKernel(inputSize, pbc, cellsize, accuracy, showMagnets)
+		util.Log.Warn(`Kernel cache disabled.`)
+		kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, showMagnets)
+		// return without saving
+		return
 	}
-
-	// Error-resilient kernel cache: if anything goes wrong, return calculated kernel.
+	// Make sure cache directory exists
+	if !httpfs.Exists(cacheDir) {
+		err := httpfs.Mkdir(cacheDir)
+		if err != nil {
+			util.Log.Warn("Unable to create kernel cache directory: %v", err)
+		}
+	}
 	defer func() {
 		if err := recover(); err != nil {
-			util.Log("Unable to use kernel cache:", err)
-			kernel = CalcDemagKernel(inputSize, pbc, cellsize, accuracy, showMagnets)
+			util.Log.Warn("Unable to use kernel cache: %v", err)
+			kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, showMagnets)
 		}
 	}()
 
-	// Try to load kernel
-	basename := fmt.Sprint(cacheDir, "/", "mumax3kernel_", inputSize, "_", pbc, "_", cellsize, "_", accuracy, "_")
-	var errLoad error
-	for i := 0; i < 3; i++ {
-		for j := i; j < 3; j++ {
-			if inputSize[Z] == 1 && ((i == X && j == Z) || (i == Y && j == Z)) {
-				continue // element not needed in 2D
-			}
-			kernel[i][j], errLoad = LoadKernel(fmt.Sprint(basename, i, j, ".ovf"))
-			if errLoad != nil {
-				break
-			}
+	basename := kernelName(gridsize, pbc, cellsize, accuracy, cacheDir)
+	if httpfs.Exists(basename) {
+		util.Log.Warn("Loading kernel from cache: %v", basename)
+		kernel, err := loadKernel(basename, padSize(gridsize, pbc))
+		if err != nil {
+			util.Log.Warn("Couldn't load kernel from cache: %v", err)
+			kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, showMagnets)
 		}
-		if errLoad != nil {
-			break
-		}
-	}
-	// make result symmetric for tools that expect it so.
-	kernel[Y][X] = kernel[X][Y]
-	kernel[Z][X] = kernel[X][Z]
-	kernel[Z][Y] = kernel[Y][Z]
-
-	if errLoad != nil {
-		util.Log("Did not use cached kernel:", errLoad)
-	} else {
-		// util.Log("Using cached kernel: ", basename, "*.ovf")
 		return kernel
-	}
-
-	// Could not load kernel: calculate it and save
-	var errSave error
-	kernel = CalcDemagKernel(inputSize, pbc, cellsize, accuracy, showMagnets)
-	for i := 0; i < 3; i++ {
-		for j := i; j < 3; j++ {
-			if inputSize[Z] == 1 && ((i == X && j == Z) || (i == Y && j == Z)) {
-				continue // element not needed in 2D
-			}
-			compName := fmt.Sprint("N_", i, j)
-
-			info := data.Meta{Time: float64(0.0), Name: compName, Unit: "1", CellSize: cellsize, MeshUnit: "m"}
-			errSave = SaveKernel(fmt.Sprint(basename, i, j, ".ovf"), kernel[i][j], info)
-			if errSave != nil {
-				break
-			}
-		}
-		if errSave != nil {
-			break
-		}
-	}
-	if errSave != nil {
-		util.Log("Failed to cache kernel:", errSave)
 	} else {
-		util.Log("Saved kernel at:", basename)
+		util.Log.Warn("Calculating kernel and saving to cache: %v", basename)
+		kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, showMagnets)
+		err := saveKernel(basename, kernel)
+		if err != nil {
+			util.Log.Warn("Couldn't save kernel to cache: %v \n %v", basename, err.Error())
+		}
+		return
 	}
-
-	return kernel
 }
 
-func LoadKernel(fname string) (kernel *data.Slice, err error) {
-	kernel, _, err = oommf.ReadFile(fname)
+func bytesToKernel(kernelBytes []byte, size [3]int) (kernel [3][3]*data.Slice) {
+	offset := 0
+	sliceLength := size[X] * size[Y] * size[Z] * 4
+	for i := 0; i < 3; i++ {
+		for j := i; j < 3; j++ {
+			end := offset + sliceLength
+			bytes := bytesToSlice(kernelBytes[offset:end], size)
+			kernel[i][j] = bytes
+			offset = end
+		}
+	}
 	return
 }
 
-func SaveKernel(fname string, kernel *data.Slice, info data.Meta) error {
+func kernelToBytes(kernel [3][3]*data.Slice) (bytes []byte) {
+	for i := 0; i < 3; i++ {
+		for j := i; j < 3; j++ {
+			kernelBytes := sliceToBytes(kernel[i][j])
+			for k := 0; k < len(kernelBytes); k++ {
+				bytes = append(bytes, kernelBytes[k])
+			}
+		}
+	}
+	return bytes
+}
+
+func sliceToBytes(slice *data.Slice) (bytes []byte) {
+	data := slice.Tensors()
+	size := slice.Size()
+
+	for iz := 0; iz < size[Z]; iz++ {
+		for iy := 0; iy < size[Y]; iy++ {
+			for ix := 0; ix < size[X]; ix++ {
+				for ic := 0; ic < slice.NComp(); ic++ {
+					bytes = append(bytes, zarr.Float32ToBytes(data[ic][iz][iy][ix])...)
+				}
+			}
+		}
+	}
+	// util.Log.Warn("sliceToBytes: %d, NComp: %v Size: %v", len(bytes), slice.NComp(), size)
+	return bytes
+}
+
+func bytesToSlice(kernelBytes []byte, size [3]int) (slice *data.Slice) {
+	slice = data.NewSlice(1, size)
+	tensors := slice.Tensors()
+	count := 0
+	for iz := 0; iz < size[Z]; iz++ {
+		for iy := 0; iy < size[Y]; iy++ {
+			for ix := 0; ix < size[X]; ix++ {
+				tensors[0][iz][iy][ix] = zarr.BytesToFloat32(kernelBytes[count*4 : (count+1)*4])
+				count++
+			}
+		}
+	}
+	return
+}
+
+func kernelName(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cacheDir string) string {
+	sSize := fmt.Sprintf("%d_%d_%d", gridsize[X], gridsize[Y], gridsize[Z])
+	sPBC := fmt.Sprintf("%d_%d_%d", pbc[X], pbc[Y], pbc[Z])
+	sCellsize := fmt.Sprintf("%e_%e_%e", cellsize[X], cellsize[Y], cellsize[Z])
+	return fmt.Sprintf("%s/%s_%s_%s_%v.cache", cacheDir, sSize, sPBC, sCellsize, accuracy)
+}
+
+func loadKernel(fname string, size [3]int) ([3][3]*data.Slice, error) {
+	compressedData, err := httpfs.Read(fname)
+	if err != nil {
+		return [3][3]*data.Slice{}, err
+	}
+	kernelBytes, err := zstd.Decompress(nil, compressedData)
+	if err != nil {
+		return [3][3]*data.Slice{}, err
+	}
+
+	bytes := bytesToKernel(kernelBytes, size)
+	return bytes, nil
+}
+
+func saveKernel(fname string, kernel [3][3]*data.Slice) error {
+	util.Log.Comment("Saving kernel to cache: %v", fname)
+	kernelBytes := kernelToBytes(kernel)
+	compressedData, err := zstd.Compress(nil, kernelBytes)
+	if err != nil {
+		return err
+	}
 	f, err := os.OpenFile(fname, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
 	if err != nil {
 		return err
 	}
 	out := bufio.NewWriter(f)
 	defer out.Flush()
-	oommf.WriteOVF2(out, kernel, info, "binary 4")
+	_, err = out.Write(compressedData)
+	if err != nil {
+		return err
+	}
+	util.Log.Warn("Kernel saved to cache: %v", fname)
 	return nil
 }
 
 // Calculates the magnetostatic kernel by brute-force integration
 // of magnetic charges over the faces and averages over cell volumes.
-func CalcDemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float64, showMagnets bool) (kernel [3][3]*data.Slice) {
+func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, showMagnets bool) (kernel [3][3]*data.Slice) {
 
 	// Add zero-padding in non-PBC directions
-	size := padSize(inputSize, pbc)
+	size := padSize(gridsize, pbc)
 
 	// Sanity check
 	{
@@ -336,7 +390,7 @@ func CalcDemagKernel(inputSize, pbc [3]int, cellsize [3]float64, accuracy float6
 	kernel[Z][X] = kernel[X][Z]
 	kernel[Z][Y] = kernel[Y][Z]
 	ProgressBar.Finish()
-	util.Log("Kernel Calculated.")
+	util.Log.Comment("Kernel Calculated.")
 	return kernel
 }
 
@@ -396,7 +450,7 @@ func sanityCheck(cellsize [3]float64) {
 	aMin := math.Min(a1, math.Min(a2, a3))
 
 	if aMax > maxAspect || aMin < 1./maxAspect {
-		util.Fatal("Unrealistic cell aspect ratio:", cellsize)
+		util.Log.PanicIfError(fmt.Errorf("Unrealistic cell aspect ratio %v", cellsize))
 	}
 }
 
@@ -406,19 +460,19 @@ func sanityCheck(cellsize [3]float64) {
 // is a trade-off: for large N, padding up to 2*N can be much more efficient since
 // power-of-two sized FFT's are ludicrously fast on CUDA. However for very small N,
 // in particular N=1, we should not over-pad.
-func padSize(size, periodic [3]int) [3]int {
+func padSize(gridsize, pbc [3]int) [3]int {
 	var padded [3]int
-	for i := range size {
-		if periodic[i] != 0 {
-			padded[i] = size[i]
+	for i := range gridsize {
+		if pbc[i] != 0 {
+			padded[i] = gridsize[i]
 			continue
 		}
-		if i != Z || size[i] > SMALL_N { // for some reason it only works for Z, perhaps we assume even FFT size elsewhere?
+		if i != Z || gridsize[i] > SMALL_N { // for some reason it only works for Z, perhaps we assume even FFT size elsewhere?
 			// large N: zero pad * 2 for FFT performance
-			padded[i] = size[i] * 2
+			padded[i] = gridsize[i] * 2
 		} else {
 			// small N: minimal zero padding for memory/performance
-			padded[i] = size[i]*2 - 1
+			padded[i] = gridsize[i]*2 - 1
 		}
 	}
 	return padded
