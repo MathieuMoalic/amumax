@@ -64,7 +64,7 @@ func (e *ScalarExcitation) RemoveExtraTerms() {
 		return
 	}
 
-	// LogOut("REMOVING EXTRA TERMS FROM", e.Name())
+	// util.Log.Comment("REMOVING EXTRA TERMS FROM", e.Name())
 	for _, m := range e.extraTerms {
 		m.mask.Free()
 	}

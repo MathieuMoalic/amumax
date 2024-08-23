@@ -41,11 +41,11 @@ func SaveFileZarray(path string, size [3]int, ncomp int, time int, cz int, cy in
 	z.Shape = [5]int{time + 1, size[2], size[1], size[0], ncomp}
 
 	f, err := httpfs.Create(path)
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 	defer f.Close()
 	enc := json.NewEncoder(f)
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "\t")
-	util.FatalErr(enc.Encode(z))
+	util.Log.PanicIfError(enc.Encode(z))
 	f.Flush()
 }

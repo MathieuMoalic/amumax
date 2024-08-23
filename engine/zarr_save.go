@@ -70,11 +70,11 @@ func (a *zArray) SaveAttrs() {
 	// it's stupid and wasteful but it works
 	// keeping the whole array of times wastes a few MB of RAM
 	u, err := json.Marshal(zarr.Zattrs{Buffer: a.times})
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 	err = httpfs.Remove(OD() + a.name + "/.zattrs")
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 	err = httpfs.Put(OD()+a.name+"/.zattrs", []byte(string(u)))
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 }
 
 func (a *zArray) Save() {
@@ -100,10 +100,10 @@ func zVerifyAndSave(q Quantity, name string, rchunks RequestedChunking, period f
 	} else {
 		if httpfs.Exists(OD() + name) {
 			err := httpfs.Remove(OD() + name)
-			util.FatalErr(err)
+			util.Log.PanicIfError(err)
 		}
 		err := httpfs.Mkdir(OD() + name)
-		util.FatalErr(err)
+		util.Log.PanicIfError(err)
 		var b []float64
 		a := zArray{name, q, period, Time, -1, b, NewChunks(q, rchunks), rchunks}
 		zArrays = append(zArrays, &a)
@@ -115,9 +115,9 @@ func zArrayExists(q Quantity, name string, rchunks RequestedChunking) bool {
 	for _, z := range zArrays {
 		if z.name == name {
 			if z.rchunks != rchunks {
-				util.Fatal("Error: The dataset `", name, "` has already been initialized with different chunks.")
+				util.Log.ErrAndExit("Error: The dataset %v has already been initialized with different chunks.", name)
 			} else if z.q != q {
-				util.Fatal("Error: The dataset `", name, "` has already been initialized with a different quantity.")
+				util.Log.ErrAndExit("Error: The dataset %v has already been initialized with a different quantity.", name)
 			} else {
 				return true
 			}
@@ -141,7 +141,7 @@ func SyncSave(array *data.Slice, qname string, time int, chunks Chunks) {
 				for icc := 0; icc < chunks.c.nb; icc++ {
 					bdata := []byte{}
 					f, err := httpfs.Create(fmt.Sprintf(OD()+"%s/%d.%d.%d.%d.%d", qname, time+1, icz, icy, icx, icc))
-					util.FatalErr(err)
+					util.Log.PanicIfError(err)
 					defer f.Close()
 					for iz := 0; iz < chunks.z.len; iz++ {
 						z := icz*chunks.z.len + iz
@@ -150,7 +150,7 @@ func SyncSave(array *data.Slice, qname string, time int, chunks Chunks) {
 							for ix := 0; ix < chunks.x.len; ix++ {
 								x := icx*chunks.x.len + ix
 								for ic := 0; ic < chunks.c.len; ic++ {
-									// LogOut(ic,icc)
+									// util.Log.Comment(ic,icc)
 									c := icc*chunks.c.len + ic
 									bytes = (*[4]byte)(unsafe.Pointer(&data[c][z][y][x]))[:]
 									for k := 0; k < 4; k++ {
@@ -161,9 +161,9 @@ func SyncSave(array *data.Slice, qname string, time int, chunks Chunks) {
 						}
 					}
 					compressedData, err := zstd.Compress(nil, bdata)
-					util.FatalErr(err)
+					util.Log.PanicIfError(err)
 					_, err = f.Write(compressedData)
-					util.FatalErr(err)
+					util.Log.PanicIfError(err)
 				}
 			}
 		}

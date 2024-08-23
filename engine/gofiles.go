@@ -6,9 +6,9 @@ import (
 	"flag"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/MathieuMoalic/amumax/cuda"
-	"github.com/MathieuMoalic/amumax/util"
 )
 
 var (
@@ -51,18 +51,8 @@ func InitAndClose() func() {
 	if od == "" {
 		od = path.Base(os.Args[0]) + ".zarr"
 	}
-	inFile := util.NoExt(od)
+	inFile := strings.Replace(od, ".zarr", ".mx3", 1)
 	InitIO(inFile, od)
-
-	// if *Flag_webui_addr == "" {
-	// 	util.LogWarn(`WebUI is disabled (-http="")`)
-	// }
-	// addr, err := findAvailablePort(*Flag_webui_addr)
-	// if err != nil {
-	// 	log.Fatalf("Failed to find available port: %v", err)
-	// }
-	// util.Log(fmt.Sprintf("Serving GUI at http://%s", addr))
-	// go api.Start(addr)
 
 	return func() {
 		CleanExit()

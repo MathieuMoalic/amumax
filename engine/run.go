@@ -77,7 +77,7 @@ func SetSolver(typ int) {
 	}
 	switch typ {
 	default:
-		util.Fatalf("SetSolver: unknown solver type: %v", typ)
+		util.Log.ErrAndExit("SetSolver: unknown solver type:  %v", typ)
 	case BACKWARD_EULER:
 		stepper = new(BackwardEuler)
 	case EULER:
@@ -143,7 +143,7 @@ func adaptDt(corr float64) {
 		Dt_si = MaxDt
 	}
 	if Dt_si == 0 {
-		util.Fatal("time step too small")
+		util.Log.ErrAndExit("time step too small")
 	}
 
 	// do not cross alarm time
@@ -256,10 +256,10 @@ func InjectAndWait(task func()) {
 
 func SanityCheck() {
 	if Msat.isZero() {
-		util.Log("Note: Msat = 0")
+		util.Log.Comment("Note: Msat = 0")
 	}
 	if Aex.isZero() {
-		util.Log("Note: Aex = 0")
+		util.Log.Comment("Note: Aex = 0")
 	}
 }
 

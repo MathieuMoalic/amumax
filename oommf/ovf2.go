@@ -81,7 +81,7 @@ func writeOVF2Data(out io.Writer, q *data.Slice, dataformat string) {
 	case "text":
 		canonicalFormat = "Text"
 		hdr(out, "Begin", "Data "+canonicalFormat)
-		util.FatalErr(writeOVFText(out, q))
+		util.Log.PanicIfError(writeOVFText(out, q))
 	case "binary", "binary 4":
 		canonicalFormat = "Binary 4"
 		hdr(out, "Begin", "Data "+canonicalFormat)
@@ -105,7 +105,7 @@ func writeOVF2DataBinary4(out io.Writer, array *data.Slice) {
 	var controlnumber float32 = OVF_CONTROL_NUMBER_4
 	bytes = (*[4]byte)(unsafe.Pointer(&controlnumber))[:]
 	_, err := out.Write(bytes)
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 
 	ncomp := array.NComp()
 	for iz := 0; iz < size[Z]; iz++ {
@@ -114,7 +114,7 @@ func writeOVF2DataBinary4(out io.Writer, array *data.Slice) {
 				for c := 0; c < ncomp; c++ {
 					bytes = (*[4]byte)(unsafe.Pointer(&data[c][iz][iy][ix]))[:]
 					_, err := out.Write(bytes)
-					util.FatalErr(err)
+					util.Log.PanicIfError(err)
 				}
 			}
 		}

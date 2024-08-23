@@ -74,7 +74,7 @@ func startGuiServer(e *echo.Echo) {
 		if err != nil {
 			log.Fatalf("Failed to find available port: %v", err)
 		}
-		util.Log(fmt.Sprintf("Attempting to serve GUI at http://%s", addr))
+		util.Log.Comment("Serving the web UI at http://%s", addr)
 
 		// Attempt to start the server
 		err = e.Start(addr)
@@ -85,17 +85,17 @@ func startGuiServer(e *echo.Echo) {
 				continue
 			}
 			// If the error is not related to the port being busy, exit
-			util.LogErr("Failed to start server: ", err)
+			util.Log.Err("Failed to start server:  %v", err)
 			break
 		}
 
 		// If the server started successfully, break out of the loop
-		util.Log(fmt.Sprintf("Successfully started server at http://%s", addr))
+		util.Log.Comment("Successfully started server at http://%s", addr)
 		return
 	}
 
 	// If the loop completes without successfully starting the server
-	util.LogErr("Failed to start server after multiple attempts")
+	util.Log.Err("Failed to start server after multiple attempts")
 }
 
 func findAvailablePort() (string, error) {

@@ -53,7 +53,7 @@ func ReadFile(fname string) (*data.Slice, data.Meta, error) {
 
 func MustReadFile(fname string) (*data.Slice, data.Meta) {
 	s, t, err := ReadFile(fname)
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 	return s, t
 }
 
@@ -233,9 +233,9 @@ func writeOVFText(out io.Writer, tens *data.Slice) (err error) {
 // # Key: Value
 func hdr(out io.Writer, key string, value ...interface{}) {
 	_, err := fmt.Fprint(out, "# ", key, ": ")
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 	_, err = fmt.Fprintln(out, value...)
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 }
 
 func dsc(out io.Writer, k, v interface{}) {

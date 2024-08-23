@@ -7,6 +7,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/httpfs"
 	"github.com/MathieuMoalic/amumax/script"
+	"github.com/MathieuMoalic/amumax/util"
 )
 
 func CompileFile(fname string) (*script.BlockStmt, error) {
@@ -17,25 +18,38 @@ func CompileFile(fname string) (*script.BlockStmt, error) {
 	return World.Compile(string(bytes))
 }
 
+func EvalTryRecover(code string) {
+	defer func() {
+		if err := recover(); err != nil {
+			if userErr, ok := err.(UserErr); ok {
+				util.Log.Err("%v", userErr)
+			} else {
+				panic(err)
+			}
+		}
+	}()
+	Eval(code)
+}
+
 func Eval(code string) {
 	tree, err := World.Compile(code)
 	if err != nil {
-		LogIn(code)
-		LogErr(err.Error())
+		util.Log.Command(code)
+		util.Log.Err(err.Error())
 		return
 	}
-	LogIn(rmln(tree.Format()))
+	util.Log.Command(rmln(tree.Format()))
 	tree.Eval()
 }
 
 func Eval1Line(code string) interface{} {
 	tree, err := World.Compile(code)
 	if err != nil {
-		LogErr(err.Error())
+		util.Log.Err(err.Error())
 		return nil
 	}
 	if len(tree.Children) != 1 {
-		LogErr("expected single statement:" + code)
+		util.Log.Err("expected single statement:" + code)
 		return nil
 	}
 	return tree.Children[0].Eval()
@@ -100,7 +114,7 @@ type LValue interface {
 func EvalFile(code *script.BlockStmt) {
 	for i := range code.Children {
 		formatted := rmln(script.Format(code.Node[i]))
-		LogIn(formatted)
+		util.Log.Command(formatted)
 		code.Children[i].Eval()
 	}
 }

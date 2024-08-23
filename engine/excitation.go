@@ -72,7 +72,7 @@ func (e *Excitation) RemoveExtraTerms() {
 		return
 	}
 
-	// LogOut("REMOVING EXTRA TERMS FROM", e.Name())
+	// util.Log.Comment("REMOVING EXTRA TERMS FROM", e.Name())
 	for _, m := range e.extraTerms {
 		m.mask.Free()
 	}
@@ -141,7 +141,7 @@ func checkNaN(s *data.Slice, name string) {
 	for _, h := range h {
 		for _, v := range h {
 			if math.IsNaN(float64(v)) || math.IsInf(float64(v), 0) {
-				util.Fatal("NaN or Inf in", name)
+				util.Log.ErrAndExit("NaN or Inf in %v", name)
 			}
 		}
 	}

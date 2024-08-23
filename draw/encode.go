@@ -29,7 +29,7 @@ func RenderFormat(out io.Writer, f *data.Slice, min, max string, arrowSize int, 
 	ext := strings.ToLower(path.Ext(format))
 	enc := codecs[ext]
 	if enc == nil {
-		return fmt.Errorf("render: unhandled image type: " + ext)
+		return fmt.Errorf("render: unhandled image type: %s", ext)
 	}
 	return Render(out, f, min, max, arrowSize, enc, colormap...)
 }

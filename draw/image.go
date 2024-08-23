@@ -1,12 +1,13 @@
 package draw
 
 import (
-	"github.com/MathieuMoalic/amumax/data"
-	"github.com/MathieuMoalic/amumax/util"
 	"image"
 	"image/color"
 	"log"
 	"strconv"
+
+	"github.com/MathieuMoalic/amumax/data"
+	"github.com/MathieuMoalic/amumax/util"
 )
 
 // Renders an image of slice. fmin, fmax = "auto" or a number to set the min/max color scale.
@@ -53,14 +54,14 @@ func parseMinMax(f *data.Slice, fmin, fmax string) (min, max float32) {
 	if fmin != "auto" {
 		m, err := strconv.ParseFloat(fmin, 32)
 		if err != nil {
-			util.Fatal("draw: scale:", err)
+			util.Log.ErrAndExit("draw: scale: %v", err)
 		}
 		min = float32(m)
 	}
 	if fmax != "auto" {
 		m, err := strconv.ParseFloat(fmax, 32)
 		if err != nil {
-			util.Fatal("draw: scale:", err)
+			util.Log.ErrAndExit("draw: scale: %v", err)
 		}
 		max = float32(m)
 	}
