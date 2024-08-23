@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/MathieuMoalic/amumax/api"
@@ -80,7 +81,7 @@ type Release struct {
 func doUpdate() {
 	resp, err := http.Get("https://github.com/mathieumoalic/amumax/releases/latest/download/amumax")
 	if err != nil {
-		util.FatalErr(err)
+		util.Log.PanicIfError(err)
 	}
 	defer resp.Body.Close()
 	err = selfupdate.Apply(resp.Body, selfupdate.Options{})
@@ -91,7 +92,7 @@ func doUpdate() {
 }
 
 func runInteractive() {
-	util.Log("No input files: starting interactive session")
+	util.Log.Comment("No input files: starting interactive session")
 	// setup outut dir
 	now := time.Now()
 	outdir := fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
@@ -120,31 +121,33 @@ func runFileAndServe(fname string) {
 	if path.Ext(fname) == ".go" {
 		runGoFile(fname)
 	} else {
-		runScript(fname)
+		runMx3File(fname)
 	}
 }
 
-func runScript(fname string) {
-	if _, err := os.Stat(fname); errors.Is(err, os.ErrNotExist) {
-		util.Fatal("Error: File `", fname, "` does not exist")
+func runMx3File(mx3Path string) {
+	if _, err := os.Stat(mx3Path); errors.Is(err, os.ErrNotExist) {
+		util.Log.ErrAndExit("Error: File `%s` does not exist", mx3Path)
 	}
-	outDir := util.NoExt(fname) + ".zarr"
+	zarrPath := strings.Replace(mx3Path, ".mx3", ".zarr", 1)
 	if *engine.Flag_od != "" {
-		outDir = *engine.Flag_od
+		zarrPath = *engine.Flag_od
 	}
-	engine.InitIO(fname, outDir)
-
-	fname = engine.InputFile
+	engine.InitIO(mx3Path, zarrPath)
+	util.Log.Comment("Input file: %s", mx3Path)
+	util.Log.Comment("Output directory: %s", engine.OD())
+	util.Log.Init(zarrPath, engine.VERSION == "dev")
+	mx3Path = engine.InputFile
 
 	var code *script.BlockStmt
 	var err2 error
-	if fname != "" {
+	if mx3Path != "" {
 		// first we compile the entire file into an executable tree
-		code, err2 = engine.CompileFile(fname)
+		code, err2 = engine.CompileFile(mx3Path)
 		if err2 != nil {
-			engine.LogErr("Error while parsing `", fname, "`")
+			util.Log.Err("Error while parsing `%s`", mx3Path)
 		}
-		util.FatalErr(err2)
+		util.Log.PanicIfError(err2)
 	}
 
 	// now the parser is not used anymore so it can handle web requests
@@ -186,6 +189,6 @@ func runGoFile(fname string) {
 
 // print version to stdout
 func printVersion() {
-	engine.LogOut(engine.UNAME)
-	engine.LogOut(fmt.Sprintf("GPU info: %s, using cc=%d PTX", cuda.GPUInfo, cuda.UseCC))
+	util.Log.Comment(engine.UNAME)
+	util.Log.Comment("GPU info: %s, using cc=%d PTX", cuda.GPUInfo, cuda.UseCC)
 }

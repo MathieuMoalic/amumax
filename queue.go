@@ -94,7 +94,7 @@ func (s *stateTab) Run() {
 			break
 		}
 		go func() {
-			run(j.inFile, gpu, j.webAddr)
+			run(j.inFile, gpu)
 			s.Finish(j)
 			idle <- gpu
 		}()
@@ -111,13 +111,13 @@ func (a *atom) set(v int) { atomic.StoreInt32((*int32)(a), int32(v)) }
 func (a *atom) get() int  { return int(atomic.LoadInt32((*int32)(a))) }
 func (a *atom) inc()      { atomic.AddInt32((*int32)(a), 1) }
 
-func run(inFile string, gpu int, webAddr string) {
+func run(inFile string, gpu int) {
 	// overridden flags
 	gpuFlag := fmt.Sprint(`-gpu=`, gpu)
-	httpFlag := fmt.Sprint(`-http=`, webAddr)
+	// httpFlag := fmt.Sprint(`-http=`, webAddr)
 
 	// pass through flags
-	flags := []string{gpuFlag, httpFlag}
+	flags := []string{gpuFlag}
 	flag.Visit(func(f *flag.Flag) {
 		if f.Name != "gpu" && f.Name != "http" && f.Name != "failfast" {
 			flags = append(flags, fmt.Sprintf("-%v=%v", f.Name, f.Value))
@@ -226,7 +226,7 @@ func (s *stateTab) RenderHTML(w io.Writer) {
 func (s *stateTab) ListenAndServe(addr string) {
 	http.Handle("/", s)
 	go func() {
-		util.FatalErr(http.ListenAndServe(addr, nil))
+		util.Log.PanicIfError(http.ListenAndServe(addr, nil))
 	}()
 }
 

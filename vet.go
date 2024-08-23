@@ -14,7 +14,7 @@ func vet() {
 	status := 0
 	for _, f := range flag.Args() {
 		src, ioerr := os.ReadFile(f)
-		util.FatalErr(ioerr)
+		util.Log.PanicIfError(ioerr)
 		engine.World.EnterScope() // avoid name collisions between separate files
 		_, err := engine.World.Compile(string(src))
 		engine.World.ExitScope()
