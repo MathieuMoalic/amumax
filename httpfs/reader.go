@@ -6,25 +6,21 @@ import (
 	"bufio"
 	"bytes"
 	"io"
-
-	"github.com/MathieuMoalic/amumax/util"
 )
 
 const BUFSIZE = 16 * 1024 * 1024 // bufio buffer size
 
 // create a file for writing, clobbers previous content if any.
 func Create(URL string) (WriteCloseFlusher, error) {
-	// color.Red("httpfs Create %s", URL)
 	err := Remove(URL)
-	util.PanicErr(err)
+	if err != nil {
+		return nil, err
+	}
 	err = Touch(URL)
-	util.PanicErr(err)
-	// color.Red("httpfs Create success")
+	if err != nil {
+		return nil, err
+	}
 	writer := bufWriter{bufio.NewWriterSize(&appendWriter{URL, 0}, BUFSIZE)}
-	// wr := &appendWriter{URL, 0}
-	// bufwr := bufio.NewWriterSize(wr, BUFSIZE)
-	// bufwr.Write([]byte("hi"))
-	// bufwr.Flush()
 	return &writer, nil
 }
 

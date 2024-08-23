@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"testing"
-
-	"github.com/MathieuMoalic/amumax/util"
 )
 
 // leaving this many files open is supposed to trigger os error.
@@ -14,8 +13,10 @@ const MANYFILES = 1025
 
 func FatalRemove(URL string) {
 	err := Remove(URL)
+
 	if err != nil {
-		util.FatalErr(err)
+		fmt.Println("FatalRemove: ", err)
+		os.Exit(1)
 	}
 }
 
