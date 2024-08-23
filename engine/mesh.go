@@ -147,7 +147,7 @@ func IsMeshCreated() bool {
 
 func SetTiDiNi(Ti, di *float64, Ni *int, comp string) {
 	if (*Ti != 0.0) && (*di != 0.0) && (*Ni != 0) {
-		util.Log.ErrAndExit(fmt.Sprintf("Error: Only 2 of [N%s,d%s,T%s] are needed to define the mesh, you can't define all 3 of them.", comp, comp, comp))
+		util.Log.ErrAndExit("Error: Only 2 of [N%s,d%s,T%s] are needed to define the mesh, you can't define all 3 of them.", comp, comp, comp)
 	} else if (*Ti != 0.0) && (*di != 0.0) {
 		*Ni = int(math.Round(*Ti / *di))
 	} else if (*Ni != 0) && (*di != 0.0) {

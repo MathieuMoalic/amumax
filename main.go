@@ -189,6 +189,6 @@ func runGoFile(fname string) {
 
 // print version to stdout
 func printVersion() {
-	util.Log.Comment(engine.UNAME)
+	util.Log.Comment("%v", engine.UNAME)
 	util.Log.Comment("GPU info: %s, using cc=%d PTX", cuda.GPUInfo, cuda.UseCC)
 }

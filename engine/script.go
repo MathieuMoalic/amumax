@@ -35,7 +35,7 @@ func Eval(code string) {
 	tree, err := World.Compile(code)
 	if err != nil {
 		util.Log.Command(code)
-		util.Log.Err(err.Error())
+		util.Log.Err("%v", err.Error())
 		return
 	}
 	util.Log.Command(rmln(tree.Format()))
@@ -45,11 +45,11 @@ func Eval(code string) {
 func Eval1Line(code string) interface{} {
 	tree, err := World.Compile(code)
 	if err != nil {
-		util.Log.Err(err.Error())
+		util.Log.Err("%v", err.Error())
 		return nil
 	}
 	if len(tree.Children) != 1 {
-		util.Log.Err("expected single statement:" + code)
+		util.Log.Err("expected single statement:%v", code)
 		return nil
 	}
 	return tree.Children[0].Eval()
