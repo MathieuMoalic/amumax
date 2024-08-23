@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/MathieuMoalic/amumax/cuda"
@@ -183,7 +182,7 @@ func TableAddAs(q Quantity, name string) {
 	}
 
 	if Table.Exists(q, name) {
-		util.Log.Warn(fmt.Sprint(name, " is already in the table. Ignoring."))
+		util.Log.Warn(name, " is already in the table. Ignoring.")
 		return
 	}
 	Table.quantities = append(Table.quantities, q)
