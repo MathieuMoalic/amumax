@@ -85,7 +85,7 @@ func (ts *TableStruct) WriteToBuffer() {
 	}
 	// size of buf should be same as size of []Ztable
 	for i, b := range buf {
-		ts.columns[i].buffer = append(ts.columns[i].buffer, zarr.Float64ToByte(b)...)
+		ts.columns[i].buffer = append(ts.columns[i].buffer, zarr.Float64ToBytes(b)...)
 		ts.Data[ts.columns[i].Name] = append(ts.Data[ts.columns[i].Name], b)
 	}
 }
