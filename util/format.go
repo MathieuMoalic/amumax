@@ -75,16 +75,3 @@ func FprintfFloats(out io.Writer, format string, a [][][]float32) {
 		fmt.Fprintln(out)
 	}
 }
-
-//// Produces nicely formatted output.
-//func FprintComplexs(out io.Writer, a [][][]complex64) {
-//	for i := range a {
-//		for j := range a[i] {
-//			for _, v := range a[i][j] {
-//				fmt.Fprint(out, v, " ")
-//			}
-//			fmt.Fprintln(out)
-//		}
-//		fmt.Fprintln(out)
-//	}
-//}
