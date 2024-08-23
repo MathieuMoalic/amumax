@@ -27,11 +27,11 @@ func writeOVF1Data(out io.Writer, q *data.Slice, dataformat string) {
 	case "text":
 		canonicalFormat = "Text"
 		hdr(out, "Begin", "Data "+canonicalFormat)
-		util.FatalErr(writeOVFText(out, q))
+		util.Log.PanicIfError(writeOVFText(out, q))
 	case "binary", "binary 4":
 		canonicalFormat = "Binary 4"
 		hdr(out, "Begin", "Data "+canonicalFormat)
-		util.FatalErr(writeOVF1Binary4(out, q))
+		util.Log.PanicIfError(writeOVF1Binary4(out, q))
 	default:
 		log.Fatalf("Illegal OVF data format: %v. Options are: Text, Binary 4", dataformat)
 	}
@@ -100,7 +100,7 @@ func writeOVF1Binary4(out io.Writer, array *data.Slice) (err error) {
 					bytes = (*[4]byte)(unsafe.Pointer(&data[c][iz][iy][ix]))[:]
 					bytes[0], bytes[1], bytes[2], bytes[3] = bytes[3], bytes[2], bytes[1], bytes[0]
 					_, err := out.Write(bytes)
-					util.FatalErr(err)
+					util.Log.PanicIfError(err)
 				}
 			}
 		}
@@ -115,7 +115,7 @@ func readOVF1DataBinary4(in io.Reader, t *data.Slice) {
 	// OOMMF requires this number to be first to check the format
 	var controlnumber float32
 	// OVF 1.0 is network byte order (MSB)
-	util.FatalErr(binary.Read(in, binary.BigEndian, &controlnumber))
+	util.Log.PanicIfError(binary.Read(in, binary.BigEndian, &controlnumber))
 	if controlnumber != OVF_CONTROL_NUMBER_4 {
 		panic("invalid OVF1 control number: " + fmt.Sprint(controlnumber))
 	}
@@ -143,7 +143,7 @@ func readOVF1DataBinary8(in io.Reader, t *data.Slice) {
 	// OOMMF requires this number to be first to check the format
 	var controlnumber float64
 	// OVF 1.0 is network byte order (MSB)
-	util.FatalErr(binary.Read(in, binary.BigEndian, &controlnumber))
+	util.Log.PanicIfError(binary.Read(in, binary.BigEndian, &controlnumber))
 
 	if controlnumber != OVF_CONTROL_NUMBER_8 {
 		panic("invalid OVF1 control number: " + fmt.Sprint(controlnumber))

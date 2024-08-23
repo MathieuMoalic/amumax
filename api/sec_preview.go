@@ -49,7 +49,7 @@ type Preview struct {
 func (p *Preview) GetQuantity() engine.Quantity {
 	quantity, exists := engine.Quantities[p.Quantity]
 	if !exists {
-		util.LogErr("Quantity not found:", p.Quantity)
+		util.Log.Err("Quantity not found: %v", p.Quantity)
 	}
 	return quantity
 }
@@ -221,7 +221,7 @@ func compStringToIndex(comp string) int {
 	case "All":
 		return -1
 	}
-	util.Fatal("Invalid component string")
+	util.Log.ErrAndExit("Invalid component string")
 	return -2
 }
 
@@ -250,7 +250,7 @@ func postPreviewComponent(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		util.LogErr(err)
+		util.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	preview.Component = req.Component
@@ -266,7 +266,7 @@ func postPreviewQuantity(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		util.LogErr(err)
+		util.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	_, exists := engine.Quantities[req.Quantity]
@@ -285,7 +285,7 @@ func postPreviewLayer(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		util.LogErr(err)
+		util.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	preview.Layer = req.Layer
@@ -300,7 +300,7 @@ func postPreviewMaxPoints(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		util.LogErr(err)
+		util.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	preview.MaxPoints = req.MaxPoints

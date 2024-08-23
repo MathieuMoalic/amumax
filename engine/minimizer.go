@@ -173,10 +173,10 @@ func Minimize() {
 		maxDmReached := mini.lastDm.Max() > StopMaxDm
 		out := !(maxStepsReached || maxTimeReached || !(maxDmSamplesReached || maxDmReached))
 		if maxStepsReached {
-			util.Log("Stopping `Minimize()`: Maximum time steps reached ( MinimizeMaxSteps=", MinimizeMaxSteps, " steps )")
+			util.Log.Comment("Stopping `Minimize()`: Maximum time steps reached ( MinimizeMaxSteps= %v steps", MinimizeMaxSteps)
 		}
 		if maxTimeReached {
-			util.Log("Stopping `Minimize()`: Maximum time reached ( MinimizeMaxTimeSeconds=", MinimizeMaxTimeSeconds, "s )")
+			util.Log.Comment("Stopping `Minimize()`: Maximum time reached ( MinimizeMaxTimeSeconds= %vs )", MinimizeMaxTimeSeconds)
 		}
 		return out
 	}

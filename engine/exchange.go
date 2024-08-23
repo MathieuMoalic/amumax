@@ -61,7 +61,7 @@ func AddExchangeField(dst *data.Slice) {
 		cuda.AddDMIBulk(dst, M.Buffer(), lex2.Gpu(), dbulk2.Gpu(), ms, Regions.Gpu(), M.Mesh(), OpenBC) // dmi+exchange
 		// TODO: add ScaleInterDbulk and InterDbulk
 	case inter && bulk:
-		util.Fatal("Cannot have interfacial-induced DMI and bulk DMI at the same time")
+		util.Log.ErrAndExit("Cannot have interfacial-induced DMI and bulk DMI at the same time")
 	}
 }
 

@@ -60,11 +60,11 @@ func (m *Metadata) End() {
 func (m *Metadata) Save() {
 	if m.Path != "" {
 		zattrs, err := httpfs.Create(m.Path)
-		util.FatalErr(err)
+		util.Log.PanicIfError(err)
 		defer zattrs.Close()
 		json_meta, err := json.MarshalIndent(m.Fields, "", "\t")
-		util.FatalErr(err)
+		util.Log.PanicIfError(err)
 		_, err = zattrs.Write([]byte(json_meta))
-		util.FatalErr(err)
+		util.Log.PanicIfError(err)
 	}
 }

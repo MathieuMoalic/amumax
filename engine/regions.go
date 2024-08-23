@@ -142,7 +142,7 @@ func (r *RegionsState) GetCell(ix, iy, iz int) int {
 
 func defRegionId(id int) {
 	if id < 0 || id > NREGION {
-		util.Fatalf("region id should be 0 -%v, have: %v", NREGION, id)
+		util.Log.ErrAndExit("region id should be 0 -%d, have: %d", NREGION, id)
 	}
 	CreateMesh()
 	Regions.AddIndex(id)

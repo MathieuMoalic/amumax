@@ -46,11 +46,11 @@ func NewChunks(q Quantity, c RequestedChunking) Chunks {
 func NewChunk(length, nb_of_chunks, N_index int) Chunk {
 	name := []string{"Nx", "Ny", "Nz", "comp"}[N_index]
 	if nb_of_chunks < 1 || (nb_of_chunks > length) {
-		util.Fatal("Error: The number of chunks must be between 1 and ", name)
+		util.Log.ErrAndExit("Error: The number of chunks must be between 1 and %v", name)
 	}
 	new_nb_of_chunks := closestDivisor(length, nb_of_chunks)
 	if new_nb_of_chunks != nb_of_chunks {
-		LogOut("Warning: The number of chunks for", name, "has been automatically resized from", nb_of_chunks, "to", new_nb_of_chunks)
+		util.Log.Comment("Warning: The number of chunks for %v has been automatically resized from %v to %v", name, nb_of_chunks, new_nb_of_chunks)
 	}
 	nb_of_chunks = new_nb_of_chunks
 	return Chunk{length / nb_of_chunks, nb_of_chunks}

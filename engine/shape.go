@@ -129,23 +129,24 @@ func Diamond(sidex, sidey float64) Shape {
 
 // Squircle creates a 3D rounded rectangle (a generalized squircle) with specified side lengths and thickness.
 func Squircle(sidex, sidey, sidez, a float64) Shape {
-    // r := math.Min(sidex, sidey) / 2
-    return func(x, y, z float64) bool {
+	// r := math.Min(sidex, sidey) / 2
+	return func(x, y, z float64) bool {
 		normX := x / (sidex / 2)
 		normY := y / (sidey / 2)
 
-        value := math.Pow(normX, 2) + math.Pow(normY, 2) - a*math.Pow(normX, 2)*math.Pow(normY, 2)
+		value := math.Pow(normX, 2) + math.Pow(normY, 2) - a*math.Pow(normX, 2)*math.Pow(normY, 2)
 
-		if math.Abs(x)>sidex/2 && math.Abs(y)>sidey/2 {
+		if math.Abs(x) > sidex/2 && math.Abs(y) > sidey/2 {
 			return false
-		}else{
-			inSquircleXY := value <= 1 
+		} else {
+			inSquircleXY := value <= 1
 			rz := sidez / 2
 			inThickness := z >= -rz && z <= rz
 			return inSquircleXY && inThickness
 		}
-    }
+	}
 }
+
 // 2D square with given side.
 func Square(side float64) Shape {
 	return Rect(side, side)
@@ -176,7 +177,7 @@ func ZRange(a, b float64) Shape {
 func Layers(a, b int) Shape {
 	Nz := GetMesh().Size()[Z]
 	if a < 0 || a > Nz || b < 0 || b < a {
-		util.Fatal("layers ", a, ":", b, " out of bounds (0 - ", Nz, ")")
+		util.Log.ErrAndExit("layers %d:%d out of bounds (0 - %d)", a, b, Nz)
 	}
 	c := GetMesh().CellSize()[Z]
 	z1 := Index2Coord(0, 0, a)[Z] - c/2

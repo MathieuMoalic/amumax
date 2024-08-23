@@ -102,19 +102,19 @@ func SnapshotAs(q Quantity, fname string) {
 // synchronous snapshot
 func snapshot_sync(fname string, output *data.Slice) {
 	f, err := httpfs.Create(fname)
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 	defer f.Close()
 	arrowSize := 16
 	err = draw.RenderFormat(f, output, "auto", "auto", arrowSize, path.Ext(fname))
 	if err != nil {
-		util.LogWarn("Error while rendering snapshot:", err)
+		util.Log.Warn("Error while rendering snapshot: %v", err)
 	}
 }
 
 // synchronous save
 func saveAs_sync(fname string, s *data.Slice, info data.Meta, format OutputFormat) {
 	f, err := httpfs.Create(fname)
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 	defer f.Close()
 
 	switch format {

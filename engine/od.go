@@ -41,18 +41,16 @@ func InitIO(inputfile, od string) {
 	if httpfs.Exists(od) {
 		// if directory exists and --skip-exist flag is set, skip the directory
 		if *Flag_skip_exists {
-			util.LogWarn(fmt.Sprintf("Directory `%s` exists, skipping `%s` because of --skip-exist flag.", od, inputfile))
+			util.Log.Warn(fmt.Sprintf("Directory `%s` exists, skipping `%s` because of --skip-exist flag.", od, inputfile))
 			os.Exit(0)
 			// if directory exists and --force-clean flag is set, remove the directory
 		} else if *Flag_forceclean {
-			util.LogWarn(fmt.Sprintf("Cleaning `%s`", od))
-			util.FatalErr(httpfs.Remove(od))
-			util.FatalErr(httpfs.Mkdir(od))
+			util.Log.Warn(fmt.Sprintf("Cleaning `%s`", od))
+			util.Log.PanicIfError(httpfs.Remove(od))
+			util.Log.PanicIfError(httpfs.Mkdir(od))
 		}
 	} else {
-		util.FatalErr(httpfs.Mkdir(od))
+		util.Log.PanicIfError(httpfs.Mkdir(od))
 	}
-	LogOut("Output directory:", outputdir)
-	initLog()
 	zarr.InitZgroup(OD())
 }

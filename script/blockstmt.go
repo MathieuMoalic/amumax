@@ -50,7 +50,7 @@ func (b *BlockStmt) Child() []Expr {
 func Format(n ast.Node) string {
 	var buf bytes.Buffer
 	fset := token.NewFileSet()
-	util.FatalErr(format.Node(&buf, fset, n))
+	util.Log.PanicIfError(format.Node(&buf, fset, n))
 	str := buf.String()
 	str = strings.TrimSuffix(str, "\n")
 	return str
@@ -60,7 +60,7 @@ func (b *BlockStmt) Format() string {
 	var buf bytes.Buffer
 	fset := token.NewFileSet()
 	for i := range b.Children {
-		util.FatalErr(format.Node(&buf, fset, b.Node[i]))
+		util.Log.PanicIfError(format.Node(&buf, fset, b.Node[i]))
 		fmt.Fprintln(&buf)
 	}
 	return buf.String()

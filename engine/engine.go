@@ -20,6 +20,7 @@ import (
 	"github.com/MathieuMoalic/amumax/cuda/cu"
 	"github.com/MathieuMoalic/amumax/script"
 	"github.com/MathieuMoalic/amumax/timer"
+	"github.com/MathieuMoalic/amumax/util"
 )
 
 var VERSION = "dev"
@@ -55,7 +56,7 @@ func CleanExit() {
 		return
 	}
 	drainOutput()
-	LogOut("**************** Simulation Ended ****************** //")
+	util.Log.Comment("**************** Simulation Ended ****************** //")
 	Table.Flush()
 	if logfile != nil {
 		logfile.Close()

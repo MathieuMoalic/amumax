@@ -33,7 +33,7 @@ type connectionManager struct {
 }
 
 func (cm *connectionManager) add(ws *websocket.Conn) {
-	util.LogDev("Websocket connection added")
+	util.Log.Dev("Websocket connection added")
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	cm.conns[ws] = struct{}{}
@@ -41,20 +41,20 @@ func (cm *connectionManager) add(ws *websocket.Conn) {
 }
 
 func (cm *connectionManager) remove(ws *websocket.Conn) {
-	util.LogDev("Websocket connection removed")
+	util.Log.Dev("Websocket connection removed")
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	delete(cm.conns, ws)
 }
 
 func (cm *connectionManager) broadcast(msg []byte) {
-	util.LogDev("Broadcasting to ", len(cm.conns), " connection(s)")
+	util.Log.Dev("Broadcasting to %d connection(s)", len(cm.conns))
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	for ws := range cm.conns {
 		err := ws.WriteMessage(websocket.BinaryMessage, msg)
 		if err != nil {
-			util.LogErr("Error sending message via WebSocket:", err)
+			util.Log.Err("Error sending message via WebSocket: %v", err)
 			ws.Close()
 			delete(cm.conns, ws)
 		}
@@ -87,7 +87,7 @@ func websocketEntrypoint(c echo.Context) error {
 
 	select {
 	case <-done:
-		util.LogDev("Connection closed by client")
+		util.Log.Dev("Connection closed by client")
 		return nil
 	case <-broadcastStop:
 		return nil
@@ -97,7 +97,7 @@ func websocketEntrypoint(c echo.Context) error {
 func broadcastEngineState() {
 	msg, err := msgpack.Marshal(NewEngineState())
 	if err != nil {
-		util.LogErr("Error marshaling combined message:", err)
+		util.Log.Err("Error marshaling combined message: %v", err)
 		return
 	}
 

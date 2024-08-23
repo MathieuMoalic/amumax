@@ -93,7 +93,7 @@ func (ts *TableStruct) WriteToBuffer() {
 func (ts *TableStruct) Flush() {
 	for i := range ts.columns {
 		_, err := ts.columns[i].io.Write(ts.columns[i].buffer)
-		util.FatalErr(err)
+		util.Log.PanicIfError(err)
 		ts.columns[i].buffer = []byte{}
 		// saving .zarray before the data might help resolve some unsync
 		// errors when the simulation is running and the user loads data
@@ -134,20 +134,20 @@ func (ts *TableStruct) GetTableNames() []string {
 
 func (ts *TableStruct) AddColumn(name, unit string) {
 	err := httpfs.Mkdir(OD() + "table/" + name)
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 	f, err := httpfs.Create(OD() + "table/" + name + "/0")
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 	ts.columns = append(ts.columns, Column{Name: name, Unit: unit, buffer: []byte{}, io: f})
 }
 
 func TableInit() {
 	err := httpfs.Remove(OD() + "table")
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 	zarr.MakeZgroup("table", OD(), &zGroups)
 	err = httpfs.Mkdir(OD() + "table/t")
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 	f, err := httpfs.Create(OD() + "table/t/0")
-	util.FatalErr(err)
+	util.Log.PanicIfError(err)
 	Table.columns = append(Table.columns, Column{"t", "s", []byte{}, f})
 	TableAdd(&M)
 	go TablesAutoFlush()
@@ -176,14 +176,14 @@ func TableAdd(q Quantity) {
 func TableAddAs(q Quantity, name string) {
 	suffixes := []string{"x", "y", "z"}
 	if Table.Step != -1 {
-		util.LogWarn("You cannot add a new quantity to the table after the simulation has started. Ignoring.")
+		util.Log.Warn("You cannot add a new quantity to the table after the simulation has started. Ignoring.")
 	}
 	if len(Table.columns) == 0 {
 		TableInit()
 	}
 
 	if Table.Exists(q, name) {
-		util.LogWarn(fmt.Sprint(name, " is already in the table. Ignoring."))
+		util.Log.Warn(fmt.Sprint(name, " is already in the table. Ignoring."))
 		return
 	}
 	Table.quantities = append(Table.quantities, q)

@@ -2,7 +2,7 @@ package zarr
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io"
 	"os"
 	"path"
@@ -18,9 +18,7 @@ import (
 func Read(binary_path string, pwd string) (s *data.Slice, err error) {
 	if !path.IsAbs(binary_path) {
 		wd, err := os.Getwd()
-		if err != nil {
-			util.LogThenExit(fmt.Sprint(err))
-		}
+		util.Log.PanicIfError(err)
 		binary_path = wd + "/" + path.Dir(pwd) + "/" + binary_path
 	}
 	binary_path = path.Clean(binary_path)
@@ -30,27 +28,21 @@ func Read(binary_path string, pwd string) (s *data.Slice, err error) {
 		if !IsSaving {
 			break
 		}
-		util.Log("Waiting for all the files to be saved before reading...")
+		util.Log.Comment("Waiting for all the files to be saved before reading...")
 		time.Sleep(1 * time.Second)
 	}
 
 	zarray_path := path.Dir(binary_path) + "/.zarray"
+	util.Log.Comment("Reading:  %v", binary_path)
 	io_reader, err := httpfs.Open(binary_path)
-	util.Log("Reading: ", binary_path)
-	if err != nil {
-		util.LogThenExit(fmt.Sprint(err))
-	}
+	util.Log.PanicIfError(err)
 	content, err := os.ReadFile(zarray_path)
-	if err != nil {
-		util.LogThenExit(fmt.Sprint(err))
-	}
+	util.Log.PanicIfError(err)
 	var zarray zarrayFile
 	err = json.Unmarshal([]byte(content), &zarray)
-	if err != nil {
-		util.LogThenExit(fmt.Sprint(err))
-	}
+	util.Log.PanicIfError(err)
 	if zarray.Compressor.ID != "zstd" {
-		util.LogThenExit("Error: LoadFile: Only the Zstd compressor is supported")
+		util.Log.PanicIfError(errors.New("LoadFile: Only the Zstd compressor is supported"))
 	}
 	sizez := zarray.Chunks[1]
 	sizey := zarray.Chunks[2]
