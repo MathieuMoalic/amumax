@@ -84,7 +84,11 @@ func Read(URL string) ([]byte, error) {
 
 func Exists(URL string) bool {
 	_, err := Read(URL)
-	// if `is a directory` is in the error message, it means the URL is a directory
+	return err == nil
+}
+
+func IsDir(URL string) bool {
+	_, err := Read(URL)
 	if err != nil && strings.Contains(err.Error(), "is a directory") {
 		return true
 	}

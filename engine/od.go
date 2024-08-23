@@ -3,7 +3,6 @@ package engine
 // Management of output directory.
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -38,14 +37,14 @@ func InitIO(inputfile, od string) {
 	if strings.HasPrefix(outputdir, "http://") {
 		httpfs.SetWD(outputdir + "/../")
 	}
-	if httpfs.Exists(od) {
+	if httpfs.IsDir(od) {
 		// if directory exists and --skip-exist flag is set, skip the directory
 		if *Flag_skip_exists {
-			util.Log.Warn(fmt.Sprintf("Directory `%s` exists, skipping `%s` because of --skip-exist flag.", od, inputfile))
+			util.Log.Warn("Directory `%s` exists, skipping `%s` because of --skip-exist flag.", od, inputfile)
 			os.Exit(0)
 			// if directory exists and --force-clean flag is set, remove the directory
 		} else if *Flag_forceclean {
-			util.Log.Warn(fmt.Sprintf("Cleaning `%s`", od))
+			util.Log.Warn("Cleaning `%s`", od)
 			util.Log.PanicIfError(httpfs.Remove(od))
 			util.Log.PanicIfError(httpfs.Mkdir(od))
 		}
