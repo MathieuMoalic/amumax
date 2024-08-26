@@ -49,8 +49,8 @@ func TestMemAddressRange(t *testing.T) {
 	if base != ptr {
 		t.Fail()
 	}
-	size, base = 0, DevicePtr(0)
-	size, base = ptr.GetAddressRange()
+	_ = DevicePtr(0)
+	_, _ = ptr.GetAddressRange()
 	if ptr.Bytes() != int64(N) {
 		t.Fail()
 	}

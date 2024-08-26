@@ -18,11 +18,9 @@ func TestModule(test *testing.T) {
 	aptr := unsafe.Pointer(&a[0])
 	MemcpyHtoD(A, aptr, N4)
 
-	var value float32
-	value = 42
+	value := 42
 
-	var n int
-	n = N / 2
+	n := N / 2
 
 	block := 128
 	grid := DivUp(N, block)
