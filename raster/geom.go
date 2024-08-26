@@ -56,11 +56,6 @@ type Point struct {
 	X, Y Fix32
 }
 
-// String returns a human-readable representation of a Point.
-func (p Point) String() string {
-	return "(" + p.X.String() + ", " + p.Y.String() + ")"
-}
-
 // Add returns the vector p + q.
 func (p Point) Add(q Point) Point {
 	return Point{p.X + q.X, p.Y + q.Y}
