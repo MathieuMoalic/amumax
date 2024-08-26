@@ -21,6 +21,7 @@ func init() {
 var relaxing = false
 
 func Relax() {
+	checkExchangeLenght()
 	SanityCheck()
 	Pause = false
 
