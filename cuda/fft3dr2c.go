@@ -1,8 +1,6 @@
 package cuda
 
 import (
-	"log"
-
 	"github.com/MathieuMoalic/amumax/cuda/cu"
 	"github.com/MathieuMoalic/amumax/cuda/cufft"
 	"github.com/MathieuMoalic/amumax/data"
@@ -33,11 +31,11 @@ func (p *fft3DR2CPlan) ExecAsync(src, dst *data.Slice) {
 	util.Argument(src.NComp() == 1 && dst.NComp() == 1)
 	oksrclen := p.InputLen()
 	if src.Len() != oksrclen {
-		log.Panicf("fft size mismatch: expecting src len %v, got %v", oksrclen, src.Len())
+		util.Log.ErrAndExit("fft size mismatch: expecting src len %v, got %v", oksrclen, src.Len())
 	}
 	okdstlen := p.OutputLen()
 	if dst.Len() != okdstlen {
-		log.Panicf("fft size mismatch: expecting dst len %v, got %v", okdstlen, dst.Len())
+		util.Log.ErrAndExit("fft size mismatch: expecting dst len %v, got %v", okdstlen, dst.Len())
 	}
 	p.handle.ExecR2C(cu.DevicePtr(uintptr(src.DevPtr(0))), cu.DevicePtr(uintptr(dst.DevPtr(0))))
 	if Synchronous {

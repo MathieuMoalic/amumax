@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"log"
 	"strings"
 	"unsafe"
 
@@ -14,7 +13,7 @@ import (
 
 func WriteOVF1(out io.Writer, q *data.Slice, meta data.Meta, dataformat string) {
 	if q.NComp() != 3 {
-		log.Fatal("Cannot save the quantity: the OVF1 format only supports 3D-vector fields.")
+		util.Log.ErrAndExit("Cannot save the quantity: the OVF1 format only supports 3D-vector fields.")
 	}
 	writeOVF1Header(out, q, meta)
 	writeOVF1Data(out, q, dataformat)
@@ -33,7 +32,7 @@ func writeOVF1Data(out io.Writer, q *data.Slice, dataformat string) {
 		hdr(out, "Begin", "Data "+canonicalFormat)
 		util.Log.PanicIfError(writeOVF1Binary4(out, q))
 	default:
-		log.Fatalf("Illegal OVF data format: %v. Options are: Text, Binary 4", dataformat)
+		util.Log.ErrAndExit("Illegal OVF data format: %v. Options are: Text, Binary 4", dataformat)
 	}
 	hdr(out, "End", "Data "+canonicalFormat)
 }

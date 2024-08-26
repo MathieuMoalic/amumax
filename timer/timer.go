@@ -10,24 +10,29 @@ import (
 var (
 	clocks     map[string]*clock
 	firstStart time.Time
+	Enabled    bool
 )
 
 func Start(key string) {
-	if clocks == nil {
-		clocks = make(map[string]*clock)
-		firstStart = time.Now()
-	}
+	if Enabled {
+		if clocks == nil {
+			clocks = make(map[string]*clock)
+			firstStart = time.Now()
+		}
 
-	if c, ok := clocks[key]; ok {
-		c.Start()
-	} else {
-		clocks[key] = new(clock)
-		// do not start, first run = warmup time
+		if c, ok := clocks[key]; ok {
+			c.Start()
+		} else {
+			clocks[key] = new(clock)
+			// do not start, first run = warmup time
+		}
 	}
 }
 
 func Stop(key string) {
-	clocks[key].Stop()
+	if Enabled {
+		clocks[key].Stop()
+	}
 }
 
 type clock struct {
@@ -42,7 +47,7 @@ func (c *clock) Start() {
 }
 
 func (c *clock) Stop() {
-	if (c.started == time.Time{}) {
+	if (c.started.Equal(time.Time{})) {
 		return // not started
 	}
 	d := time.Since(c.started)
@@ -77,7 +82,7 @@ func (l entries) Less(i, j int) bool { return l[i].total > l[j].total }
 func (l entries) Swap(i, j int)      { l[i], l[j] = l[j], l[i] }
 
 func Print(out io.Writer) {
-	if clocks == nil {
+	if clocks == nil || !Enabled {
 		return
 	}
 	wallTime := time.Since(firstStart)

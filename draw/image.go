@@ -3,7 +3,6 @@ package draw
 import (
 	"image"
 	"image/color"
-	"log"
 	"strconv"
 
 	"github.com/MathieuMoalic/amumax/data"
@@ -22,7 +21,7 @@ func On(img *image.RGBA, f *data.Slice, fmin, fmax string, arrowSize int, colorm
 	dim := f.NComp()
 	switch dim {
 	default:
-		log.Fatalf("unsupported number of components: %v", dim)
+		util.Log.ErrAndExit("unsupported number of components: %v", dim)
 	case 3:
 		if colormap == nil {
 			drawVectors(img, f.Vectors(), arrowSize)

@@ -3,7 +3,6 @@ package cuda
 
 import (
 	"fmt"
-	"log"
 	"runtime"
 
 	"github.com/MathieuMoalic/amumax/cuda/cu"
@@ -39,10 +38,10 @@ func Init(gpu int) {
 		DevName, (TotalMem)/(1024*1024), DriverVersion/1000, (DriverVersion%1000)/10, M, m)
 
 	if M < 2 {
-		log.Fatalln("GPU has insufficient compute capability, need 2.0 or higher.")
+		util.Log.ErrAndExit("GPU has insufficient compute capability, need 2.0 or higher.")
 	}
 	if Synchronous {
-		log.Println("DEBUG: synchronized CUDA calls")
+		util.Log.Comment("DEBUG: synchronized CUDA calls")
 	}
 
 	// test PTX load so that we can catch CUDA_ERROR_NO_BINARY_FOR_GPU early
@@ -54,7 +53,7 @@ func tryCuInit() {
 	defer func() {
 		err := recover()
 		if err == cu.ERROR_UNKNOWN {
-			log.Print("\n Try running: sudo nvidia-modprobe -u \n")
+			util.Log.ErrAndExit("\n CUDA unknown error\n")
 		}
 		if err != nil {
 			util.Log.PanicIfError(fmt.Errorf("%v", fmt.Sprint(err)))

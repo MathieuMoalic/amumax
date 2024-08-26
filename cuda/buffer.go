@@ -7,11 +7,12 @@ package cuda
 // effectively wait for the previous operation on the buffer.
 
 import (
-	"log"
+	"fmt"
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/cuda/cu"
 	"github.com/MathieuMoalic/amumax/data"
+	"github.com/MathieuMoalic/amumax/util"
 )
 
 var (
@@ -41,7 +42,7 @@ func Buffer(nComp int, size [3]int) *data.Slice {
 	// allocate as much new memory as needed
 	for i := nFromPool; i < nComp; i++ {
 		if len(buf_check) >= buf_max {
-			log.Panic("too many buffers in use, possible memory leak")
+			util.Log.PanicIfError(fmt.Errorf("too many buffers in use, possible memory leak"))
 		}
 		ptrs[i] = MemAlloc(int64(cu.SIZEOF_FLOAT32 * N))
 		buf_check[ptrs[i]] = struct{}{} // mark this pointer as mine
@@ -65,7 +66,8 @@ func Recycle(s *data.Slice) {
 			continue
 		}
 		if _, ok := buf_check[ptr]; !ok {
-			log.Panic("recyle: was not obtained with getbuffer")
+			util.Log.PanicIfError(fmt.Errorf("recyle: was not obtained with getbuffer"))
+
 		}
 		pool = append(pool, ptr)
 	}

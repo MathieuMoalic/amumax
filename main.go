@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -17,6 +16,7 @@ import (
 	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/engine"
 	"github.com/MathieuMoalic/amumax/script"
+	"github.com/MathieuMoalic/amumax/timer"
 	"github.com/MathieuMoalic/amumax/util"
 	"github.com/fatih/color"
 	"github.com/minio/selfupdate"
@@ -38,12 +38,12 @@ func main() {
 		return
 	}
 	// go checkUpdate()
-	log.SetPrefix("")
-	log.SetFlags(0)
 
 	cuda.Init(*engine.Flag_gpu)
 
 	cuda.Synchronous = *engine.Flag_sync
+	timer.Enabled = true //*engine.Flag_sync
+
 	if *flag_version {
 		printVersion()
 	}
@@ -137,6 +137,7 @@ func runMx3File(mx3Path string) {
 	util.Log.Comment("Input file: %s", mx3Path)
 	util.Log.Comment("Output directory: %s", engine.OD())
 	util.Log.Init(zarrPath, engine.VERSION == "dev")
+	go util.Log.AutoFlushToFile()
 	mx3Path = engine.InputFile
 
 	var code *script.BlockStmt
@@ -177,7 +178,6 @@ func runGoFile(fname string) {
 	}
 
 	cmd := exec.Command("go", flags...)
-	log.Println("go", flags)
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr

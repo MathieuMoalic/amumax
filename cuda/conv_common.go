@@ -3,7 +3,6 @@ package cuda
 // common code for all convolutions.
 
 import (
-	"log"
 	"math"
 
 	"github.com/MathieuMoalic/amumax/data"
@@ -45,7 +44,7 @@ func scaleRealParts(dst, src *data.Slice, scale float32) {
 	// ...however, we check that the imaginary parts are nearly zero,
 	// just to be sure we did not make a mistake during kernel creation.
 	if maximg > FFT_IMAG_TOLERANCE {
-		log.Fatalf("FFT kernel imaginary part: %v\n", maximg)
+		util.Log.ErrAndExit("FFT kernel imaginary part: %v\n", maximg)
 	}
 }
 
