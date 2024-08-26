@@ -48,7 +48,6 @@ func (cm *connectionManager) remove(ws *websocket.Conn) {
 }
 
 func (cm *connectionManager) broadcast(msg []byte) {
-	util.Log.Dev("Broadcasting to %d connection(s)", len(cm.conns))
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	for ws := range cm.conns {
