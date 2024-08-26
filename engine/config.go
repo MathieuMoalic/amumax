@@ -186,7 +186,7 @@ func Conical(q, coneDirection data.Vector, coneAngle float64) Config {
 	p := math.Sqrt(1 - u[Z]*u[Z])
 	ua := data.Vector{u[X] * u[Z], u[Y] * u[Z], u[Z]*u[Z] - 1}.Div(p)
 	ub := data.Vector{-u[Y], u[X], 0}.Div(p)
-	// cone direction along z direction? -> oops devided by zero, let's fix this
+	// cone direction along z direction? -> oops divided by zero, let's fix this
 	if u[Z]*u[Z] == 1 {
 		ua = data.Vector{1, 0, 0}
 		ub = data.Vector{0, 1, 0}

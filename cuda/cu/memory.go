@@ -26,7 +26,7 @@ func MemAlloc(bytes int64) DevicePtr {
 // It is safe to double-free.
 func MemFree(p DevicePtr) {
 	if p == DevicePtr(uintptr(0)) {
-		return // Allready freed
+		return // Already freed
 	}
 	err := Result(C.cuMemFree(C.CUdeviceptr(p)))
 	if err != SUCCESS {

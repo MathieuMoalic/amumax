@@ -186,11 +186,11 @@ func (svg *SVG) ClipEnd() {
 	svg.println(`</clipPath>`)
 }
 
-// Def begins a defintion block.
+// Def begins a definition block.
 // Standard Reference: http://www.w3.org/TR/SVG11/struct.html#DefsElement
 func (svg *SVG) Def() { svg.println(`<defs>`) }
 
-// DefEnd ends a defintion block.
+// DefEnd ends a definition block.
 func (svg *SVG) DefEnd() { svg.println(`</defs>`) }
 
 // Marker defines a marker

@@ -1,9 +1,25 @@
 linters-settings:
+  gocyclo:
+    min-complexity: 10 # Lower this to catch less complex functions
   staticcheck:
     checks:
       - all
       - "-SA1019" # disable the rule SA1000
 
-# issues:
-#   exclude-dirs:
-#     - cuda
+linters:
+  enable:
+    - errcheck # Check that errors are handled
+    - gosimple # Report simplifications in code
+    - govet # Vet analyzes the code and reports suspicious constructs
+    - ineffassign # Detect ineffectual assignments
+    - staticcheck # Detects code that can be improved
+    - typecheck # Like the front-end of a Go compiler, reports type errors
+    - unused # Finds unused variables, constants, and functions
+    - misspell # Detects common misspellings
+
+issues:
+  exclude-rules:
+    - linters:
+        - errcheck
+      text: "error return value not checked" # Optionally exclude some errors
+
