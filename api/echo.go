@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"strconv"
 	"time"
@@ -72,7 +71,7 @@ func startGuiServer(e *echo.Echo) {
 		// Find an available port
 		addr, err := findAvailablePort()
 		if err != nil {
-			log.Fatalf("Failed to find available port: %v", err)
+			util.Log.ErrAndExit("Failed to find available port: %v", err)
 		}
 		util.Log.Comment("Serving the web UI at http://%s", addr)
 
