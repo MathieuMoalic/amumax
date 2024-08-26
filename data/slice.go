@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"reflect"
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/util"
@@ -192,10 +191,7 @@ func (s *Slice) Host() [][]float32 {
 	}
 	list := make([][]float32, s.NComp())
 	for c := range list {
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&list[c]))
-		hdr.Data = uintptr(s.ptrs[c])
-		hdr.Len = s.Len()
-		hdr.Cap = hdr.Len
+		list[c] = unsafe.Slice((*float32)(unsafe.Pointer(s.ptrs[c])), s.Len())
 	}
 	return list
 }
