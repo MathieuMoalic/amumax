@@ -9,7 +9,7 @@ import (
 )
 
 // test input data
-var in1, in2, in3 *data.Slice
+var in1, in2 *data.Slice
 
 func initTest() {
 	if in1 != nil {

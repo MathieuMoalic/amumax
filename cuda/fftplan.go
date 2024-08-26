@@ -4,7 +4,6 @@ package cuda
 // Base implementation for all FFT plans.
 
 import (
-	"github.com/MathieuMoalic/amumax/cuda/cu"
 	"github.com/MathieuMoalic/amumax/cuda/cufft"
 )
 
@@ -23,9 +22,4 @@ func (p *fftplan) Free() {
 		p.handle.Destroy()
 		p.handle = 0
 	}
-}
-
-// Associates a CUDA stream with the FFT plan.
-func (p *fftplan) setStream(stream cu.Stream) {
-	p.handle.SetStream(stream)
 }
