@@ -19,5 +19,4 @@ ENV CGO_CFLAGS_ALLOW='(-fno-schedule-insns|-malign-double|-ffast-math)'
 RUN git config --global --add safe.directory /src
 CMD go build -v \
     -ldflags "-X github.com/MathieuMoalic/amumax/engine.VERSION=$(date -u +'%Y.%m.%d')" \
-    -ldflags "-X github.com/MathieuMoalic/amumax/util.VERSION=$(date -u +'%Y.%m.%d')" \
     -o build/amumax
