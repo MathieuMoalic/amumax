@@ -8,6 +8,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/data"
+	"github.com/MathieuMoalic/amumax/mag"
 	"github.com/MathieuMoalic/amumax/util"
 	"github.com/MathieuMoalic/amumax/zarr"
 )
@@ -30,6 +31,7 @@ var (
 	stepper                 Stepper                      // generic step, can be EulerStep, HeunStep, etc
 	Solvertype              int
 	ProgressBar             zarr.ProgressBar
+	exchangeLenghtWarned    bool
 )
 
 func init() {
@@ -51,6 +53,7 @@ func init() {
 	_ = NewScalarValue("LastErr", "", "Error of last step", func() float64 { return LastErr })
 	_ = NewScalarValue("PeakErr", "", "Overall maxium error per step", func() float64 { return PeakErr })
 	_ = NewScalarValue("NEval", "", "Total number of torque evaluations", func() float64 { return float64(NEvals) })
+	exchangeLenghtWarned = false
 }
 
 // Time stepper like Euler, Heun, RK23
@@ -163,6 +166,7 @@ func RunWithoutPrecession(seconds float64) {
 
 // Run the simulation for a number of seconds.
 func Run(seconds float64) {
+	checkExchangeLenght()
 	start := Time
 	stop := Time + seconds
 	alarm = stop // don't have dt adapt to go over alarm
@@ -196,6 +200,7 @@ func Steps(n int) {
 
 // Runs as long as condition returns true, saves output.
 func RunWhile(condition func() bool) {
+	checkExchangeLenght()
 	SanityCheck()
 	Pause = false // may be set by <-Inject
 	const output = true
@@ -266,4 +271,29 @@ func SanityCheck() {
 func Exit() {
 	CleanExit()
 	os.Exit(0)
+}
+
+func checkExchangeLenght() {
+	if exchangeLenghtWarned {
+		return
+	}
+	// iterate over all of the quantities
+	for _, region := range Regions.GetExistingIndices() {
+		Msat_r := Msat.GetRegion(region)
+		Aex_r := Aex.GetRegion(region)
+		lex := math.Sqrt(2 * Aex_r / (mag.Mu0 * Msat_r * Msat_r))
+		if Dx > lex {
+			util.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dx (%.3g nm) in region %d", lex*1e9, Dx*1e9, region)
+			exchangeLenghtWarned = true
+		}
+		if Dy > lex {
+			util.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dy (%.3g nm) in region %d", lex*1e9, Dy*1e9, region)
+			exchangeLenghtWarned = true
+		}
+		if Dz > lex && Nz > 1 {
+			util.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dz (%.3g nm) in region %d", lex*1e9, Dz*1e9, region)
+			exchangeLenghtWarned = true
+		}
+	}
+
 }
