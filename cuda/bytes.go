@@ -3,7 +3,7 @@ package cuda
 // This file provides GPU byte slices, used to store regions.
 
 import (
-	"log"
+	"fmt"
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/cuda/cu"
@@ -46,7 +46,7 @@ func (src *Bytes) Download(dst []byte) {
 // data.Index can be used to find the index for x,y,z.
 func (dst *Bytes) Set(index int, value byte) {
 	if index < 0 || index >= dst.Len {
-		log.Panic("Bytes.Set: index out of range:", index)
+		util.Log.PanicIfError(fmt.Errorf("Bytes.Set: index out of range: %d", index))
 	}
 	src := value
 	MemCpyHtoD(unsafe.Pointer(uintptr(dst.Ptr)+uintptr(index)), unsafe.Pointer(&src), 1)
@@ -56,7 +56,7 @@ func (dst *Bytes) Set(index int, value byte) {
 // data.Index can be used to find the index for x,y,z.
 func (src *Bytes) Get(index int) byte {
 	if index < 0 || index >= src.Len {
-		log.Panic("Bytes.Set: index out of range:", index)
+		util.Log.PanicIfError(fmt.Errorf("Bytes.Set: index out of range: %v", index))
 	}
 	var dst byte
 	MemCpyDtoH(unsafe.Pointer(&dst), unsafe.Pointer(uintptr(src.Ptr)+uintptr(index)), 1)

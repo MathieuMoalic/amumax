@@ -1,15 +1,12 @@
 package script
 
 import (
-	"log"
 	"math"
 	"reflect"
 	"testing"
-)
 
-func init() {
-	log.SetFlags(0)
-}
+	"github.com/MathieuMoalic/amumax/util"
+)
 
 func TestEval(t *testing.T) {
 	w := NewWorld()
@@ -70,7 +67,7 @@ func TestTypes(t *testing.T) {
 	w.Var("x", &x)
 	w.MustExec("x=7")
 
-	w.Func("printInt", func(x int) { log.Println(x) })
+	w.Func("printInt", func(x int) { util.Log.Comment("%v", x) })
 	w.MustExec("printInt(7)")
 }
 
@@ -213,7 +210,7 @@ func TestFail(test *testing.T) {
 		if err == nil {
 			test.Error(t, "should not compile")
 		} else {
-			log.Println(t, ":", err, ":OK")
+			util.Log.Comment(t, ":", err, ":OK")
 		}
 	}
 }

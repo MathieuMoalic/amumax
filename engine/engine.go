@@ -66,4 +66,5 @@ func CleanExit() {
 	}
 	script.MMetadata.Add("steps", NSteps)
 	script.MMetadata.End()
+	util.Log.FlushToFile()
 }

@@ -3,7 +3,6 @@ package oommf
 import (
 	"fmt"
 	"io"
-	"log"
 	"strings"
 	"unsafe"
 
@@ -87,7 +86,7 @@ func writeOVF2Data(out io.Writer, q *data.Slice, dataformat string) {
 		hdr(out, "Begin", "Data "+canonicalFormat)
 		writeOVF2DataBinary4(out, q)
 	default:
-		log.Fatalf("Illegal OMF data format: %v. Options are: Text, Binary 4", dataformat)
+		util.Log.ErrAndExit("Illegal OMF data format: %v. Options are: Text, Binary 4", dataformat)
 	}
 	hdr(out, "End", "Data "+canonicalFormat)
 }

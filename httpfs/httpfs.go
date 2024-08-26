@@ -11,7 +11,6 @@ package httpfs
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path"
 )
@@ -27,7 +26,7 @@ func readBody(r io.ReadCloser) string {
 	defer r.Close()
 	b, err := io.ReadAll(r)
 	if err != nil {
-		log.Println("readbody:", err)
+		fmt.Println("readbody:", err)
 		return ""
 	}
 	return string(b)
@@ -113,6 +112,6 @@ func localRemove(fname string) error {
 
 func Log(msg ...interface{}) {
 	if Logging {
-		log.Println(msg...)
+		fmt.Println(msg...)
 	}
 }

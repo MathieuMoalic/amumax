@@ -5,7 +5,6 @@ package data
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/util"
@@ -187,7 +186,7 @@ const SIZEOF_FLOAT32 = 4
 // It should have CPUAccess() == true.
 func (s *Slice) Host() [][]float32 {
 	if !s.CPUAccess() {
-		log.Panic("slice not accessible by CPU")
+		util.Log.PanicIfError(fmt.Errorf("slice not accessible by CPU"))
 	}
 	list := make([][]float32, s.NComp())
 	for c := range list {

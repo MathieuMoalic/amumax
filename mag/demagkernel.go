@@ -47,15 +47,16 @@ func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, ca
 
 	basename := kernelName(gridsize, pbc, cellsize, accuracy, cacheDir)
 	if httpfs.Exists(basename) {
-		util.Log.Warn("Loading kernel from cache: %v", basename)
-		kernel, err := loadKernel(basename, padSize(gridsize, pbc))
+		util.Log.Comment("Loading kernel from cache")
+		var err error
+		kernel, err = loadKernel(basename, padSize(gridsize, pbc))
 		if err != nil {
 			util.Log.Warn("Couldn't load kernel from cache: %v", err)
 			kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, showMagnets)
 		}
 		return kernel
 	} else {
-		util.Log.Warn("Calculating kernel and saving to cache: %v", basename)
+		util.Log.Warn("Calculating kernel and saving to cache")
 		kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, showMagnets)
 		err := saveKernel(basename, kernel)
 		if err != nil {
@@ -145,7 +146,6 @@ func loadKernel(fname string, size [3]int) ([3][3]*data.Slice, error) {
 }
 
 func saveKernel(fname string, kernel [3][3]*data.Slice) error {
-	util.Log.Comment("Saving kernel to cache: %v", fname)
 	kernelBytes := kernelToBytes(kernel)
 	compressedData, err := zstd.Compress(nil, kernelBytes)
 	if err != nil {
@@ -161,7 +161,6 @@ func saveKernel(fname string, kernel [3][3]*data.Slice) error {
 	if err != nil {
 		return err
 	}
-	util.Log.Warn("Kernel saved to cache: %v", fname)
 	return nil
 }
 
@@ -390,7 +389,6 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 	kernel[Z][X] = kernel[X][Z]
 	kernel[Z][Y] = kernel[Y][Z]
 	ProgressBar.Finish()
-	util.Log.Comment("Kernel Calculated.")
 	return kernel
 }
 
@@ -450,7 +448,7 @@ func sanityCheck(cellsize [3]float64) {
 	aMin := math.Min(a1, math.Min(a2, a3))
 
 	if aMax > maxAspect || aMin < 1./maxAspect {
-		util.Log.PanicIfError(fmt.Errorf("Unrealistic cell aspect ratio %v", cellsize))
+		util.Log.PanicIfError(fmt.Errorf("unrealistic cell aspect ratio %v", cellsize))
 	}
 }
 

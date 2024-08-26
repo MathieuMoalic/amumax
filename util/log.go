@@ -20,17 +20,21 @@ type Logs struct {
 	dev     bool
 }
 
-func AutoFlushLog2File() {
+func (l *Logs) AutoFlushToFile() {
 	for {
-		if Log.logfile != nil {
-			Log.logfile.Flush()
-		}
+		l.FlushToFile()
 		time.Sleep(5 * time.Second)
 	}
 }
 
+func (l *Logs) FlushToFile() {
+	if l.logfile != nil {
+		l.logfile.Flush()
+	}
+}
+
 func (l *Logs) Init(zarrPath string, dev bool) {
-	f, err := httpfs.Create(zarrPath + "log.txt")
+	f, err := httpfs.Create(zarrPath + "/log.txt")
 	if err != nil {
 		color.Red(fmt.Sprintf("Error creating the log file: %v", err))
 	}
