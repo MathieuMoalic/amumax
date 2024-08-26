@@ -22,7 +22,7 @@ func init() {
 	DeclFunc("Fprintln", Fprintln, "Print to file")
 	DeclFunc("Sign", sign, "Signum function")
 	DeclFunc("Vector", Vector, "Constructs a vector with given components")
-	DeclConst("Mu0", mag.Mu0, "Permittivity of vaccum (Tm/A)")
+	DeclConst("Mu0", mag.Mu0, "Permittivity of vacuum (Tm/A)")
 	DeclFunc("Print", myprint, "Print to standard output")
 	DeclFunc("LoadFile", LoadFile, "Load a zarr data file")
 	DeclFunc("LoadOvfFile", LoadOvfFile, "Load an ovf data file")

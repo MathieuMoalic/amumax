@@ -49,7 +49,7 @@ func SetDemagField(dst *data.Slice) {
 	}
 }
 
-// Sets dst to the demag field, but cells where NoDemagSpins != 0 do not generate nor recieve field.
+// Sets dst to the demag field, but cells where NoDemagSpins != 0 do not generate nor receive field.
 func setMaskedDemagField(dst *data.Slice, msat cuda.MSlice) {
 	// No-demag spins: mask-out geometry with zeros where NoDemagSpins is set,
 	// so these spins do not generate a field

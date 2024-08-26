@@ -41,9 +41,9 @@ func (g *geom) Gpu() *data.Slice {
 func (g *geom) Slice() (*data.Slice, bool) {
 	s := g.Gpu()
 	if s.IsNil() {
-		s := cuda.Buffer(g.NComp(), g.Mesh().Size())
-		cuda.Memset(s, 1)
-		return s, true
+		buffer := cuda.Buffer(g.NComp(), g.Mesh().Size())
+		cuda.Memset(buffer, 1)
+		return buffer, true
 	} else {
 		return s, false
 	}
