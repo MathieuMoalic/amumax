@@ -15,8 +15,8 @@ import (
 )
 
 func init() {
-	DeclFunc("OvfSave", Save, "Save space-dependent quantity once, with auto filename")
-	DeclFunc("OvfSaveAs", SaveAs, "Save space-dependent quantity with custom filename")
+	DeclFunc("SaveOvf", Save, "Save space-dependent quantity once, with auto filename")
+	DeclFunc("SaveOvfAs", SaveAs, "Save space-dependent quantity with custom filename")
 
 	DeclLValue("FilenameFormat", &fformat{}, "printf formatting string for output filenames.")
 	DeclLValue("OutputFormat", &oformat{}, "Format for data files: OVF1_TEXT, OVF1_BINARY, OVF2_TEXT or OVF2_BINARY")
