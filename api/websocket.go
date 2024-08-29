@@ -33,7 +33,7 @@ type connectionManager struct {
 }
 
 func (cm *connectionManager) add(ws *websocket.Conn) {
-	util.Log.Dev("Websocket connection added")
+	util.Log.Debug("Websocket connection added")
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	cm.conns[ws] = struct{}{}
@@ -41,7 +41,7 @@ func (cm *connectionManager) add(ws *websocket.Conn) {
 }
 
 func (cm *connectionManager) remove(ws *websocket.Conn) {
-	util.Log.Dev("Websocket connection removed")
+	util.Log.Debug("Websocket connection removed")
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	delete(cm.conns, ws)
@@ -86,7 +86,7 @@ func websocketEntrypoint(c echo.Context) error {
 
 	select {
 	case <-done:
-		util.Log.Dev("Connection closed by client")
+		util.Log.Debug("Connection closed by client")
 		return nil
 	case <-broadcastStop:
 		return nil
