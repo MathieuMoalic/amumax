@@ -22,8 +22,6 @@ func init() {
 		Step:           -1,
 		AutoSavePeriod: 0.0,
 		FlushInterval:  5 * time.Second,
-		XColumn:        "t",
-		YColumn:        "mx",
 	}
 }
 
@@ -32,14 +30,12 @@ var Table TableStruct
 // the Table is kept in RAM and used for the API
 type TableStruct struct {
 	quantities     []Quantity
-	columns        []Column
+	Columns        []Column
 	Data           map[string][]float64 `json:"data"`
 	AutoSavePeriod float64              `json:"autoSavePeriod"`
 	AutoSaveStart  float64              `json:"autoSaveStart"`
 	Step           int                  `json:"step"`
 	FlushInterval  time.Duration        `json:"flushInterval"`
-	XColumn        string               `json:"xColumn"`
-	YColumn        string               `json:"yColumn"`
 }
 
 type Column struct {
@@ -49,31 +45,6 @@ type Column struct {
 	io     httpfs.WriteCloseFlusher
 }
 
-func (ts *TableStruct) GetXData() []float64 {
-	return ts.Data[ts.XColumn]
-}
-
-func (ts *TableStruct) GetYData() []float64 {
-	return ts.Data[ts.YColumn]
-}
-
-func (ts *TableStruct) GetUnit(name string) string {
-	for _, i := range ts.columns {
-		if i.Name == name {
-			return i.Unit
-		}
-	}
-	return ""
-}
-
-func (ts *TableStruct) ColumnExists(name string) bool {
-	for _, i := range ts.columns {
-		if i.Name == name {
-			return true
-		}
-	}
-	return false
-}
 func (ts *TableStruct) WriteToBuffer() {
 	buf := []float64{}
 	// always save the current time
@@ -84,20 +55,20 @@ func (ts *TableStruct) WriteToBuffer() {
 	}
 	// size of buf should be same as size of []Ztable
 	for i, b := range buf {
-		ts.columns[i].buffer = append(ts.columns[i].buffer, zarr.Float64ToBytes(b)...)
-		ts.Data[ts.columns[i].Name] = append(ts.Data[ts.columns[i].Name], b)
+		ts.Columns[i].buffer = append(ts.Columns[i].buffer, zarr.Float64ToBytes(b)...)
+		ts.Data[ts.Columns[i].Name] = append(ts.Data[ts.Columns[i].Name], b)
 	}
 }
 
 func (ts *TableStruct) Flush() {
-	for i := range ts.columns {
-		_, err := ts.columns[i].io.Write(ts.columns[i].buffer)
+	for i := range ts.Columns {
+		_, err := ts.Columns[i].io.Write(ts.Columns[i].buffer)
 		util.Log.PanicIfError(err)
-		ts.columns[i].buffer = []byte{}
+		ts.Columns[i].buffer = []byte{}
 		// saving .zarray before the data might help resolve some unsync
 		// errors when the simulation is running and the user loads data
-		zarr.SaveFileTableZarray(OD()+"table/"+ts.columns[i].Name, ts.Step)
-		ts.columns[i].io.Flush()
+		zarr.SaveFileTableZarray(OD()+"table/"+ts.Columns[i].Name, ts.Step)
+		ts.Columns[i].io.Flush()
 	}
 }
 
@@ -107,7 +78,7 @@ func (ts *TableStruct) NeedSave() bool {
 
 func (ts *TableStruct) Exists(q Quantity, name string) bool {
 	suffixes := []string{"x", "y", "z"}
-	for _, i := range Table.columns {
+	for _, i := range Table.Columns {
 		if q.NComp() == 1 {
 			if i.Name == name {
 				return true
@@ -123,20 +94,12 @@ func (ts *TableStruct) Exists(q Quantity, name string) bool {
 	return false
 }
 
-func (ts *TableStruct) GetTableNames() []string {
-	names := []string{}
-	for _, i := range ts.columns {
-		names = append(names, i.Name)
-	}
-	return names
-}
-
 func (ts *TableStruct) AddColumn(name, unit string) {
 	err := httpfs.Mkdir(OD() + "table/" + name)
 	util.Log.PanicIfError(err)
 	f, err := httpfs.Create(OD() + "table/" + name + "/0")
 	util.Log.PanicIfError(err)
-	ts.columns = append(ts.columns, Column{Name: name, Unit: unit, buffer: []byte{}, io: f})
+	ts.Columns = append(ts.Columns, Column{Name: name, Unit: unit, buffer: []byte{}, io: f})
 }
 
 func TableInit() {
@@ -147,7 +110,7 @@ func TableInit() {
 	util.Log.PanicIfError(err)
 	f, err := httpfs.Create(OD() + "table/t/0")
 	util.Log.PanicIfError(err)
-	Table.columns = append(Table.columns, Column{"t", "s", []byte{}, f})
+	Table.Columns = append(Table.Columns, Column{"t", "s", []byte{}, f})
 	TableAdd(&M)
 	go TablesAutoFlush()
 
@@ -161,7 +124,7 @@ func TablesAutoFlush() {
 }
 
 func TableSave() {
-	if len(Table.columns) == 0 {
+	if len(Table.Columns) == 0 {
 		TableInit()
 	}
 	Table.Step += 1
@@ -177,7 +140,7 @@ func TableAddAs(q Quantity, name string) {
 	if Table.Step != -1 {
 		util.Log.Warn("You cannot add a new quantity to the table after the simulation has started. Ignoring.")
 	}
-	if len(Table.columns) == 0 {
+	if len(Table.Columns) == 0 {
 		TableInit()
 	}
 
