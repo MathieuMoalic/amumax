@@ -71,9 +71,15 @@ func bytesToKernel(kernelBytes []byte, size [3]int) (kernel [3][3]*data.Slice) {
 	sliceLength := size[X] * size[Y] * size[Z] * 4
 	for i := 0; i < 3; i++ {
 		for j := i; j < 3; j++ {
+			// if Nz is 1, we have a 2D simulation and these elements are zero
+			if size[Z] == 1 {
+				if (i == 0 && j == 2) || (i == 1 && j == 2) {
+					kernel[i][j] = nil
+					continue
+				}
+			}
 			end := offset + sliceLength
-			bytes := bytesToSlice(kernelBytes[offset:end], size)
-			kernel[i][j] = bytes
+			kernel[i][j] = bytesToSlice(kernelBytes[offset:end], size)
 			offset = end
 		}
 	}
@@ -93,19 +99,18 @@ func kernelToBytes(kernel [3][3]*data.Slice) (bytes []byte) {
 }
 
 func sliceToBytes(slice *data.Slice) (bytes []byte) {
-	data := slice.Tensors()
 	size := slice.Size()
-
+	if size[X] == 0 && size[Y] == 0 && size[Z] == 0 {
+		return
+	}
+	data := slice.Tensors()
 	for iz := 0; iz < size[Z]; iz++ {
 		for iy := 0; iy < size[Y]; iy++ {
 			for ix := 0; ix < size[X]; ix++ {
-				for ic := 0; ic < slice.NComp(); ic++ {
-					bytes = append(bytes, zarr.Float32ToBytes(data[ic][iz][iy][ix])...)
-				}
+				bytes = append(bytes, zarr.Float32ToBytes(data[0][iz][iy][ix])...)
 			}
 		}
 	}
-	// util.Log.Warn("sliceToBytes: %d, NComp: %v Size: %v", len(bytes), slice.NComp(), size)
 	return bytes
 }
 
@@ -140,9 +145,7 @@ func loadKernel(fname string, size [3]int) ([3][3]*data.Slice, error) {
 	if err != nil {
 		return [3][3]*data.Slice{}, err
 	}
-
-	bytes := bytesToKernel(kernelBytes, size)
-	return bytes, nil
+	return bytesToKernel(kernelBytes, size), nil
 }
 
 func saveKernel(fname string, kernel [3][3]*data.Slice) error {
@@ -167,7 +170,6 @@ func saveKernel(fname string, kernel [3][3]*data.Slice) error {
 // Calculates the magnetostatic kernel by brute-force integration
 // of magnetic charges over the faces and averages over cell volumes.
 func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, showMagnets bool) (kernel [3][3]*data.Slice) {
-
 	// Add zero-padding in non-PBC directions
 	size := padSize(gridsize, pbc)
 
@@ -187,7 +189,6 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 			array[i][j] = kernel[i][j].Scalars()
 		}
 	}
-
 	// Field (destination) loop ranges
 	r1, r2 := kernelRanges(size, pbc)
 
@@ -206,7 +207,7 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 	done := make(chan struct{}, 3)                              // parallel calculation of one component done?
 
 	ProgressBar := zarr.ProgressBar{}
-	ProgressBar.New(0, float64(progmax), showMagnets)
+	ProgressBar.New(0, float64(progmax), "🔧", showMagnets)
 	// Start brute integration
 	// 9 nested loops, does that stress you out?
 	// Fortunately, the 5 inner ones usually loop over just one element.
@@ -332,7 +333,6 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 	<-done
 	<-done
 	<-done
-
 	// Reconstruct skipped parts from symmetry (X)
 	for z := 0; z < size[Z]; z++ {
 		for y := 0; y < size[Y]; y++ {
@@ -384,10 +384,12 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 		kernel[X][Z] = nil
 		kernel[Y][Z] = nil
 	}
+
 	// make result symmetric for tools that expect it so.
 	kernel[Y][X] = kernel[X][Y]
 	kernel[Z][X] = kernel[X][Z]
 	kernel[Z][Y] = kernel[Y][Z]
+
 	ProgressBar.Finish()
 	return kernel
 }
