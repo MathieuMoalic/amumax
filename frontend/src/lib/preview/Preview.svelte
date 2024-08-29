@@ -2,20 +2,14 @@
 	import quantities from './quantities';
 	import { meshState } from '$api/incoming/mesh';
 	import { previewState as p } from '$api/incoming/preview';
-	import { threeDPreview, disposePreview3D, resetCamera, preview3D } from './preview3D';
-	import { disposePreview2D, init, resizeECharts } from './preview2D';
+	import { threeDPreview, resetCamera } from './preview3D';
+	import { resizeECharts } from './preview2D';
 	import { postComponent, postLayer, postMaxPoints, postQuantity } from '$api/outgoing/preview';
 	import { onMount } from 'svelte';
+	import NumberInputField from '$lib/NumberInputField.svelte';
 	onMount(() => {
 		resizeECharts();
 	});
-	let maxPointsInput = '';
-	function maxPointsInputChanged() {
-		if (maxPointsInput === '') {
-			return;
-		}
-		postMaxPoints(parseInt(maxPointsInput));
-	}
 </script>
 
 <section>
@@ -46,30 +40,27 @@
 		{$meshState.Nz}
 	</p>
 	<p>
-		Max Points:<input
-			bind:value={maxPointsInput}
-			on:change={maxPointsInputChanged}
-			placeholder=" {$p.maxPoints}"
-		/>
-		Number of points in the preview:
-		{#if $p.scalarField !== null}
+		Max Points: <NumberInputField func={postMaxPoints} placeholder={$p.maxPoints} />
+		({#if $p.scalarField !== null}
 			{$p.scalarField?.length}
 		{:else if $p.vectorFieldPositions !== null}
 			{$p.vectorFieldPositions?.length}
 		{/if}
+		points)
 	</p>
+	<p>
+		{#if $threeDPreview?.parsingTime !== null}
+			Parsing time: {$threeDPreview?.parsingTime.toFixed(0)} ms
+		{/if}
+	</p>
+	{#if $threeDPreview !== null}
+		<p>
+			<button on:click={resetCamera}>Reset Camera</button>
+		</p>
+	{/if}
 	<div id="container"></div>
-	<p>
-		Parsing time: {$threeDPreview?.parsingTime.toFixed(0)} ms
-	</p>
-	<p>
-		<button on:click={resetCamera}>Reset Camera</button>
-		<button on:click={disposePreview2D}>disposePreview2D</button>
-		<button on:click={disposePreview3D}>disposePreview3D</button>
-		<button on:click={init}>init 2D</button>
-		<button on:click={preview3D}>init 3D</button>
-	</p>
 </section>
+/mnt/storage_2/scratch/pl0095-01/zelent/mannga/FMR/coupled_resonator/v11/Material_2/Tx_6e-06/xsize_600/ysize_350/sq_parm_0/rotation_45/anetnna_0/B0_0.03.mx3
 
 <style>
 	section {
