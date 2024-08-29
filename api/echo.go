@@ -46,6 +46,8 @@ func Start() {
 	e.POST("/api/tableplot/autosave-interval", postTablePlotAutoSaveInterval)
 	e.POST("/api/tableplot/xcolumn", postTablePlotXColumn)
 	e.POST("/api/tableplot/ycolumn", postTablePlotYColumn)
+	e.POST("/api/tableplot/maxpoints", postTablePlotMaxPoints)
+	e.POST("/api/tableplot/step", postTablePlotStep)
 
 	e.POST("/api/console/command", postConsoleCommand)
 

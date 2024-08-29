@@ -1,8 +1,16 @@
 <script lang="ts">
 	import { tablePlotState } from '$api/incoming/table-plot';
-	import { postAutoSaveInterval, postXColumn, postYColumn } from '$api/outgoing/table-plot';
+	import {
+		postAutoSaveInterval,
+		postMaxPoints,
+		postStep,
+		postXColumn,
+		postYColumn
+	} from '$api/outgoing/table-plot';
 	import { onMount } from 'svelte';
 	import { resizeECharts } from './table-plot';
+	import NumberInputField from '$lib/NumberInputField.svelte';
+
 	onMount(() => {
 		resizeECharts();
 	});
@@ -15,13 +23,18 @@
 			<p>No table data, use <code>TableSave()</code> to save data.</p>
 		</div>
 	{:else}
-		<p>
-			Auto Save Interval: <input
-				type="number"
-				bind:value={$tablePlotState.autoSaveInterval}
-				on:change={postAutoSaveInterval}
+		<div>
+			Auto Save Interval: <NumberInputField
+				func={postAutoSaveInterval}
+				placeholder={$tablePlotState.autoSaveInterval}
 			/> s
-		</p>
+		</div>
+		<div>
+			Max Points: <NumberInputField func={postMaxPoints} placeholder={$tablePlotState.maxPoints} />
+		</div>
+		<div>
+			Step: <NumberInputField func={postStep} placeholder={$tablePlotState.step} />
+		</div>
 		<b>
 			x:
 			<select bind:value={$tablePlotState.xColumn} on:change={postXColumn}>
@@ -36,6 +49,7 @@
 				{/each}
 			</select>
 		</b>
+		({$tablePlotState.data.length} points)
 		<div id="table-plot"></div>
 	{/if}
 </section>

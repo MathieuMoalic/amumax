@@ -67,9 +67,7 @@ func (p *Preview) UpdateQuantityBuffer() {
 	if p.Type == "3D" {
 		nComp = 3
 	}
-
 	p.ScaleDimensions()
-
 	GPU_in := engine.ValueOf(p.GetQuantity())
 
 	defer cuda.Recycle(GPU_in)
@@ -253,7 +251,9 @@ func postPreviewComponent(c echo.Context) error {
 		util.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	preview.Component = req.Component
+	if preview.GetQuantity().NComp() == 1 && req.Component == "All" {
+		preview.Component = "x"
+	}
 	preview.Refresh = true
 	updatePreviewType()
 	broadcastEngineState()
@@ -274,6 +274,9 @@ func postPreviewQuantity(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Quantity not found"})
 	}
 	preview.Quantity = req.Quantity
+	if preview.GetQuantity().NComp() == 1 && preview.Component == "All" {
+		preview.Component = "x"
+	}
 	updatePreviewType()
 	broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)

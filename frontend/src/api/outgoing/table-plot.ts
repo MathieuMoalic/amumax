@@ -11,6 +11,14 @@ export function postYColumn() {
     post('tableplot/ycolumn', { YColumn: get(tablePlotState).yColumn });
 }
 
-export function postAutoSaveInterval() {
-    post('tableplot/autosave-interval', { autoSaveInterval: get(tablePlotState).autoSaveInterval });
+export function postAutoSaveInterval(inputFieldValue: string) {
+    post('tableplot/autosave-interval', { autoSaveInterval:parseFloat(inputFieldValue) });
+}
+
+export function postMaxPoints(inputFieldValue: string) {
+    post('tableplot/maxpoints', { maxPoints: parseInt(inputFieldValue) });
+}
+
+export function postStep(inputFieldValue: string) {
+    post('tableplot/step', { step: parseFloat(inputFieldValue) });
 }
