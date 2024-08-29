@@ -1,6 +1,4 @@
 {
-  description = "A flake for the amumax project";
-
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
@@ -19,69 +17,44 @@
             allowUnfree = true; # cuda is unfree
           };
         };
+
         cuda = pkgs.cudaPackages_11;
-        buildAmumax = pkgs:
-          pkgs.buildGoModule rec {
-            pname = "amumax";
-            version = "2024.07.23";
+        buildAmumax = pkgs.buildGoModule rec {
+          pname = "amumax";
+          version = "2024.08.29";
 
-            src = pkgs.fetchFromGitHub {
-              owner = "MathieuMoalic";
-              repo = "amumax";
-              rev = version;
-              hash = "sha256-KfagOhaVmps5WLANatQPNaDELPyjXzBwyZ3EBuGtExw=";
-            };
-            vendorHash = "sha256-SHUBKLKV8lwjyXlhM5OyHpwvm1s/yo9I3+Bow+MwRc0=";
-            # src = builtins.fetchGit {
-            #   path = ./.;
-            #   rev = "84848b4b467e4948e753af393ac83ef90a076373";
-            # };
-            # src = builtins.path {
-            #   path = ./.;
-            # };
+          # src = pkgs.fetchFromGitHub {
+          #   owner = "MathieuMoalic";
+          #   repo = "amumax";
+          #   rev = version;
+          #   hash = "sha256-KfagOhaVmps5WLANatQPNaDELPyjXzBwyZ3EBuGtExw=";
+          # };
+          vendorHash = "sha256-SHUBKLKV8lwjyXlhM5OyHpwvm1s/yo9I3+Bow+MwRc0=";
+          src = ./.;
 
-            nativeBuildInputs = [
-              cuda.cuda_nvcc
-              pkgs.addDriverRunpath
-              pkgs.bun
-            ];
+          buildInputs = [
+            cuda.cuda_nvcc
+            cuda.cuda_cudart
+            cuda.libcufft
+            cuda.libcurand
+            pkgs.addDriverRunpath
+            pkgs.bun
+          ];
 
-            buildInputs = [
-              cuda.cuda_cudart
-              cuda.libcufft
-              cuda.libcurand
-            ];
+          CGO_CFLAGS = ["-lcufft" "-lcurand"];
+          CGO_LDFLAGS = ["-L${cuda.cuda_cudart.lib}/lib/stubs/"];
+          ldflags = [
+            "-s"
+            "-w"
+            "-X github.com/MathieuMoalic/amumax/engine.VERSION=${version}"
+          ];
 
-            CGO_CFLAGS = ["-lcufft" "-lcurand"];
-            CGO_LDFLAGS = ["-L${cuda.cuda_cudart.lib}/lib/stubs/"];
-            ldflags = [
-              "-s"
-              "-w"
-              "-X github.com/MathieuMoalic/amumax/engine.VERSION=${version}"
-              "-X github.com/MathieuMoalic/amumax/util.VERSION=${version}"
-            ];
+          doCheck = false;
 
-            doCheck = false;
-
-            # preBuild = ''
-            #   cd ${src}/frontend
-            #   ls -la
-            #   bun install
-            #   bun run build
-            # '';
-
-            postFixup = ''
-              addDriverRunpath $out/bin/*
-            '';
-
-            meta = with pkgs.lib; {
-              description = "Fork of mumax3";
-              homepage = "https://github.com/MathieuMoalic/amumax";
-              license = licenses.gpl3;
-              maintainers = ["MathieuMoalic"];
-              mainProgram = "amumax";
-            };
-          };
+          postFixup = ''
+            addDriverRunpath $out/bin/*
+          '';
+        };
 
         devEnv = pkgs.mkShell {
           buildInputs = [
@@ -106,9 +79,7 @@
           '';
         };
       in {
-        packages.amumax = buildAmumax pkgs;
-        packages.default = buildAmumax pkgs;
-        defaultPackage.amumax = buildAmumax pkgs;
+        packages.default = buildAmumax;
         devShell = devEnv;
       }
     );
