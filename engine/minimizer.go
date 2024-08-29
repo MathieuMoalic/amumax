@@ -13,7 +13,7 @@ import (
 var (
 	DmSamples              int     = 10   // number of dm to keep for convergence check
 	StopMaxDm              float64 = 1e-6 // stop minimizer if sampled dm is smaller than this
-	MinimizeMaxSteps       int     = 100000
+	MinimizeMaxSteps       int     = 1000000
 	MinimizeMaxTimeSeconds         = 60 * 60 * 24 * 7 // one week
 )
 
