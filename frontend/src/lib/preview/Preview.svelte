@@ -60,7 +60,6 @@
 	{/if}
 	<div id="container"></div>
 </section>
-/mnt/storage_2/scratch/pl0095-01/zelent/mannga/FMR/coupled_resonator/v11/Material_2/Tx_6e-06/xsize_600/ysize_350/sq_parm_0/rotation_45/anetnna_0/B0_0.03.mx3
 
 <style>
 	section {
