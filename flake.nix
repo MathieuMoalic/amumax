@@ -22,13 +22,6 @@
         buildAmumax = pkgs.buildGoModule rec {
           pname = "amumax";
           version = "2024.08.29";
-
-          # src = pkgs.fetchFromGitHub {
-          #   owner = "MathieuMoalic";
-          #   repo = "amumax";
-          #   rev = version;
-          #   hash = "sha256-KfagOhaVmps5WLANatQPNaDELPyjXzBwyZ3EBuGtExw=";
-          # };
           vendorHash = "sha256-SHUBKLKV8lwjyXlhM5OyHpwvm1s/yo9I3+Bow+MwRc0=";
           src = ./.;
 
