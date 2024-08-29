@@ -3,7 +3,11 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
-  outputs = {nixpkgs, ...}: let
+  outputs = {
+    self,
+    nixpkgs,
+    ...
+  }: let
     system = "x86_64-linux";
     pkgs = import nixpkgs {
       inherit system;
@@ -12,8 +16,27 @@
       };
     };
 
+    frontend = pkgs.buildNpmPackage {
+      pname = "frontend";
+      version = "2024.08.29";
+      src = ./frontend;
+      npmDepsHash = "sha256-DJOiaPDiWJEkcon/Lc3TD/5cS5v5ArORnpp7HDEpa4E=";
+
+      npmBuild = ''
+        npm run build
+      '';
+
+      installPhase = ''
+        mv dist $out
+      '';
+    };
+
     cuda = pkgs.cudaPackages_11;
     buildAmumax = pkgs.buildGoModule rec {
+      buildPhase = ''
+        cp -r ${frontend} api/static
+        go build -v -o $out/bin/amumax .
+      '';
       pname = "amumax";
       version = "2024.08.29";
       vendorHash = "sha256-SHUBKLKV8lwjyXlhM5OyHpwvm1s/yo9I3+Bow+MwRc0=";
