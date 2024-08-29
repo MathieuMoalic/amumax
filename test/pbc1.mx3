@@ -2,22 +2,22 @@
 	Test correct wrapping for exchange with PBC.
 */
 
-setpbc(2, 2, 0)
-Nx := 128
-Ny := Nx/2
-setgridsize(Nx, Ny, 1)
-c := 5e-9
-setcellsize(c, c, c)
+Nx = 128
+Ny = 64
+Nz = 1
+dx = 5e-9
+dy = 5e-9
+dz = 5e-9
+PBCx = 2
+PBCy = 2
+PBCz = 0
 
 Msat  = 1000e3
 Aex   = 10e-12
 alpha = 1
 
-r := rect(Nx/2*c, Ny/2*c)
-deltax := Nx/2*c
-deltay := Ny/2*c
-
-setgeom( r.repeat(Nx*c, Ny*c, 0).transl(deltax, deltay, 0) )
+r := rect(Nx*dx/2,Ny*dy/2)
+setgeom( r.repeat(Nx*dx, Ny*dy, 0).transl(Nx*dx/2, Ny*dy/2, 0) )
 m = uniform(1, 0.1, 0.01)
 save(m)
 run(1e-9)
@@ -26,9 +26,29 @@ save(m)
 expectv("m", m.average(), vector(0.89947968, 0.23352228, -0.00010287), 1e-3)
 
 
-setgeom( r.repeat(Nx*c, Ny*c, 0))
+setgeom( r.repeat(Nx*dx, Ny*dy, 0))
 m = uniform(1, 0.1, 0.01)
 run(1e-9)
 
 expectv("m", m.average(), vector(0.89947968, 0.23352228, -0.00010287), 1e-3)
+
+// r := rect(Nx/2*c, Ny/2*c)
+// deltax := Nx/2*c
+// deltay := Ny/2*c
+
+// setgeom( r.repeat(Nx*c, Ny*c, 0).transl(deltax, deltay, 0) )
+// m = uniform(1, 0.1, 0.01)
+// save(m)
+// run(1e-9)
+// save(m)
+
+// expectv("m", m.average(), vector(0.89947968, 0.23352228, -0.00010287), 1e-3)
+
+
+// setgeom( r.repeat(Nx*c, Ny*c, 0))
+// m = uniform(1, 0.1, 0.01)
+// run(1e-9)
+
+// expectv("m", m.average(), vector(0.89947968, 0.23352228, -0.00010287), 1e-3)
+
 
