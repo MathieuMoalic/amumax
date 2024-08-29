@@ -104,9 +104,9 @@ func runInteractive() {
 Nx = 128
 Ny = 64
 Nz = 1
-dx = 4e-9
-dy = 4e-9
-dz = 4e-9
+dx = 3e-9
+dy = 3e-9
+dz = 3e-9
 Msat = 1e6
 Aex = 10e-12
 alpha = 1
