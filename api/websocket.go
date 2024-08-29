@@ -63,6 +63,7 @@ func (cm *connectionManager) broadcast(msg []byte) {
 func websocketEntrypoint(c echo.Context) error {
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	if err != nil {
+		util.Log.Err("Error upgrading connection to WebSocket: %v", err)
 		return err
 	}
 	defer ws.Close()
