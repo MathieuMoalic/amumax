@@ -73,7 +73,7 @@ func (l *Logs) Warn(msg string, args ...interface{}) {
 	l.writeToFile(formattedMsg)
 }
 
-func (l *Logs) Dev(msg string, args ...interface{}) {
+func (l *Logs) Debug(msg string, args ...interface{}) {
 	if l.dev {
 		formattedMsg := "// " + fmt.Sprintf(msg, args...)
 		color.Blue(formattedMsg)
