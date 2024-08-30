@@ -33,6 +33,9 @@ func runInteractive() {
 	outdir := fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
 
 	engine.InitIO(outdir, outdir, flags.cacheDir, flags.skipExists, flags.forceClean, flags.progress, flags.selfTest, flags.sync)
+	util.Log.Comment("Input file: %s", "none")
+	util.Log.Comment("Output directory: %s", engine.OD())
+	util.Log.Init(engine.OD(), engine.VERSION == "dev")
 
 	// set up some sensible start configuration
 	engine.Eval(`
@@ -64,8 +67,10 @@ func runFileAndServe(mx3Path string) {
 	engine.InitIO(mx3Path, outputdir, flags.cacheDir, flags.skipExists, flags.forceClean, flags.progress, flags.selfTest, flags.sync)
 	util.Log.Comment("Input file: %s", mx3Path)
 	util.Log.Comment("Output directory: %s", engine.OD())
+
 	util.Log.Init(engine.OD(), engine.VERSION == "dev")
 	go util.Log.AutoFlushToFile()
+
 	mx3Path = engine.InputFile
 
 	var code *script.BlockStmt

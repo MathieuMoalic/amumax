@@ -17,7 +17,7 @@ var Log Logs
 type Logs struct {
 	Hist    string                   // console history for GUI
 	logfile httpfs.WriteCloseFlusher // saves history of input commands +  output
-	dev     bool
+	debug   bool
 }
 
 func (l *Logs) AutoFlushToFile() {
@@ -30,10 +30,11 @@ func (l *Logs) AutoFlushToFile() {
 func (l *Logs) FlushToFile() {
 	if l.logfile != nil {
 		l.logfile.Flush()
+
 	}
 }
 
-func (l *Logs) Init(zarrPath string, dev bool) {
+func (l *Logs) Init(zarrPath string, debug bool) {
 	f, err := httpfs.Create(zarrPath + "/log.txt")
 	if err != nil {
 		color.Red(fmt.Sprintf("Error creating the log file: %v", err))
@@ -43,7 +44,7 @@ func (l *Logs) Init(zarrPath string, dev bool) {
 	if err != nil {
 		color.Red(fmt.Sprintf("Error writing to log file: %v", err))
 	}
-	l.dev = dev
+	l.debug = debug
 }
 
 func (l *Logs) writeToFile(msg string) {
@@ -52,8 +53,8 @@ func (l *Logs) writeToFile(msg string) {
 		if err != nil {
 			color.Red(fmt.Sprintf("Error writing to log file: %v", err))
 		}
-		l.Hist += msg + "\n"
 	}
+	l.Hist += msg + "\n"
 }
 
 func (l *Logs) Command(msg ...interface{}) {
@@ -74,7 +75,7 @@ func (l *Logs) Warn(msg string, args ...interface{}) {
 }
 
 func (l *Logs) Debug(msg string, args ...interface{}) {
-	if l.dev {
+	if l.debug {
 		formattedMsg := "// " + fmt.Sprintf(msg, args...)
 		color.Blue(formattedMsg)
 		l.writeToFile(formattedMsg)

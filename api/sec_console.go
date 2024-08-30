@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MathieuMoalic/amumax/engine"
+	"github.com/MathieuMoalic/amumax/util"
 	"github.com/labstack/echo/v4"
 )
 
@@ -13,7 +14,7 @@ type Console struct {
 
 func newConsole() *Console {
 	return &Console{
-		Hist: engine.Hist,
+		Hist: util.Log.Hist,
 	}
 }
 
