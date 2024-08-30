@@ -62,7 +62,7 @@ func init() {
 
 var rootCmd = &cobra.Command{
 	Use:   "amumax",
-	Short: "Amumax CLI tool",
+	Short: "Amumax, a micromagnetic simulator",
 	Run:   entrypoint,
 }
 
