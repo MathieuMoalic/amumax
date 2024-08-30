@@ -3,11 +3,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    ...
-  }: let
+  outputs = {nixpkgs, ...}: let
     system = "x86_64-linux";
     pkgs = import nixpkgs {
       inherit system;
@@ -49,7 +45,7 @@
     buildAmumax = pkgs.buildGoModule {
       inherit version CGO_CFLAGS CGO_LDFLAGS CGO_CFLAGS_ALLOW;
       pname = "amumax";
-      vendorHash = "sha256-vJKjIjcw+yUzwY43BKkXn2exVQxH6ZHnar7MaJHr9x4=";
+      vendorHash = "sha256-ly7mLulUon9XIztddOtP6VEGJZk6A6xa5rK/pYwAP2A=";
       src = ./.;
 
       buildInputs =
@@ -97,7 +93,10 @@
       '';
     };
   in {
-    packages.${system}.default = buildAmumax;
+    packages.${system} = {
+      default = buildAmumax;
+      git = buildAmumax;
+    };
     devShell.${system} = devEnv;
   };
 }

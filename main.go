@@ -4,7 +4,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -14,8 +13,6 @@ import (
 	"github.com/MathieuMoalic/amumax/engine"
 	"github.com/MathieuMoalic/amumax/script"
 	"github.com/MathieuMoalic/amumax/util"
-	"github.com/fatih/color"
-	"github.com/minio/selfupdate"
 )
 
 func main() {
@@ -27,19 +24,6 @@ func main() {
 
 type Release struct {
 	TagName string `json:"tag_name"`
-}
-
-func doUpdate() {
-	resp, err := http.Get("https://github.com/mathieumoalic/amumax/releases/latest/download/amumax")
-	if err != nil {
-		util.Log.PanicIfError(err)
-	}
-	defer resp.Body.Close()
-	err = selfupdate.Apply(resp.Body, selfupdate.Options{})
-	if err != nil {
-		color.Red("Error updating")
-		color.Red(fmt.Sprint(err))
-	}
 }
 
 func runInteractive() {

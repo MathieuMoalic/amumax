@@ -68,7 +68,8 @@ var rootCmd = &cobra.Command{
 
 func entrypoint(cmd *cobra.Command, args []string) {
 	if flags.update {
-		doUpdate()
+		// doUpdate()
+		showUpdateMenu()
 		return
 	}
 	// go checkUpdate()
