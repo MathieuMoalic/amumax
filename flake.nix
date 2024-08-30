@@ -33,10 +33,6 @@
 
     cuda = pkgs.cudaPackages_11;
     buildAmumax = pkgs.buildGoModule rec {
-      buildPhase = ''
-        cp -r ${frontend} api/static
-        go build -v -o $out/bin/amumax .
-      '';
       pname = "amumax";
       version = "2024.08.29";
       vendorHash = "sha256-vJKjIjcw+yUzwY43BKkXn2exVQxH6ZHnar7MaJHr9x4=";
@@ -52,12 +48,17 @@
       ];
 
       CGO_CFLAGS = ["-lcufft" "-lcurand"];
-      CGO_LDFLAGS = ["-L${cuda.cuda_cudart.lib}/lib/stubs/"];
+      CGO_LDFLAGS = ["-L${cuda.cuda_cudart.lib}/lib/stubs/ -lcuda -lcurand -lcufft"];
+      CGO_CFLAGS_ALLOW = "(-fno-schedule-insns|-malign-double|-ffast-math)";
       ldflags = [
         "-s"
         "-w"
         "-X github.com/MathieuMoalic/amumax/engine.VERSION=${version}"
       ];
+      buildPhase = ''
+        cp -r ${frontend} api/static
+        go build -v -o $out/bin/amumax .
+      '';
 
       doCheck = false;
 
