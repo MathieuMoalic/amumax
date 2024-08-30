@@ -12,7 +12,7 @@
       };
     };
 
-    version = "2024.08.29";
+    version = "2024.08.30";
 
     CGO_CFLAGS = ["-lcufft" "-lcurand"]; # needed to build ptx
     CGO_LDFLAGS = ["-lcuda -lcurand -lcufft -Wl,-rpath -Wl,\$ORIGIN"];
