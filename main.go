@@ -23,11 +23,10 @@ import (
 )
 
 var (
-	flag_failfast = flag.Bool("failfast", false, "If one simulation fails, stop entire batch immediately")
-	flag_test     = flag.Bool("test", false, "Cuda test (internal)")
-	flag_version  = flag.Bool("v", true, "Print version")
-	flag_vet      = flag.Bool("vet", false, "Check input files for errors, but don't run them")
-	flag_update   = flag.Bool("update", false, "Update the amumax binary from the latest github release")
+	flag_test    = flag.Bool("test", false, "Cuda test (internal)")
+	flag_version = flag.Bool("v", true, "Print version")
+	flag_vet     = flag.Bool("vet", false, "Check input files for errors, but don't run them")
+	flag_update  = flag.Bool("update", false, "Update the amumax binary from the latest github release")
 	// more flags in engine/gofiles.go
 )
 
