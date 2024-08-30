@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
@@ -61,18 +60,17 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "amumax",
+	Use:   "amumax [mx3 paths...]",
 	Short: "Amumax, a micromagnetic simulator",
 	Run:   entrypoint,
+	Args:  cobra.ArbitraryArgs,
 }
 
 func entrypoint(cmd *cobra.Command, args []string) {
 	if flags.update {
-		// doUpdate()
 		showUpdateMenu()
 		return
 	}
-	// go checkUpdate()
 
 	cuda.Init(flags.gpu)
 
@@ -96,15 +94,11 @@ func entrypoint(cmd *cobra.Command, args []string) {
 		vet()
 		return
 	}
-
-	switch flag.NArg() {
-	case 0:
-		if flags.interactive {
-			runInteractive()
-		}
-	case 1:
-		runFileAndServe(flag.Arg(0))
-	default:
-		RunQueue(flag.Args())
+	if len(args) == 0 {
+		runInteractive()
+	} else if len(args) == 1 {
+		runFileAndServe(args[0])
+	} else {
+		RunQueue(args)
 	}
 }
