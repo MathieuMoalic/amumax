@@ -253,6 +253,8 @@ func postPreviewComponent(c echo.Context) error {
 	}
 	if preview.GetQuantity().NComp() == 1 && req.Component == "All" {
 		preview.Component = "x"
+	} else {
+		preview.Component = req.Component
 	}
 	preview.Refresh = true
 	updatePreviewType()
