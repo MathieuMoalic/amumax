@@ -90,6 +90,6 @@
     };
   in {
     packages.${system}.default = buildAmumax;
-    devShell = devEnv;
+    devShell.${system} = devEnv;
   };
 }
