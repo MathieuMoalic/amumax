@@ -12,8 +12,9 @@ ENV PATH /usr/local/go/bin:$PATH
 
 WORKDIR /src
 
-ENV CGO_LDFLAGS="-lcufft -lcuda -lcurand -L/usr/local/cuda/lib64/stubs/ -Wl,-rpath -Wl,\$ORIGIN" 
+# needed to build ptx
 ENV CGO_CFLAGS="-I/usr/local/cuda/include/" 
+ENV CGO_LDFLAGS="-lcufft -lcuda -lcurand -L/usr/local/cuda/lib64/stubs/ -Wl,-rpath -Wl,\$ORIGIN" 
 ENV CGO_CFLAGS_ALLOW='(-fno-schedule-insns|-malign-double|-ffast-math)'
 
 RUN git config --global --add safe.directory /src

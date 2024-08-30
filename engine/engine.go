@@ -61,7 +61,7 @@ func CleanExit() {
 	if logfile != nil {
 		logfile.Close()
 	}
-	if *Flag_sync {
+	if SyncAndLog {
 		timer.Print(os.Stdout)
 	}
 	script.MMetadata.Add("steps", NSteps)

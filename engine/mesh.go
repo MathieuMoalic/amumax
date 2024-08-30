@@ -190,7 +190,7 @@ func ReCreateMesh(Nx, Ny, Nz int, dx, dy, dz float64, PBCx, PBCy, PBCz int) {
 	defer SetBusy(false)
 	// these 2 lines make sure the progress bar doesn't break when calculating the kernel
 	fmt.Print("\033[2K\r") // clearline ANSI escape code
-	kernel := mag.DemagKernel(GetMesh().Size(), GetMesh().PBC(), GetMesh().CellSize(), DemagAccuracy, *Flag_cachedir, *Flag_magnets)
-	conv_ = cuda.NewDemag(GetMesh().Size(), GetMesh().PBC(), kernel, *Flag_selftest)
+	kernel := mag.DemagKernel(GetMesh().Size(), GetMesh().PBC(), GetMesh().CellSize(), DemagAccuracy, CacheDir, ShowProgresBar)
+	conv_ = cuda.NewDemag(GetMesh().Size(), GetMesh().PBC(), kernel, SelfTest)
 
 }
