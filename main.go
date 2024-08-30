@@ -3,12 +3,9 @@ package main
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
-	"os/exec"
-	"path"
 	"strings"
 	"time"
 
@@ -16,60 +13,15 @@ import (
 	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/engine"
 	"github.com/MathieuMoalic/amumax/script"
-	"github.com/MathieuMoalic/amumax/timer"
 	"github.com/MathieuMoalic/amumax/util"
 	"github.com/fatih/color"
 	"github.com/minio/selfupdate"
 )
 
-var (
-	flag_test    = flag.Bool("test", false, "Cuda test (internal)")
-	flag_version = flag.Bool("v", true, "Print version")
-	flag_vet     = flag.Bool("vet", false, "Check input files for errors, but don't run them")
-	flag_update  = flag.Bool("update", false, "Update the amumax binary from the latest github release")
-	// more flags in engine/gofiles.go
-)
-
 func main() {
-	flag.Parse()
-	if *flag_update {
-		doUpdate()
-		return
-	}
-	// go checkUpdate()
-
-	cuda.Init(*engine.Flag_gpu)
-
-	cuda.Synchronous = *engine.Flag_sync
-	timer.Enabled = true //*engine.Flag_sync
-
-	if *flag_version {
-		printVersion()
-	}
-
-	// used by bootstrap launcher to test cuda
-	// successful exit means cuda was initialized fine
-	if *flag_test {
-		fmt.Println(cuda.GPUInfo)
-		os.Exit(0)
-	}
-
-	defer engine.CleanExit() // flushes pending output, if any
-
-	if *flag_vet {
-		vet()
-		return
-	}
-
-	switch flag.NArg() {
-	case 0:
-		if *engine.Flag_interactive {
-			runInteractive()
-		}
-	case 1:
-		runFileAndServe(flag.Arg(0))
-	default:
-		RunQueue(flag.Args())
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
 
@@ -96,7 +48,7 @@ func runInteractive() {
 	now := time.Now()
 	outdir := fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
 
-	engine.InitIO(outdir, outdir)
+	engine.InitIO(outdir, outdir, flags.cacheDir, flags.skipExists, flags.forceClean, flags.progress, flags.selfTest, flags.sync)
 
 	// set up some sensible start configuration
 	engine.Eval(`
@@ -110,32 +62,25 @@ Msat = 1e6
 Aex = 10e-12
 alpha = 1
 m = RandomMag()`)
-	if *engine.Flag_webui_enabled {
-		go api.Start()
+	if flags.webUIEnabled {
+		go api.Start(flags.webUIHost, flags.webUIPort)
 	}
 	engine.RunInteractive()
 }
 
-func runFileAndServe(fname string) {
-	if path.Ext(fname) == ".go" {
-		runGoFile(fname)
-	} else {
-		runMx3File(fname)
-	}
-}
-
-func runMx3File(mx3Path string) {
+func runFileAndServe(mx3Path string) {
 	if _, err := os.Stat(mx3Path); errors.Is(err, os.ErrNotExist) {
 		util.Log.ErrAndExit("Error: File `%s` does not exist", mx3Path)
 	}
-	zarrPath := strings.Replace(mx3Path, ".mx3", ".zarr", 1)
-	if *engine.Flag_od != "" {
-		zarrPath = *engine.Flag_od
+
+	outputdir := strings.Replace(mx3Path, ".mx3", ".zarr", 1)
+	if flags.outputDir != "" {
+		outputdir = flags.outputDir
 	}
-	engine.InitIO(mx3Path, zarrPath)
+	engine.InitIO(mx3Path, outputdir, flags.cacheDir, flags.skipExists, flags.forceClean, flags.progress, flags.selfTest, flags.sync)
 	util.Log.Comment("Input file: %s", mx3Path)
 	util.Log.Comment("Output directory: %s", engine.OD())
-	util.Log.Init(zarrPath, engine.VERSION == "dev")
+	util.Log.Init(engine.OD(), engine.VERSION == "dev")
 	go util.Log.AutoFlushToFile()
 	mx3Path = engine.InputFile
 
@@ -151,38 +96,14 @@ func runMx3File(mx3Path string) {
 	}
 
 	// now the parser is not used anymore so it can handle web requests
-	if *engine.Flag_webui_enabled {
-		go api.Start()
+	if flags.webUIEnabled {
+		go api.Start(flags.webUIHost, flags.webUIPort)
 	}
 	// start executing the tree, possibly injecting commands from web gui
 	engine.EvalFile(code)
 
-	if *engine.Flag_interactive {
+	if flags.interactive {
 		engine.RunInteractive()
-	}
-}
-
-func runGoFile(fname string) {
-
-	// pass through flags
-	flags := []string{"run", fname}
-	flag.Visit(func(f *flag.Flag) {
-		if f.Name != "o" {
-			flags = append(flags, fmt.Sprintf("-%v=%v", f.Name, f.Value))
-		}
-	})
-
-	if *engine.Flag_od != "" {
-		flags = append(flags, fmt.Sprintf("-o=%v", *engine.Flag_od))
-	}
-
-	cmd := exec.Command("go", flags...)
-	cmd.Stdout = os.Stdout
-	cmd.Stdin = os.Stdin
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	if err != nil {
-		os.Exit(1)
 	}
 }
 

@@ -13,7 +13,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func Start() {
+func Start(host string, port int) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -63,15 +63,15 @@ func Start() {
 
 	e.POST("/mesh", postMesh)
 
-	startGuiServer(e)
+	startGuiServer(e, host, port)
 }
 
-func startGuiServer(e *echo.Echo) {
+func startGuiServer(e *echo.Echo, host string, port int) {
 	const maxRetries = 5
 
 	for i := 0; i < maxRetries; i++ {
 		// Find an available port
-		addr, err := findAvailablePort()
+		addr, err := findAvailablePort(host, port)
 		if err != nil {
 			util.Log.ErrAndExit("Failed to find available port: %v", err)
 		}
@@ -99,11 +99,7 @@ func startGuiServer(e *echo.Echo) {
 	util.Log.Err("Failed to start server after multiple attempts")
 }
 
-func findAvailablePort() (string, error) {
-	// Split the address to extract the host and port
-	host := *engine.Flag_webui_host
-	startPort := *engine.Flag_webui_port
-
+func findAvailablePort(host string, startPort int) (string, error) {
 	// Loop to find the first available port
 	for port := startPort; port <= 65535; port++ {
 		address := net.JoinHostPort(host, strconv.Itoa(port))
