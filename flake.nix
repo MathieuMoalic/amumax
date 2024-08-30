@@ -39,7 +39,7 @@
       '';
       pname = "amumax";
       version = "2024.08.29";
-      vendorHash = "sha256-SHUBKLKV8lwjyXlhM5OyHpwvm1s/yo9I3+Bow+MwRc0=";
+      vendorHash = "sha256-vJKjIjcw+yUzwY43BKkXn2exVQxH6ZHnar7MaJHr9x4=";
       src = ./.;
 
       buildInputs = [
