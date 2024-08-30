@@ -16,9 +16,24 @@
       };
     };
 
+    version = "2024.08.29";
+
+    CGO_CFLAGS = ["-lcufft" "-lcurand"]; # needed to build ptx
+    CGO_LDFLAGS = ["-lcuda -lcurand -lcufft -Wl,-rpath -Wl,\$ORIGIN"];
+    CGO_CFLAGS_ALLOW = "(-fno-schedule-insns|-malign-double|-ffast-math)";
+
+    cuda = pkgs.cudaPackages_11;
+    basepkgs = [
+      cuda.cuda_nvcc
+      cuda.cuda_cudart
+      cuda.libcufft
+      cuda.libcurand
+      pkgs.bun
+    ];
+
     frontend = pkgs.buildNpmPackage {
+      inherit version;
       pname = "frontend";
-      version = "2024.08.29";
       src = ./frontend;
       npmDepsHash = "sha256-DJOiaPDiWJEkcon/Lc3TD/5cS5v5ArORnpp7HDEpa4E=";
 
@@ -31,25 +46,19 @@
       '';
     };
 
-    cuda = pkgs.cudaPackages_11;
-    buildAmumax = pkgs.buildGoModule rec {
+    buildAmumax = pkgs.buildGoModule {
+      inherit version CGO_CFLAGS CGO_LDFLAGS CGO_CFLAGS_ALLOW;
       pname = "amumax";
-      version = "2024.08.29";
       vendorHash = "sha256-vJKjIjcw+yUzwY43BKkXn2exVQxH6ZHnar7MaJHr9x4=";
       src = ./.;
 
-      buildInputs = [
-        cuda.cuda_nvcc
-        cuda.cuda_cudart
-        cuda.libcufft
-        cuda.libcurand
-        pkgs.addDriverRunpath
-        pkgs.bun
-      ];
+      buildInputs =
+        basepkgs
+        ++ [
+          pkgs.addDriverRunpath
+        ];
 
-      CGO_CFLAGS = ["-lcufft" "-lcurand"];
-      CGO_LDFLAGS = ["-L${cuda.cuda_cudart.lib}/lib/stubs/ -lcuda -lcurand -lcufft"];
-      CGO_CFLAGS_ALLOW = "(-fno-schedule-insns|-malign-double|-ffast-math)";
+      # strip symbols and add version
       ldflags = [
         "-s"
         "-w"
@@ -68,22 +77,20 @@
     };
 
     devEnv = pkgs.mkShell {
-      buildInputs = [
-        pkgs.go
-        pkgs.gopls
-        pkgs.golangci-lint
-        cuda.cuda_cudart
-        cuda.cuda_nvcc
-        cuda.libcufft
-        cuda.libcurand
-        pkgs.gcc11
-        pkgs.bun
-      ];
-      CGO_LDFLAGS = "-lcufft -lcuda -lcurand -Wl,-rpath -Wl,\$ORIGIN";
-      CGO_CFLAGS_ALLOW = "(-fno-schedule-insns|-malign-double|-ffast-math)";
+      inherit CGO_CFLAGS CGO_LDFLAGS CGO_CFLAGS_ALLOW;
+      buildInputs =
+        basepkgs
+        ++ [
+          pkgs.go
+          pkgs.gopls
+          pkgs.golangci-lint
+          pkgs.gcc11
+        ];
+
       LD_LIBRARY_PATH = "${cuda.libcufft}/lib:${cuda.libcurand}/lib:/run/opengl-driver/lib/";
-      ldflags = ["-s" "-w"];
+
       shellHook = ''
+        export PATH="${pkgs.gcc11}/bin:$PATH"
         export GOPATH=$(pwd)/.go/path
         export GOCACHE=$(pwd)/.go/cache
         mkdir -p $GOPATH $GOCACHE
