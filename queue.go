@@ -3,7 +3,6 @@ package main
 // File que for distributing multiple input files over GPUs.
 
 import (
-	"flag"
 	"fmt"
 	"io"
 	"net"
@@ -14,7 +13,6 @@ import (
 	"sync/atomic"
 
 	"github.com/MathieuMoalic/amumax/cuda/cu"
-	"github.com/MathieuMoalic/amumax/engine"
 	"github.com/MathieuMoalic/amumax/util"
 )
 
@@ -26,7 +24,7 @@ var (
 func RunQueue(files []string) {
 	s := NewStateTab(files)
 	s.PrintTo(os.Stdout)
-	addr := fmt.Sprint(*engine.Flag_webui_queue_host, ":", *engine.Flag_webui_queue_port)
+	addr := fmt.Sprint(flags.webUIQueueHost, ":", flags.webUIQueuePort)
 	go s.ListenAndServe(addr)
 	s.Run()
 	fmt.Println(numOK.get(), "OK, ", numFailed.get(), "failed")
@@ -110,20 +108,7 @@ func (a *atom) get() int { return int(atomic.LoadInt32((*int32)(a))) }
 func (a *atom) inc()     { atomic.AddInt32((*int32)(a), 1) }
 
 func run(inFile string, gpu int) {
-	// overridden flags
-	gpuFlag := fmt.Sprint(`-gpu=`, gpu)
-	// httpFlag := fmt.Sprint(`-http=`, webAddr)
-
-	// pass through flags
-	flags := []string{gpuFlag}
-	flag.Visit(func(f *flag.Flag) {
-		if f.Name != "gpu" && f.Name != "http" && f.Name != "failfast" {
-			flags = append(flags, fmt.Sprintf("-%v=%v", f.Name, f.Value))
-		}
-	})
-	flags = append(flags, inFile)
-
-	_ = exec.Command(os.Args[0], flags...)
+	_ = exec.Command(os.Args[0], "-g", fmt.Sprint(gpu), inFile)
 	numOK.inc()
 }
 

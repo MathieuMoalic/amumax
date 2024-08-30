@@ -37,8 +37,8 @@ func reinitmfmconv() {
 	SetBusy(true)
 	defer SetBusy(false)
 	if mfmconv_ == nil {
-		mfmconv_ = cuda.NewMFM(GetMesh(), MFMLift.v, MFMTipSize.v, *Flag_cachedir)
+		mfmconv_ = cuda.NewMFM(GetMesh(), MFMLift.v, MFMTipSize.v, CacheDir)
 	} else {
-		mfmconv_.Reinit(MFMLift.v, MFMTipSize.v, *Flag_cachedir)
+		mfmconv_.Reinit(MFMLift.v, MFMTipSize.v, CacheDir)
 	}
 }
