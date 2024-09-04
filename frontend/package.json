@@ -20,7 +20,7 @@
 		"@types/msgpack-lite": "^0.1.11",
 		"@types/prismjs": "^1.26.4",
 		"@types/three": "^0.164.1",
-		"@typescript-eslint/eslint-plugin": "^7.0.0",
+		"@typescript-eslint/eslint-plugin": "^8.4.0",
 		"@typescript-eslint/parser": "^7.0.0",
 		"eslint": "^8.56.0",
 		"eslint-config-prettier": "^9.1.0",
