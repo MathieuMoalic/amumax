@@ -116,7 +116,7 @@ func Download(q Quantity) *data.Slice {
 
 // print with special formatting for some known types
 func myprint(msg ...interface{}) {
-	util.Log.Comment("%v", myFmt(msg)...)
+	util.Log.Comment("%v", myFmt(msg))
 }
 
 // mumax specific formatting (Slice -> average, etc).
