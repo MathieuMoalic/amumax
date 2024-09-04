@@ -59,8 +59,8 @@ func runFileAndServe(mx3Path string) {
 	if _, err := os.Stat(mx3Path); errors.Is(err, os.ErrNotExist) {
 		util.Log.ErrAndExit("Error: File `%s` does not exist", mx3Path)
 	}
+	outputdir := strings.TrimSuffix(mx3Path, ".mx3") + ".zarr"
 
-	outputdir := strings.Replace(mx3Path, ".mx3", ".zarr", 1)
 	if flags.outputDir != "" {
 		outputdir = flags.outputDir
 	}
