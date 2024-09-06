@@ -18,6 +18,7 @@ type Logs struct {
 	Hist    string                   // console history for GUI
 	logfile httpfs.WriteCloseFlusher // saves history of input commands +  output
 	debug   bool
+	path    string
 }
 
 func (l *Logs) AutoFlushToFile() {
@@ -35,26 +36,35 @@ func (l *Logs) FlushToFile() {
 }
 
 func (l *Logs) Init(zarrPath string, debug bool) {
-	f, err := httpfs.Create(zarrPath + "/log.txt")
+	l.path = zarrPath + "/log.txt"
+	l.debug = debug
+	l.createLogFile()
+	l.writeToFile(l.Hist)
+}
+
+func (l *Logs) createLogFile() {
+	var err error
+	l.logfile, err = httpfs.Create(l.path)
 	if err != nil {
 		color.Red(fmt.Sprintf("Error creating the log file: %v", err))
 	}
-	l.logfile = f // otherwise f gets dropped
-	_, err = l.logfile.Write([]byte(l.Hist))
-	if err != nil {
-		color.Red(fmt.Sprintf("Error writing to log file: %v", err))
-	}
-	l.debug = debug
 }
 
 func (l *Logs) writeToFile(msg string) {
-	if l.logfile != nil {
-		_, err := l.logfile.Write([]byte(msg + "\n"))
-		if err != nil {
+	l.Hist += msg + "\n"
+	if l.logfile == nil {
+		return
+	}
+	_, err := l.logfile.Write([]byte(msg + "\n"))
+	if err != nil {
+		if err.Error() == "short write" {
+			color.Yellow("Error writing to log file, trying to recreate it...")
+			l.createLogFile()
+			_, _ = l.logfile.Write([]byte(msg + "\n"))
+		} else {
 			color.Red(fmt.Sprintf("Error writing to log file: %v", err))
 		}
 	}
-	l.Hist += msg + "\n"
 }
 
 func (l *Logs) Command(msg ...interface{}) {
