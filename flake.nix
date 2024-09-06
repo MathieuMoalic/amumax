@@ -27,10 +27,57 @@
       pkgs.bun
     ];
 
-    frontend = pkgs.buildNpmPackage {
+    ############################# GIT ##################################
+    GitFrontend = pkgs.buildNpmPackage {
       inherit version;
       pname = "frontend";
       src = ./frontend;
+      npmDepsHash = "sha256-pjPb5NqGpDdfDRV0e5VKQKpdIw9Gu3MIID8GxC3ZCmc=";
+
+      npmBuild = ''
+        npm run build
+      '';
+
+      installPhase = ''
+        mv dist $out
+      '';
+    };
+    GitBuildAmumax = pkgs.buildGoModule {
+      inherit version CGO_CFLAGS CGO_LDFLAGS CGO_CFLAGS_ALLOW;
+      pname = "amumax";
+      vendorHash = "sha256-6lcGHrtXwokEaJq+4tmNxVCTVf8Dz2++PStKQMyQeCk=";
+      src = ./.;
+
+      buildInputs =
+        basepkgs
+        ++ [
+          pkgs.addDriverRunpath
+        ];
+
+      buildPhase = ''
+        cp -r ${GitFrontend} api/static
+        go build -v -o $out/bin/amumax .
+      '';
+
+      doCheck = false;
+
+      postFixup = ''
+        addDriverRunpath $out/bin/*
+      '';
+    };
+    #################### RELEASE ############################
+    ReleaseSrc = pkgs.fetchFromGitHub {
+      owner = "MathieuMoalic";
+      repo = "amumax";
+      rev = version;
+      hash = "sha256-gSkJeemI43n8/vLlYJEFAr9BXN5Aeb/MOmPwul3EKHw=";
+    };
+
+    ReleaseFrontend = pkgs.buildNpmPackage {
+      inherit version;
+      pname = "frontend";
+      src = "${ReleaseSrc}/frontend";
+
       npmDepsHash = "sha256-DJOiaPDiWJEkcon/Lc3TD/5cS5v5ArORnpp7HDEpa4E=";
 
       npmBuild = ''
@@ -42,27 +89,21 @@
       '';
     };
 
-    buildAmumax = pkgs.buildGoModule {
+    ReleaseBuildAmumax = pkgs.buildGoModule {
       inherit version CGO_CFLAGS CGO_LDFLAGS CGO_CFLAGS_ALLOW;
       pname = "amumax";
       vendorHash = "sha256-ly7mLulUon9XIztddOtP6VEGJZk6A6xa5rK/pYwAP2A=";
-      src = ./.;
 
+      src = ReleaseSrc;
       buildInputs =
         basepkgs
         ++ [
           pkgs.addDriverRunpath
         ];
 
-      # strip symbols and add version
-      ldflags = [
-        "-s"
-        "-w"
-        "-X github.com/MathieuMoalic/amumax/engine.VERSION=${version}"
-      ];
       buildPhase = ''
-        cp -r ${frontend} api/static
-        go build -v -o $out/bin/amumax .
+        cp -r ${ReleaseFrontend} api/static
+        go build -v -o $out/bin/amumax -ldflags '-s -w -X github.com/MathieuMoalic/amumax/engine.VERSION=${version}' .
       '';
 
       doCheck = false;
@@ -94,8 +135,8 @@
     };
   in {
     packages.${system} = {
-      default = buildAmumax;
-      git = buildAmumax;
+      default = ReleaseBuildAmumax;
+      git = GitBuildAmumax;
     };
     devShell.${system} = devEnv;
   };
