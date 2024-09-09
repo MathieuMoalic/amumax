@@ -137,18 +137,36 @@ Say you want to calculate the FFT of the top layer of the `y` component of the m
 
 ## Building from source
 
-Using `podman` or `docker`:
+### Using `nix`:
+`nix run .#git`
+
+### Using `podman` or `docker`:
 
 ```bash
 git clone https://github.com/MathieuMoalic/amumax
 cd amumax
+podman run --rm -v $PWD:/src docker.io/oven/bun:1.1.27 bash -c "cd /src/frontend && bun run build && mv /src/frontend/dist /src/api/static"
 podman build -t matmoa/amumax:build .
-podman run --rm -v $PWD:/src matmoa/amumax:build bash cuda/build_cuda.sh
 podman run --rm -v $PWD:/src matmoa/amumax:build
 ./build/amumax -v
 ```
 
 The amumax binary and cuda libraries are then found in `build`.
+
+### Manually
+
+You need to install `git`, `bun`, `go`, `cuda`. Then
+```bash
+git clone https://github.com/MathieuMoalic/amumax
+cd frontend
+bun install
+bun run build
+cd ..
+mv frontend/dist api/static
+export CGO_LDFLAGS="-lcufft -lcuda -lcurand -L/usr/local/cuda/lib64/stubs/ -Wl,-rpath -Wl,\$ORIGIN" 
+export CGO_CFLAGS_ALLOW='(-fno-schedule-insns|-malign-double|-ffast-math)'
+go build -v .
+```
 
 ## Contribution
 
