@@ -94,11 +94,11 @@ func entrypoint(cmd *cobra.Command, args []string) {
 		vet()
 		return
 	}
-	if len(args) == 0 {
+	if len(args) == 0 && !flags.version {
 		runInteractive()
 	} else if len(args) == 1 {
 		runFileAndServe(args[0])
-	} else {
+	} else if len(args) > 1 {
 		RunQueue(args)
 	}
 }
