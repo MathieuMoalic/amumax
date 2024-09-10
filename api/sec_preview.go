@@ -184,11 +184,12 @@ func (p *Preview) UpdateScalarField(scalarField [][][]float32) {
 	xLen := len(scalarField[0][0])
 	yLen := len(scalarField[0])
 	min, max := scalarField[0][0][0], scalarField[0][0][0]
+	geom := engine.Geometry.Buffer.HostCopy().Scalars()
 	var valArray [][3]float32
 	for posx := 0; posx < xLen; posx++ {
 		for posy := 0; posy < yLen; posy++ {
 			val := scalarField[0][posy][posx]
-			if val == 0 {
+			if geom[0][posy][posx] == 0 {
 				continue
 			}
 			if val < min {
@@ -254,7 +255,6 @@ func validateComponent() {
 		preview.Component = "None"
 	case 3:
 		if preview.Component == "None" {
-			util.Log.Err("Cannot set component to None for a vector field")
 			preview.Component = "3D"
 		}
 	default:
@@ -297,6 +297,7 @@ func postPreviewQuantity(c echo.Context) error {
 	}
 	preview.Quantity = req.Quantity
 	validateComponent()
+	preview.Refresh = true
 	updatePreviewType()
 	broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)

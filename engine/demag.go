@@ -40,7 +40,7 @@ func SetDemagField(dst *data.Slice) {
 		defer msat.Recycle()
 		if NoDemagSpins.isZero() {
 			// Normal demag, everywhere
-			demagConv().Exec(dst, M.Buffer(), geometry.Gpu(), msat)
+			demagConv().Exec(dst, M.Buffer(), Geometry.Gpu(), msat)
 		} else {
 			setMaskedDemagField(dst, msat)
 		}
@@ -54,11 +54,11 @@ func setMaskedDemagField(dst *data.Slice, msat cuda.MSlice) {
 	// No-demag spins: mask-out geometry with zeros where NoDemagSpins is set,
 	// so these spins do not generate a field
 
-	buf := cuda.Buffer(SCALAR, geometry.Gpu().Size()) // masked-out geometry
+	buf := cuda.Buffer(SCALAR, Geometry.Gpu().Size()) // masked-out geometry
 	defer cuda.Recycle(buf)
 
 	// obtain a copy of the geometry mask, which we can overwrite
-	geom, r := geometry.Slice()
+	geom, r := Geometry.Slice()
 	if r {
 		defer cuda.Recycle(geom)
 	}
@@ -87,7 +87,7 @@ func SetMFull(dst *data.Slice) {
 	}
 
 	// ...and by cell volume if applicable
-	vol, rV := geometry.Slice()
+	vol, rV := Geometry.Slice()
 	if rV {
 		defer cuda.Recycle(vol)
 	}

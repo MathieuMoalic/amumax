@@ -37,7 +37,7 @@ func (m *magnetization) Type() reflect.Type      { return reflect.TypeOf(new(mag
 func (m *magnetization) Eval() interface{}       { return m }
 func (m *magnetization) average() []float64      { return sAverageMagnet(M.Buffer()) }
 func (m *magnetization) Average() data.Vector    { return unslice(m.average()) }
-func (m *magnetization) normalize()              { cuda.Normalize(m.Buffer(), geometry.Gpu()) }
+func (m *magnetization) normalize()              { cuda.Normalize(m.Buffer(), Geometry.Gpu()) }
 
 // allocate storage (not done by init, as mesh size may not yet be known then)
 func (m *magnetization) alloc() {
@@ -80,7 +80,7 @@ func (m *magnetization) String() string { return util.Sprint(m.Buffer().HostCopy
 // Set the value of one cell.
 func (m *magnetization) SetCell(ix, iy, iz int, v data.Vector) {
 	r := Index2Coord(ix, iy, iz)
-	if geometry.shape != nil && !geometry.shape(r[X], r[Y], r[Z]) {
+	if Geometry.shape != nil && !Geometry.shape(r[X], r[Y], r[Z]) {
 		return
 	}
 	vNorm := v.Len()

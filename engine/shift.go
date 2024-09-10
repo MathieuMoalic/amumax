@@ -37,7 +37,7 @@ func Shift(dx int) {
 		Regions.shift(dx)
 	}
 	if ShiftGeom {
-		geometry.shift(dx)
+		Geometry.shift(dx)
 	}
 	M.normalize()
 }
@@ -62,7 +62,7 @@ func YShift(dy int) {
 		Regions.shiftY(dy)
 	}
 	if ShiftGeom {
-		geometry.shiftY(dy)
+		Geometry.shiftY(dy)
 	}
 	M.normalize()
 }
