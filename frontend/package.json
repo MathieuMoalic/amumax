@@ -12,26 +12,26 @@
 		"format": "prettier --write ."
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/adapter-auto": "^3.2.4",
 		"@sveltejs/adapter-static": "^3.0.4",
-		"@sveltejs/kit": "^2.0.0",
-		"@sveltejs/vite-plugin-svelte": "^3.0.0",
-		"@types/eslint": "^8.56.0",
+		"@sveltejs/kit": "^2.5.26",
+		"@sveltejs/vite-plugin-svelte": "^3.1.2",
+		"@types/eslint": "^9.6.1",
 		"@types/msgpack-lite": "^0.1.11",
 		"@types/prismjs": "^1.26.4",
-		"@types/three": "^0.164.1",
-		"@typescript-eslint/eslint-plugin": "^8.4.0",
-		"@typescript-eslint/parser": "^8.4.0",
-		"eslint": "^8.56.0",
+		"@types/three": "^0.168.0",
+		"@typescript-eslint/eslint-plugin": "^8.5.0",
+		"@typescript-eslint/parser": "^8.5.0",
+		"eslint": "^9.10.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte": "^2.43.0",
-		"prettier": "^3.1.1",
-		"prettier-plugin-svelte": "^3.1.2",
+		"prettier": "^3.3.3",
+		"prettier-plugin-svelte": "^3.2.6",
 		"svelte": "^4.2.19",
 		"svelte-check": "^4.0.1",
-		"tslib": "^2.4.1",
-		"typescript": "^5.5.4",
-		"vite": "^5.0.3"
+		"tslib": "^2.7.0",
+		"typescript": "^5.6.2",
+		"vite": "^5.4.3"
 	},
 	"type": "module",
 	"dependencies": {
@@ -42,6 +42,6 @@
 		"echarts": "^5.5.1",
 		"msgpack-lite": "^0.1.26",
 		"prismjs": "^1.29.0",
-		"three": "^0.164.1"
+		"three": "^0.168.0"
 	}
 }
