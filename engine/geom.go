@@ -11,31 +11,31 @@ import (
 func init() {
 	DeclFunc("SetGeom", SetGeom, "Sets the geometry to a given shape")
 	DeclVar("EdgeSmooth", &edgeSmooth, "Geometry edge smoothing with edgeSmooth^3 samples per cell, 0=staircase, ~8=very smooth")
-	geometry.init()
+	Geometry.init()
 }
 
 var (
-	geometry   geom
+	Geometry   geom
 	edgeSmooth int = 0 // disabled by default
 )
 
 type geom struct {
 	info
-	buffer *data.Slice
+	Buffer *data.Slice
 	shape  Shape
 }
 
 func (g *geom) init() {
-	g.buffer = nil
+	g.Buffer = nil
 	g.info = info{1, "geom", ""}
 	DeclROnly("geom", g, "Cell fill fraction (0..1)")
 }
 
 func (g *geom) Gpu() *data.Slice {
-	if g.buffer == nil {
-		g.buffer = data.NilSlice(1, g.Mesh().Size())
+	if g.Buffer == nil {
+		g.Buffer = data.NilSlice(1, g.Mesh().Size())
 	}
-	return g.buffer
+	return g.Buffer
 }
 
 func (g *geom) Slice() (*data.Slice, bool) {
@@ -51,7 +51,7 @@ func (g *geom) Slice() (*data.Slice, bool) {
 
 func (q *geom) EvalTo(dst *data.Slice) { EvalTo(q, dst) }
 
-var _ Quantity = &geometry
+var _ Quantity = &Geometry
 
 func (g *geom) average() []float64 {
 	s, r := g.Slice()
@@ -64,7 +64,7 @@ func (g *geom) average() []float64 {
 func (g *geom) Average() float64 { return g.average()[0] }
 
 func SetGeom(s Shape) {
-	geometry.setGeom(s)
+	Geometry.setGeom(s)
 }
 
 func (geometry *geom) setGeom(s Shape) {
@@ -78,7 +78,7 @@ func (geometry *geom) setGeom(s Shape) {
 
 	geometry.shape = s
 	if geometry.Gpu().IsNil() {
-		geometry.buffer = cuda.NewSlice(1, geometry.Mesh().Size())
+		geometry.Buffer = cuda.NewSlice(1, geometry.Mesh().Size())
 	}
 
 	host := data.NewSlice(1, geometry.Gpu().Size())
@@ -138,7 +138,7 @@ func (geometry *geom) setGeom(s Shape) {
 		util.Log.ErrAndExit("SetGeom: geometry completely empty")
 	}
 
-	data.Copy(geometry.buffer, V)
+	data.Copy(geometry.Buffer, V)
 
 	// M inside geom but previously outside needs to be re-inited
 	needupload := false
@@ -168,9 +168,9 @@ func (g *geom) cellVolume(ix, iy, iz int) float32 {
 	r := Index2Coord(ix, iy, iz)
 	x0, y0, z0 := r[X], r[Y], r[Z]
 
-	c := geometry.Mesh().CellSize()
+	c := Geometry.Mesh().CellSize()
 	cx, cy, cz := c[X], c[Y], c[Z]
-	s := geometry.shape
+	s := Geometry.shape
 	var vol float32
 
 	N := edgeSmooth
@@ -194,12 +194,12 @@ func (g *geom) cellVolume(ix, iy, iz int) float32 {
 
 func (g *geom) shift(dx int) {
 	// empty mask, nothing to do
-	if g == nil || g.buffer.IsNil() {
+	if g == nil || g.Buffer.IsNil() {
 		return
 	}
 
 	// allocated mask: shift
-	s := g.buffer
+	s := g.Buffer
 	s2 := cuda.Buffer(1, g.Mesh().Size())
 	defer cuda.Recycle(s2)
 	newv := float32(1) // initially fill edges with 1's
@@ -214,7 +214,7 @@ func (g *geom) shift(dx int) {
 			for ix := x1; ix < x2; ix++ {
 				r := Index2Coord(ix, iy, iz) // includes shift
 				if !g.shape(r[X], r[Y], r[Z]) {
-					cuda.SetCell(g.buffer, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
+					cuda.SetCell(g.Buffer, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
 				}
 			}
 		}
@@ -224,12 +224,12 @@ func (g *geom) shift(dx int) {
 
 func (g *geom) shiftY(dy int) {
 	// empty mask, nothing to do
-	if g == nil || g.buffer.IsNil() {
+	if g == nil || g.Buffer.IsNil() {
 		return
 	}
 
 	// allocated mask: shift
-	s := g.buffer
+	s := g.Buffer
 	s2 := cuda.Buffer(1, g.Mesh().Size())
 	defer cuda.Recycle(s2)
 	newv := float32(1) // initially fill edges with 1's
@@ -244,7 +244,7 @@ func (g *geom) shiftY(dy int) {
 			for iy := y1; iy < y2; iy++ {
 				r := Index2Coord(ix, iy, iz) // includes shift
 				if !g.shape(r[X], r[Y], r[Z]) {
-					cuda.SetCell(g.buffer, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
+					cuda.SetCell(g.Buffer, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
 				}
 			}
 		}
