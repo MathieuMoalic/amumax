@@ -16,7 +16,7 @@ var preview Preview
 func init() {
 	preview = Preview{
 		Quantity:             "m",
-		Component:            "All",
+		Component:            "3D",
 		Layer:                0,
 		MaxPoints:            10000,
 		Dimensions:           [3]int{0, 0, 0},
@@ -219,7 +219,7 @@ func compStringToIndex(comp string) int {
 		return 1
 	case "z":
 		return 2
-	case "All":
+	case "3D":
 		return -1
 	case "None":
 		return 0
@@ -255,13 +255,13 @@ func validateComponent() {
 	case 3:
 		if preview.Component == "None" {
 			util.Log.Err("Cannot set component to None for a vector field")
-			preview.Component = "All"
+			preview.Component = "3D"
 		}
 	default:
 		util.Log.Err("Invalid number of components")
 		// reset to default
 		preview.Quantity = "m"
-		preview.Component = "All"
+		preview.Component = "3D"
 	}
 }
 

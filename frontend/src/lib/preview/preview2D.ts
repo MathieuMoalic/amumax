@@ -5,8 +5,13 @@ import { meshState } from '$api/incoming/mesh';
 import { disposePreview3D } from './preview3D';
 
 export function preview2D() {
+    if (get(previewState).scalarField === null) {
+        disposePreview2D();
+        disposePreview3D();
+        return;
+    }
+    
     const container = document.getElementById('container')!;
-
     if (get(previewState).refresh || !container) {
         disposePreview2D();
         disposePreview3D();
@@ -19,6 +24,10 @@ export function preview2D() {
 let chartInstance: echarts.ECharts;
 
 function update() {
+    if (chartInstance === undefined || chartInstance.isDisposed()) {
+        init();
+        return;
+    } 
     let data = get(previewState).scalarField;
     let ps = get(previewState);
     chartInstance.setOption({
@@ -162,7 +171,10 @@ export function init() {
             max: ps.max,
             calculable: true,
             realtime: true,
-            precision: 2,
+            // precision: 2,
+            formatter: function (value: any) {
+                return parseFloat(value).toPrecision(2);
+            },
             itemWidth: 9,
             itemHeight: 140,
             text: [ps.unit, ''],

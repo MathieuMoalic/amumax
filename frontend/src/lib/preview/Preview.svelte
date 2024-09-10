@@ -23,7 +23,7 @@
 		</select>
 		{#if $p.nComp == 3}
 			<div>
-				{#each ['All', 'x', 'y', 'z'] as choice}
+				{#each ['3D', 'x', 'y', 'z'] as choice}
 					<label>
 						<input
 							type="radio"
@@ -37,37 +37,42 @@
 			</div>
 		{/if}
 	</p>
-	<p>
-		Z-layer: 0
-		<input
-			type="range"
-			min="0"
-			max={$meshState.Nz - 1}
-			bind:value={$p.layer}
-			on:change={postLayer}
-		/>
-		{$p.layer}
-		{$meshState.Nz}
-	</p>
-	<p>
-		Max Points: <NumberInputField func={postMaxPoints} placeholder={$p.maxPoints} />
-		({#if $p.scalarField !== null}
-			{$p.scalarField?.length}
-		{:else if $p.vectorFieldPositions !== null}
-			{$p.vectorFieldPositions?.length}
-		{/if}
-		points)
-	</p>
-	<p>
-		{#if $threeDPreview?.parsingTime !== null}
-			Parsing time: {$threeDPreview?.parsingTime.toFixed(0)} ms
-		{/if}
-	</p>
-	{#if $threeDPreview !== null}
+	{#if $p.scalarField == null && $p.vectorFieldPositions == null}
+		<p>No data to display for {$p.quantity}</p>
+	{:else}
 		<p>
-			<button on:click={resetCamera}>Reset Camera</button>
+			Z-layer: 0
+			<input
+				type="range"
+				min="0"
+				max={$meshState.Nz - 1}
+				bind:value={$p.layer}
+				on:change={postLayer}
+			/>
+			{$p.layer}
+			{$meshState.Nz}
 		</p>
+		<p>
+			Max Points: <NumberInputField func={postMaxPoints} placeholder={$p.maxPoints} />
+			({#if $p.scalarField !== null}
+				{$p.scalarField?.length}
+			{:else if $p.vectorFieldPositions !== null}
+				{$p.vectorFieldPositions?.length}
+			{/if}
+			points)
+		</p>
+		<p>
+			{#if $threeDPreview?.parsingTime !== null}
+				Parsing time: {$threeDPreview?.parsingTime.toFixed(0)} ms
+			{/if}
+		</p>
+		{#if $threeDPreview !== null}
+			<p>
+				<button on:click={resetCamera}>Reset Camera</button>
+			</p>
+		{/if}
 	{/if}
+
 	<div id="container"></div>
 </section>
 
