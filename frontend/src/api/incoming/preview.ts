@@ -6,7 +6,7 @@ export type ScalarField = Array<Array<number>>;
 export interface Preview {
     quantity: string;
     unit: string;
-    component: number;
+    component: string;
     layer: number;
     maxPoints: number;
     dimensions: [number, number, number];
@@ -25,7 +25,7 @@ export const previewState = writable<Preview>(
     {
         quantity: "",
         unit: "",
-        component: 0,
+        component: "",
         layer: 0,
         maxPoints: 0,
         dimensions: [0, 0, 0],
