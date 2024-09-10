@@ -108,8 +108,8 @@ func (a *atom) get() int { return int(atomic.LoadInt32((*int32)(a))) }
 func (a *atom) inc()     { atomic.AddInt32((*int32)(a), 1) }
 
 func run(inFile string, gpu int) {
-	// Flags
-	err := exec.Command(os.Args[0], "-g", fmt.Sprint(gpu), "--force-clean", fmt.Sprint(flags.forceClean), "--skip-exist", fmt.Sprint(flags.skipExists), inFile).Run()
+	fmt.Println("Running", inFile, "on GPU", gpu)
+	err := exec.Command(os.Args[0], "-g", fmt.Sprint(gpu), inFile).Run()
 	if err != nil {
 		fmt.Println("failed", inFile, "on GPU", gpu, ":", err)
 		exitStatus = 1
