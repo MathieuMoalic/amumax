@@ -49,7 +49,7 @@ func CleanExit() {
 		return
 	}
 	drainOutput()
-	util.Log.Comment("**************** Simulation Ended ****************** //")
+	util.Log.Info("**************** Simulation Ended ****************** //")
 	Table.Flush()
 	if SyncAndLog {
 		timer.Print(os.Stdout)

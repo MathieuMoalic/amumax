@@ -277,7 +277,10 @@ func postPreviewQuantity(c echo.Context) error {
 	}
 	preview.Quantity = req.Quantity
 	if preview.GetQuantity().NComp() == 1 && preview.Component == "All" {
+		util.Log.Warn("Component 'All' is not available for this quantity")
 		preview.Component = "x"
+	} else {
+		util.Log.Debug("Component 'All' is available for this quantity")
 	}
 	updatePreviewType()
 	broadcastEngineState()

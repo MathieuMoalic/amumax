@@ -47,7 +47,7 @@ func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, ca
 
 	basename := kernelName(gridsize, pbc, cellsize, accuracy, cacheDir)
 	if httpfs.Exists(basename) {
-		util.Log.Comment("Loading kernel from cache")
+		util.Log.Info("Loading kernel from cache")
 		var err error
 		kernel, err = loadKernel(basename, padSize(gridsize, pbc))
 		if err != nil {

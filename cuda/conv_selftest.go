@@ -14,10 +14,10 @@ import (
 func testConvolution(c *DemagConvolution, PBC [3]int, realKern [3][3]*data.Slice) {
 	if PBC != [3]int{0, 0, 0} {
 		// the brute-force method does not work for pbc.
-		util.Log.Comment("skipping convolution self-test for PBC")
+		util.Log.Info("skipping convolution self-test for PBC")
 		return
 	}
-	util.Log.Comment("convolution self-test...")
+	util.Log.Info("convolution self-test...")
 	inhost := data.NewSlice(3, c.inputSize)
 	initConvTestInput(inhost.Vectors())
 	gpu := NewSlice(3, c.inputSize)
