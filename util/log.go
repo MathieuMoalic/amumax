@@ -51,57 +51,61 @@ func (l *Logs) createLogFile() {
 }
 
 func (l *Logs) writeToFile(msg string) {
-	l.Hist += msg + "\n"
 	if l.logfile == nil {
 		return
 	}
-	_, err := l.logfile.Write([]byte(msg + "\n"))
+	_, err := l.logfile.Write([]byte(msg))
 	if err != nil {
 		if err.Error() == "short write" {
 			color.Yellow("Error writing to log file, trying to recreate it...")
 			l.createLogFile()
-			_, _ = l.logfile.Write([]byte(msg + "\n"))
+			_, _ = l.logfile.Write([]byte(msg))
 		} else {
 			color.Red(fmt.Sprintf("Error writing to log file: %v", err))
 		}
 	}
 }
 
+func (l *Logs) addAndWrite(msg string) {
+	l.Hist += msg
+	l.writeToFile(msg)
+}
+
 func (l *Logs) Command(msg ...interface{}) {
 	fmt.Println(fmt.Sprint(msg...))
-	l.writeToFile(fmt.Sprint(msg...))
+	l.addAndWrite(fmt.Sprint(msg...) + "\n")
 }
 
 func (l *Logs) Comment(msg string, args ...interface{}) {
-	formattedMsg := "// " + fmt.Sprintf(msg, args...)
+	formattedMsg := "// " + fmt.Sprintf(msg, args...) + "\n"
 	color.Green(formattedMsg)
-	l.writeToFile(formattedMsg)
+	l.addAndWrite(formattedMsg)
 }
 
 func (l *Logs) Warn(msg string, args ...interface{}) {
-	formattedMsg := "// " + fmt.Sprintf(msg, args...)
+	formattedMsg := "// " + fmt.Sprintf(msg, args...) + "\n"
 	color.Yellow(formattedMsg)
-	l.writeToFile(formattedMsg)
+	l.addAndWrite(formattedMsg)
 }
 
 func (l *Logs) Debug(msg string, args ...interface{}) {
 	if l.debug {
-		formattedMsg := "// " + fmt.Sprintf(msg, args...)
+		formattedMsg := "// " + fmt.Sprintf(msg, args...) + "\n"
 		color.Blue(formattedMsg)
-		l.writeToFile(formattedMsg)
+		l.addAndWrite(formattedMsg)
 	}
 }
 
 func (l *Logs) Err(msg string, args ...interface{}) {
-	formattedMsg := "// " + fmt.Sprintf(msg, args...)
+	formattedMsg := "// " + fmt.Sprintf(msg, args...) + "\n"
 	color.Red(formattedMsg)
-	l.writeToFile(formattedMsg)
+	l.addAndWrite(formattedMsg)
 }
 
 func (l *Logs) PanicIfError(err error) {
 	if err != nil {
 		_, file, line, _ := runtime.Caller(1)
-		color.Red(fmt.Sprint("// ", file, ":", line, err))
+		color.Red(fmt.Sprint("// ", file, ":", line, err) + "\n")
 		panic(err)
 	}
 }
