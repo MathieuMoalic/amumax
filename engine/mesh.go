@@ -79,12 +79,12 @@ func closestSevenSmooth(n int) int {
 
 func SmoothMesh() {
 	if Nx*Ny*Nz < 10000 {
-		util.Log.Comment("No optimization to be made for small meshes")
+		util.Log.Info("No optimization to be made for small meshes")
 		return
 	}
-	util.Log.Comment("Original mesh: ")
-	util.Log.Comment("Cell size: %f, %f, %f", Dx, Dy, Dz)
-	util.Log.Comment("Grid Size: %d, %d, %d", Nx, Ny, Nz)
+	util.Log.Info("Original mesh: ")
+	util.Log.Info("Cell size: %f, %f, %f", Dx, Dy, Dz)
+	util.Log.Info("Grid Size: %d, %d, %d", Nx, Ny, Nz)
 	if AutoMeshx {
 		NewNx := closestSevenSmooth(Nx)
 		Dx = Dx * float64(Nx) / float64(NewNx)
@@ -100,9 +100,9 @@ func SmoothMesh() {
 		Dz = Dz * float64(Nz) / float64(NewNz)
 		Nz = NewNz
 	}
-	util.Log.Comment("Smoothed mesh: ")
-	util.Log.Comment("Cell size: %f, %f, %f", Dx, Dy, Dz)
-	util.Log.Comment("Grid Size: %d, %d, %d", Nx, Ny, Nz)
+	util.Log.Info("Smoothed mesh: ")
+	util.Log.Info("Cell size: %f, %f, %f", Dx, Dy, Dz)
+	util.Log.Info("Grid Size: %d, %d, %d", Nx, Ny, Nz)
 }
 
 func IsValidCellSize(cellSizeX, cellSizeY, cellSizeZ float64) bool {
@@ -160,7 +160,7 @@ func SetTiDiNi(Ti, di *float64, Ni *int, comp string) {
 // check if mesh is set, otherwise, it creates it
 func CreateMesh() {
 	if !IsMeshCreated() {
-		util.Log.Comment("Creating mesh")
+		util.Log.Info("Creating mesh")
 		SetBusy(true)
 		defer SetBusy(false)
 		SetTiDiNi(&Tx, &Dx, &Nx, "x")

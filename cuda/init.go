@@ -41,7 +41,7 @@ func Init(gpu int) {
 		util.Log.ErrAndExit("GPU has insufficient compute capability, need 2.0 or higher.")
 	}
 	if Synchronous {
-		util.Log.Comment("DEBUG: synchronized CUDA calls")
+		util.Log.Info("DEBUG: synchronized CUDA calls")
 	}
 
 	// test PTX load so that we can catch CUDA_ERROR_NO_BINARY_FOR_GPU early

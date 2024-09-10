@@ -76,7 +76,7 @@ func (l *Logs) Command(msg ...interface{}) {
 	l.addAndWrite(fmt.Sprint(msg...) + "\n")
 }
 
-func (l *Logs) Comment(msg string, args ...interface{}) {
+func (l *Logs) Info(msg string, args ...interface{}) {
 	formattedMsg := "// " + fmt.Sprintf(msg, args...) + "\n"
 	color.Green(formattedMsg)
 	l.addAndWrite(formattedMsg)

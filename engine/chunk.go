@@ -50,7 +50,7 @@ func NewChunk(length, nb_of_chunks, N_index int) Chunk {
 	}
 	new_nb_of_chunks := closestDivisor(length, nb_of_chunks)
 	if new_nb_of_chunks != nb_of_chunks {
-		util.Log.Comment("Warning: The number of chunks for %v has been automatically resized from %v to %v", name, nb_of_chunks, new_nb_of_chunks)
+		util.Log.Info("Warning: The number of chunks for %v has been automatically resized from %v to %v", name, nb_of_chunks, new_nb_of_chunks)
 	}
 	nb_of_chunks = new_nb_of_chunks
 	return Chunk{length / nb_of_chunks, nb_of_chunks}

@@ -75,7 +75,7 @@ func startGuiServer(e *echo.Echo, host string, port int) {
 		if err != nil {
 			util.Log.ErrAndExit("Failed to find available port: %v", err)
 		}
-		util.Log.Comment("Serving the web UI at http://%s", addr)
+		util.Log.Info("Serving the web UI at http://%s", addr)
 
 		// Attempt to start the server
 		err = e.Start(addr)
@@ -91,7 +91,7 @@ func startGuiServer(e *echo.Echo, host string, port int) {
 		}
 
 		// If the server started successfully, break out of the loop
-		util.Log.Comment("Successfully started server at http://%s", addr)
+		util.Log.Info("Successfully started server at http://%s", addr)
 		return
 	}
 

@@ -67,7 +67,7 @@ func TestTypes(t *testing.T) {
 	w.Var("x", &x)
 	w.MustExec("x=7")
 
-	w.Func("printInt", func(x int) { util.Log.Comment("%v", x) })
+	w.Func("printInt", func(x int) { util.Log.Info("%v", x) })
 	w.MustExec("printInt(7)")
 }
 
@@ -210,7 +210,7 @@ func TestFail(test *testing.T) {
 		if err == nil {
 			test.Error(t, "should not compile")
 		} else {
-			util.Log.Comment(t, ":", err, ":OK")
+			util.Log.Info(t, ":", err, ":OK")
 		}
 	}
 }

@@ -28,12 +28,12 @@ func Read(binary_path string, pwd string) (s *data.Slice, err error) {
 		if !IsSaving {
 			break
 		}
-		util.Log.Comment("Waiting for all the files to be saved before reading...")
+		util.Log.Info("Waiting for all the files to be saved before reading...")
 		time.Sleep(1 * time.Second)
 	}
 
 	zarray_path := path.Dir(binary_path) + "/.zarray"
-	util.Log.Comment("Reading:  %v", binary_path)
+	util.Log.Info("Reading:  %v", binary_path)
 	io_reader, err := httpfs.Open(binary_path)
 	util.Log.PanicIfError(err)
 	content, err := os.ReadFile(zarray_path)

@@ -62,7 +62,7 @@ func postSolverType(c echo.Context) error {
 		if solver == engine.BACKWARD_EULER && engine.FixDt == 0 {
 			engine.EvalTryRecover("FixDt = 1e-13")
 		}
-		util.Log.Comment("SetSolver: %v", solver)
+		util.Log.Info("SetSolver: %v", solver)
 
 		engine.EvalTryRecover(fmt.Sprint("SetSolver(", solver, ")"))
 	}

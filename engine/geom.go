@@ -89,7 +89,7 @@ func (geometry *geom) setGeom(s Shape) {
 	c := geometry.Mesh().CellSize()
 	cx, cy, cz := c[X], c[Y], c[Z]
 
-	util.Log.Comment("Initializing geometry")
+	util.Log.Info("Initializing geometry")
 	var ok bool
 	for iz := 0; iz < n[Z]; iz++ {
 		for iy := 0; iy < n[Y]; iy++ {

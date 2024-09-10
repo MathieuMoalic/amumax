@@ -60,11 +60,11 @@ func Vector(x, y, z float64) data.Vector {
 // and print suited message.
 func Expect(msg string, have, want, maxError float64) {
 	if math.IsNaN(have) || math.IsNaN(want) || math.Abs(have-want) > maxError {
-		util.Log.Comment(msg, ":", " have: ", have, " want: ", want, "±", maxError)
+		util.Log.Info(msg, ":", " have: ", have, " want: ", want, "±", maxError)
 		CleanExit()
 		os.Exit(1)
 	} else {
-		util.Log.Comment(msg, ":", have, "OK")
+		util.Log.Info(msg, ":", have, "OK")
 	}
 	// note: we also check "want" for NaN in case "have" and "want" are switched.
 }
@@ -116,7 +116,7 @@ func Download(q Quantity) *data.Slice {
 
 // print with special formatting for some known types
 func myprint(msg ...interface{}) {
-	util.Log.Comment("%v", myFmt(msg))
+	util.Log.Info("%v", myFmt(msg))
 }
 
 // mumax specific formatting (Slice -> average, etc).

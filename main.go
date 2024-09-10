@@ -29,14 +29,14 @@ type Release struct {
 }
 
 func runInteractive() {
-	util.Log.Comment("No input files: starting interactive session")
+	util.Log.Info("No input files: starting interactive session")
 	// setup outut dir
 	now := time.Now()
 	outdir := fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
 
 	engine.InitIO(outdir, outdir, flags.cacheDir, flags.skipExists, flags.forceClean, flags.progress, flags.selfTest, flags.sync)
-	util.Log.Comment("Input file: %s", "none")
-	util.Log.Comment("Output directory: %s", engine.OD())
+	util.Log.Info("Input file: %s", "none")
+	util.Log.Info("Output directory: %s", engine.OD())
 	util.Log.Init(engine.OD(), engine.VERSION == "dev")
 
 	// set up some sensible start configuration
@@ -67,8 +67,8 @@ func runFileAndServe(mx3Path string) {
 		outputdir = flags.outputDir
 	}
 	engine.InitIO(mx3Path, outputdir, flags.cacheDir, flags.skipExists, flags.forceClean, flags.progress, flags.selfTest, flags.sync)
-	util.Log.Comment("Input file: %s", mx3Path)
-	util.Log.Comment("Output directory: %s", engine.OD())
+	util.Log.Info("Input file: %s", mx3Path)
+	util.Log.Info("Output directory: %s", engine.OD())
 
 	util.Log.Init(engine.OD(), engine.VERSION == "dev")
 	go util.Log.AutoFlushToFile()
@@ -100,9 +100,9 @@ func runFileAndServe(mx3Path string) {
 
 // print version to stdout
 func printVersion() {
-	util.Log.Comment("Version:         %s", engine.VERSION)
-	util.Log.Comment("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
-	util.Log.Comment("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
-	util.Log.Comment("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda.UseCC)
-	util.Log.Comment("GPU Information: %s", cuda.GPUInfo)
+	util.Log.Info("Version:         %s", engine.VERSION)
+	util.Log.Info("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
+	util.Log.Info("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
+	util.Log.Info("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda.UseCC)
+	util.Log.Info("GPU Information: %s", cuda.GPUInfo)
 }
