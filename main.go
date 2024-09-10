@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
 	"github.com/MathieuMoalic/amumax/api"
 	"github.com/MathieuMoalic/amumax/cuda"
+	"github.com/MathieuMoalic/amumax/cuda/cu"
 	"github.com/MathieuMoalic/amumax/engine"
 	"github.com/MathieuMoalic/amumax/script"
 	"github.com/MathieuMoalic/amumax/util"
@@ -98,6 +100,9 @@ func runFileAndServe(mx3Path string) {
 
 // print version to stdout
 func printVersion() {
-	util.Log.Comment("%v", engine.UNAME)
-	util.Log.Comment("GPU info: %s, using cc=%d PTX", cuda.GPUInfo, cuda.UseCC)
+	util.Log.Comment("Version:         %s", engine.VERSION)
+	util.Log.Comment("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
+	util.Log.Comment("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
+	util.Log.Comment("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda.UseCC)
+	util.Log.Comment("GPU Information: %s", cuda.GPUInfo)
 }
