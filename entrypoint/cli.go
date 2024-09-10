@@ -1,4 +1,4 @@
-package main
+package entrypoint
 
 import (
 	"fmt"
@@ -62,11 +62,11 @@ func init() {
 var rootCmd = &cobra.Command{
 	Use:   "amumax [mx3 paths...]",
 	Short: "Amumax, a micromagnetic simulator",
-	Run:   entrypoint,
+	Run:   cliEntrypoint,
 	Args:  cobra.ArbitraryArgs,
 }
 
-func entrypoint(cmd *cobra.Command, args []string) {
+func cliEntrypoint(cmd *cobra.Command, args []string) {
 	if flags.update {
 		showUpdateMenu()
 		return

@@ -1,4 +1,4 @@
-package main
+package entrypoint
 
 // File que for distributing multiple input files over GPUs.
 
