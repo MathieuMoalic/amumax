@@ -145,7 +145,7 @@ func TableAddAs(q Quantity, name string) {
 	}
 
 	if Table.Exists(q, name) {
-		util.Log.Warn(name, " is already in the table. Ignoring.")
+		util.Log.Warn("%s is already in the table. Ignoring.", name)
 		return
 	}
 	Table.quantities = append(Table.quantities, q)
