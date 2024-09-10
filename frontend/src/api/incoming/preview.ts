@@ -17,6 +17,7 @@ export interface Preview {
     min: number;
     max: number;
     refresh: boolean;
+    nComp: number;
 }
 
 
@@ -34,6 +35,7 @@ export const previewState = writable<Preview>(
         scalarField: [],
         min: 0,
         max: 0,
-        refresh: false
+        refresh: false,
+        nComp: 0,
     }
 );

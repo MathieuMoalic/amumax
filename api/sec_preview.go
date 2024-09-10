@@ -27,6 +27,7 @@ func init() {
 		Min:                  0,
 		Max:                  0,
 		Refresh:              true,
+		NComp:                3,
 	}
 }
 
@@ -44,6 +45,7 @@ type Preview struct {
 	Min                  float32              `msgpack:"min"`
 	Max                  float32              `msgpack:"max"`
 	Refresh              bool                 `msgpack:"refresh"`
+	NComp                int                  `msgpack:"nComp"`
 }
 
 func (p *Preview) GetQuantity() engine.Quantity {
@@ -63,35 +65,32 @@ func (p *Preview) Update() {
 }
 
 func (p *Preview) UpdateQuantityBuffer() {
-	nComp := 1
+	componentCount := 1
 	if p.Type == "3D" {
-		nComp = 3
+		componentCount = 3
 	}
 	p.ScaleDimensions()
 	GPU_in := engine.ValueOf(p.GetQuantity())
-
 	defer cuda.Recycle(GPU_in)
-	CPU_out := data.NewSlice(nComp, p.Dimensions)
+
+	CPU_out := data.NewSlice(componentCount, p.Dimensions)
 	GPU_out := cuda.NewSlice(1, p.Dimensions)
 	defer GPU_out.Free()
 
 	if p.Type == "3D" {
-		for c := 0; c < nComp; c++ {
+		for c := 0; c < componentCount; c++ {
 			cuda.Resize(GPU_out, GPU_in.Comp(c), p.Layer)
 			data.Copy(CPU_out.Comp(c), GPU_out)
-			// data.Copy(CPU_out.Comp(c), GPU_in.Comp(c))
 		}
 		p.normalizeVectors(CPU_out)
 		p.UpdateVectorField(CPU_out.Vectors())
 	} else {
-		if p.GetQuantity().NComp() >= 1 {
+		if p.GetQuantity().NComp() > 1 {
 			cuda.Resize(GPU_out, GPU_in.Comp(p.GetComponent()), p.Layer)
 			data.Copy(CPU_out.Comp(0), GPU_out)
-			// data.Copy(CPU_out.Comp(0), GPU_in.Comp(p.GetComponent()))
 		} else {
 			cuda.Resize(GPU_out, GPU_in.Comp(0), p.Layer)
 			data.Copy(CPU_out.Comp(0), GPU_out)
-			// data.Copy(CPU_out.Comp(0), GPU_in.Comp(0))
 		}
 		p.UpdateScalarField(CPU_out.Scalars())
 	}
@@ -201,6 +200,10 @@ func (p *Preview) UpdateScalarField(scalarField [][][]float32) {
 			valArray = append(valArray, [3]float32{float32(posx), float32(posy), val})
 		}
 	}
+	if len(valArray) == 0 {
+		util.Log.Warn("No data in scalar field")
+	}
+
 	p.Min = min
 	p.Max = max
 	p.ScalarField = valArray
@@ -218,6 +221,8 @@ func compStringToIndex(comp string) int {
 		return 2
 	case "All":
 		return -1
+	case "None":
+		return 0
 	}
 	util.Log.ErrAndExit("Invalid component string")
 	return -2
@@ -230,7 +235,7 @@ func newPreview() *Preview {
 
 func updatePreviewType() {
 	var fieldType string
-	isVectorField := preview.GetQuantity().NComp() == 3 && preview.GetComponent() == -1
+	isVectorField := preview.NComp == 3 && preview.GetComponent() == -1
 	if isVectorField {
 		fieldType = "3D"
 	} else {
@@ -239,6 +244,24 @@ func updatePreviewType() {
 	if fieldType != preview.Type {
 		preview.Type = fieldType
 		preview.Refresh = true
+	}
+}
+
+func validateComponent() {
+	preview.NComp = preview.GetQuantity().NComp()
+	switch preview.NComp {
+	case 1:
+		preview.Component = "None"
+	case 3:
+		if preview.Component == "None" {
+			util.Log.Err("Cannot set component to None for a vector field")
+			preview.Component = "All"
+		}
+	default:
+		util.Log.Err("Invalid number of components")
+		// reset to default
+		preview.Quantity = "m"
+		preview.Component = "All"
 	}
 }
 
@@ -251,11 +274,8 @@ func postPreviewComponent(c echo.Context) error {
 		util.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	if preview.GetQuantity().NComp() == 1 && req.Component == "All" {
-		preview.Component = "x"
-	} else {
-		preview.Component = req.Component
-	}
+	preview.Component = req.Component
+	validateComponent()
 	preview.Refresh = true
 	updatePreviewType()
 	broadcastEngineState()
@@ -276,12 +296,7 @@ func postPreviewQuantity(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Quantity not found"})
 	}
 	preview.Quantity = req.Quantity
-	if preview.GetQuantity().NComp() == 1 && preview.Component == "All" {
-		util.Log.Warn("Component 'All' is not available for this quantity")
-		preview.Component = "x"
-	} else {
-		util.Log.Debug("Component 'All' is available for this quantity")
-	}
+	validateComponent()
 	updatePreviewType()
 	broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)

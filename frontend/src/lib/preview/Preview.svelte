@@ -21,11 +21,21 @@
 				<option value={quantity}>{quantity}</option>
 			{/each}
 		</select>
-		<select bind:value={$p.component} on:change={postComponent}>
-			{#each ['All', 'x', 'y', 'z'] as choice}
-				<option value={choice}>{choice}</option>
-			{/each}
-		</select>
+		{#if $p.nComp == 3}
+			<div>
+				{#each ['All', 'x', 'y', 'z'] as choice}
+					<label>
+						<input
+							type="radio"
+							bind:group={$p.component}
+							value={choice}
+							on:change={postComponent}
+						/>
+						{choice}
+					</label>
+				{/each}
+			</div>
+		{/if}
 	</p>
 	<p>
 		Z-layer: 0
