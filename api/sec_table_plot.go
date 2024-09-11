@@ -205,6 +205,9 @@ func postTablePlotStep(c echo.Context) error {
 		util.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
+	if req.Step < 1 {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Step must be at least 1"})
+	}
 	tablePlot.Step = req.Step
 	broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
