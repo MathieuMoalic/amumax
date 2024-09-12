@@ -1,3 +1,5 @@
+import { setAlert } from "$lib/alerts/alert";
+
 export async function post(endpoint: string, data: any) {
     const response = await fetch(`/api/${endpoint}`, {
         method: 'POST',
@@ -6,7 +8,13 @@ export async function post(endpoint: string, data: any) {
         },
         body: JSON.stringify({ ...data })
     });
+
     if (!response.ok) {
-        throw new Error(`Failed to post ${endpoint}`);
+        try {
+            const errorData = await response.json();
+            setAlert(errorData.error);
+        } catch (e) {
+            setAlert("An error occurred");
+        }
     }
 }

@@ -255,6 +255,8 @@ export function disposePreview2D() {
 
 export function resizeECharts() {
     window.addEventListener('resize', function () {
-        chartInstance.resize();
+        if (chartInstance === undefined || chartInstance.isDisposed()) {
+            return;
+        }
     });
 }

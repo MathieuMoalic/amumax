@@ -19,8 +19,8 @@ export function initializeWebSocket() {
     let ws: WebSocket | null = null;
 
     function connect() {
-        // ws = new WebSocket(`http://localhost:35367/ws`);
-        ws = new WebSocket(`/ws`);
+        ws = new WebSocket(`http://localhost:35367/ws`);
+        // ws = new WebSocket(`/ws`);
         ws.binaryType = 'arraybuffer';
 
         ws.onopen = function () {
@@ -66,7 +66,7 @@ export function initializeWebSocket() {
 export function parseMsgpack(data: ArrayBuffer) {
     const msg = msgpack.decode(new Uint8Array(data));
     consoleState.set(msg.console as Console);
-
+    
     headerState.set(msg.header as Header);
 
     meshState.set(msg.mesh as Mesh);

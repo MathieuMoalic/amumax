@@ -7,6 +7,9 @@
 	import { postComponent, postLayer, postMaxPoints, postQuantity } from '$api/outgoing/preview';
 	import { onMount } from 'svelte';
 	import NumberInputField from '$lib/NumberInputField.svelte';
+	import { Button, Select } from 'flowbite-svelte';
+	import QuantityDropdown from './QuantityDropdown.svelte';
+
 	onMount(() => {
 		resizeECharts();
 	});
@@ -14,15 +17,18 @@
 
 <section>
 	<h2>Preview</h2>
-	<p>
-		Quantity:
-		<select bind:value={$p.quantity} on:change={postQuantity}>
-			{#each quantities as quantity}
-				<option value={quantity}>{quantity}</option>
-			{/each}
-		</select>
-		{#if $p.nComp == 3}
-			<div>
+	<div class="grid grid-cols-2 gap-6">
+		<QuantityDropdown />
+		<div>
+			Quantity:
+			<Select bind:value={$p.quantity} on:change={postQuantity}>
+				{#each quantities as quantity}
+					<option value={quantity}>{quantity}</option>
+				{/each}
+			</Select>
+		</div>
+		<div>
+			{#if $p.nComp == 3}
 				{#each ['3D', 'x', 'y', 'z'] as choice}
 					<label>
 						<input
@@ -34,44 +40,41 @@
 						{choice}
 					</label>
 				{/each}
+			{/if}
+		</div>
+		{#if $p.scalarField == null && $p.vectorFieldPositions == null}
+			<p>No data to display for {$p.quantity}</p>
+		{:else}
+			{#if $meshState.Nz > 1}
+				<div>
+					Z-layer: 0
+					<input
+						type="range"
+						min="0"
+						max={$meshState.Nz - 1}
+						bind:value={$p.layer}
+						on:change={postLayer}
+					/>
+					{$p.layer}
+					{$meshState.Nz}
+				</div>
+			{/if}
+			<div>
+				Max Points: <NumberInputField func={postMaxPoints} placeholder={$p.maxPoints} />
+				({#if $p.scalarField !== null}
+					{$p.scalarField?.length}
+				{:else if $p.vectorFieldPositions !== null}
+					{$p.vectorFieldPositions?.length}
+				{/if}
+				points)
 			</div>
-		{/if}
-	</p>
-	{#if $p.scalarField == null && $p.vectorFieldPositions == null}
-		<p>No data to display for {$p.quantity}</p>
-	{:else}
-		<p>
-			Z-layer: 0
-			<input
-				type="range"
-				min="0"
-				max={$meshState.Nz - 1}
-				bind:value={$p.layer}
-				on:change={postLayer}
-			/>
-			{$p.layer}
-			{$meshState.Nz}
-		</p>
-		<p>
-			Max Points: <NumberInputField func={postMaxPoints} placeholder={$p.maxPoints} />
-			({#if $p.scalarField !== null}
-				{$p.scalarField?.length}
-			{:else if $p.vectorFieldPositions !== null}
-				{$p.vectorFieldPositions?.length}
+			{#if $threeDPreview !== null}
+				<div>
+					<Button on:click={resetCamera} outline>Reset Camera</Button>
+				</div>
 			{/if}
-			points)
-		</p>
-		<p>
-			{#if $threeDPreview?.parsingTime !== null}
-				Parsing time: {$threeDPreview?.parsingTime.toFixed(0)} ms
-			{/if}
-		</p>
-		{#if $threeDPreview !== null}
-			<p>
-				<button on:click={resetCamera}>Reset Camera</button>
-			</p>
 		{/if}
-	{/if}
+	</div>
 
 	<div id="container"></div>
 </section>
