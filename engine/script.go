@@ -99,7 +99,7 @@ func DeclTVar(name string, value interface{}, doc string) {
 // Assign to LValue invokes SetValue()
 func DeclLValue(name string, value LValue, doc string) {
 	AddParameter(name, value, doc)
-	World.LValue(name, newLValueWrapper(value), doc)
+	World.LValue(name, newLValueWrapper(name, value), doc)
 	AddQuantity(name, value, doc)
 }
 
@@ -119,13 +119,20 @@ func EvalFile(code *script.BlockStmt) {
 	}
 }
 
+var QuantityChanged = make(map[string]bool)
+
 // wraps LValue and provides empty Child()
 type lValueWrapper struct {
 	LValue
+	name string
 }
 
-func newLValueWrapper(lv LValue) script.LValue {
-	return &lValueWrapper{lv}
+func newLValueWrapper(name string, lv LValue) script.LValue {
+	return &lValueWrapper{name: name, LValue: lv}
+}
+func (w *lValueWrapper) SetValue(val interface{}) {
+	w.LValue.SetValue(val)
+	QuantityChanged[w.name] = true
 }
 
 func (w *lValueWrapper) Child() []script.Expr { return nil }

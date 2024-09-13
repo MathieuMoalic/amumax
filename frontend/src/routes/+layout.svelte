@@ -1,6 +1,15 @@
+<script>
+	import '../app.css';
+	import Alert from '$lib/alerts/Alert.svelte';
+</script>
+
+<Alert />
 <slot />
 
 <style>
+	slot {
+		z-index: 30;
+	}
 	:global(:root) {
 		--accent-color: #3d1999;
 		--accent-color-hover: #2f0e6e;

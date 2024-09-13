@@ -190,9 +190,9 @@ var _ Quantity = &Regions
 
 // Re-interpret a contiguous array as a multi-dimensional array of given size.
 func reshapeBytes(array []byte, size [3]int) [][][]byte {
-	Nx, Ny, Nz := size[X], size[Y], size[Z]
-	util.Argument(Nx*Ny*Nz == len(array))
-	sliced := make([][][]byte, Nz)
+	Nx, Ny, Nzz := size[X], size[Y], size[Z]
+	util.Argument(Nx*Ny*Nzz == len(array))
+	sliced := make([][][]byte, Nzz)
 	for i := range sliced {
 		sliced[i] = make([][]byte, Ny)
 	}

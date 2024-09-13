@@ -137,6 +137,9 @@ export function init() {
 
 export function resizeECharts() {
     window.addEventListener('resize', function () {
+        if (chartInstance === undefined || chartInstance.isDisposed()) {
+            return;
+        }
         chartInstance.resize();
     });
 }
