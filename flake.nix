@@ -26,44 +26,55 @@
     ];
 
     # Common function to build NPM packages
-    buildFrontend = { src, npmDepsHash, version }: pkgs.buildNpmPackage {
-      inherit version src npmDepsHash;
-      pname = "frontend";
+    buildFrontend = {
+      src,
+      npmDepsHash,
+      version,
+    }:
+      pkgs.buildNpmPackage {
+        inherit version src npmDepsHash;
+        pname = "frontend";
 
-      npmBuild = ''
-        npm run build
-      '';
+        npmBuild = ''
+          npm run build
+        '';
 
-      installPhase = ''
-        mv dist $out
-      '';
-    };
+        installPhase = ''
+          mv dist $out
+        '';
+      };
 
     # Common function to build Amumax
-    buildAmumax = { src, frontend, vendorHash, version }: pkgs.buildGoModule {
-      inherit version CGO_CFLAGS CGO_LDFLAGS CGO_CFLAGS_ALLOW vendorHash src;
-      pname = "amumax";
+    buildAmumax = {
+      src,
+      frontend,
+      vendorHash,
+      version,
+    }:
+      pkgs.buildGoModule {
+        inherit version CGO_CFLAGS CGO_LDFLAGS CGO_CFLAGS_ALLOW vendorHash src;
+        pname = "amumax";
 
-      buildInputs = basepkgs ++ [ pkgs.addDriverRunpath ];
+        buildInputs = basepkgs ++ [pkgs.addDriverRunpath];
 
-      buildPhase = ''
-        cp -r ${frontend} api/static
-        go build -v -o $out/bin/amumax -ldflags '-s -w -X github.com/MathieuMoalic/amumax/engine.VERSION=${version}' .
-      '';
+        buildPhase = ''
+          cp -r ${frontend} api/static
+          go build -v -o $out/bin/amumax -ldflags '-s -w -X github.com/MathieuMoalic/amumax/engine.VERSION=${version}' .
+        '';
 
-      doCheck = false;
+        doCheck = false;
 
-      postFixup = ''
-        addDriverRunpath $out/bin/*
-      '';
-    };
+        postFixup = ''
+          addDriverRunpath $out/bin/*
+        '';
+      };
 
     #################### GIT ############################
-    gitVersion = "git";  # Set the version for the Git build
+    gitVersion = "git"; # Set the version for the Git build
 
     GitFrontend = buildFrontend {
       src = ./frontend;
-      npmDepsHash = "sha256-pjPb5NqGpDdfDRV0e5VKQKpdIw9Gu3MIID8GxC3ZCmc=";
+      npmDepsHash = "sha256-GmH3iB4JrJ1bOAeUF5Ii+VIaaQeHBwmbfjPX/7pTK4Q=";
       version = gitVersion;
     };
 
@@ -75,7 +86,7 @@
     };
 
     #################### RELEASE ########################
-    releaseVersion = "2024.08.30";  # Set the version for the Release build
+    releaseVersion = "2024.08.30"; # Set the version for the Release build
 
     ReleaseSrc = pkgs.fetchFromGitHub {
       owner = "MathieuMoalic";
@@ -100,12 +111,14 @@
     #################### DEVELOPMENT ENVIRONMENT ########################
     devEnv = pkgs.mkShell {
       inherit CGO_CFLAGS CGO_LDFLAGS CGO_CFLAGS_ALLOW;
-      buildInputs = basepkgs ++ [
-        pkgs.go
-        pkgs.gopls
-        pkgs.golangci-lint
-        pkgs.gcc11
-      ];
+      buildInputs =
+        basepkgs
+        ++ [
+          pkgs.go
+          pkgs.gopls
+          pkgs.golangci-lint
+          pkgs.gcc11
+        ];
 
       LD_LIBRARY_PATH = "${cuda.libcufft}/lib:${cuda.libcurand}/lib:/run/opengl-driver/lib/";
 
@@ -116,7 +129,6 @@
         mkdir -p $GOPATH $GOCACHE
       '';
     };
-
   in {
     packages.${system} = {
       default = ReleaseBuildAmumax;
