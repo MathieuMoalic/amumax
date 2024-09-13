@@ -11,10 +11,13 @@
 		postMaxdt,
 		postMaxerr
 	} from '$api/outgoing/solver';
-	import { Input, Label, Button, Select } from 'flowbite-svelte';
+	import { Input, Label, Select } from 'flowbite-svelte';
+	import { Button, Dropdown, DropdownItem, DropdownDivider } from 'flowbite-svelte';
+	import { ChevronDownOutline, ChevronRightOutline } from 'flowbite-svelte-icons';
 	let solvertypes = ['bw_euler', 'euler', 'heun', 'rk4', 'rk23', 'rk45', 'rkf56'];
 	let runSeconds = 1e-9;
 	let runSteps = 100;
+	let dropdownOpen = false;
 </script>
 
 <section>
@@ -24,20 +27,24 @@
 		<!-- Left Column -->
 		<div class="grid gap-1">
 			<!-- Solver Type -->
-			<div class="field">
-				<Button for="solver_type" class="h-6 w-28" outline>Solver</Button>
-				<Select
-					id="solver_type"
-					bind:value={$solverState.type}
-					on:change={postSolverType}
-					class=" block h-6 w-32 rounded-md border border-gray-300 bg-white  text-gray-700 shadow-sm focus:ring focus:ring-blue-500"
-				>
+			<div class="m-6 h-6 w-64">
+				<Button outline>
+					solver: {$solverState.type}
+					<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" />
+				</Button>
+				<Dropdown bind:open={dropdownOpen}>
 					{#each solvertypes as solvertype}
-						<option value={solvertype}>{solvertype}</option>
+						<DropdownItem
+							on:click={(_) => {
+								postSolverType(solvertype);
+								dropdownOpen = false;
+							}}
+						>
+							{solvertype}
+						</DropdownItem>
 					{/each}
-				</Select>
+				</Dropdown>
 			</div>
-
 			<!-- Run -->
 			<div class="field">
 				<Button class="h-6 w-28" outline on:click={() => postRun(runSeconds)}>Run</Button>

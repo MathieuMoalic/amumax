@@ -1,87 +1,76 @@
 <script lang="ts">
-	import { meshState } from '$api/incoming/mesh';
-	import { postMesh } from '$api/outgoing/mesh';
+	import { meshState as m } from '$api/incoming/mesh';
+	import { Label, Input, Button, InputAddon, ButtonGroup, Checkbox } from 'flowbite-svelte';
 </script>
 
 <section>
-	<h2>Mesh</h2>
-	<div class="grid-container">
-		<div class="header">Nx:</div>
-		<!-- <div><input bind:value={$meshState.Nx} on:change={postMesh} /></div> -->
-		<div><span>{$meshState.Nx}</span></div>
+	<h2 class="mb-4 text-2xl font-semibold">Mesh</h2>
 
-		<div>×</div>
-
-		<div class="header">Ny:</div>
-		<!-- <div><input bind:value={$meshState.Ny} on:change={postMesh} /></div> -->
-		<div><span>{$meshState.Ny}</span></div>
-
-		<div>×</div>
-
-		<div class="header">Nz:</div>
-		<!-- <div><input bind:value={$meshState.Nz} on:change={postMesh} /></div> -->
-		<div><span>{$meshState.Nz}</span></div>
-
-		<div>cells</div>
-
-		<div class="header">dx:</div>
-		<!-- <div><input bind:value={$meshState.dx} on:change={postMesh} /></div> -->
-		<div><span>{$meshState.dx}</span></div>
-
-		<div>×</div>
-
-		<div class="header">dy:</div>
-		<!-- <div><input bind:value={$meshState.dy} on:change={postMesh} /></div> -->
-		<div><span>{$meshState.dy}</span></div>
-
-		<div>×</div>
-
-		<div class="header">dz:</div>
-		<!-- <div><input bind:value={$meshState.dz} on:change={postMesh} /></div> -->
-		<div><span>{$meshState.dz}</span></div>
-
-		<div>m<sup>3</sup></div>
-
-		<div class="header">PBCx:</div>
-		<!-- <div><input bind:value={$meshState.PBCx} on:change={postMesh} /></div> -->
-		<div><span>{$meshState.PBCx}</span></div>
-
-		<div>×</div>
-		<div class="header">PBCy:</div>
-		<!-- <div><input bind:value={$meshState.PBCy} on:change={postMesh} /></div> -->
-		<div><span>{$meshState.PBCy}</span></div>
-
-		<div>×</div>
-		<div class="header">PBCz:</div>
-		<!-- <div><input bind:value={$meshState.PBCz} on:change={postMesh} /></div> -->
-		<div><span>{$meshState.PBCz}</span></div>
-
-		<div>repetitions</div>
-
-		<div class="header">Tx:</div>
-		<div><span>{$meshState.Tx.toExponential(3)}</span></div>
-		<div>×</div>
-		<div class="header">Ty:</div>
-		<div><span>{$meshState.Ty.toExponential(3)}</span></div>
-		<div>×</div>
-		<div class="header">Tz:</div>
-		<div><span>{$meshState.Tz.toExponential(3)}</span></div>
-		<div>m<sup>3</sup></div>
+	<div class="mb-6 grid gap-6 md:grid-cols-3">
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">Nx</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.dx} />
+		</ButtonGroup>
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">Ny</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.dy} />
+		</ButtonGroup>
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">Nz</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.dz} />
+		</ButtonGroup>
+	</div>
+	<div class="mb-6 grid gap-6 md:grid-cols-3">
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">dx</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.Nx} />
+			<InputAddon>m</InputAddon>
+		</ButtonGroup>
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">dy</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.Ny} />
+			<InputAddon>m</InputAddon>
+		</ButtonGroup>
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">dz</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.Nz} />
+			<InputAddon>m</InputAddon>
+		</ButtonGroup>
+	</div>
+	<div class="mb-6 grid gap-6 md:grid-cols-3">
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">Tx</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.Tx} />
+			<InputAddon>m</InputAddon>
+		</ButtonGroup>
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">Ty</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.Ty} />
+			<InputAddon>m</InputAddon>
+		</ButtonGroup>
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">Tz</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.Tz} />
+			<InputAddon>m</InputAddon>
+		</ButtonGroup>
+	</div>
+	<div class="mb-6 grid gap-6 md:grid-cols-3">
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">PBCx</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.PBCx} />
+		</ButtonGroup>
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">PBCy</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.PBCy} />
+		</ButtonGroup>
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">PBCz</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.PBCz} />
+		</ButtonGroup>
 	</div>
 </section>
 
 <style>
-	.grid-container {
-		display: grid;
-		grid-template-columns: auto auto auto auto auto auto auto auto auto;
-		gap: 10px;
-		align-items: center;
-		padding: 10px;
-	}
-	.header {
-		text-align: right;
-		padding-right: 10px;
-	}
 	section {
 		grid-area: mesh;
 	}
