@@ -61,6 +61,8 @@ func Start(host string, port int) {
 	e.POST("/api/solver/maxdt", postSolverMaxDt)
 	e.POST("/api/solver/maxerr", postSolverMaxErr)
 
+	e.POST("/api/parameter/selected-region", postSelectParameterRegion)
+
 	e.POST("/mesh", postMesh)
 
 	startGuiServer(e, host, port)

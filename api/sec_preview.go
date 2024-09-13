@@ -3,6 +3,7 @@ package api
 import (
 	"math"
 	"net/http"
+	"strconv"
 
 	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/data"
@@ -12,6 +13,7 @@ import (
 )
 
 var preview Preview
+var globalQuantities []string
 
 func init() {
 	preview = Preview{
@@ -28,7 +30,10 @@ func init() {
 		Max:                  0,
 		Refresh:              true,
 		NComp:                3,
+		DataPointsCount:      0,
 	}
+	// Some quantities exist where the magnetic materials are not present
+	globalQuantities = []string{"B_demag", "B_ext", "B_eff", "Edens_demag", "Edens_ext", "Edens_eff", "geom"}
 }
 
 type Preview struct {
@@ -46,6 +51,7 @@ type Preview struct {
 	Max                  float32              `msgpack:"max"`
 	Refresh              bool                 `msgpack:"refresh"`
 	NComp                int                  `msgpack:"nComp"`
+	DataPointsCount      int                  `msgpack:"dataPointsCount"`
 }
 
 func (p *Preview) GetQuantity() engine.Quantity {
@@ -152,13 +158,12 @@ func (p *Preview) UpdateVectorField(vectorField [3][][][]float32) {
 	// Create a slice to hold the array of {x, y, z} objects
 	var valArray []map[string]float32
 	var posArray []map[string]int
-
 	for posx := 0; posx < xLen; posx++ {
 		for posy := 0; posy < yLen; posy++ {
 			valx := vectorField[0][0][posy][posx]
 			valy := vectorField[1][0][posy][posx]
 			valz := vectorField[2][0][posy][posx]
-			if valx == 0 && valy == 0 && valz == 0 {
+			if (valx == 0 && valy == 0 && valz == 0) || (math.IsNaN(float64(valx))) {
 				continue
 			}
 			posArray = append(posArray,
@@ -178,18 +183,24 @@ func (p *Preview) UpdateVectorField(vectorField [3][][][]float32) {
 	p.VectorFieldPositions = posArray
 	p.VectorFieldValues = valArray
 	p.ScalarField = nil
+	p.DataPointsCount = len(valArray)
 }
 
 func (p *Preview) UpdateScalarField(scalarField [][][]float32) {
 	xLen := len(scalarField[0][0])
 	yLen := len(scalarField[0])
 	min, max := scalarField[0][0][0], scalarField[0][0][0]
-	geom := engine.Geometry.Buffer.HostCopy().Scalars()
+
+	// Some quantities exist where the magnetic materials are not present
+	var geom [][][]float32
+	if !contains(globalQuantities, p.Quantity) {
+		geom = engine.Geometry.Buffer.HostCopy().Scalars()
+	}
 	var valArray [][3]float32
 	for posx := 0; posx < xLen; posx++ {
 		for posy := 0; posy < yLen; posy++ {
 			val := scalarField[0][posy][posx]
-			if geom[0][posy][posx] == 0 {
+			if len(geom) != 0 && geom[0][posy][posx] == 0 {
 				continue
 			}
 			if val < min {
@@ -210,6 +221,16 @@ func (p *Preview) UpdateScalarField(scalarField [][][]float32) {
 	p.ScalarField = valArray
 	p.VectorFieldValues = nil
 	p.VectorFieldPositions = nil
+	p.DataPointsCount = len(valArray)
+}
+
+func contains(arr []string, val string) bool {
+	for _, item := range arr {
+		if item == val {
+			return true
+		}
+	}
+	return false
 }
 
 func compStringToIndex(comp string) int {
@@ -312,6 +333,7 @@ func postPreviewLayer(c echo.Context) error {
 		util.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
+
 	preview.Layer = req.Layer
 	preview.Refresh = true
 	broadcastEngineState()
@@ -320,14 +342,19 @@ func postPreviewLayer(c echo.Context) error {
 
 func postPreviewMaxPoints(c echo.Context) error {
 	type Request struct {
-		MaxPoints int `msgpack:"maxPoints"`
+		MaxPoints string `msgpack:"maxPoints"`
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
 		util.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	preview.MaxPoints = req.MaxPoints
+	num, err := strconv.Atoi(req.MaxPoints)
+	if err != nil {
+		util.Log.Err("%v", err)
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Could not parse maxPoints as integer"})
+	}
+	preview.MaxPoints = num
 	preview.Refresh = true
 	broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)

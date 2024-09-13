@@ -1,15 +1,12 @@
 <script lang="ts">
 	import { tablePlotState } from '$api/incoming/table-plot';
-	import {
-		postAutoSaveInterval,
-		postMaxPoints,
-		postStep,
-		postXColumn,
-		postYColumn
-	} from '$api/outgoing/table-plot';
 	import { onMount } from 'svelte';
 	import { resizeECharts } from './table-plot';
-	import NumberInputField from '$lib/NumberInputField.svelte';
+	import TimeStep from './fields/TimeStep.svelte';
+	import Step from './fields/Step.svelte';
+	import XColumn from './fields/XColumn.svelte';
+	import YColumn from './fields/YColumn.svelte';
+	import DataPointsCount from './fields/DataPointsCount.svelte';
 
 	onMount(() => {
 		resizeECharts();
@@ -17,39 +14,30 @@
 </script>
 
 <section>
-	<h2>Table Plot</h2>
+	<h2 class="mb-4 text-2xl font-semibold">Table Plot</h2>
 	{#if $tablePlotState.data.length === 0}
 		<div class="msg">
 			<p>No table data, use <code>TableSave()</code> to save data.</p>
 		</div>
 	{:else}
-		<div>
-			Auto Save Interval: <NumberInputField
-				func={postAutoSaveInterval}
-				placeholder={$tablePlotState.autoSaveInterval}
-			/> s
+		<div class="m-3 grid grid-cols-10 gap-2">
+			<div class="field col-span-2">
+				<TimeStep />
+			</div>
+			<div class="field col-span-2">
+				<DataPointsCount />
+			</div>
+			<div class="field col-span-2">
+				<Step />
+			</div>
+			<div class="field col-span-2">
+				<XColumn />
+			</div>
+			<div class="field col-span-2">
+				<YColumn />
+			</div>
 		</div>
-		<div>
-			Max Points: <NumberInputField func={postMaxPoints} placeholder={$tablePlotState.maxPoints} />
-		</div>
-		<div>
-			Step: <NumberInputField func={postStep} placeholder={$tablePlotState.step} />
-		</div>
-		<b>
-			x:
-			<select bind:value={$tablePlotState.xColumn} on:change={postXColumn}>
-				{#each $tablePlotState.columns as q}
-					<option value={q}>{q}</option>
-				{/each}
-			</select>
-			y:
-			<select bind:value={$tablePlotState.yColumn} on:change={postYColumn}>
-				{#each $tablePlotState.columns as q}
-					<option value={q}>{q}</option>
-				{/each}
-			</select>
-		</b>
-		({$tablePlotState.data.length} points)
+		<hr />
 		<div id="table-plot"></div>
 	{/if}
 </section>
@@ -64,5 +52,8 @@
 	}
 	.msg {
 		color: #888;
+	}
+	.field {
+		@apply flex items-center justify-center border-0 border-green-500;
 	}
 </style>

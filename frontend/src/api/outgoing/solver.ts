@@ -2,8 +2,8 @@ import { get } from "svelte/store";
 import { post } from "$api/post";
 import { solverState } from "$api/incoming/solver";
 
-export function postSolverType() {
-    post('solver/type', { type: get(solverState).type });
+export function postSolverType(type: string) {
+    post('solver/type', { type });
 }
 
 export function postRun(runtime: number) {
