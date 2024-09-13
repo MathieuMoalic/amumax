@@ -8,7 +8,6 @@
 	import Geometry from '$lib/Geometry.svelte';
 	import InitialMag from '$lib/InitialMag.svelte';
 	import Parameters from '$lib/Parameters.svelte';
-	import Footer from '$lib/Footer.svelte';
 	import { onMount } from 'svelte';
 	import { initializeWebSocket } from '$api/websocket';
 
@@ -28,22 +27,16 @@
 	<Solver />
 	<Console />
 	<Mesh />
-	<Geometry />
-	<InitialMag />
 	<Parameters />
-	<Footer />
 </div>
 
 <style>
 	.grid-container {
 		display: grid;
 		grid-template-areas:
-			'display display tableplot tableplot'
-			'console console solver solver'
-			'parameters parameters mesh mesh'
-			'parameters parameters geometry geometry'
-			'parameters parameters initialmag initialmag'
-			'footer footer footer footer';
+			'display tableplot'
+			'console solver'
+			'parameters mesh';
 		margin: 0;
 		grid-gap: 10px;
 		padding: 10px;
@@ -61,8 +54,7 @@
 				'mesh'
 				'geometry'
 				'initialmag'
-				'parameters'
-				'footer';
+				'parameters';
 		}
 	}
 	:global(section) {

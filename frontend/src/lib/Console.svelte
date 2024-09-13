@@ -15,8 +15,8 @@
 </script>
 
 <section>
-	<h2>Console</h2>
-	<div class="parent">
+	<h2 class="mb-4 text-2xl font-semibold">Console</h2>
+	<div class="flex flex-col gap-2">
 		<div class="code">
 			{@html Prism.highlight($consoleState.hist, Prism.languages['go'], 'go')}
 		</div>
@@ -33,9 +33,6 @@
 <style>
 	section {
 		grid-area: console;
-	}
-	.parent {
-		padding-right: 10px;
 	}
 	.code {
 		white-space: pre-wrap;

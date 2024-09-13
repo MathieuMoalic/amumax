@@ -65,7 +65,7 @@
 		padding: 10px;
 		margin: 10px;
 		margin-bottom: 0;
-		z-index: 100;
+		z-index: 10;
 	}
 
 	h1 {

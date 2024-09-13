@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { Input } from 'flowbite-svelte';
+
 	let value = '';
 	export let func = (_: any) => {};
 	export let placeholder: any;
@@ -10,10 +12,10 @@
 	}
 </script>
 
-<input type="number" bind:value on:change={inputChanged} placeholder=" {placeholder}" />
-
-<style>
-	input {
-		width: 70px;
-	}
-</style>
+<Input
+	class="w-32"
+	type="number"
+	bind:value
+	on:change={inputChanged}
+	placeholder=" {placeholder}"
+/>
