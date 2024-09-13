@@ -24,7 +24,6 @@ build
 mytests
 *.exe
 mytest
-justfile
 amumax.zip
 .gocache
 libcufft.so.10
