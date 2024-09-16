@@ -100,6 +100,8 @@ func (t *TablePlot) GetMinMaxXY() {
 }
 
 func (t *TablePlot) GetColumnData(column string) []float64 {
+	engine.Table.Mu.Lock() // Lock the mutex before reading the map
+	defer engine.Table.Mu.Unlock()
 	originalData := engine.Table.Data[column]
 	originalLen := len(originalData)
 	newLen := (originalLen + 1) / t.Step

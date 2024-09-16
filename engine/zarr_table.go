@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"sync"
 	"time"
 
 	"github.com/MathieuMoalic/amumax/cuda"
@@ -36,6 +37,7 @@ type TableStruct struct {
 	AutoSaveStart  float64              `json:"autoSaveStart"`
 	Step           int                  `json:"step"`
 	FlushInterval  time.Duration        `json:"flushInterval"`
+	Mu             sync.Mutex
 }
 
 type Column struct {
@@ -54,6 +56,8 @@ func (ts *TableStruct) WriteToBuffer() {
 		buf = append(buf, AverageOf(q)...)
 	}
 	// size of buf should be same as size of []Ztable
+	ts.Mu.Lock() // Lock the mutex before modifying the map
+	defer ts.Mu.Unlock()
 	for i, b := range buf {
 		ts.Columns[i].buffer = append(ts.Columns[i].buffer, zarr.Float64ToBytes(b)...)
 		ts.Data[ts.Columns[i].Name] = append(ts.Data[ts.Columns[i].Name], b)
