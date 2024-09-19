@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { meshState as m } from '$api/incoming/mesh';
-	import { Label, Input, Button, InputAddon, ButtonGroup, Checkbox } from 'flowbite-svelte';
+	import { Input, InputAddon, ButtonGroup } from 'flowbite-svelte';
 </script>
 
 <section>
@@ -8,49 +8,49 @@
 
 	<div class="mb-6 grid gap-6 md:grid-cols-3">
 		<ButtonGroup class="w-full" size="sm">
-			<InputAddon class="w-20">Nx</InputAddon>
-			<Input id="input-addon-sm" type="text" placeholder={$m.dx} />
-		</ButtonGroup>
-		<ButtonGroup class="w-full" size="sm">
-			<InputAddon class="w-20">Ny</InputAddon>
-			<Input id="input-addon-sm" type="text" placeholder={$m.dy} />
-		</ButtonGroup>
-		<ButtonGroup class="w-full" size="sm">
-			<InputAddon class="w-20">Nz</InputAddon>
-			<Input id="input-addon-sm" type="text" placeholder={$m.dz} />
-		</ButtonGroup>
-	</div>
-	<div class="mb-6 grid gap-6 md:grid-cols-3">
-		<ButtonGroup class="w-full" size="sm">
 			<InputAddon class="w-20">dx</InputAddon>
-			<Input id="input-addon-sm" type="text" placeholder={$m.Nx} />
+			<Input id="input-addon-sm" type="text" placeholder={$m.dx.toPrecision(8)} />
 			<InputAddon>m</InputAddon>
 		</ButtonGroup>
 		<ButtonGroup class="w-full" size="sm">
 			<InputAddon class="w-20">dy</InputAddon>
-			<Input id="input-addon-sm" type="text" placeholder={$m.Ny} />
+			<Input id="input-addon-sm" type="text" placeholder={$m.dy.toPrecision(8)} />
 			<InputAddon>m</InputAddon>
 		</ButtonGroup>
 		<ButtonGroup class="w-full" size="sm">
 			<InputAddon class="w-20">dz</InputAddon>
-			<Input id="input-addon-sm" type="text" placeholder={$m.Nz} />
+			<Input id="input-addon-sm" type="text" placeholder={$m.dz.toPrecision(8)} />
 			<InputAddon>m</InputAddon>
+		</ButtonGroup>
+	</div>
+	<div class="mb-6 grid gap-6 md:grid-cols-3">
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">Nx</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.Nx} />
+		</ButtonGroup>
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">Ny</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.Ny} />
+		</ButtonGroup>
+		<ButtonGroup class="w-full" size="sm">
+			<InputAddon class="w-20">Nz</InputAddon>
+			<Input id="input-addon-sm" type="text" placeholder={$m.Nz} />
 		</ButtonGroup>
 	</div>
 	<div class="mb-6 grid gap-6 md:grid-cols-3">
 		<ButtonGroup class="w-full" size="sm">
 			<InputAddon class="w-20">Tx</InputAddon>
-			<Input id="input-addon-sm" type="text" placeholder={$m.Tx} />
+			<Input id="input-addon-sm" type="text" placeholder={$m.Tx.toExponential(6)} />
 			<InputAddon>m</InputAddon>
 		</ButtonGroup>
 		<ButtonGroup class="w-full" size="sm">
 			<InputAddon class="w-20">Ty</InputAddon>
-			<Input id="input-addon-sm" type="text" placeholder={$m.Ty} />
+			<Input id="input-addon-sm" type="text" placeholder={$m.Ty.toExponential(6)} />
 			<InputAddon>m</InputAddon>
 		</ButtonGroup>
 		<ButtonGroup class="w-full" size="sm">
 			<InputAddon class="w-20">Tz</InputAddon>
-			<Input id="input-addon-sm" type="text" placeholder={$m.Tz} />
+			<Input id="input-addon-sm" type="text" placeholder={$m.Tz.toExponential(6)} />
 			<InputAddon>m</InputAddon>
 		</ButtonGroup>
 	</div>
