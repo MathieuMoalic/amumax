@@ -35,9 +35,12 @@ func (l *Logs) FlushToFile() {
 	}
 }
 
-func (l *Logs) Init(zarrPath string, debug bool) {
-	l.path = zarrPath + "/log.txt"
+func (l *Logs) SetDebug(debug bool) {
 	l.debug = debug
+}
+
+func (l *Logs) Init(zarrPath string) {
+	l.path = zarrPath + "/log.txt"
 	l.createLogFile()
 	l.writeToFile(l.Hist)
 }
