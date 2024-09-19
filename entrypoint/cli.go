@@ -24,7 +24,7 @@ func cliEntrypoint(cmd *cobra.Command, args []string) {
 		showUpdateMenu()
 		return
 	}
-
+	go setEndTimerIfSlurm()
 	cuda.Init(flags.gpu)
 
 	cuda.Synchronous = flags.sync
