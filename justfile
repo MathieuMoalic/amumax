@@ -8,16 +8,18 @@ copy_pcss:
 	scp -r ./build/amumax pcss:grant_398/scratch/bin/amumax_versions/amumax$(date -I)
 	ssh pcss "cd ~/grant_398/scratch/bin && ln -sf amumax_versions/amumax$(date -I) amumax"
 
-build: 
+build-frontend: 
+	rm -rf api/static
 	podman run --rm \
-		-v .:/app \
-		-w /app/frontend \
-		docker.io/oven/bun:1.1.26-debian bash -c 'bun install && bun run build'
-		
-	podman run --rm -v $PWD:/src matmoa/amumax:build
-	rm -r frontend/dist
+		-v .:/src \
+		-w /src/frontend \
+		--entrypoint /bin/sh \
+		docker.io/node:18.20.4-alpine3.20 -c 'npm install && npm run build && mv dist ../api/static'
 
-release: image build_cuda build copy_pcss
+build:
+	podman run --rm -v $PWD:/src matmoa/amumax:build
+
+release: image build_cuda build-frontend build copy_pcss
 	VERSION=$(date -u +'%Y.%m.%d') && \
 	echo $VERSION && \
 	sed -i 's/releaseVersion = "[^"]*"/releaseVersion = "'"$VERSION"'"/' flake.nix && \

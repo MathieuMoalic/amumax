@@ -19,8 +19,8 @@ export function initializeWebSocket() {
 	let ws: WebSocket | null = null;
 
 	function connect() {
-		ws = new WebSocket(`http://localhost:35367/ws`);
-		// ws = new WebSocket(`/ws`);
+		// ws = new WebSocket(`http://localhost:35367/ws`);
+		ws = new WebSocket(`/ws`);
 		ws.binaryType = 'arraybuffer';
 
 		ws.onopen = function () {
