@@ -37,7 +37,7 @@ func runInteractive() {
 	engine.InitIO(outdir, outdir, flags.cacheDir, flags.skipExists, flags.forceClean, flags.progress, flags.selfTest, flags.sync)
 	util.Log.Info("Input file: %s", "none")
 	util.Log.Info("Output directory: %s", engine.OD())
-	util.Log.Init(engine.OD(), engine.VERSION == "dev")
+	util.Log.Init(engine.OD())
 
 	// set up some sensible start configuration
 	engine.Eval(`
@@ -52,7 +52,7 @@ Aex = 10e-12
 alpha = 1
 m = RandomMag()`)
 	if flags.webUIEnabled {
-		go api.Start(flags.webUIHost, flags.webUIPort)
+		go api.Start(flags.webUIHost, flags.webUIPort, flags.tunnel)
 	}
 	engine.RunInteractive()
 }
@@ -70,7 +70,7 @@ func runFileAndServe(mx3Path string) {
 	util.Log.Info("Input file: %s", mx3Path)
 	util.Log.Info("Output directory: %s", engine.OD())
 
-	util.Log.Init(engine.OD(), engine.VERSION == "dev")
+	util.Log.Init(engine.OD())
 	go util.Log.AutoFlushToFile()
 
 	mx3Path = engine.InputFile
@@ -88,7 +88,7 @@ func runFileAndServe(mx3Path string) {
 
 	// now the parser is not used anymore so it can handle web requests
 	if flags.webUIEnabled {
-		go api.Start(flags.webUIHost, flags.webUIPort)
+		go api.Start(flags.webUIHost, flags.webUIPort, flags.tunnel)
 	}
 	// start executing the tree, possibly injecting commands from web gui
 	engine.EvalFile(code)
