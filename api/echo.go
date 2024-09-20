@@ -7,13 +7,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/engine"
 	"github.com/MathieuMoalic/amumax/util"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func Start(host string, port int) {
+func Start(host string, port int, tunnel string, debug bool) {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -21,7 +20,7 @@ func Start(host string, port int) {
 	}))
 
 	e.HideBanner = true
-	if engine.VERSION == "dev" {
+	if debug {
 		e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 			Format: "method=${method}, uri=${uri}, status=${status}\n",
 		}))
@@ -65,19 +64,23 @@ func Start(host string, port int) {
 
 	e.POST("/mesh", postMesh)
 
-	startGuiServer(e, host, port)
+	startGuiServer(e, host, port, tunnel)
 }
 
-func startGuiServer(e *echo.Echo, host string, port int) {
+func startGuiServer(e *echo.Echo, host string, port int, tunnel string) {
 	const maxRetries = 5
 
 	for i := 0; i < maxRetries; i++ {
 		// Find an available port
-		addr, err := findAvailablePort(host, port)
+		addr, port, err := findAvailablePort(host, port)
 		if err != nil {
 			util.Log.ErrAndExit("Failed to find available port: %v", err)
 		}
 		util.Log.Info("Serving the web UI at http://%s", addr)
+
+		if tunnel != "" {
+			go startTunnel(port, tunnel)
+		}
 
 		// Attempt to start the server
 		err = e.Start(addr)
@@ -101,7 +104,7 @@ func startGuiServer(e *echo.Echo, host string, port int) {
 	util.Log.Err("Failed to start server after multiple attempts")
 }
 
-func findAvailablePort(host string, startPort int) (string, error) {
+func findAvailablePort(host string, startPort int) (string, string, error) {
 	// Loop to find the first available port
 	for port := startPort; port <= 65535; port++ {
 		address := net.JoinHostPort(host, strconv.Itoa(port))
@@ -109,8 +112,8 @@ func findAvailablePort(host string, startPort int) (string, error) {
 		if err == nil {
 			// Close the listener immediately, we just wanted to check availability
 			listener.Close()
-			return address, nil
+			return address, strconv.Itoa(port), nil
 		}
 	}
-	return "", fmt.Errorf("no available ports found")
+	return "", "", fmt.Errorf("no available ports found")
 }

@@ -47,12 +47,13 @@ func cliEntrypoint(cmd *cobra.Command, args []string) {
 		vet()
 		return
 	}
-
-	if len(args) == 0 && !flags.version {
+	if len(args) == 0 && flags.interactive {
 		runInteractive()
 	} else if len(args) == 1 {
 		runFileAndServe(args[0])
 	} else if len(args) > 1 {
 		RunQueue(args)
+	} else {
+		util.Log.ErrAndExit("No input files")
 	}
 }

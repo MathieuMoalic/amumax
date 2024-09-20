@@ -21,7 +21,7 @@ type Flags struct {
 	forceClean  bool
 	skipExists  bool
 	progress    bool
-	tunnel      bool
+	tunnel      string
 
 	webUIEnabled   bool
 	webUIHost      string
@@ -48,8 +48,7 @@ func init() {
 	rootCmd.Flags().BoolVarP(&flags.forceClean, "force-clean", "f", false, "Force start, clean existing output directory")
 	rootCmd.Flags().BoolVar(&flags.skipExists, "skip-exist", false, "Don't run the simulation if the output directory exists")
 	rootCmd.Flags().BoolVar(&flags.progress, "progress", true, "Show progress bar")
-	rootCmd.Flags().BoolVarP(&flags.tunnel, "tunnel", "t", false, "Tunnel the web interface through SSH")
-
+	rootCmd.Flags().StringVarP(&flags.tunnel, "tunnel", "t", "", "Tunnel the web interface through SSH using the given host from your ssh config, empty string disables tunneling")
 	rootCmd.Flags().BoolVar(&flags.webUIEnabled, "webui-enable", true, "Whether to enable the web interface")
 	rootCmd.Flags().StringVar(&flags.webUIHost, "webui-host", "localhost", "Host to serve web GUI (e.g., 0.0.0.0)")
 	rootCmd.Flags().IntVar(&flags.webUIPort, "webui-port", 35367, "Port to serve web GUI")
