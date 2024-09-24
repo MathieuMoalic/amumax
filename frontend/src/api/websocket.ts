@@ -13,29 +13,31 @@ import { preview2D } from '$lib/preview/preview2D';
 import { plotTable } from '$lib/table-plot/table-plot';
 
 export let connected = writable(false);
+let wsUrl = process.env.VITE_WS_URL || '/ws'; // Fallback to '/ws' if not defined
 
 export function initializeWebSocket() {
 	let retryInterval = 1000;
 	let ws: WebSocket | null = null;
 
 	function connect() {
-		// ws = new WebSocket(`http://localhost:35367/ws`);
-		ws = new WebSocket(`/ws`);
+		console.debug('Connecting to WebSocket server at', wsUrl);
+		ws = new WebSocket(wsUrl);
 		ws.binaryType = 'arraybuffer';
 
 		ws.onopen = function () {
+			console.debug('WebSocket connection established');
 			connected.set(true);
-			console.log('WebSocket connection established');
 		};
 
 		ws.onmessage = function (event) {
 			parseMsgpack(event.data);
 			ws?.send('ok');
+			connected.set(true);
 		};
 
 		ws.onclose = function () {
 			connected.set(false);
-			console.log(
+			console.debug(
 				'WebSocket closed. Attempting to reconnect in ' + retryInterval / 1000 + ' seconds...'
 			);
 			ws = null; // Ensure ws is set to null when it is closed
@@ -51,7 +53,7 @@ export function initializeWebSocket() {
 	}
 
 	function tryConnect() {
-		console.log('Attempting WebSocket connection...');
+		console.debug('Attempting WebSocket connection...');
 		try {
 			connect();
 		} catch (err) {
