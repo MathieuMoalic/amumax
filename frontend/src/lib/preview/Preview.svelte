@@ -8,7 +8,7 @@
 	import QuantityDropdown from './QuantityDropdown.svelte';
 	import Component from './Component.svelte';
 	import Layer from './Layer.svelte';
-	import DataPointCount from './DataPointCount.svelte';
+	import DataPointSlider from './DataPointSlider.svelte';
 
 	onMount(() => {
 		resizeECharts();
@@ -32,7 +32,9 @@
 			</div>
 		{:else}
 			<div class="field col-span-4">
-				<DataPointCount />
+				{#if $meshState.Nz > 1}
+					<DataPointSlider />
+				{/if}
 			</div>
 			{#if $threeDPreview !== null}
 				<div class="field col-span-3">
