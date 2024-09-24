@@ -3,6 +3,16 @@
 	import Alert from '$lib/alerts/Alert.svelte';
 	import { connected } from '$api/websocket';
 	import { Spinner } from 'flowbite-svelte';
+	import { onMount } from 'svelte';
+	import { initializeWebSocket } from '$api/websocket';
+
+	onMount(() => {
+		try {
+			initializeWebSocket();
+		} catch (error) {
+			console.error('Error connecting to websocket:', error);
+		}
+	});
 </script>
 
 {#if $connected}

@@ -5,19 +5,7 @@
 	import Solver from '$lib/Solver.svelte';
 	import Console from '$lib/Console.svelte';
 	import Mesh from '$lib/Mesh.svelte';
-	import Geometry from '$lib/Geometry.svelte';
-	import InitialMag from '$lib/InitialMag.svelte';
 	import Parameters from '$lib/Parameters.svelte';
-	import { onMount } from 'svelte';
-	import { initializeWebSocket } from '$api/websocket';
-
-	onMount(() => {
-		try {
-			initializeWebSocket();
-		} catch (error) {
-			console.error('Error connecting to websocket:', error);
-		}
-	});
 </script>
 
 <Header />
