@@ -83,7 +83,7 @@ func SmoothMesh() {
 		return
 	}
 	util.Log.Info("Original mesh: ")
-	util.Log.Info("Cell size: %f, %f, %f", Dx, Dy, Dz)
+	util.Log.Info("Cell size: %e, %e, %e", Dx, Dy, Dz)
 	util.Log.Info("Grid Size: %d, %d, %d", Nx, Ny, Nz)
 	if AutoMeshx {
 		NewNx := closestSevenSmooth(Nx)
@@ -101,7 +101,7 @@ func SmoothMesh() {
 		Nz = NewNz
 	}
 	util.Log.Info("Smoothed mesh: ")
-	util.Log.Info("Cell size: %f, %f, %f", Dx, Dy, Dz)
+	util.Log.Info("Cell size: %e, %e, %e", Dx, Dy, Dz)
 	util.Log.Info("Grid Size: %d, %d, %d", Nx, Ny, Nz)
 }
 
