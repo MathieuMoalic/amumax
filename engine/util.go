@@ -82,7 +82,7 @@ func Fprintln(filename string, msg ...interface{}) {
 	}
 	err := httpfs.Touch(filename)
 	util.Log.PanicIfError(err)
-	err = httpfs.Append(filename, []byte(fmt.Sprintln(myFmt(msg)...)))
+	err = httpfs.Append(filename, []byte(fmt.Sprintln(myFmt(msg))))
 	util.Log.PanicIfError(err)
 }
 func LoadFile(fname string) *data.Slice {
@@ -120,19 +120,21 @@ func myprint(msg ...interface{}) {
 }
 
 // mumax specific formatting (Slice -> average, etc).
-func myFmt(msg []interface{}) []interface{} {
-	for i, m := range msg {
-		if e, ok := m.(*float64); ok {
-			msg[i] = *e
-		}
-		// Tabledata: print average
-		if m, ok := m.(Quantity); ok {
-			str := fmt.Sprint(AverageOf(m))
-			msg[i] = str[1 : len(str)-1] // remove [ ]
-			continue
+func myFmt(msg []interface{}) (fmtMsg string) {
+	for _, m := range msg {
+		if e, ok := m.(Quantity); ok {
+			str := fmt.Sprint(AverageOf(e))
+			str = str[1 : len(str)-1] // remove [ ]
+			fmtMsg += fmt.Sprintf("%v, ", str)
+		} else {
+			fmtMsg += fmt.Sprintf("%v, ", m)
 		}
 	}
-	return msg
+	// remove trailing ", "
+	if len(fmtMsg) > 2 {
+		fmtMsg = fmtMsg[:len(fmtMsg)-2]
+	}
+	return
 }
 
 // converts cell index to coordinate, internal coordinates
