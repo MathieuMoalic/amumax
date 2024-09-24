@@ -348,8 +348,8 @@ func postPreviewMaxPoints(c echo.Context) error {
 		util.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	if req.MaxPoints < 10 {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "MaxPoints must be at least 10"})
+	if req.MaxPoints < 8 {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "MaxPoints must be at least 8"})
 	}
 	preview.MaxPoints = req.MaxPoints
 	preview.Refresh = true
