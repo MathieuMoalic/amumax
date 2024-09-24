@@ -10,5 +10,8 @@ export default defineConfig({
 				changeOrigin: true
 			}
 		}
+	},
+	define: {
+		'process.env': process.env // Ensures process.env variables are passed
 	}
 });
