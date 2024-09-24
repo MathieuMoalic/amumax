@@ -3,7 +3,6 @@ package api
 import (
 	"math"
 	"net/http"
-	"strconv"
 
 	"github.com/MathieuMoalic/amumax/cuda"
 	"github.com/MathieuMoalic/amumax/data"
@@ -194,7 +193,7 @@ func (p *Preview) UpdateScalarField(scalarField [][][]float32) {
 	// Some quantities exist where the magnetic materials are not present
 	var geom [][][]float32
 	if !contains(globalQuantities, p.Quantity) {
-		geom = engine.Geometry.Buffer.HostCopy().Scalars()
+		// geom = engine.Geometry.Buffer.HostCopy().Scalars()
 	}
 	var valArray [][3]float32
 	for posx := 0; posx < xLen; posx++ {
@@ -342,19 +341,17 @@ func postPreviewLayer(c echo.Context) error {
 
 func postPreviewMaxPoints(c echo.Context) error {
 	type Request struct {
-		MaxPoints string `msgpack:"maxPoints"`
+		MaxPoints int `msgpack:"maxPoints"`
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
 		util.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	num, err := strconv.Atoi(req.MaxPoints)
-	if err != nil {
-		util.Log.Err("%v", err)
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Could not parse maxPoints as integer"})
+	if req.MaxPoints < 10 {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "MaxPoints must be at least 10"})
 	}
-	preview.MaxPoints = num
+	preview.MaxPoints = req.MaxPoints
 	preview.Refresh = true
 	broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
