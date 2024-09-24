@@ -19,7 +19,10 @@ build-frontend:
 build:
 	podman run --rm -v $PWD:/src matmoa/amumax:build
 
-release: image build_cuda build-frontend build copy_pcss
+test:
+	podman run --rm -v $PWD:/src -it --device=nvidia.com/gpu=all -p 35367:35367 matmoa/amumax:build /src/build/amumax -d -i /src/mytest/t2.mx3
+
+release: image build_cuda build-frontend build
 	VERSION=$(date -u +'%Y.%m.%d') && \
 	echo $VERSION && \
 	sed -i 's/releaseVersion = "[^"]*"/releaseVersion = "'"$VERSION"'"/' flake.nix && \
