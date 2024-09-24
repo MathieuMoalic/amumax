@@ -1,27 +1,23 @@
 package util
 
-import (
-	"fmt"
-)
-
 // Panics with "illegal argument" if test is false.
 func Argument(test bool) {
 	if !test {
-		Log.PanicIfError(fmt.Errorf("illegal argument"))
+		Log.ErrAndExit("illegal argument")
 	}
 }
 
 // Panics with msg if test is false
 func AssertMsg(test bool, msg interface{}) {
 	if !test {
-		Log.PanicIfError(fmt.Errorf("%v", msg))
+		Log.ErrAndExit("%v", msg)
 	}
 }
 
 // Panics with "assertion failed" if test is false.
 func Assert(test bool) {
 	if !test {
-		Log.PanicIfError(fmt.Errorf("assertion failed"))
+		Log.ErrAndExit("assertion failed")
 	}
 }
 
