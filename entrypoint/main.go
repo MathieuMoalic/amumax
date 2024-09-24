@@ -81,7 +81,7 @@ func runFileAndServe(mx3Path string) {
 		// first we compile the entire file into an executable tree
 		code, err2 = engine.CompileFile(mx3Path)
 		if err2 != nil {
-			util.Log.Err("Error while parsing `%s`", mx3Path)
+			util.Log.ErrAndExit("Error while parsing `%s`: %v", mx3Path, err2)
 		}
 		util.Log.PanicIfError(err2)
 	}
