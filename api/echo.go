@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/MathieuMoalic/amumax/script"
 	"github.com/MathieuMoalic/amumax/util"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -79,8 +80,11 @@ func startGuiServer(e *echo.Echo, host string, port int, tunnel string) {
 		util.Log.Info("Serving the web UI at http://%s", addr)
 
 		if tunnel != "" {
-			go startTunnel(port, tunnel)
+			go startTunnel(tunnel)
 		}
+
+		script.MMetadata.Add("webui", addr)
+		script.MMetadata.Add("port", port)
 
 		// Attempt to start the server
 		err = e.Start(addr)
