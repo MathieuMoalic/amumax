@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/engine"
+	"github.com/MathieuMoalic/amumax/script"
 	"github.com/MathieuMoalic/amumax/util"
 )
 
@@ -68,6 +69,7 @@ func getSlurmEndTime() (time.Time, error) {
 func setEndTimerIfSlurm() {
 	// Check if running in SLURM
 	if os.Getenv("SLURM_JOB_ID") != "" {
+		getSlurmMetadata()
 		endTime, err := getSlurmEndTime()
 		if err != nil {
 			util.Log.Warn("Error getting SLURM end time: %v", err)
@@ -87,4 +89,11 @@ func setEndTimerIfSlurm() {
 			time.Sleep(15 * time.Second)
 		}
 	}
+}
+
+func getSlurmMetadata() {
+	script.MMetadata.Add("slurm_user", os.Getenv("SLURM_JOB_USER"))
+	script.MMetadata.Add("slurm_partition", os.Getenv("SLURM_JOB_PARTITION"))
+	script.MMetadata.Add("slurm_job_id", os.Getenv("SLURM_JOB_ID"))
+	script.MMetadata.Add("slurm_node", os.Getenv("SLURM_JOB_NODELIST"))
 }
