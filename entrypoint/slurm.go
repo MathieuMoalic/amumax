@@ -77,9 +77,9 @@ func setEndTimerIfSlurm() {
 		// Start a goroutine to notify when there are 15 seconds left
 		for {
 			remaining := time.Until(endTime)
-			if remaining <= 15*time.Second && remaining > 0 {
-				// If 15 seconds or less are remaining, print the message
-				util.Log.Warn("15 seconds remaining until the job ends!")
+			if remaining <= 30*time.Second && remaining > 0 {
+				// If 30 seconds or less are remaining, print the message
+				util.Log.Warn("30 seconds remaining until the job ends!")
 				util.Log.Warn("Cleanly exiting the simulation early...")
 				engine.Exit()
 			}
