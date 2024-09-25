@@ -74,14 +74,14 @@
 
     GitFrontend = buildFrontend {
       src = ./frontend;
-      npmDepsHash = "sha256-GmH3iB4JrJ1bOAeUF5Ii+VIaaQeHBwmbfjPX/7pTK4Q=";
+      npmDepsHash = "sha256-bLImLy3SU9DfyzY+mdZr+cTP4NLHcz957G+ZLLA0/6I=";
       version = gitVersion;
     };
 
     GitBuildAmumax = buildAmumax {
       src = ./.;
       frontend = GitFrontend;
-      vendorHash = "sha256-6lcGHrtXwokEaJq+4tmNxVCTVf8Dz2++PStKQMyQeCk=";
+      vendorHash = "sha256-c3se+OjvhF+femBirB7YhudV/MYLjWVg3xow9z53KjI=";
       version = gitVersion;
     };
 
@@ -92,19 +92,19 @@
       owner = "MathieuMoalic";
       repo = "amumax";
       rev = releaseVersion;
-      hash = "sha256-gSkJeemI43n8/vLlYJEFAr9BXN5Aeb/MOmPwul3EKHw=";
+      hash = "sha256-RbqmuRT5m5RvYbXcZ4jg35dRrIoYEsXgvanvYuhT/3w=";
     };
 
     ReleaseFrontend = buildFrontend {
       src = "${ReleaseSrc}/frontend";
-      npmDepsHash = "sha256-DJOiaPDiWJEkcon/Lc3TD/5cS5v5ArORnpp7HDEpa4E=";
+      npmDepsHash = "sha256-bLImLy3SU9DfyzY+mdZr+cTP4NLHcz957G+ZLLA0/6I=";
       version = releaseVersion;
     };
 
     ReleaseBuildAmumax = buildAmumax {
       src = ReleaseSrc;
       frontend = ReleaseFrontend;
-      vendorHash = "sha256-ly7mLulUon9XIztddOtP6VEGJZk6A6xa5rK/pYwAP2A=";
+      vendorHash = "sha256-c3se+OjvhF+femBirB7YhudV/MYLjWVg3xow9z53KjI=";
       version = releaseVersion;
     };
 
