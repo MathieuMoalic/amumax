@@ -12,8 +12,9 @@ ENV PATH /usr/local/go/bin:$PATH
 
 WORKDIR /src
 
-# needed to build ptx
-ENV CGO_CFLAGS="-I/usr/local/cuda/include/" 
+ENV GOPATH=/src/.go/path
+ENV GOCACHE=/src/.go/cache
+ENV CGO_CFLAGS="-I/usr/local/cuda/include/"  
 ENV CGO_LDFLAGS="-lcufft -lcuda -lcurand -L/usr/local/cuda/lib64/stubs/ -Wl,-rpath -Wl,\$ORIGIN" 
 ENV CGO_CFLAGS_ALLOW='(-fno-schedule-insns|-malign-double|-ffast-math)'
 
