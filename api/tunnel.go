@@ -1,25 +1,34 @@
 package api
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"path/filepath"
 
+	"github.com/MathieuMoalic/amumax/engine"
+	"github.com/MathieuMoalic/amumax/script"
 	"github.com/MathieuMoalic/amumax/util"
 	"github.com/kevinburke/ssh_config"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 )
 
+func init() {
+	engine.DeclFunc("Tunnel", startTunnel, "Tunnel the web interface through SSH using the given host from your ssh config, empty string disables tunneling")
+}
+
 // SSH Tunnel Configuration
 type SSHTunnel struct {
-	LocalPort  string // This will be dynamically assigned by the SSH server
-	RemoteHost string // Worker WebUI address (localhost)
-	RemotePort string // Worker WebUI port (e.g., 35369)
+	localIP    string // Worker WebUI address (localhost)
+	localPort  uint16 // This will be dynamically assigned by the SSH server
+	remoteIP   string // Worker WebUI address (localhost)
+	remotePort uint16 // Worker WebUI port (e.g., 35369)
 	SSHUser    string // SSH user on proxy server
 	SSHHost    string // Proxy server address (e.g., proxy-server.com)
 	SSHPort    string // SSH port on the proxy server (usually 22)
@@ -63,10 +72,11 @@ func useSSHAgent() ssh.AuthMethod {
 	return nil
 }
 
-func fromConfig(host, webUIPort string) (tunnel SSHTunnel) {
-	tunnel.LocalPort = webUIPort
-	tunnel.RemoteHost = "localhost"
-	tunnel.RemotePort = webUIPort
+func fromConfig(host string, localPort, remotePort uint16) (tunnel SSHTunnel) {
+	tunnel.localIP = "localhost"
+	tunnel.localPort = localPort
+	tunnel.remoteIP = "localhost"
+	tunnel.remotePort = remotePort
 	tunnel.SSHUser = ssh_config.Get(host, "User")
 	tunnel.SSHHost = ssh_config.Get(host, "HostName")
 	tunnel.SSHPort = ssh_config.Get(host, "Port")
@@ -106,17 +116,22 @@ func (tunnel *SSHTunnel) Start() {
 	}
 	defer sshConn.Close()
 
-	// Request a dynamically assigned port (by setting remote port to 0)
-	listener, err := sshConn.Listen("tcp", "localhost:0")
+	listener, err := sshConn.Listen("tcp", tunnel.remoteIP+":"+uint16ToString(tunnel.remotePort))
 	if err != nil {
 		util.Log.Err("failed to start reverse tunnel: %v", err)
 		return
 	}
 	defer listener.Close()
+	if tunnel.remotePort == 0 {
+		tunnel.remotePort, err = stringToUint16(strings.Split(listener.Addr().String(), ":")[1])
+		if err != nil {
+			util.Log.Err("failed to parse remote port: %v", err)
+			return
+		}
+	}
 
 	// Retrieve the dynamically assigned port from listener.Addr()
-	dynamicPort := strings.Split(listener.Addr().String(), ":")[1]
-	util.Log.Debug("Tunnel started: http://%s:%s -> %s:%s", tunnel.SSHHost, dynamicPort, tunnel.RemoteHost, tunnel.RemotePort)
+	util.Log.Info("Tunnel started: http://%s:%d -> http://%s:%d", tunnel.remoteIP, tunnel.remotePort, tunnel.remoteIP, tunnel.localPort)
 
 	// Handle connections
 	for {
@@ -127,7 +142,7 @@ func (tunnel *SSHTunnel) Start() {
 		}
 
 		// Connect to the local WebUI (on worker)
-		remoteConn, err := net.Dial("tcp", net.JoinHostPort(tunnel.RemoteHost, tunnel.RemotePort))
+		remoteConn, err := net.Dial("tcp", net.JoinHostPort(tunnel.remoteIP, uint16ToString(tunnel.localPort)))
 		if err != nil {
 			util.Log.Debug("Error connecting to remote: %v", err)
 			clientConn.Close()
@@ -149,11 +164,67 @@ func (tunnel *SSHTunnel) Start() {
 	}
 }
 
-func startTunnel(webUIPort string, host string) {
-	tunnel := fromConfig(host, webUIPort)
-	if tunnel.SSHHost == "" {
-		util.Log.Err("No SSH host found in ~/.ssh/config for %s", host)
-		return
+func startTunnel(hostAndPort string) {
+	go func() {
+		localPort, err := getLocalPortWithRetry(5, 2*time.Second)
+		if err != nil {
+			util.Log.Err("Failed to get the local port: %v", err)
+			return
+		}
+
+		remoteHost, remotePort, err := parseHostAndPort(hostAndPort)
+		if err != nil {
+			util.Log.Err("Failed to parse host and port: %v", err)
+			return
+		}
+		tunnel := fromConfig(remoteHost, localPort, remotePort)
+		if tunnel.SSHHost == "" {
+			util.Log.Err("No SSH host found in ~/.ssh/config for %s", remoteHost)
+			return
+		}
+		tunnel.Start()
+	}()
+}
+
+// getLocalPortWithRetry attempts to retrieve and parse the local port from MMetadata, retrying on failure.
+func getLocalPortWithRetry(maxRetries int, retryInterval time.Duration) (uint16, error) {
+	var localPort uint16
+	var err error
+
+	for i := 0; i < maxRetries; i++ {
+		port, ok := script.MMetadata.Get("port").(string)
+		if ok {
+			localPort, err = stringToUint16(port)
+			if err == nil {
+				return localPort, nil // Successfully retrieved the port
+			}
+		}
+		util.Log.Debug("Failed to get or parse port, retrying in %v...", retryInterval)
+		time.Sleep(retryInterval)
 	}
-	tunnel.Start()
+
+	return 0, fmt.Errorf("could not retrieve local port after %d retries", maxRetries)
+}
+
+func parseHostAndPort(hostAndPort string) (host string, port uint16, err error) {
+	if strings.Contains(hostAndPort, ":") {
+		host = strings.Split(hostAndPort, ":")[0]
+		port, err = stringToUint16(strings.Split(hostAndPort, ":")[1])
+	} else {
+		host = hostAndPort
+		port = 0
+	}
+	return
+}
+
+func stringToUint16(s string) (uint16, error) {
+	n, err := strconv.ParseUint(s, 10, 16)
+	if err != nil {
+		return 0, err
+	}
+	return uint16(n), nil
+}
+
+func uint16ToString(n uint16) string {
+	return strconv.FormatUint(uint64(n), 10)
 }
