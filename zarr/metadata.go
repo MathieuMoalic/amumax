@@ -47,8 +47,13 @@ func (m *Metadata) Add(key string, val interface{}) {
 	// if val is a float, int or string add it to the metadata
 	if val_type == reflect.Float64 || val_type == reflect.Int || val_type == reflect.String {
 		m.Fields[key] = val
-		// m.Save()
+	} else {
+		util.Log.Debug("Metadata key %s has invalid type %s", key, val_type)
 	}
+}
+
+func (m *Metadata) Get(key string) interface{} {
+	return m.Fields[key]
 }
 
 func (m *Metadata) End() {
