@@ -19,7 +19,7 @@ func init() {
 		Quantity:             "m",
 		Component:            "3D",
 		Layer:                0,
-		MaxPoints:            10000,
+		MaxPoints:            8192,
 		Dimensions:           [3]int{0, 0, 0},
 		Type:                 "3D",
 		VectorFieldValues:    nil,

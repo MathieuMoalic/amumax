@@ -32,7 +32,7 @@
 			</div>
 		{:else}
 			<div class="field col-span-4">
-				{#if $meshState.Nz > 1}
+				{#if $meshState.Nx > 1}
 					<DataPointSlider />
 				{/if}
 			</div>
