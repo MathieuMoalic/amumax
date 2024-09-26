@@ -56,7 +56,7 @@ func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, ca
 		}
 		return kernel
 	} else {
-		util.Log.Warn("Calculating kernel and saving to cache")
+		util.Log.Info("Calculating kernel and saving to cache")
 		kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, showMagnets)
 		err := saveKernel(basename, kernel)
 		if err != nil {
