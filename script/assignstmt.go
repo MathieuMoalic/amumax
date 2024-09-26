@@ -60,7 +60,9 @@ type assignStmt struct {
 }
 
 func (a *assignStmt) Eval() interface{} {
-	MMetadata.Add(a.name, a.rhs.Eval())
+	if loopNestingCount == 0 {
+		MMetadata.Add(a.name, a.rhs.Eval())
+	}
 	a.lhs.SetValue(a.rhs.Eval())
 	return nil
 }
