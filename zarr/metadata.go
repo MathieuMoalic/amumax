@@ -14,6 +14,7 @@ type Metadata struct {
 	Fields    map[string]interface{}
 	Path      string
 	startTime time.Time
+	lastSave  time.Time
 }
 
 func (m *Metadata) Init(currentDir string, StartTime time.Time, dx, dy, dz float64, Nx, Ny, Nz int, Tx, Ty, Tz float64, PBCx, PBCy, PBCz int, GPUInfo string) {
@@ -37,6 +38,7 @@ func (m *Metadata) Init(currentDir string, StartTime time.Time, dx, dy, dz float
 	m.Path = currentDir + ".zattrs"
 	m.startTime = StartTime
 	m.Save()
+	m.lastSave = time.Now()
 }
 
 func (m *Metadata) Add(key string, val interface{}) {
@@ -72,6 +74,15 @@ func (m *Metadata) End() {
 	m.Save()
 }
 
+func (m *Metadata) NeedSave() bool {
+	// save once every 5 seconds
+	if time.Since(m.lastSave) > 5*time.Second {
+		m.lastSave = time.Now()
+		return true
+	} else {
+		return false
+	}
+}
 func (m *Metadata) Save() {
 	if m.Path != "" {
 		zattrs, err := httpfs.Create(m.Path)
