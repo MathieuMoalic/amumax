@@ -13,6 +13,7 @@ import (
 
 var preview Preview
 var globalQuantities []string
+var mask [][][]float32
 
 func init() {
 	preview = Preview{
@@ -70,11 +71,14 @@ func (p *Preview) Update() {
 }
 
 func (p *Preview) UpdateQuantityBuffer() {
+	// p.ScaleDimensions()
+	if mask == nil {
+		p.updateMask()
+	}
 	componentCount := 1
 	if p.Type == "3D" {
 		componentCount = 3
 	}
-	p.ScaleDimensions()
 	GPU_in := engine.ValueOf(p.GetQuantity())
 	defer cuda.Recycle(GPU_in)
 
@@ -190,18 +194,17 @@ func (p *Preview) UpdateScalarField(scalarField [][][]float32) {
 	yLen := len(scalarField[0])
 	min, max := scalarField[0][0][0], scalarField[0][0][0]
 
-	// Some quantities exist where the magnetic materials are not present
-	var geom [][][]float32
-	if !contains(globalQuantities, p.Quantity) {
-		// geom = engine.Geometry.Buffer.HostCopy().Scalars()
-	}
 	var valArray [][3]float32
 	for posx := 0; posx < xLen; posx++ {
 		for posy := 0; posy < yLen; posy++ {
-			val := scalarField[0][posy][posx]
-			if len(geom) != 0 && geom[0][posy][posx] == 0 {
-				continue
+			// Some quantities exist where the magnetic materials are not present
+			// and we don't want to filter them out
+			if !contains(globalQuantities, p.Quantity) {
+				if mask[0][posy][posx] == 0 {
+					continue
+				}
 			}
+			val := scalarField[0][posy][posx]
 			if val < min {
 				min = val
 			}
@@ -221,6 +224,29 @@ func (p *Preview) UpdateScalarField(scalarField [][][]float32) {
 	p.VectorFieldValues = nil
 	p.VectorFieldPositions = nil
 	p.DataPointsCount = len(valArray)
+}
+
+func (p *Preview) updateMask() {
+	p.ScaleDimensions()
+
+	// cuda full size geom
+	geom := engine.Geometry
+	GPU_fullsize := cuda.Buffer(geom.NComp(), geom.Buffer.Size())
+	geom.EvalTo(GPU_fullsize)
+	defer cuda.Recycle(GPU_fullsize)
+
+	// resize geom in GPU
+	GPU_resized := cuda.NewSlice(1, p.Dimensions)
+	defer GPU_resized.Free()
+	cuda.Resize(GPU_resized, GPU_fullsize.Comp(0), 0)
+
+	// copy resized geom from GPU to CPU
+	CPU_out := data.NewSlice(1, p.Dimensions)
+	defer CPU_out.Free()
+	data.Copy(CPU_out.Comp(0), GPU_resized)
+
+	// extract mask from CPU slice
+	mask = CPU_out.Scalars()
 }
 
 func contains(arr []string, val string) bool {
@@ -353,6 +379,7 @@ func postPreviewMaxPoints(c echo.Context) error {
 	}
 	preview.MaxPoints = req.MaxPoints
 	preview.Refresh = true
+	engine.InjectAndWait(preview.updateMask)
 	broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
