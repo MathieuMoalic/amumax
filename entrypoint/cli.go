@@ -33,6 +33,7 @@ func cliEntrypoint(cmd *cobra.Command, args []string) {
 	if flags.version {
 		printVersion()
 	}
+	engine.Insecure = flags.insecure
 
 	// used by bootstrap launcher to test cuda
 	// successful exit means cuda was initialized fine
