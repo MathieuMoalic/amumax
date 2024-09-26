@@ -10,7 +10,16 @@ type forStmt struct {
 	void
 }
 
+var loopNestingCount int16
+
+func init() {
+	loopNestingCount = 0
+}
+
 func (b *forStmt) Eval() interface{} {
+	loopNestingCount++
+	defer func() { loopNestingCount-- }() // Reset the flag after the loop
+
 	for b.init.Eval(); b.cond.Eval().(bool); b.post.Eval() {
 		b.body.Eval()
 	}

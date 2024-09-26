@@ -44,7 +44,6 @@ func (m *Metadata) Add(key string, val interface{}) {
 		m.Fields = make(map[string]interface{})
 	}
 	val_type := reflect.TypeOf(val).Kind()
-	// if val is a float, int or string add it to the metadata
 	switch val_type {
 	case reflect.Float64, reflect.Int, reflect.String, reflect.Bool:
 		m.Fields[key] = val
@@ -53,9 +52,7 @@ func (m *Metadata) Add(key string, val interface{}) {
 		val_str := fmt.Sprintf("%v", ptr_val)
 		val_str = val_str[1 : len(val_str)-1]
 		m.Fields[key] = val_str
-		util.Log.Debug("Pointer key %s = %s: %v", key, val_type, val_str)
 	case reflect.Array:
-		util.Log.Debug("Array key %s = %s: %v", key, val_type, val)
 		m.Fields[key] = fmt.Sprintf("%v", val)
 	case reflect.Func:
 		// ignore functions
