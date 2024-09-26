@@ -45,10 +45,23 @@ func (m *Metadata) Add(key string, val interface{}) {
 	}
 	val_type := reflect.TypeOf(val).Kind()
 	// if val is a float, int or string add it to the metadata
-	if val_type == reflect.Float64 || val_type == reflect.Int || val_type == reflect.String {
+	switch val_type {
+	case reflect.Float64, reflect.Int, reflect.String, reflect.Bool:
 		m.Fields[key] = val
-	} else {
-		util.Log.Debug("Metadata key %s has invalid type %s", key, val_type)
+	case reflect.Pointer:
+		ptr_val := reflect.ValueOf(val).Elem()
+		val_str := fmt.Sprintf("%v", ptr_val)
+		val_str = val_str[1 : len(val_str)-1]
+		m.Fields[key] = val_str
+		util.Log.Debug("Pointer key %s = %s: %v", key, val_type, val_str)
+	case reflect.Array:
+		util.Log.Debug("Array key %s = %s: %v", key, val_type, val)
+		m.Fields[key] = fmt.Sprintf("%v", val)
+	case reflect.Func:
+		// ignore functions
+		return
+	default:
+		util.Log.Debug("Metadata key %s has invalid type %s: %v", key, val_type, val)
 	}
 }
 
