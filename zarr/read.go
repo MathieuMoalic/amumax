@@ -17,17 +17,15 @@ import (
 
 func Read(binary_path string, pwd string) (s *data.Slice, err error) {
 	if !path.IsAbs(binary_path) {
-		wd, err := os.Getwd()
+		wd := ""
+		wd, err = os.Getwd()
 		util.Log.PanicIfError(err)
 		binary_path = wd + "/" + path.Dir(pwd) + "/" + binary_path
 	}
 	binary_path = path.Clean(binary_path)
 
 	// loop and wait until the file is saved
-	for {
-		if !IsSaving {
-			break
-		}
+	for IsSaving {
 		util.Log.Info("Waiting for all the files to be saved before reading...")
 		time.Sleep(1 * time.Second)
 	}

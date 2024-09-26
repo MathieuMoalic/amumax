@@ -82,7 +82,7 @@ func Fprintln(filename string, msg ...interface{}) {
 	}
 	err := httpfs.Touch(filename)
 	util.Log.PanicIfError(err)
-	err = httpfs.Append(filename, []byte(fmt.Sprintln(myFmt(msg))))
+	err = httpfs.Append(filename, []byte(fmt.Sprintln(CustomFmt(msg))))
 	util.Log.PanicIfError(err)
 }
 func LoadFile(fname string) *data.Slice {
@@ -116,11 +116,11 @@ func Download(q Quantity) *data.Slice {
 
 // print with special formatting for some known types
 func myprint(msg ...interface{}) {
-	util.Log.Info("%v", myFmt(msg))
+	util.Log.Info("%v", CustomFmt(msg))
 }
 
 // mumax specific formatting (Slice -> average, etc).
-func myFmt(msg []interface{}) (fmtMsg string) {
+func CustomFmt(msg []interface{}) (fmtMsg string) {
 	for _, m := range msg {
 		if e, ok := m.(Quantity); ok {
 			str := fmt.Sprint(AverageOf(e))
