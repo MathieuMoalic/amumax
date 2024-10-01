@@ -35,8 +35,10 @@ cuda2go.exe
 # *.orig
 .go-build
 *.ptx
-api/static
+src/api/static
 .direnv
 .envrc
 .helix
 .go
+node_modules
+**/.svelte-kit
