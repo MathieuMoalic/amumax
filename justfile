@@ -14,7 +14,7 @@ build-frontend:
 		-v .:/src \
 		-w /src/frontend \
 		--entrypoint /bin/sh \
-		docker.io/node:18.20.4-alpine3.20 -c 'npm install && npm run build && mv dist ../api/static'
+		docker.io/node:18.20.4-alpine3.20 -c 'npm install && npm run build && mv dist ../src/api/static'
 
 build:
 	podman run --rm -v $PWD:/src matmoa/amumax:build
