@@ -92,19 +92,19 @@
       owner = "MathieuMoalic";
       repo = "amumax";
       rev = releaseVersion;
-      hash = "sha256-hrAigQ3VwreBqLh76CM//p6MiGw4obaKpC364ilQKQQ=";
+      hash = "sha256-cMJKWMPHpBdRN6q5YX0POx9TCMvz2oZOuzTjtBF/ffI="; # gh hash
     };
 
     ReleaseFrontend = buildFrontend {
       src = "${ReleaseSrc}/frontend";
-      npmDepsHash = "sha256-bLImLy3SU9DfyzY+mdZr+cTP4NLHcz957G+ZLLA0/6I=";
+      npmDepsHash = "sha256-NNr/4Py+YlXK+fYDidYlygyHSuVg4dy2nYRGefX4MwA=";
       version = releaseVersion;
     };
 
     ReleaseBuildAmumax = buildAmumax {
       src = ReleaseSrc;
       frontend = ReleaseFrontend;
-      vendorHash = "sha256-c3se+OjvhF+femBirB7YhudV/MYLjWVg3xow9z53KjI=";
+      vendorHash = "sha256-nCjAc54HKOeHlus9scYSq9OMnnsbsijLM/9wm5RGkTw=";
       version = releaseVersion;
     };
 
@@ -119,6 +119,10 @@
           pkgs.golangci-lint
           pkgs.gcc11
           pkgs.nodejs_22
+          pkgs.nix-prefetch-github
+          pkgs.prefetch-npm-deps
+          pkgs.nix-prefetch
+          pkgs.jq
         ];
 
       LD_LIBRARY_PATH = "${cuda.libcufft}/lib:${cuda.libcurand}/lib:/run/opengl-driver/lib/";
