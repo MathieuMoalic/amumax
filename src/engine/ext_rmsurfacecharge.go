@@ -5,8 +5,8 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag"
-	"github.com/MathieuMoalic/amumax/src/util"
 )
 
 func init() {
@@ -20,10 +20,10 @@ func init() {
 func RemoveLRSurfaceCharge(region int, mxLeft, mxRight float64) {
 	SetBusy(true)
 	defer SetBusy(false)
-	util.Argument(mxLeft == 1 || mxLeft == -1)
-	util.Argument(mxRight == 1 || mxRight == -1)
+	log.AssertArgument(mxLeft == 1 || mxLeft == -1)
+	log.AssertArgument(mxRight == 1 || mxRight == -1)
 	bsat := Msat.GetRegion(region) * mag.Mu0
-	util.AssertMsg(bsat != 0, "RemoveSurfaceCharges: Msat is zero in region "+fmt.Sprint(region))
+	log.AssertMsg(bsat != 0, "RemoveSurfaceCharges: Msat is zero in region "+fmt.Sprint(region))
 	B_ext.Add(compensateLRSurfaceCharges(GetMesh(), mxLeft, mxRight, bsat), nil)
 }
 

@@ -6,8 +6,8 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/script"
-	"github.com/MathieuMoalic/amumax/src/util"
 )
 
 // An excitation, typically field or current,
@@ -31,7 +31,7 @@ func (e *ScalarExcitation) GetRegionToString(region int) string {
 
 func (p *ScalarExcitation) MSlice() cuda.MSlice {
 	buf, r := p.Slice()
-	util.Assert(r)
+	log.Assert(r)
 	return cuda.ToMSlice(buf)
 }
 
@@ -64,7 +64,7 @@ func (e *ScalarExcitation) RemoveExtraTerms() {
 		return
 	}
 
-	// util.Log.Comment("REMOVING EXTRA TERMS FROM", e.Name())
+	// log.Log.Comment("REMOVING EXTRA TERMS FROM", e.Name())
 	for _, m := range e.extraTerms {
 		m.mask.Free()
 	}

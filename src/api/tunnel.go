@@ -12,8 +12,8 @@ import (
 	"path/filepath"
 
 	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/script"
-	"github.com/MathieuMoalic/amumax/src/util"
 	"github.com/kevinburke/ssh_config"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
@@ -51,7 +51,7 @@ func loadPrivateKeys() []ssh.AuthMethod {
 		}
 		signer, err := ssh.ParsePrivateKey(key)
 		if err != nil {
-			util.Log.Debug("Error parsing private key %s: %v", keyFile, err)
+			log.Log.Debug("Error parsing private key %s: %v", keyFile, err)
 			continue
 		}
 		methods = append(methods, ssh.PublicKeys(signer))
@@ -85,7 +85,7 @@ func fromConfig(host string, localPort, remotePort uint16) (tunnel SSHTunnel) {
 
 // Start the SSH reverse tunnel
 func (tunnel *SSHTunnel) Start() {
-	util.Log.Debug("Starting SSH tunnel")
+	log.Log.Debug("Starting SSH tunnel")
 	// Create SSH config
 	authMethods := []ssh.AuthMethod{}
 
@@ -99,7 +99,7 @@ func (tunnel *SSHTunnel) Start() {
 
 	// If no SSH key is available, fallback to password authentication
 	if len(authMethods) == 0 {
-		util.Log.Err("No SSH keys found, please add one to ~/.ssh/id_rsa, ~/.ssh/id_ed25519 or use an SSH agent")
+		log.Log.Err("No SSH keys found, please add one to ~/.ssh/id_rsa, ~/.ssh/id_ed25519 or use an SSH agent")
 	}
 
 	config := &ssh.ClientConfig{
@@ -111,40 +111,40 @@ func (tunnel *SSHTunnel) Start() {
 	// Connect to the SSH server
 	sshConn, err := ssh.Dial("tcp", tunnel.SSHHost+":"+tunnel.SSHPort, config)
 	if err != nil {
-		util.Log.Err("failed to dial SSH: %v", err)
+		log.Log.Err("failed to dial SSH: %v", err)
 		return
 	}
 	defer sshConn.Close()
 
 	listener, err := sshConn.Listen("tcp", tunnel.remoteIP+":"+uint16ToString(tunnel.remotePort))
 	if err != nil {
-		util.Log.Err("failed to start reverse tunnel: %v", err)
+		log.Log.Err("failed to start reverse tunnel: %v", err)
 		return
 	}
 	defer listener.Close()
 	if tunnel.remotePort == 0 {
 		tunnel.remotePort, err = stringToUint16(strings.Split(listener.Addr().String(), ":")[1])
 		if err != nil {
-			util.Log.Err("failed to parse remote port: %v", err)
+			log.Log.Err("failed to parse remote port: %v", err)
 			return
 		}
 	}
 
 	// Retrieve the dynamically assigned port from listener.Addr()
-	util.Log.Info("Tunnel started: http://%s:%d -> http://%s:%d", tunnel.remoteIP, tunnel.remotePort, tunnel.remoteIP, tunnel.localPort)
+	log.Log.Info("Tunnel started: http://%s:%d -> http://%s:%d", tunnel.remoteIP, tunnel.remotePort, tunnel.remoteIP, tunnel.localPort)
 
 	// Handle connections
 	for {
 		clientConn, err := listener.Accept()
 		if err != nil {
-			util.Log.Debug("Error accepting connection: %v", err)
+			log.Log.Debug("Error accepting connection: %v", err)
 			continue
 		}
 
 		// Connect to the local WebUI (on worker)
 		remoteConn, err := net.Dial("tcp", net.JoinHostPort(tunnel.remoteIP, uint16ToString(tunnel.localPort)))
 		if err != nil {
-			util.Log.Debug("Error connecting to remote: %v", err)
+			log.Log.Debug("Error connecting to remote: %v", err)
 			clientConn.Close()
 			continue
 		}
@@ -168,18 +168,18 @@ func startTunnel(hostAndPort string) {
 	go func() {
 		localPort, err := getLocalPortWithRetry(5, 2*time.Second)
 		if err != nil {
-			util.Log.Err("Failed to get the local port: %v", err)
+			log.Log.Err("Failed to get the local port: %v", err)
 			return
 		}
 
 		remoteHost, remotePort, err := parseHostAndPort(hostAndPort)
 		if err != nil {
-			util.Log.Err("Failed to parse host and port: %v", err)
+			log.Log.Err("Failed to parse host and port: %v", err)
 			return
 		}
 		tunnel := fromConfig(remoteHost, localPort, remotePort)
 		if tunnel.SSHHost == "" {
-			util.Log.Err("No SSH host found in ~/.ssh/config for %s", remoteHost)
+			log.Log.Err("No SSH host found in ~/.ssh/config for %s", remoteHost)
 			return
 		}
 		tunnel.Start()
@@ -199,7 +199,7 @@ func getLocalPortWithRetry(maxRetries int, retryInterval time.Duration) (uint16,
 				return localPort, nil // Successfully retrieved the port
 			}
 		}
-		util.Log.Debug("Failed to get or parse port, retrying in %v...", retryInterval)
+		log.Log.Debug("Failed to get or parse port, retrying in %v...", retryInterval)
 		time.Sleep(retryInterval)
 	}
 

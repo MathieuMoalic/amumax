@@ -10,9 +10,9 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag"
 	"github.com/MathieuMoalic/amumax/src/oommf"
-	"github.com/MathieuMoalic/amumax/src/util"
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
@@ -60,11 +60,11 @@ func Vector(x, y, z float64) data.Vector {
 // and print suited message.
 func Expect(msg string, have, want, maxError float64) {
 	if math.IsNaN(have) || math.IsNaN(want) || math.Abs(have-want) > maxError {
-		util.Log.Info(msg, ":", " have: ", have, " want: ", want, "±", maxError)
+		log.Log.Info(msg, ":", " have: ", have, " want: ", want, "±", maxError)
 		CleanExit()
 		os.Exit(1)
 	} else {
-		util.Log.Info(msg, ":", have, "OK")
+		log.Log.Info(msg, ":", have, "OK")
 	}
 	// note: we also check "want" for NaN in case "have" and "want" are switched.
 }
@@ -81,23 +81,23 @@ func Fprintln(filename string, msg ...interface{}) {
 		filename = OD() + filename
 	}
 	err := httpfs.Touch(filename)
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	err = httpfs.Append(filename, []byte(fmt.Sprintln(CustomFmt(msg))))
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 }
 func LoadFile(fname string) *data.Slice {
 	var s *data.Slice
 	s, err := zarr.Read(fname, OD())
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	return s
 }
 
 func LoadOvfFile(fname string) *data.Slice {
 	in, err := httpfs.Open(fname)
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	var s *data.Slice
 	s, _, err = oommf.Read(in)
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	return s
 }
 
@@ -116,7 +116,7 @@ func Download(q Quantity) *data.Slice {
 
 // print with special formatting for some known types
 func myprint(msg ...interface{}) {
-	util.Log.Info("%v", CustomFmt(msg))
+	log.Log.Info("%v", CustomFmt(msg))
 }
 
 // mumax specific formatting (Slice -> average, etc).
@@ -165,7 +165,7 @@ func slice(v [3]float64) []float64 {
 }
 
 func unslice(v []float64) [3]float64 {
-	util.Assert(len(v) == 3)
+	log.Assert(len(v) == 3)
 	return [3]float64{v[0], v[1], v[2]}
 }
 

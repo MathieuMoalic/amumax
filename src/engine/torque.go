@@ -5,7 +5,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 var (
@@ -65,7 +65,7 @@ func AddSTTorque(dst *data.Slice) {
 	if J.isZero() {
 		return
 	}
-	util.AssertMsg(!Pol.isZero(), "spin polarization should not be 0")
+	log.AssertMsg(!Pol.isZero(), "spin polarization should not be 0")
 	jspin, rec := J.Slice()
 	if rec {
 		defer cuda.Recycle(jspin)

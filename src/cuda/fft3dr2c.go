@@ -4,8 +4,8 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/cuda/cufft"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/timer"
-	"github.com/MathieuMoalic/amumax/src/util"
 )
 
 // 3D single-precission real-to-complex FFT plan.
@@ -28,14 +28,14 @@ func (p *fft3DR2CPlan) ExecAsync(src, dst *data.Slice) {
 		Sync()
 		timer.Start("fft")
 	}
-	util.Argument(src.NComp() == 1 && dst.NComp() == 1)
+	log.AssertArgument(src.NComp() == 1 && dst.NComp() == 1)
 	oksrclen := p.InputLen()
 	if src.Len() != oksrclen {
-		util.Log.ErrAndExit("fft size mismatch: expecting src len %v, got %v", oksrclen, src.Len())
+		log.Log.ErrAndExit("fft size mismatch: expecting src len %v, got %v", oksrclen, src.Len())
 	}
 	okdstlen := p.OutputLen()
 	if dst.Len() != okdstlen {
-		util.Log.ErrAndExit("fft size mismatch: expecting dst len %v, got %v", okdstlen, dst.Len())
+		log.Log.ErrAndExit("fft size mismatch: expecting dst len %v, got %v", okdstlen, dst.Len())
 	}
 	p.handle.ExecR2C(cu.DevicePtr(uintptr(src.DevPtr(0))), cu.DevicePtr(uintptr(dst.DevPtr(0))))
 	if Synchronous {

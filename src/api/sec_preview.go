@@ -7,7 +7,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/labstack/echo/v4"
 )
 
@@ -57,7 +57,7 @@ type Preview struct {
 func (p *Preview) GetQuantity() engine.Quantity {
 	quantity, exists := engine.Quantities[p.Quantity]
 	if !exists {
-		util.Log.Err("Quantity not found: %v", p.Quantity)
+		log.Log.Err("Quantity not found: %v", p.Quantity)
 	}
 	return quantity
 }
@@ -215,7 +215,7 @@ func (p *Preview) UpdateScalarField(scalarField [][][]float32) {
 		}
 	}
 	if len(valArray) == 0 {
-		util.Log.Warn("No data in scalar field")
+		log.Log.Warn("No data in scalar field")
 	}
 
 	p.Min = min
@@ -271,7 +271,7 @@ func compStringToIndex(comp string) int {
 	case "None":
 		return 0
 	}
-	util.Log.ErrAndExit("Invalid component string")
+	log.Log.ErrAndExit("Invalid component string")
 	return -2
 }
 
@@ -304,7 +304,7 @@ func validateComponent() {
 			preview.Component = "3D"
 		}
 	default:
-		util.Log.Err("Invalid number of components")
+		log.Log.Err("Invalid number of components")
 		// reset to default
 		preview.Quantity = "m"
 		preview.Component = "3D"
@@ -317,7 +317,7 @@ func postPreviewComponent(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		util.Log.Err("%v", err)
+		log.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	preview.Component = req.Component
@@ -334,7 +334,7 @@ func postPreviewQuantity(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		util.Log.Err("%v", err)
+		log.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	_, exists := engine.Quantities[req.Quantity]
@@ -355,7 +355,7 @@ func postPreviewLayer(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		util.Log.Err("%v", err)
+		log.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 
@@ -371,7 +371,7 @@ func postPreviewMaxPoints(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		util.Log.Err("%v", err)
+		log.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	if req.MaxPoints < 8 {

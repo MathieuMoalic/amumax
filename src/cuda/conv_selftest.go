@@ -6,7 +6,7 @@ import (
 	"math/rand"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Compares FFT-accelerated convolution against brute-force on sparse data.
@@ -14,10 +14,10 @@ import (
 func testConvolution(c *DemagConvolution, PBC [3]int, realKern [3][3]*data.Slice) {
 	if PBC != [3]int{0, 0, 0} {
 		// the brute-force method does not work for pbc.
-		util.Log.Info("skipping convolution self-test for PBC")
+		log.Log.Info("skipping convolution self-test for PBC")
 		return
 	}
-	util.Log.Info("convolution self-test...")
+	log.Log.Info("convolution self-test...")
 	inhost := data.NewSlice(3, c.inputSize)
 	initConvTestInput(inhost.Vectors())
 	gpu := NewSlice(3, c.inputSize)
@@ -46,7 +46,7 @@ func testConvolution(c *DemagConvolution, PBC [3]int, realKern [3][3]*data.Slice
 		}
 	}
 	if err > CONV_TOLERANCE {
-		util.Log.ErrAndExit("convolution self-test tolerance: %v FAIL", err)
+		log.Log.ErrAndExit("convolution self-test tolerance: %v FAIL", err)
 	}
 }
 

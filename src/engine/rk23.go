@@ -1,21 +1,23 @@
 package engine
 
 import (
+	"math"
+
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
-	"math"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Bogacki-Shampine solver. 3rd order, 3 evaluations per step, adaptive step.
-// 	http://en.wikipedia.org/wiki/Bogacki-Shampine_method
 //
-// 	k1 = f(tn, yn)
-// 	k2 = f(tn + 1/2 h, yn + 1/2 h k1)
-// 	k3 = f(tn + 3/4 h, yn + 3/4 h k2)
-// 	y{n+1}  = yn + 2/9 h k1 + 1/3 h k2 + 4/9 h k3            // 3rd order
-// 	k4 = f(tn + h, y{n+1})
-// 	z{n+1} = yn + 7/24 h k1 + 1/4 h k2 + 1/3 h k3 + 1/8 h k4 // 2nd order
+//	http://en.wikipedia.org/wiki/Bogacki-Shampine_method
+//
+//	k1 = f(tn, yn)
+//	k2 = f(tn + 1/2 h, yn + 1/2 h k1)
+//	k3 = f(tn + 3/4 h, yn + 3/4 h k2)
+//	y{n+1}  = yn + 2/9 h k1 + 1/3 h k2 + 4/9 h k3            // 3rd order
+//	k4 = f(tn + h, y{n+1})
+//	z{n+1} = yn + 7/24 h k1 + 1/4 h k2 + 1/3 h k3 + 1/8 h k4 // 2nd order
 type RK23 struct {
 	k1 *data.Slice // torque at end of step is kept for beginning of next step
 }
@@ -96,8 +98,8 @@ func (rk *RK23) Step() {
 		data.Copy(rk.k1, k4) // FSAL
 	} else {
 		// undo bad step
-		//util.Println("Bad step at t=", t0, ", err=", err)
-		util.Assert(FixDt == 0)
+		//log.Println("Bad step at t=", t0, ", err=", err)
+		log.Assert(FixDt == 0)
 		Time = t0
 		data.Copy(m, m0)
 		NUndone++

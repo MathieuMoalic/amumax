@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Read any OOMMF file, autodetect OVF1/OVF2 format
@@ -53,7 +53,7 @@ func ReadFile(fname string) (*data.Slice, data.Meta, error) {
 
 func MustReadFile(fname string) (*data.Slice, data.Meta) {
 	s, t, err := ReadFile(fname)
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	return s, t
 }
 
@@ -233,9 +233,9 @@ func writeOVFText(out io.Writer, tens *data.Slice) (err error) {
 // # Key: Value
 func hdr(out io.Writer, key string, value ...interface{}) {
 	_, err := fmt.Fprint(out, "# ", key, ": ")
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	_, err = fmt.Fprintln(out, value...)
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 }
 
 func dsc(out io.Writer, k, v interface{}) {

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/script"
-	"github.com/MathieuMoalic/amumax/src/util"
 )
 
 // Parse HH:MM:SS format into time.Duration
@@ -72,7 +72,7 @@ func setEndTimerIfSlurm() {
 		getSlurmMetadata()
 		endTime, err := getSlurmEndTime()
 		if err != nil {
-			util.Log.Warn("Error getting SLURM end time: %v", err)
+			log.Log.Warn("Error getting SLURM end time: %v", err)
 			return
 		}
 
@@ -81,8 +81,8 @@ func setEndTimerIfSlurm() {
 			remaining := time.Until(endTime)
 			if remaining <= 30*time.Second && remaining > 0 {
 				// If 30 seconds or less are remaining, print the message
-				util.Log.Warn("30 seconds remaining until the job ends!")
-				util.Log.Warn("Cleanly exiting the simulation early...")
+				log.Log.Warn("30 seconds remaining until the job ends!")
+				log.Log.Warn("Cleanly exiting the simulation early...")
 				engine.Exit()
 			}
 			// Sleep for a short while before checking again

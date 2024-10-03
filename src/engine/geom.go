@@ -5,7 +5,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 func init() {
@@ -89,7 +89,7 @@ func (geometry *geom) setGeom(s Shape) {
 	c := geometry.Mesh().CellSize()
 	cx, cy, cz := c[X], c[Y], c[Z]
 
-	util.Log.Info("Initializing geometry")
+	log.Log.Info("Initializing geometry")
 	var ok bool
 	for iz := 0; iz < n[Z]; iz++ {
 		for iy := 0; iy < n[Y]; iy++ {
@@ -135,7 +135,7 @@ func (geometry *geom) setGeom(s Shape) {
 	}
 
 	if !ok {
-		util.Log.ErrAndExit("SetGeom: geometry completely empty")
+		log.Log.ErrAndExit("SetGeom: geometry completely empty")
 	}
 
 	data.Copy(geometry.Buffer, V)
@@ -255,7 +255,7 @@ func (g *geom) shiftY(dy int) {
 // x range that needs to be refreshed after shift over dx
 func shiftDirtyRange(dx int) (x1, x2 int) {
 	nx := GetMesh().Size()[X]
-	util.Argument(dx != 0)
+	log.AssertArgument(dx != 0)
 	if dx < 0 {
 		x1 = nx + dx
 		x2 = nx

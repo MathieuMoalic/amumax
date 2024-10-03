@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // check all input files for errors, don't run.
@@ -14,7 +14,7 @@ func vet() {
 	status := 0
 	for _, f := range flag.Args() {
 		src, ioerr := os.ReadFile(f)
-		util.Log.PanicIfError(ioerr)
+		log.Log.PanicIfError(ioerr)
 		engine.World.EnterScope() // avoid name collisions between separate files
 		_, err := engine.World.Compile(string(src))
 		engine.World.ExitScope()

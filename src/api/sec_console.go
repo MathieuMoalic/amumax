@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/labstack/echo/v4"
 )
 
@@ -15,7 +15,7 @@ type Console struct {
 
 func newConsole() *Console {
 	return &Console{
-		Hist: util.Log.Hist,
+		Hist: log.Log.Hist,
 	}
 }
 

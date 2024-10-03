@@ -3,11 +3,10 @@ package data
 // Slice stores N-component GPU or host data.
 
 import (
-	"bytes"
 	"fmt"
 	"unsafe"
 
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Slice is like a [][]float32, but may be stored in GPU or host memory.
@@ -72,7 +71,7 @@ func NilSlice(nComp int, size [3]int) *Slice {
 func SliceFromPtrs(size [3]int, memType int8, ptrs []unsafe.Pointer) *Slice {
 	length := prod(size)
 	nComp := len(ptrs)
-	util.Argument(nComp > 0 && length > 0)
+	log.AssertArgument(nComp > 0 && length > 0)
 	s := new(Slice)
 	s.ptrs = make([]unsafe.Pointer, nComp)
 	s.size = size
@@ -186,7 +185,7 @@ const SIZEOF_FLOAT32 = 4
 // It should have CPUAccess() == true.
 func (s *Slice) Host() [][]float32 {
 	if !s.CPUAccess() {
-		util.Log.PanicIfError(fmt.Errorf("slice not accessible by CPU"))
+		log.Log.PanicIfError(fmt.Errorf("slice not accessible by CPU"))
 	}
 	list := make([][]float32, s.NComp())
 	for c := range list {
@@ -271,15 +270,6 @@ func (s *Slice) IsNil() bool {
 		return true
 	}
 	return s.ptrs[0] == nil
-}
-
-func (s *Slice) String() string {
-	if s == nil {
-		return "nil"
-	}
-	var buf bytes.Buffer
-	util.Fprint(&buf, s.Tensors())
-	return buf.String()
 }
 
 func (s *Slice) Set(comp, ix, iy, iz int, value float64) {

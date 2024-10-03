@@ -2,13 +2,13 @@ package cuda
 
 import (
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Set Bth to thermal noise (Brown).
 // see temperature.cu
 func SetTemperature(Bth, noise *data.Slice, k2mu0_Mu0VgammaDt float64, Msat, Temp, Alpha MSlice) {
-	util.Argument(Bth.NComp() == 1 && noise.NComp() == 1)
+	log.AssertArgument(Bth.NComp() == 1 && noise.NComp() == 1)
 
 	N := Bth.Len()
 	cfg := make1DConf(N)

@@ -17,10 +17,10 @@ build-frontend:
 		docker.io/node:18.20.4-alpine3.20 -c 'npm install && npm run build && mv dist ../src/api/static'
 
 build:
-	podman run --rm -v $PWD:/src matmoa/amumax:build
+	podman run --rm -v $PWD/src:/src matmoa/amumax:build
 
 test:
-	podman run --rm -v $PWD:/src -it --device=nvidia.com/gpu=all -p 35367:35367 matmoa/amumax:build /src/build/amumax -d -i /src/mytest/t2.mx3
+	podman run --rm -v $PWD/src:/src -it --device=nvidia.com/gpu=all -p 35367:35367 matmoa/amumax:build /src/build/amumax -d -i /src/mytest/t2.mx3
 
 release: image build_cuda build-frontend build
 	VERSION=$(date -u +'%Y.%m.%d') && \

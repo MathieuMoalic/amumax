@@ -13,8 +13,8 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/script"
-	"github.com/MathieuMoalic/amumax/src/util"
 )
 
 func Entrypoint() {
@@ -29,15 +29,15 @@ type Release struct {
 }
 
 func runInteractive() {
-	util.Log.Info("No input files: starting interactive session")
+	log.Log.Info("No input files: starting interactive session")
 	// setup outut dir
 	now := time.Now()
 	outdir := fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
 
 	engine.InitIO(outdir, outdir, flags.cacheDir, flags.skipExists, flags.forceClean, flags.progress, flags.selfTest, flags.sync)
-	util.Log.Info("Input file: %s", "none")
-	util.Log.Info("Output directory: %s", engine.OD())
-	util.Log.Init(engine.OD())
+	log.Log.Info("Input file: %s", "none")
+	log.Log.Info("Output directory: %s", engine.OD())
+	log.Log.Init(engine.OD())
 
 	// set up some sensible start configuration
 	engine.Eval(`
@@ -59,7 +59,7 @@ m = RandomMag()`)
 
 func runFileAndServe(mx3Path string) {
 	if _, err := os.Stat(mx3Path); errors.Is(err, os.ErrNotExist) {
-		util.Log.ErrAndExit("Error: File `%s` does not exist", mx3Path)
+		log.Log.ErrAndExit("Error: File `%s` does not exist", mx3Path)
 	}
 	outputdir := strings.TrimSuffix(mx3Path, ".mx3") + ".zarr"
 
@@ -67,11 +67,11 @@ func runFileAndServe(mx3Path string) {
 		outputdir = flags.outputDir
 	}
 	engine.InitIO(mx3Path, outputdir, flags.cacheDir, flags.skipExists, flags.forceClean, flags.progress, flags.selfTest, flags.sync)
-	util.Log.Info("Input file: %s", mx3Path)
-	util.Log.Info("Output directory: %s", engine.OD())
+	log.Log.Info("Input file: %s", mx3Path)
+	log.Log.Info("Output directory: %s", engine.OD())
 
-	util.Log.Init(engine.OD())
-	go util.Log.AutoFlushToFile()
+	log.Log.Init(engine.OD())
+	go log.Log.AutoFlushToFile()
 
 	mx3Path = engine.InputFile
 
@@ -81,9 +81,9 @@ func runFileAndServe(mx3Path string) {
 		// first we compile the entire file into an executable tree
 		code, err2 = engine.CompileFile(mx3Path)
 		if err2 != nil {
-			util.Log.ErrAndExit("Error while parsing `%s`: %v", mx3Path, err2)
+			log.Log.ErrAndExit("Error while parsing `%s`: %v", mx3Path, err2)
 		}
-		util.Log.PanicIfError(err2)
+		log.Log.PanicIfError(err2)
 	}
 
 	// now the parser is not used anymore so it can handle web requests
@@ -100,9 +100,9 @@ func runFileAndServe(mx3Path string) {
 
 // print version to stdout
 func printVersion() {
-	util.Log.Info("Version:         %s", engine.VERSION)
-	util.Log.Info("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
-	util.Log.Info("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
-	util.Log.Info("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda.UseCC)
-	util.Log.Info("GPU Information: %s", cuda.GPUInfo)
+	log.Log.Info("Version:         %s", engine.VERSION)
+	log.Log.Info("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
+	log.Log.Info("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
+	log.Log.Info("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda.UseCC)
+	log.Log.Info("GPU Information: %s", cuda.GPUInfo)
 }

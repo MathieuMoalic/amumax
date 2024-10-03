@@ -6,8 +6,8 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/timer"
-	"github.com/MathieuMoalic/amumax/src/util"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
@@ -42,7 +42,7 @@ func init() {
 }
 
 func cliEntrypoint(cmd *cobra.Command, args []string) {
-	util.Log.SetDebug(flags.debug)
+	log.Log.SetDebug(flags.debug)
 	if flags.update {
 		showUpdateMenu()
 		return
@@ -78,6 +78,6 @@ func cliEntrypoint(cmd *cobra.Command, args []string) {
 	} else if len(args) > 1 {
 		RunQueue(args)
 	} else {
-		util.Log.ErrAndExit("No input files")
+		log.Log.ErrAndExit("No input files")
 	}
 }

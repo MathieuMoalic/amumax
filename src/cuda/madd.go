@@ -2,7 +2,7 @@ package cuda
 
 import (
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // multiply: dst[i] = a[i] * b[i]
@@ -10,7 +10,7 @@ import (
 func Mul(dst, a, b *data.Slice) {
 	N := dst.Len()
 	nComp := dst.NComp()
-	// util.Assert(a.Len() == N && a.NComp() == nComp && b.Len() == N && b.NComp() == nComp)
+	// log.Assert(a.Len() == N && a.NComp() == nComp && b.Len() == N && b.NComp() == nComp)
 	cfg := make1DConf(N)
 	for c := 0; c < nComp; c++ {
 		k_mul_async(dst.DevPtr(c), a.DevPtr(c), b.DevPtr(c), N, cfg)
@@ -22,7 +22,7 @@ func Mul(dst, a, b *data.Slice) {
 func Div(dst, a, b *data.Slice) {
 	N := dst.Len()
 	nComp := dst.NComp()
-	util.Assert(a.Len() == N && a.NComp() == nComp && b.Len() == N && b.NComp() == nComp)
+	log.Assert(a.Len() == N && a.NComp() == nComp && b.Len() == N && b.NComp() == nComp)
 	cfg := make1DConf(N)
 	for c := 0; c < nComp; c++ {
 		k_pointwise_div_async(dst.DevPtr(c), a.DevPtr(c), b.DevPtr(c), N, cfg)
@@ -38,8 +38,8 @@ func Add(dst, src1, src2 *data.Slice) {
 func Madd2(dst, src1, src2 *data.Slice, factor1, factor2 float32) {
 	N := dst.Len()
 	nComp := dst.NComp()
-	util.Assert(src1.Len() == N && src2.Len() == N)
-	util.Assert(src1.NComp() == nComp && src2.NComp() == nComp)
+	log.Assert(src1.Len() == N && src2.Len() == N)
+	log.Assert(src1.NComp() == nComp && src2.NComp() == nComp)
 	cfg := make1DConf(N)
 	for c := 0; c < nComp; c++ {
 		k_madd2_async(dst.DevPtr(c), src1.DevPtr(c), factor1,
@@ -51,8 +51,8 @@ func Madd2(dst, src1, src2 *data.Slice, factor1, factor2 float32) {
 func Madd3(dst, src1, src2, src3 *data.Slice, factor1, factor2, factor3 float32) {
 	N := dst.Len()
 	nComp := dst.NComp()
-	util.Assert(src1.Len() == N && src2.Len() == N && src3.Len() == N)
-	util.Assert(src1.NComp() == nComp && src2.NComp() == nComp && src3.NComp() == nComp)
+	log.Assert(src1.Len() == N && src2.Len() == N && src3.Len() == N)
+	log.Assert(src1.NComp() == nComp && src2.NComp() == nComp && src3.NComp() == nComp)
 	cfg := make1DConf(N)
 	for c := 0; c < nComp; c++ {
 		k_madd3_async(dst.DevPtr(c), src1.DevPtr(c), factor1,
@@ -64,8 +64,8 @@ func Madd3(dst, src1, src2, src3 *data.Slice, factor1, factor2, factor3 float32)
 func Madd4(dst, src1, src2, src3, src4 *data.Slice, factor1, factor2, factor3, factor4 float32) {
 	N := dst.Len()
 	nComp := dst.NComp()
-	util.Assert(src1.Len() == N && src2.Len() == N && src3.Len() == N && src4.Len() == N)
-	util.Assert(src1.NComp() == nComp && src2.NComp() == nComp && src3.NComp() == nComp && src4.NComp() == nComp)
+	log.Assert(src1.Len() == N && src2.Len() == N && src3.Len() == N && src4.Len() == N)
+	log.Assert(src1.NComp() == nComp && src2.NComp() == nComp && src3.NComp() == nComp && src4.NComp() == nComp)
 	cfg := make1DConf(N)
 	for c := 0; c < nComp; c++ {
 		k_madd4_async(dst.DevPtr(c),
@@ -80,8 +80,8 @@ func Madd4(dst, src1, src2, src3, src4 *data.Slice, factor1, factor2, factor3, f
 func Madd5(dst, src1, src2, src3, src4, src5 *data.Slice, factor1, factor2, factor3, factor4, factor5 float32) {
 	N := dst.Len()
 	nComp := dst.NComp()
-	util.Assert(src1.Len() == N && src2.Len() == N && src3.Len() == N && src4.Len() == N && src5.Len() == N)
-	util.Assert(src1.NComp() == nComp && src2.NComp() == nComp && src3.NComp() == nComp && src4.NComp() == nComp && src5.NComp() == nComp)
+	log.Assert(src1.Len() == N && src2.Len() == N && src3.Len() == N && src4.Len() == N && src5.Len() == N)
+	log.Assert(src1.NComp() == nComp && src2.NComp() == nComp && src3.NComp() == nComp && src4.NComp() == nComp && src5.NComp() == nComp)
 	cfg := make1DConf(N)
 	for c := 0; c < nComp; c++ {
 		k_madd5_async(dst.DevPtr(c),
@@ -97,8 +97,8 @@ func Madd5(dst, src1, src2, src3, src4, src5 *data.Slice, factor1, factor2, fact
 func Madd6(dst, src1, src2, src3, src4, src5, src6 *data.Slice, factor1, factor2, factor3, factor4, factor5, factor6 float32) {
 	N := dst.Len()
 	nComp := dst.NComp()
-	util.Assert(src1.Len() == N && src2.Len() == N && src3.Len() == N && src4.Len() == N && src5.Len() == N && src6.Len() == N)
-	util.Assert(src1.NComp() == nComp && src2.NComp() == nComp && src3.NComp() == nComp && src4.NComp() == nComp && src5.NComp() == nComp && src6.NComp() == nComp)
+	log.Assert(src1.Len() == N && src2.Len() == N && src3.Len() == N && src4.Len() == N && src5.Len() == N && src6.Len() == N)
+	log.Assert(src1.NComp() == nComp && src2.NComp() == nComp && src3.NComp() == nComp && src4.NComp() == nComp && src5.NComp() == nComp && src6.NComp() == nComp)
 	cfg := make1DConf(N)
 	for c := 0; c < nComp; c++ {
 		k_madd6_async(dst.DevPtr(c),
@@ -115,8 +115,8 @@ func Madd6(dst, src1, src2, src3, src4, src5, src6 *data.Slice, factor1, factor2
 func Madd7(dst, src1, src2, src3, src4, src5, src6, src7 *data.Slice, factor1, factor2, factor3, factor4, factor5, factor6, factor7 float32) {
 	N := dst.Len()
 	nComp := dst.NComp()
-	util.Assert(src1.Len() == N && src2.Len() == N && src3.Len() == N && src4.Len() == N && src5.Len() == N && src6.Len() == N && src7.Len() == N)
-	util.Assert(src1.NComp() == nComp && src2.NComp() == nComp && src3.NComp() == nComp && src4.NComp() == nComp && src5.NComp() == nComp && src6.NComp() == nComp && src7.NComp() == nComp)
+	log.Assert(src1.Len() == N && src2.Len() == N && src3.Len() == N && src4.Len() == N && src5.Len() == N && src6.Len() == N && src7.Len() == N)
+	log.Assert(src1.NComp() == nComp && src2.NComp() == nComp && src3.NComp() == nComp && src4.NComp() == nComp && src5.NComp() == nComp && src6.NComp() == nComp && src7.NComp() == nComp)
 	cfg := make1DConf(N)
 	for c := 0; c < nComp; c++ {
 		k_madd7_async(dst.DevPtr(c),

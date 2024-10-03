@@ -4,12 +4,12 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // dst += LUT[region], for vectors. Used to add terms to excitation.
 func RegionAddV(dst *data.Slice, lut LUTPtrs, regions *Bytes) {
-	util.Argument(dst.NComp() == 3)
+	log.AssertArgument(dst.NComp() == 3)
 	N := dst.Len()
 	cfg := make1DConf(N)
 	k_regionaddv_async(dst.DevPtr(X), dst.DevPtr(Y), dst.DevPtr(Z),
@@ -18,7 +18,7 @@ func RegionAddV(dst *data.Slice, lut LUTPtrs, regions *Bytes) {
 
 // dst += LUT[region], for scalar. Used to add terms to scalar excitation.
 func RegionAddS(dst *data.Slice, lut LUTPtr, regions *Bytes) {
-	util.Argument(dst.NComp() == 1)
+	log.AssertArgument(dst.NComp() == 1)
 	N := dst.Len()
 	cfg := make1DConf(N)
 	k_regionadds_async(dst.DevPtr(0), unsafe.Pointer(lut), regions.Ptr, N, cfg)
@@ -33,7 +33,7 @@ func RegionDecode(dst *data.Slice, lut LUTPtr, regions *Bytes) {
 
 // select the part of src within the specified region, set 0's everywhere else.
 func RegionSelect(dst, src *data.Slice, regions *Bytes, region byte) {
-	util.Argument(dst.NComp() == src.NComp())
+	log.AssertArgument(dst.NComp() == src.NComp())
 	N := dst.Len()
 	cfg := make1DConf(N)
 

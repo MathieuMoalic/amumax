@@ -8,8 +8,8 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag"
-	"github.com/MathieuMoalic/amumax/src/util"
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
@@ -80,7 +80,7 @@ func SetSolver(typ int) {
 	}
 	switch typ {
 	default:
-		util.Log.ErrAndExit("SetSolver: unknown solver type:  %v", typ)
+		log.Log.ErrAndExit("SetSolver: unknown solver type:  %v", typ)
 	case BACKWARD_EULER:
 		stepper = new(BackwardEuler)
 	case EULER:
@@ -130,7 +130,7 @@ func adaptDt(corr float64) {
 		corr = 1
 	}
 
-	util.AssertMsg(corr != 0, "Time step too small, check if parameters are sensible")
+	log.AssertMsg(corr != 0, "Time step too small, check if parameters are sensible")
 	corr *= Headroom
 	if corr > 2 {
 		corr = 2
@@ -146,7 +146,7 @@ func adaptDt(corr float64) {
 		Dt_si = MaxDt
 	}
 	if Dt_si == 0 {
-		util.Log.ErrAndExit("time step too small")
+		log.Log.ErrAndExit("time step too small")
 	}
 
 	// do not cross alarm time
@@ -154,7 +154,7 @@ func adaptDt(corr float64) {
 		Dt_si = alarm - Time
 	}
 
-	util.AssertMsg(Dt_si > 0, fmt.Sprint("Time step too small: ", Dt_si))
+	log.AssertMsg(Dt_si > 0, fmt.Sprint("Time step too small: ", Dt_si))
 }
 
 // Run the simulation for a number of seconds.
@@ -261,10 +261,10 @@ func InjectAndWait(task func()) {
 
 func SanityCheck() {
 	if Msat.isZero() {
-		util.Log.Info("Note: Msat = 0")
+		log.Log.Info("Note: Msat = 0")
 	}
 	if Aex.isZero() {
-		util.Log.Info("Note: Aex = 0")
+		log.Log.Info("Note: Aex = 0")
 	}
 }
 
@@ -284,15 +284,15 @@ func checkExchangeLenght() {
 		lex := math.Sqrt(2 * Aex_r / (mag.Mu0 * Msat_r * Msat_r))
 		if !exchangeLenghtWarned {
 			if Dx > lex {
-				util.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dx (%.3g nm) in region %d", lex*1e9, Dx*1e9, region)
+				log.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dx (%.3g nm) in region %d", lex*1e9, Dx*1e9, region)
 				exchangeLenghtWarned = true
 			}
 			if Dy > lex {
-				util.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dy (%.3g nm) in region %d", lex*1e9, Dy*1e9, region)
+				log.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dy (%.3g nm) in region %d", lex*1e9, Dy*1e9, region)
 				exchangeLenghtWarned = true
 			}
 			if Dz > lex && Nz > 1 {
-				util.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dz (%.3g nm) in region %d", lex*1e9, Dz*1e9, region)
+				log.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dz (%.3g nm) in region %d", lex*1e9, Dz*1e9, region)
 				exchangeLenghtWarned = true
 			}
 		}

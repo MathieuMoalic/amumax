@@ -7,8 +7,8 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/script"
-	"github.com/MathieuMoalic/amumax/src/util"
 )
 
 // An excitation, typically field or current,
@@ -35,7 +35,7 @@ func NewExcitation(name, unit, desc string) *Excitation {
 
 func (p *Excitation) MSlice() cuda.MSlice {
 	buf, r := p.Slice()
-	util.Assert(r)
+	log.Assert(r)
 	return cuda.ToMSlice(buf)
 }
 
@@ -72,7 +72,7 @@ func (e *Excitation) RemoveExtraTerms() {
 		return
 	}
 
-	// util.Log.Comment("REMOVING EXTRA TERMS FROM", e.Name())
+	// log.Log.Comment("REMOVING EXTRA TERMS FROM", e.Name())
 	for _, m := range e.extraTerms {
 		m.mask.Free()
 	}
@@ -141,7 +141,7 @@ func checkNaN(s *data.Slice, name string) {
 	for _, h := range h {
 		for _, v := range h {
 			if math.IsNaN(float64(v)) || math.IsInf(float64(v), 0) {
-				util.Log.ErrAndExit("NaN or Inf in %v", name)
+				log.Log.ErrAndExit("NaN or Inf in %v", name)
 			}
 		}
 	}

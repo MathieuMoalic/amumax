@@ -2,7 +2,7 @@ package cuda
 
 import (
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Crop stores in dst a rectangle cropped from src at given offset position.
@@ -10,8 +10,8 @@ import (
 func Crop(dst, src *data.Slice, offX, offY, offZ int) {
 	D := dst.Size()
 	S := src.Size()
-	util.Argument(dst.NComp() == src.NComp())
-	util.Argument(D[X]+offX <= S[X] && D[Y]+offY <= S[Y] && D[Z]+offZ <= S[Z])
+	log.AssertArgument(dst.NComp() == src.NComp())
+	log.AssertArgument(D[X]+offX <= S[X] && D[Y]+offY <= S[Y] && D[Z]+offZ <= S[Z])
 
 	cfg := make3DConf(D)
 

@@ -236,8 +236,8 @@ func TestFormatError(t *testing.T) {
 
 	// Parse template
 	err := template(templatePath)
-	if err != nil {
-		t.Fatalf("Error processing template: %v", err)
+	if err.Error() != `error finding expressions: only the %f format is allowed: %d` {
+		t.Fatalf("Expected error: %v", err)
 	}
 	// check if no file is generated
 	_, err = os.ReadFile("test_output/1.mx3")

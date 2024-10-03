@@ -6,15 +6,15 @@ import (
 )
 
 // Colormap for 3D vector data.
-func HSLMap(x, y, z float32) color.RGBA {
+func hslmap(x, y, z float32) color.RGBA {
 	s := sqrtf(x*x + y*y + z*z)
 	l := 0.5*z + 0.5
 	h := float32(math.Atan2(float64(y), float64(x)))
-	return HSLtoRGB(h, s, l)
+	return hls2rgb(h, s, l)
 }
 
 // h = 0..2pi, s=0..1, l=0..1
-func HSLtoRGB(h, s, l float32) color.RGBA {
+func hls2rgb(h, s, l float32) color.RGBA {
 	if s > 1 {
 		s = 1
 	}

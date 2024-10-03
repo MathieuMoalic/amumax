@@ -7,7 +7,7 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/httpfs"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 func init() {
@@ -177,7 +177,7 @@ func ZRange(a, b float64) Shape {
 func Layers(a, b int) Shape {
 	Nz := GetMesh().Size()[Z]
 	if a < 0 || a > Nz || b < 0 || b < a {
-		util.Log.ErrAndExit("layers %d:%d out of bounds (0 - %d)", a, b, Nz)
+		log.Log.ErrAndExit("layers %d:%d out of bounds (0 - %d)", a, b, Nz)
 	}
 	c := GetMesh().CellSize()[Z]
 	z1 := Index2Coord(0, 0, a)[Z] - c/2

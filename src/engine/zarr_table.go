@@ -7,8 +7,8 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/script"
-	"github.com/MathieuMoalic/amumax/src/util"
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
@@ -67,7 +67,7 @@ func (ts *TableStruct) WriteToBuffer() {
 func (ts *TableStruct) Flush() {
 	for i := range ts.Columns {
 		_, err := ts.Columns[i].io.Write(ts.Columns[i].buffer)
-		util.Log.PanicIfError(err)
+		log.Log.PanicIfError(err)
 		ts.Columns[i].buffer = []byte{}
 		// saving .zarray before the data might help resolve some unsync
 		// errors when the simulation is running and the user loads data
@@ -100,20 +100,20 @@ func (ts *TableStruct) Exists(q Quantity, name string) bool {
 
 func (ts *TableStruct) AddColumn(name, unit string) {
 	err := httpfs.Mkdir(OD() + "table/" + name)
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	f, err := httpfs.Create(OD() + "table/" + name + "/0")
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	ts.Columns = append(ts.Columns, Column{Name: name, Unit: unit, buffer: []byte{}, io: f})
 }
 
 func TableInit() {
 	err := httpfs.Remove(OD() + "table")
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	zarr.MakeZgroup("table", OD(), &zGroups)
 	err = httpfs.Mkdir(OD() + "table/t")
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	f, err := httpfs.Create(OD() + "table/t/0")
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	Table.Columns = append(Table.Columns, Column{"t", "s", []byte{}, f})
 	TableAdd(&M)
 	go TablesAutoFlush()
@@ -142,14 +142,14 @@ func TableAdd(q Quantity) {
 func TableAddAs(q Quantity, name string) {
 	suffixes := []string{"x", "y", "z"}
 	if Table.Step != -1 {
-		util.Log.Warn("You cannot add a new quantity to the table after the simulation has started. Ignoring.")
+		log.Log.Warn("You cannot add a new quantity to the table after the simulation has started. Ignoring.")
 	}
 	if len(Table.Columns) == 0 {
 		TableInit()
 	}
 
 	if Table.Exists(q, name) {
-		util.Log.Warn("%s is already in the table. Ignoring.", name)
+		log.Log.Warn("%s is already in the table. Ignoring.", name)
 		return
 	}
 	Table.quantities = append(Table.quantities, q)

@@ -6,7 +6,7 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Output size of R2C FFT with given logic size, expressed in floats.
@@ -24,8 +24,8 @@ func prod(size [3]int) int {
 // and scale the kernel to compensate for unnormalized FFTs.
 // scale = 1/N, with N the FFT logical size.
 func scaleRealParts(dst, src *data.Slice, scale float32) {
-	util.Argument(2*dst.Len() == src.Len())
-	util.Argument(dst.NComp() == 1 && src.NComp() == 1)
+	log.AssertArgument(2*dst.Len() == src.Len())
+	log.AssertArgument(dst.NComp() == 1 && src.NComp() == 1)
 
 	srcList := src.Host()[0]
 	dstList := dst.Host()[0]
@@ -44,7 +44,7 @@ func scaleRealParts(dst, src *data.Slice, scale float32) {
 	// ...however, we check that the imaginary parts are nearly zero,
 	// just to be sure we did not make a mistake during kernel creation.
 	if maximg > FFT_IMAG_TOLERANCE {
-		util.Log.ErrAndExit("FFT kernel imaginary part: %v\n", maximg)
+		log.Log.ErrAndExit("FFT kernel imaginary part: %v\n", maximg)
 	}
 }
 

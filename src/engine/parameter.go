@@ -13,8 +13,8 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/script"
-	"github.com/MathieuMoalic/amumax/src/util"
 )
 
 func init() {
@@ -88,7 +88,7 @@ func (p *regionwise) MSlice() cuda.MSlice {
 		return cuda.MakeMSlice(data.NilSlice(p.NComp(), GetMesh().Size()), p.getRegion(0))
 	} else {
 		buf, r := p.Slice()
-		util.Assert(r)
+		log.Assert(r)
 		return cuda.ToMSlice(buf)
 	}
 }
@@ -150,8 +150,8 @@ func (p *regionwise) setUniform(v []float64) {
 
 // set in regions r1..r2(excl)
 func (p *regionwise) setRegions(r1, r2 int, v []float64) {
-	util.Argument(len(v) == len(p.cpu_buf))
-	util.Argument(r1 < r2) // exclusive upper bound
+	log.AssertArgument(len(v) == len(p.cpu_buf))
+	log.AssertArgument(r1 < r2) // exclusive upper bound
 	for r := r1; r < r2; r++ {
 		p.upd_reg[r] = nil
 		p.bufset_(r, v)
@@ -166,7 +166,7 @@ func (p *regionwise) bufset_(region int, v []float64) {
 }
 
 func (p *regionwise) setFunc(r1, r2 int, f func() []float64) {
-	util.Argument(r1 < r2) // exclusive upper bound
+	log.AssertArgument(r1 < r2) // exclusive upper bound
 	for r := r1; r < r2; r++ {
 		p.upd_reg[r] = f
 	}

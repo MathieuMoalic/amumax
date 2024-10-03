@@ -1,7 +1,7 @@
 package data
 
 import (
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Resample returns a slice of new size N,
@@ -54,7 +54,7 @@ func Downsample(In [][][][]float32, N [3]int) [][][][]float32 {
 	scalex := Sx / Dx
 	scaley := Sy / Dy
 	scalez := Sz / Dz
-	util.Assert(scalex > 0 && scaley > 0)
+	log.Assert(scalex > 0 && scaley > 0)
 
 	for c := range Out {
 

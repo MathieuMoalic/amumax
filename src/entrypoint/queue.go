@@ -13,7 +13,7 @@ import (
 	"sync/atomic"
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 var (
@@ -121,7 +121,7 @@ func run(inFile string, gpu int) {
 
 func initGPUs(nGpu int) chan int {
 	if nGpu == 0 {
-		util.Log.ErrAndExit("no GPUs available")
+		log.Log.ErrAndExit("no GPUs available")
 	}
 	idle := make(chan int, nGpu)
 	for i := 0; i < nGpu; i++ {
@@ -203,7 +203,7 @@ func (s *stateTab) RenderHTML(w io.Writer) {
 func (s *stateTab) ListenAndServe(addr string) {
 	http.Handle("/", s)
 	go func() {
-		util.Log.PanicIfError(http.ListenAndServe(addr, nil))
+		log.Log.PanicIfError(http.ListenAndServe(addr, nil))
 	}()
 }
 

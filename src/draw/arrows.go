@@ -10,7 +10,7 @@ import (
 )
 
 func drawArrows(img *image.RGBA, arr [3][][][]float32, sub int) {
-	c := NewCanvas(img)
+	c := newCanvas(img)
 
 	Na := data.SizeOf(arr[0]) // number of arrows
 	h := Na[Y]                // orignal image height
@@ -44,7 +44,7 @@ type Canvas struct {
 }
 
 // Make a new canvas of size w x h.
-func NewCanvas(img *image.RGBA) *Canvas {
+func newCanvas(img *image.RGBA) *Canvas {
 	c := new(Canvas)
 	c.RGBA = img
 	c.RGBAPainter = raster.NewRGBAPainter(c.RGBA)

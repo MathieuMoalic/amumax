@@ -1,10 +1,11 @@
 package engine
 
 import (
+	"math"
+
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
-	"math"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 type RK45DP struct {
@@ -110,8 +111,8 @@ func (rk *RK45DP) Step() {
 		data.Copy(rk.k1, k7) // FSAL
 	} else {
 		// undo bad step
-		//util.Println("Bad step at t=", t0, ", err=", err)
-		util.Assert(FixDt == 0)
+		//log.Println("Bad step at t=", t0, ", err=", err)
+		log.Assert(FixDt == 0)
 		Time = t0
 		data.Copy(m, m0)
 		NUndone++
