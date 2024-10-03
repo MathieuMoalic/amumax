@@ -58,7 +58,7 @@
         buildInputs = basepkgs ++ [pkgs.addDriverRunpath];
 
         buildPhase = ''
-          cp -r ${frontend} api/static
+          cp -r ${frontend} src/api/static
           go build -v -o $out/bin/amumax -ldflags '-s -w -X github.com/MathieuMoalic/amumax/engine.VERSION=${version}' .
         '';
 
@@ -74,14 +74,14 @@
 
     GitFrontend = buildFrontend {
       src = ./frontend;
-      npmDepsHash = "sha256-bLImLy3SU9DfyzY+mdZr+cTP4NLHcz957G+ZLLA0/6I=";
+      npmDepsHash = "sha256-NNr/4Py+YlXK+fYDidYlygyHSuVg4dy2nYRGefX4MwA=";
       version = gitVersion;
     };
 
     GitBuildAmumax = buildAmumax {
       src = ./.;
       frontend = GitFrontend;
-      vendorHash = "sha256-c3se+OjvhF+femBirB7YhudV/MYLjWVg3xow9z53KjI=";
+      vendorHash = "sha256-nCjAc54HKOeHlus9scYSq9OMnnsbsijLM/9wm5RGkTw=";
       version = gitVersion;
     };
 
