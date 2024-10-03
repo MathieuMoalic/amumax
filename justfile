@@ -30,11 +30,30 @@ update-flake-hashes VERSION:
 	NPM_HASH=$(prefetch-npm-deps frontend/package-lock.json)
 	sed -i "/# npm hash/ s|npmDepsHash = \".*\";|npmDepsHash = \"$NPM_HASH\";|" flake2.nix
 
-release: image build-cuda build-frontend build
+pre-commit:
 	#!/usr/bin/env sh
+	if git diff --cached --name-only | grep -q -e "frontend/package-lock.json" -e "go.sum"; then
+		# Check if flake.nix is also staged for commit
+		if ! git diff --cached --name-only | grep -q "flake.nix"; then
+			echo "Error: lock files have changed, but flake.nix is not updated."
+			echo "Please update flake.nix accordingly."
+			exit 1  # Block the commit
+		fi
+	fi
+	# If the check passes, allow the commit
+	exit 0
+
+test:
+	go test ./src/...
+	
+release: 
+	#!/usr/bin/env sh
+	just test
 	VERSION=$(date -u +'%Y.%m.%d')
 	just update-flake $VERSION
 	git add flake.nix flake.lock
+	just image build-cuda build-frontend build
+	just pre-commit
 	git commit -m "Release of ${VERSION}"
 	git push
 	gh release create $VERSION ./build/* --title $VERSION --notes "Release of ${VERSION}"
