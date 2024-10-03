@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/vmihailenco/msgpack/v5"
@@ -33,7 +33,7 @@ type connectionManager struct {
 }
 
 func (cm *connectionManager) add(ws *websocket.Conn) {
-	util.Log.Debug("Websocket connection added")
+	log.Log.Debug("Websocket connection added")
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	cm.conns[ws] = struct{}{}
@@ -41,7 +41,7 @@ func (cm *connectionManager) add(ws *websocket.Conn) {
 }
 
 func (cm *connectionManager) remove(ws *websocket.Conn) {
-	util.Log.Debug("Websocket connection removed")
+	log.Log.Debug("Websocket connection removed")
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	delete(cm.conns, ws)
@@ -53,7 +53,7 @@ func (cm *connectionManager) broadcast(msg []byte) {
 	for ws := range cm.conns {
 		err := ws.WriteMessage(websocket.BinaryMessage, msg)
 		if err != nil {
-			util.Log.Err("Error sending message via WebSocket: %v", err)
+			log.Log.Err("Error sending message via WebSocket: %v", err)
 			ws.Close()
 			delete(cm.conns, ws)
 		}
@@ -61,11 +61,11 @@ func (cm *connectionManager) broadcast(msg []byte) {
 }
 
 func websocketEntrypoint(c echo.Context) error {
-	util.Log.Debug("New WebSocket connection, upgrading...")
+	log.Log.Debug("New WebSocket connection, upgrading...")
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
-	util.Log.Debug("New WebSocket connection upgraded")
+	log.Log.Debug("New WebSocket connection upgraded")
 	if err != nil {
-		util.Log.Err("Error upgrading connection to WebSocket: %v", err)
+		log.Log.Err("Error upgrading connection to WebSocket: %v", err)
 		return err
 	}
 	defer ws.Close()
@@ -89,7 +89,7 @@ func websocketEntrypoint(c echo.Context) error {
 
 	select {
 	case <-done:
-		util.Log.Debug("Connection closed by client")
+		log.Log.Debug("Connection closed by client")
 		return nil
 	case <-broadcastStop:
 		return nil
@@ -99,7 +99,7 @@ func websocketEntrypoint(c echo.Context) error {
 func broadcastEngineState() {
 	msg, err := msgpack.Marshal(NewEngineState())
 	if err != nil {
-		util.Log.Err("Error marshaling combined message: %v", err)
+		log.Log.Err("Error marshaling combined message: %v", err)
 		return
 	}
 

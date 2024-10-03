@@ -15,9 +15,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/script"
 	"github.com/MathieuMoalic/amumax/src/timer"
-	"github.com/MathieuMoalic/amumax/src/util"
 )
 
 var VERSION = "dev"
@@ -49,12 +49,12 @@ func CleanExit() {
 		return
 	}
 	drainOutput()
-	util.Log.Info("**************** Simulation Ended ****************** //")
+	log.Log.Info("**************** Simulation Ended ****************** //")
 	Table.Flush()
 	if SyncAndLog {
 		timer.Print(os.Stdout)
 	}
 	script.MMetadata.Add("steps", NSteps)
 	script.MMetadata.End()
-	util.Log.FlushToFile()
+	log.Log.FlushToFile()
 }

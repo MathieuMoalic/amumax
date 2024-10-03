@@ -5,7 +5,7 @@ package engine
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 var (
@@ -76,7 +76,7 @@ func GetMagnetoelasticForceDensity(dst *data.Slice) {
 		return
 	}
 
-	util.AssertMsg(B1.IsUniform() && B2.IsUniform(), "Magnetoelastic: B1, B2 must be uniform")
+	log.AssertMsg(B1.IsUniform() && B2.IsUniform(), "Magnetoelastic: B1, B2 must be uniform")
 
 	b1 := B1.MSlice()
 	defer b1.Recycle()

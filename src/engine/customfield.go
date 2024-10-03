@@ -7,7 +7,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 var (
@@ -143,7 +143,7 @@ type mulmv struct {
 // MulMV returns a new Quantity that evaluates to the
 // matrix-vector product (Ax·b, Ay·b, Az·b).
 func MulMV(Ax, Ay, Az, b Quantity) Quantity {
-	util.Argument(Ax.NComp() == 3 &&
+	log.AssertArgument(Ax.NComp() == 3 &&
 		Ay.NComp() == 3 &&
 		Az.NComp() == 3 &&
 		b.NComp() == 3)
@@ -151,7 +151,7 @@ func MulMV(Ax, Ay, Az, b Quantity) Quantity {
 }
 
 func (q *mulmv) EvalTo(dst *data.Slice) {
-	util.Argument(dst.NComp() == 3)
+	log.AssertArgument(dst.NComp() == 3)
 	cuda.Zero(dst)
 	b := ValueOf(q.b)
 	defer cuda.Recycle(b)
@@ -293,8 +293,8 @@ func mulNN(dst, a, b *data.Slice) {
 // mul1N pointwise multiplies a scalar (1-component) with an N-component vector,
 // yielding an N-component vector stored in dst.
 func mul1N(dst, a, b *data.Slice) {
-	util.Assert(a.NComp() == 1)
-	util.Assert(dst.NComp() == b.NComp())
+	log.Assert(a.NComp() == 1)
+	log.Assert(dst.NComp() == b.NComp())
 	for c := 0; c < dst.NComp(); c++ {
 		cuda.Mul(dst.Comp(c), a, b.Comp(c))
 	}
@@ -340,8 +340,8 @@ func divNN(dst, a, b *data.Slice) {
 }
 
 func divN1(dst, a, b *data.Slice) {
-	util.Assert(dst.NComp() == a.NComp())
-	util.Assert(b.NComp() == 1)
+	log.Assert(dst.NComp() == a.NComp())
+	log.Assert(b.NComp() == 1)
 	for c := 0; c < dst.NComp(); c++ {
 		cuda.Div(dst.Comp(c), a.Comp(c), b)
 	}
@@ -355,7 +355,7 @@ type shifted struct {
 // Shifted returns a new Quantity that evaluates to
 // the original, shifted over dx, dy, dz cells.
 func Shifted(q Quantity, dx, dy, dz int) Quantity {
-	util.Assert(dx != 0 || dy != 0 || dz != 0)
+	log.Assert(dx != 0 || dy != 0 || dz != 0)
 	return &shifted{q, dx, dy, dz}
 }
 
@@ -448,7 +448,7 @@ func (q *normalized) NComp() int {
 }
 
 func (q *normalized) EvalTo(dst *data.Slice) {
-	util.Assert(dst.NComp() == q.NComp())
+	log.Assert(dst.NComp() == q.NComp())
 	q.orig.EvalTo(dst)
 	cuda.Normalize(dst, nil)
 }

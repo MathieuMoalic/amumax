@@ -1,9 +1,10 @@
 package engine
 
 import (
-	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/util"
 	"math"
+
+	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Adaptive Heun solver.
@@ -20,7 +21,7 @@ func (*Heun) Step() {
 	}
 
 	dt := float32(Dt_si * GammaLL)
-	util.Assert(dt > 0)
+	log.Assert(dt > 0)
 
 	// stage 1
 	torqueFn(dy0)
@@ -45,7 +46,7 @@ func (*Heun) Step() {
 		setMaxTorque(dy)
 	} else {
 		// undo bad step
-		util.Assert(FixDt == 0)
+		log.Assert(FixDt == 0)
 		Time -= Dt_si
 		cuda.Madd2(y, y, dy0, 1, -dt)
 		NUndone++

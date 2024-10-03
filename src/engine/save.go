@@ -10,8 +10,8 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/draw"
 	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/oommf"
-	"github.com/MathieuMoalic/amumax/src/util"
 )
 
 func init() {
@@ -102,19 +102,19 @@ func SnapshotAs(q Quantity, fname string) {
 // synchronous snapshot
 func snapshot_sync(fname string, output *data.Slice) {
 	f, err := httpfs.Create(fname)
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	defer f.Close()
 	arrowSize := 16
 	err = draw.RenderFormat(f, output, "auto", "auto", arrowSize, path.Ext(fname))
 	if err != nil {
-		util.Log.Warn("Error while rendering snapshot: %v", err)
+		log.Log.Warn("Error while rendering snapshot: %v", err)
 	}
 }
 
 // synchronous save
 func saveAs_sync(fname string, s *data.Slice, info data.Meta, format OutputFormat) {
 	f, err := httpfs.Create(fname)
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	defer f.Close()
 
 	switch format {

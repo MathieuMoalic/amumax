@@ -5,16 +5,16 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 func sOneRegion(q Quantity, r int) *sOneReg {
-	util.Argument(q.NComp() == 1)
+	log.AssertArgument(q.NComp() == 1)
 	return &sOneReg{oneReg{q, r}}
 }
 
 func vOneRegion(q Quantity, r int) *vOneReg {
-	util.Argument(q.NComp() == 3)
+	log.AssertArgument(q.NComp() == 3)
 	return &vOneReg{oneReg{q, r}}
 }
 

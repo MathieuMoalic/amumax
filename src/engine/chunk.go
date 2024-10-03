@@ -3,7 +3,7 @@ package engine
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 func init() {
@@ -46,11 +46,11 @@ func NewChunks(q Quantity, c RequestedChunking) Chunks {
 func NewChunk(length, nb_of_chunks, N_index int) Chunk {
 	name := []string{"Nx", "Ny", "Nz", "comp"}[N_index]
 	if nb_of_chunks < 1 || (nb_of_chunks > length) {
-		util.Log.ErrAndExit("Error: The number of chunks must be between 1 and %v", name)
+		log.Log.ErrAndExit("Error: The number of chunks must be between 1 and %v", name)
 	}
 	new_nb_of_chunks := closestDivisor(length, nb_of_chunks)
 	if new_nb_of_chunks != nb_of_chunks {
-		util.Log.Info("Warning: The number of chunks for %v has been automatically resized from %v to %v", name, nb_of_chunks, new_nb_of_chunks)
+		log.Log.Info("Warning: The number of chunks for %v has been automatically resized from %v to %v", name, nb_of_chunks, new_nb_of_chunks)
 	}
 	nb_of_chunks = new_nb_of_chunks
 	return Chunk{length / nb_of_chunks, nb_of_chunks}

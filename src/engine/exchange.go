@@ -10,7 +10,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 var (
@@ -61,7 +61,7 @@ func AddExchangeField(dst *data.Slice) {
 		cuda.AddDMIBulk(dst, M.Buffer(), lex2.Gpu(), dbulk2.Gpu(), ms, Regions.Gpu(), M.Mesh(), OpenBC) // dmi+exchange
 		// TODO: add ScaleInterDbulk and InterDbulk
 	case inter && bulk:
-		util.Log.ErrAndExit("Cannot have interfacial-induced DMI and bulk DMI at the same time")
+		log.Log.ErrAndExit("Cannot have interfacial-induced DMI and bulk DMI at the same time")
 	}
 }
 

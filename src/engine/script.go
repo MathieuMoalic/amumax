@@ -6,8 +6,8 @@ import (
 	"reflect"
 
 	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/script"
-	"github.com/MathieuMoalic/amumax/src/util"
 )
 
 func CompileFile(fname string) (*script.BlockStmt, error) {
@@ -22,7 +22,7 @@ func EvalTryRecover(code string) {
 	defer func() {
 		if err := recover(); err != nil {
 			if userErr, ok := err.(UserErr); ok {
-				util.Log.Err("%v", userErr)
+				log.Log.Err("%v", userErr)
 			} else {
 				panic(err)
 			}
@@ -34,22 +34,22 @@ func EvalTryRecover(code string) {
 func Eval(code string) {
 	tree, err := World.Compile(code)
 	if err != nil {
-		util.Log.Command(code)
-		util.Log.Err("%v", err.Error())
+		log.Log.Command(code)
+		log.Log.Err("%v", err.Error())
 		return
 	}
-	util.Log.Command(rmln(tree.Format()))
+	log.Log.Command(rmln(tree.Format()))
 	tree.Eval()
 }
 
 func Eval1Line(code string) interface{} {
 	tree, err := World.Compile(code)
 	if err != nil {
-		util.Log.Err("%v", err.Error())
+		log.Log.Err("%v", err.Error())
 		return nil
 	}
 	if len(tree.Children) != 1 {
-		util.Log.Err("expected single statement:%v", code)
+		log.Log.Err("expected single statement:%v", code)
 		return nil
 	}
 	return tree.Children[0].Eval()
@@ -114,7 +114,7 @@ type LValue interface {
 func EvalFile(code *script.BlockStmt) {
 	for i := range code.Children {
 		formatted := rmln(script.Format(code.Node[i]))
-		util.Log.Command(formatted)
+		log.Log.Command(formatted)
 		code.Children[i].Eval()
 	}
 }

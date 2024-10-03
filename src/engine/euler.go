@@ -2,7 +2,7 @@ package engine
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 type Euler struct{}
@@ -26,7 +26,7 @@ func (*Euler) Step() {
 		dt = float32(MaxErr / LastTorque)
 		Dt_si = float64(dt) / GammaLL
 	}
-	util.AssertMsg(dt > 0, "Euler solver requires fixed time step > 0")
+	log.AssertMsg(dt > 0, "Euler solver requires fixed time step > 0")
 	setLastErr(float64(dt) * LastTorque)
 
 	cuda.Madd2(y, y, dy0, 1, dt) // y = y + dt * dy

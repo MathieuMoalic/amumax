@@ -5,7 +5,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 var Regions = RegionsState{info: info{1, "regions", ""}, Indices: make(map[int]bool)} // global regions map
@@ -142,7 +142,7 @@ func (r *RegionsState) GetCell(ix, iy, iz int) int {
 
 func defRegionId(id int) {
 	if id < 0 || id > NREGION {
-		util.Log.ErrAndExit("region id should be 0 -%d, have: %d", NREGION, id)
+		log.Log.ErrAndExit("region id should be 0 -%d, have: %d", NREGION, id)
 	}
 	CreateMesh()
 	Regions.AddIndex(id)
@@ -191,7 +191,9 @@ var _ Quantity = &Regions
 // Re-interpret a contiguous array as a multi-dimensional array of given size.
 func reshapeBytes(array []byte, size [3]int) [][][]byte {
 	Nx, Ny, Nzz := size[X], size[Y], size[Z]
-	util.Argument(Nx*Ny*Nzz == len(array))
+	if Nx*Ny*Nzz != len(array) {
+		log.Log.ErrAndExit("reshapeBytes: size mismatch")
+	}
 	sliced := make([][][]byte, Nzz)
 	for i := range sliced {
 		sliced[i] = make([][]byte, Ny)

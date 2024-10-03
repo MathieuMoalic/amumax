@@ -7,7 +7,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 func WriteOVF2(out io.Writer, q *data.Slice, meta data.Meta, dataformat string) {
@@ -80,13 +80,13 @@ func writeOVF2Data(out io.Writer, q *data.Slice, dataformat string) {
 	case "text":
 		canonicalFormat = "Text"
 		hdr(out, "Begin", "Data "+canonicalFormat)
-		util.Log.PanicIfError(writeOVFText(out, q))
+		log.Log.PanicIfError(writeOVFText(out, q))
 	case "binary", "binary 4":
 		canonicalFormat = "Binary 4"
 		hdr(out, "Begin", "Data "+canonicalFormat)
 		writeOVF2DataBinary4(out, q)
 	default:
-		util.Log.ErrAndExit("Illegal OMF data format: %v. Options are: Text, Binary 4", dataformat)
+		log.Log.ErrAndExit("Illegal OMF data format: %v. Options are: Text, Binary 4", dataformat)
 	}
 	hdr(out, "End", "Data "+canonicalFormat)
 }
@@ -104,7 +104,7 @@ func writeOVF2DataBinary4(out io.Writer, array *data.Slice) {
 	var controlnumber float32 = OVF_CONTROL_NUMBER_4
 	bytes = (*[4]byte)(unsafe.Pointer(&controlnumber))[:]
 	_, err := out.Write(bytes)
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 
 	ncomp := array.NComp()
 	for iz := 0; iz < size[Z]; iz++ {
@@ -113,7 +113,7 @@ func writeOVF2DataBinary4(out io.Writer, array *data.Slice) {
 				for c := 0; c < ncomp; c++ {
 					bytes = (*[4]byte)(unsafe.Pointer(&data[c][iz][iy][ix]))[:]
 					_, err := out.Write(bytes)
-					util.Log.PanicIfError(err)
+					log.Log.PanicIfError(err)
 				}
 			}
 		}

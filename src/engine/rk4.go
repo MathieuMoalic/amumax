@@ -5,7 +5,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Classical 4th order RK solver.
@@ -69,7 +69,7 @@ func (rk *RK4) Step() {
 		setMaxTorque(k4)
 	} else {
 		// undo bad step
-		util.Assert(FixDt == 0)
+		log.Assert(FixDt == 0)
 		Time = t0
 		data.Copy(m, m0)
 		NUndone++

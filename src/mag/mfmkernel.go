@@ -5,7 +5,7 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 func MFMKernel(mesh *data.Mesh, lift, tipsize float64, cacheDir string) (kernel [3]*data.Slice) {
@@ -19,7 +19,7 @@ func CalcMFMKernel(mesh *data.Mesh, lift, tipsize float64) (kernel [3]*data.Slic
 
 	const TipCharge = 1 / Mu0 // tip charge
 	const Δ = 1e-9            // tip oscillation, take 2nd derivative over this distance
-	util.AssertMsg(lift > 0, "MFM tip crashed into sample, please lift the new one higher")
+	log.AssertMsg(lift > 0, "MFM tip crashed into sample, please lift the new one higher")
 
 	{ // Kernel mesh is 2x larger than input, instead in case of PBC
 		pbc := mesh.PBC()
@@ -37,11 +37,11 @@ func CalcMFMKernel(mesh *data.Mesh, lift, tipsize float64) (kernel [3]*data.Slic
 
 	// Sanity check
 	{
-		util.Assert(size[Z] >= 1 && size[Y] >= 2 && size[X] >= 2)
-		util.Assert(cellsize[X] > 0 && cellsize[Y] > 0 && cellsize[Z] > 0)
-		util.AssertMsg(size[X]%2 == 0 && size[Y]%2 == 0, "MFM must have even cellsize on the X and Y axis")
+		log.Assert(size[Z] >= 1 && size[Y] >= 2 && size[X] >= 2)
+		log.Assert(cellsize[X] > 0 && cellsize[Y] > 0 && cellsize[Z] > 0)
+		log.AssertMsg(size[X]%2 == 0 && size[Y]%2 == 0, "MFM must have even cellsize on the X and Y axis")
 		if size[Z] > 1 {
-			util.AssertMsg(size[Z]%2 == 0, "MFM only supports one cell thickness on the Z axis")
+			log.AssertMsg(size[Z]%2 == 0, "MFM only supports one cell thickness on the Z axis")
 		}
 	}
 

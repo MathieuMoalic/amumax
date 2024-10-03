@@ -7,7 +7,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 var (
@@ -174,10 +174,10 @@ func Minimize() {
 		maxDmReached := mini.lastDm.Max() > StopMaxDm
 		out := !(maxStepsReached || maxTimeReached || !(maxDmSamplesReached || maxDmReached))
 		if maxStepsReached {
-			util.Log.Info("Stopping `Minimize()`: Maximum time steps reached ( MinimizeMaxSteps= %v steps", MinimizeMaxSteps)
+			log.Log.Info("Stopping `Minimize()`: Maximum time steps reached ( MinimizeMaxSteps= %v steps", MinimizeMaxSteps)
 		}
 		if maxTimeReached {
-			util.Log.Info("Stopping `Minimize()`: Maximum time reached ( MinimizeMaxTimeSeconds= %vs )", MinimizeMaxTimeSeconds)
+			log.Log.Info("Stopping `Minimize()`: Maximum time reached ( MinimizeMaxTimeSeconds= %vs )", MinimizeMaxTimeSeconds)
 		}
 		return out
 	}

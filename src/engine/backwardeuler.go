@@ -3,7 +3,7 @@ package engine
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Implicit midpoint solver.
@@ -13,7 +13,7 @@ type BackwardEuler struct {
 
 // Euler method, can be used as solver.Step.
 func (s *BackwardEuler) Step() {
-	util.AssertMsg(MaxErr > 0, "Backward euler solver requires MaxErr > 0")
+	log.AssertMsg(MaxErr > 0, "Backward euler solver requires MaxErr > 0")
 
 	t0 := Time
 
@@ -32,7 +32,7 @@ func (s *BackwardEuler) Step() {
 
 	Dt_si = FixDt
 	dt := float32(Dt_si * GammaLL)
-	util.AssertMsg(dt > 0, "Backward Euler solver requires fixed time step > 0")
+	log.AssertMsg(dt > 0, "Backward Euler solver requires fixed time step > 0")
 
 	// Fist guess
 	Time = t0 + 0.5*Dt_si // 0.5 dt makes it implicit midpoint method

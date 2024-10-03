@@ -2,12 +2,12 @@ package cuda
 
 import (
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 func CrossProduct(dst, a, b *data.Slice) {
-	util.Argument(dst.NComp() == 3 && a.NComp() == 3 && b.NComp() == 3)
-	util.Argument(dst.Len() == a.Len() && dst.Len() == b.Len())
+	log.AssertArgument(dst.NComp() == 3 && a.NComp() == 3 && b.NComp() == 3)
+	log.AssertArgument(dst.Len() == a.Len() && dst.Len() == b.Len())
 
 	N := dst.Len()
 	cfg := make1DConf(N)

@@ -3,7 +3,7 @@ package cuda
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Stores the necessary state to perform FFT-accelerated convolution
@@ -33,12 +33,13 @@ func NewDemag(inputSize, PBC [3]int, kernel [3][3]*data.Slice, test bool) *Demag
 }
 
 // Calculate the demag field of m * vol * Bsat, store result in B.
-// 	m:    magnetization normalized to unit length
-// 	vol:  unitless mask used to scale m's length, may be nil
-// 	Bsat: saturation magnetization in Tesla
-// 	B:    resulting demag field, in Tesla
+//
+//	m:    magnetization normalized to unit length
+//	vol:  unitless mask used to scale m's length, may be nil
+//	Bsat: saturation magnetization in Tesla
+//	B:    resulting demag field, in Tesla
 func (c *DemagConvolution) Exec(B, m, vol *data.Slice, Msat MSlice) {
-	util.Argument(B.Size() == c.inputSize && m.Size() == c.inputSize)
+	log.AssertArgument(B.Size() == c.inputSize && m.Size() == c.inputSize)
 	if c.is2D() {
 		c.exec2D(B, m, vol, Msat)
 	} else {
@@ -134,7 +135,7 @@ func (c *DemagConvolution) init(realKern [3][3]*data.Slice) {
 
 	// logic size of FFT(kernel): store real parts only
 	c.fftKernLogicSize = fftR2COutputSizeFloats(c.realKernSize)
-	util.Assert(c.fftKernLogicSize[X]%2 == 0)
+	log.Assert(c.fftKernLogicSize[X]%2 == 0)
 	c.fftKernLogicSize[X] /= 2
 
 	// physical size of FFT(kernel): store only non-redundant part exploiting Y, Z mirror symmetry

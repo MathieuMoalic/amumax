@@ -7,7 +7,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // 3D byte slice, used for region lookup.
@@ -26,19 +26,19 @@ func NewBytes(Len int) *Bytes {
 
 // Upload src (host) to dst (gpu).
 func (dst *Bytes) Upload(src []byte) {
-	util.Argument(dst.Len == len(src))
+	log.AssertArgument(dst.Len == len(src))
 	MemCpyHtoD(dst.Ptr, unsafe.Pointer(&src[0]), int64(dst.Len))
 }
 
 // Copy on device: dst = src.
 func (dst *Bytes) Copy(src *Bytes) {
-	util.Argument(dst.Len == src.Len)
+	log.AssertArgument(dst.Len == src.Len)
 	MemCpy(dst.Ptr, src.Ptr, int64(dst.Len))
 }
 
 // Copy to host: dst = src.
 func (src *Bytes) Download(dst []byte) {
-	util.Argument(src.Len == len(dst))
+	log.AssertArgument(src.Len == len(dst))
 	MemCpyDtoH(unsafe.Pointer(&dst[0]), src.Ptr, int64(src.Len))
 }
 
@@ -46,7 +46,7 @@ func (src *Bytes) Download(dst []byte) {
 // data.Index can be used to find the index for x,y,z.
 func (dst *Bytes) Set(index int, value byte) {
 	if index < 0 || index >= dst.Len {
-		util.Log.PanicIfError(fmt.Errorf("Bytes.Set: index out of range: %d", index))
+		log.Log.PanicIfError(fmt.Errorf("Bytes.Set: index out of range: %d", index))
 	}
 	src := value
 	MemCpyHtoD(unsafe.Pointer(uintptr(dst.Ptr)+uintptr(index)), unsafe.Pointer(&src), 1)
@@ -56,7 +56,7 @@ func (dst *Bytes) Set(index int, value byte) {
 // data.Index can be used to find the index for x,y,z.
 func (src *Bytes) Get(index int) byte {
 	if index < 0 || index >= src.Len {
-		util.Log.PanicIfError(fmt.Errorf("Bytes.Set: index out of range: %v", index))
+		log.Log.PanicIfError(fmt.Errorf("Bytes.Set: index out of range: %v", index))
 	}
 	var dst byte
 	MemCpyDtoH(unsafe.Pointer(&dst), unsafe.Pointer(uintptr(src.Ptr)+uintptr(index)), 1)

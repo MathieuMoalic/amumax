@@ -6,9 +6,9 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag"
 	"github.com/MathieuMoalic/amumax/src/script"
-	"github.com/MathieuMoalic/amumax/src/util"
 )
 
 var (
@@ -79,12 +79,12 @@ func closestSevenSmooth(n int) int {
 
 func SmoothMesh() {
 	if Nx*Ny*Nz < 10000 {
-		util.Log.Info("No optimization to be made for small meshes")
+		log.Log.Info("No optimization to be made for small meshes")
 		return
 	}
-	util.Log.Info("Original mesh: ")
-	util.Log.Info("Cell size: %e, %e, %e", Dx, Dy, Dz)
-	util.Log.Info("Grid Size: %d, %d, %d", Nx, Ny, Nz)
+	log.Log.Info("Original mesh: ")
+	log.Log.Info("Cell size: %e, %e, %e", Dx, Dy, Dz)
+	log.Log.Info("Grid Size: %d, %d, %d", Nx, Ny, Nz)
 	if AutoMeshx {
 		NewNx := closestSevenSmooth(Nx)
 		Dx = Dx * float64(Nx) / float64(NewNx)
@@ -100,9 +100,9 @@ func SmoothMesh() {
 		Dz = Dz * float64(Nz) / float64(NewNz)
 		Nz = NewNz
 	}
-	util.Log.Info("Smoothed mesh: ")
-	util.Log.Info("Cell size: %e, %e, %e", Dx, Dy, Dz)
-	util.Log.Info("Grid Size: %d, %d, %d", Nx, Ny, Nz)
+	log.Log.Info("Smoothed mesh: ")
+	log.Log.Info("Cell size: %e, %e, %e", Dx, Dy, Dz)
+	log.Log.Info("Grid Size: %d, %d, %d", Nx, Ny, Nz)
 }
 
 func IsValidCellSize(cellSizeX, cellSizeY, cellSizeZ float64) bool {
@@ -119,9 +119,9 @@ func ValidateGridSize() {
 	names := []string{"Nx", "Ny", "Nz"}
 	for i, N := range []int{Nx, Ny, Nz} {
 		if N == 0.0 {
-			util.Log.ErrAndExit("Error: You have to specify  %v", names[i])
+			log.Log.ErrAndExit("Error: You have to specify  %v", names[i])
 		} else if N > max_threshold {
-			util.Log.ErrAndExit("Error: %s shouldn't be more than %d", names[i], max_threshold)
+			log.Log.ErrAndExit("Error: %s shouldn't be more than %d", names[i], max_threshold)
 		}
 	}
 }
@@ -132,11 +132,11 @@ func ValidateCellSize() {
 	names := []string{"dx", "dy", "dz"}
 	for i, d := range []float64{Dx, Dy, Dz} {
 		if d == 0.0 {
-			util.Log.ErrAndExit("Error: You have to specify  %v", names[i])
+			log.Log.ErrAndExit("Error: You have to specify  %v", names[i])
 		} else if d < min_threshold {
-			util.Log.ErrAndExit("Error: %s shouldn't be less than %f", names[i], min_threshold)
+			log.Log.ErrAndExit("Error: %s shouldn't be less than %f", names[i], min_threshold)
 		} else if d > max_threshold {
-			util.Log.ErrAndExit("Error: %s shouldn't be more than %f", names[i], max_threshold)
+			log.Log.ErrAndExit("Error: %s shouldn't be more than %f", names[i], max_threshold)
 		}
 	}
 }
@@ -147,7 +147,7 @@ func IsMeshCreated() bool {
 
 func SetTiDiNi(Ti, di *float64, Ni *int, comp string) {
 	if (*Ti != 0.0) && (*di != 0.0) && (*Ni != 0) {
-		util.Log.ErrAndExit("Error: Only 2 of [N%s,d%s,T%s] are needed to define the mesh, you can't define all 3 of them.", comp, comp, comp)
+		log.Log.ErrAndExit("Error: Only 2 of [N%s,d%s,T%s] are needed to define the mesh, you can't define all 3 of them.", comp, comp, comp)
 	} else if (*Ti != 0.0) && (*di != 0.0) {
 		*Ni = int(math.Round(*Ti / *di))
 	} else if (*Ni != 0) && (*di != 0.0) {
@@ -160,7 +160,7 @@ func SetTiDiNi(Ti, di *float64, Ni *int, comp string) {
 // check if mesh is set, otherwise, it creates it
 func CreateMesh() {
 	if !IsMeshCreated() {
-		util.Log.Info("Creating mesh")
+		log.Log.Info("Creating mesh")
 		SetBusy(true)
 		defer SetBusy(false)
 		SetTiDiNi(&Tx, &Dx, &Nx, "x")

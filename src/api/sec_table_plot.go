@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/labstack/echo/v4"
 )
 
@@ -189,7 +189,7 @@ func postTablePlotMaxPoints(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		util.Log.Err("%v", err)
+		log.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	tablePlot.MaxPoints = req.MaxPoints
@@ -204,7 +204,7 @@ func postTablePlotStep(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		util.Log.Err("%v", err)
+		log.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	if req.Step < 1 {

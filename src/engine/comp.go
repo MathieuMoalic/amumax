@@ -4,9 +4,10 @@ package engine
 
 import (
 	"fmt"
+
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 type component struct {
@@ -16,7 +17,7 @@ type component struct {
 
 // Comp returns vector component c of the parent Quantity
 func Comp(parent Quantity, c int) ScalarField {
-	util.Argument(c >= 0 && c < parent.NComp())
+	log.AssertArgument(c >= 0 && c < parent.NComp())
 	return AsScalarField(&component{parent, c})
 }
 

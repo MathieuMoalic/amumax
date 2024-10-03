@@ -7,7 +7,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 func init() {
@@ -89,9 +89,9 @@ func CropZ(parent Quantity, z1, z2 int) *cropped {
 
 func Crop(parent Quantity, x1, x2, y1, y2, z1, z2 int) *cropped {
 	n := MeshOf(parent).Size()
-	util.Argument(x1 < x2 && y1 < y2 && z1 < z2)
-	util.Argument(x1 >= 0 && y1 >= 0 && z1 >= 0)
-	util.Argument(x2 <= n[X] && y2 <= n[Y] && z2 <= n[Z])
+	log.AssertArgument(x1 < x2 && y1 < y2 && z1 < z2)
+	log.AssertArgument(x1 >= 0 && y1 >= 0 && z1 >= 0)
+	log.AssertArgument(x2 <= n[X] && y2 <= n[Y] && z2 <= n[Z])
 
 	name := NameOf(parent)
 	if x1 != 0 || x2 != n[X] {

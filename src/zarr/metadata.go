@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/httpfs"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 type Metadata struct {
@@ -60,7 +60,7 @@ func (m *Metadata) Add(key string, val interface{}) {
 		// ignore functions
 		return
 	default:
-		util.Log.Debug("Metadata key %s has invalid type %s: %v", key, val_type, val)
+		log.Log.Debug("Metadata key %s has invalid type %s: %v", key, val_type, val)
 	}
 }
 
@@ -86,11 +86,11 @@ func (m *Metadata) NeedSave() bool {
 func (m *Metadata) Save() {
 	if m.Path != "" {
 		zattrs, err := httpfs.Create(m.Path)
-		util.Log.PanicIfError(err)
+		log.Log.PanicIfError(err)
 		defer zattrs.Close()
 		json_meta, err := json.MarshalIndent(m.Fields, "", "\t")
-		util.Log.PanicIfError(err)
+		log.Log.PanicIfError(err)
 		_, err = zattrs.Write([]byte(json_meta))
-		util.Log.PanicIfError(err)
+		log.Log.PanicIfError(err)
 	}
 }

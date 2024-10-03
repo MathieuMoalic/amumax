@@ -4,7 +4,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Add effective field due to bulk Dzyaloshinskii-Moriya interaction to Beff.
@@ -12,7 +12,7 @@ import (
 func AddDMIBulk(Beff *data.Slice, m *data.Slice, Aex_red, D_red SymmLUT, Msat MSlice, regions *Bytes, mesh *data.Mesh, OpenBC bool) {
 	cellsize := mesh.CellSize()
 	N := Beff.Size()
-	util.Argument(m.Size() == N)
+	log.AssertArgument(m.Size() == N)
 	cfg := make3DConf(N)
 	var openBC byte
 	if OpenBC {

@@ -6,7 +6,6 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
 )
 
 var M magnetization // reduced magnetization (unit length)
@@ -74,8 +73,6 @@ func (m *magnetization) EvalTo(dst *data.Slice) {
 }
 
 func (m *magnetization) Region(r int) *vOneReg { return vOneRegion(m, r) }
-
-func (m *magnetization) String() string { return util.Sprint(m.Buffer().HostCopy()) }
 
 // Set the value of one cell.
 func (m *magnetization) SetCell(ix, iy, iz int, v data.Vector) {

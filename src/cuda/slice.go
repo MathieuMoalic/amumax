@@ -6,8 +6,8 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/timer"
-	"github.com/MathieuMoalic/amumax/src/util"
 )
 
 // Make a GPU Slice with nComp components each of size length.
@@ -67,7 +67,7 @@ func Memset(s *data.Slice, val ...float32) {
 		Sync()
 		timer.Start("memset")
 	}
-	util.Argument(len(val) == s.NComp())
+	log.AssertArgument(len(val) == s.NComp())
 	for c, v := range val {
 		cu.MemsetD32Async(cu.DevicePtr(uintptr(s.DevPtr(c))), math.Float32bits(v), int64(s.Len()), stream0)
 	}

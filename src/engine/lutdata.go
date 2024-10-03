@@ -6,7 +6,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // look-up table for region based parameters
@@ -51,7 +51,7 @@ func (p *lut) gpuLUT() cuda.LUTPtrs {
 
 // utility for LUT of single-component data
 func (p *lut) gpuLUT1() cuda.LUTPtr {
-	util.Assert(len(p.gpu_buf) == 1)
+	log.Assert(len(p.gpu_buf) == 1)
 	return cuda.LUTPtr(p.gpuLUT()[0])
 }
 

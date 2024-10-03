@@ -6,22 +6,22 @@ import (
 	"strconv"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Renders an image of slice. fmin, fmax = "auto" or a number to set the min/max color scale.
-func Image(f *data.Slice, fmin, fmax string, arrowSize int, colormap ...ColorMapSpec) *image.RGBA {
+func createRGBAImage(f *data.Slice, fmin, fmax string, arrowSize int, colormap ...ColorMapSpec) *image.RGBA {
 	img := new(image.RGBA)
-	On(img, f, fmin, fmax, arrowSize, colormap...)
+	on(img, f, fmin, fmax, arrowSize, colormap...)
 	return img
 }
 
 // Render on existing image buffer. Resize it if needed
-func On(img *image.RGBA, f *data.Slice, fmin, fmax string, arrowSize int, colormap ...ColorMapSpec) {
+func on(img *image.RGBA, f *data.Slice, fmin, fmax string, arrowSize int, colormap ...ColorMapSpec) {
 	dim := f.NComp()
 	switch dim {
 	default:
-		util.Log.ErrAndExit("unsupported number of components: %v", dim)
+		log.Log.ErrAndExit("unsupported number of components: %v", dim)
 	case 3:
 		if colormap == nil {
 			drawVectors(img, f.Vectors(), arrowSize)
@@ -53,14 +53,14 @@ func parseMinMax(f *data.Slice, fmin, fmax string) (min, max float32) {
 	if fmin != "auto" {
 		m, err := strconv.ParseFloat(fmin, 32)
 		if err != nil {
-			util.Log.ErrAndExit("draw: scale: %v", err)
+			log.Log.ErrAndExit("draw: scale: %v", err)
 		}
 		min = float32(m)
 	}
 	if fmax != "auto" {
 		m, err := strconv.ParseFloat(fmax, 32)
 		if err != nil {
-			util.Log.ErrAndExit("draw: scale: %v", err)
+			log.Log.ErrAndExit("draw: scale: %v", err)
 		}
 		max = float32(m)
 	}
@@ -89,7 +89,7 @@ func drawVectors(img *image.RGBA, arr [3][][][]float32, arrowSize int) {
 			x /= norm
 			y /= norm
 			z /= norm
-			img.Set(ix, (h-1)-iy, HSLMap(x, y, z))
+			img.Set(ix, (h-1)-iy, hslmap(x, y, z))
 		}
 	}
 	if arrowSize > 0 {
@@ -127,7 +127,7 @@ func drawFloats(img *image.RGBA, arr [][][]float32, min, max float32, colormap .
 
 			}
 			v /= float32(d)
-			img.Set(ix, (h-1)-iy, ColorMap(min, max, v, colormap...))
+			img.Set(ix, (h-1)-iy, colorMap(min, max, v, colormap...))
 		}
 	}
 }

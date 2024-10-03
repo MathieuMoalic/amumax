@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/MathieuMoalic/amumax/src/httpfs"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 type ztableFile struct {
@@ -22,7 +22,7 @@ type ztableFile struct {
 
 func SaveFileTableZarray(path string, zTableAutoSaveStep int) {
 	if !pathExists(path) {
-		util.Log.PanicIfError(errors.New("error: `%s` does not exist"))
+		log.Log.PanicIfError(errors.New("error: `%s` does not exist"))
 	}
 	z := ztableFile{}
 	z.Dtype = `<f8`
@@ -33,13 +33,13 @@ func SaveFileTableZarray(path string, zTableAutoSaveStep int) {
 	z.Shape = [1]int{zTableAutoSaveStep + 1}
 
 	f, err := httpfs.Create(path + "/.zarray")
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 
 	defer f.Close()
 	enc := json.NewEncoder(f)
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "\t")
-	util.Log.PanicIfError(enc.Encode(z))
+	log.Log.PanicIfError(enc.Encode(z))
 	f.Flush()
 }
 

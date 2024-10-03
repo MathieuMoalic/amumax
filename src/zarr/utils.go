@@ -2,7 +2,7 @@ package zarr
 
 import (
 	"github.com/MathieuMoalic/amumax/src/httpfs"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 type Zattrs struct {
@@ -19,7 +19,7 @@ func MakeZgroup(name string, od string, zGroups *[]string) {
 	}
 	if !exists {
 		err := httpfs.Mkdir(od + name)
-		util.Log.PanicIfError(err)
+		log.Log.PanicIfError(err)
 		InitZgroup(od + name + "/")
 		*zGroups = append(*zGroups, name)
 	}
@@ -27,8 +27,8 @@ func MakeZgroup(name string, od string, zGroups *[]string) {
 
 func InitZgroup(path string) {
 	zgroup, err := httpfs.Create(path + ".zgroup")
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	defer zgroup.Close()
 	_, err = zgroup.Write([]byte("{\"zarr_format\": 2}"))
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 }

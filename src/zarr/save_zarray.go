@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/MathieuMoalic/amumax/src/httpfs"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 var IsSaving bool
@@ -41,11 +41,11 @@ func SaveFileZarray(path string, size [3]int, ncomp int, time int, cz int, cy in
 	z.Shape = [5]int{time + 1, size[2], size[1], size[0], ncomp}
 
 	f, err := httpfs.Create(path)
-	util.Log.PanicIfError(err)
+	log.Log.PanicIfError(err)
 	defer f.Close()
 	enc := json.NewEncoder(f)
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "\t")
-	util.Log.PanicIfError(enc.Encode(z))
+	log.Log.PanicIfError(enc.Encode(z))
 	f.Flush()
 }

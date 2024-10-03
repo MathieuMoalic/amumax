@@ -5,7 +5,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // test input data
@@ -85,7 +85,7 @@ func TestReduceMaxAbs(t *testing.T) {
 func sliceFromList(arr [][]float32, size [3]int) *data.Slice {
 	ptrs := make([]unsafe.Pointer, len(arr))
 	for i := range ptrs {
-		util.Argument(len(arr[i]) == prod(size))
+		log.AssertArgument(len(arr[i]) == prod(size))
 		ptrs[i] = unsafe.Pointer(&arr[i][0])
 	}
 	return data.SliceFromPtrs(size, data.CPUMemory, ptrs)

@@ -3,12 +3,11 @@ package entrypoint
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
 	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/util"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
 	"github.com/minio/selfupdate"
@@ -18,7 +17,7 @@ func doUpdate(tag string) {
 	color.Green("Downloading version %s", tag)
 	resp, err := http.Get(fmt.Sprintf("https://github.com/MathieuMoalic/amumax/src/releases/download/%s/amumax", tag))
 	if err != nil {
-		util.Log.PanicIfError(err)
+		log.Log.PanicIfError(err)
 	}
 	defer resp.Body.Close()
 	err = selfupdate.Apply(resp.Body, selfupdate.Options{})
@@ -35,17 +34,17 @@ func getTags() (tags []string) {
 	}
 	resp, err := http.Get("https://api.github.com/repos/mathieumoalic/amumax/tags")
 	if err != nil {
-		util.Log.PanicIfError(err)
+		log.Log.PanicIfError(err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Panicf("Error: HTTP %v", resp.StatusCode)
+		log.Log.PanicIfError(fmt.Errorf("unexpected status code: %d", resp.StatusCode))
 	}
 
 	tempTags := []Tag{}
 	if err := json.NewDecoder(resp.Body).Decode(&tempTags); err != nil {
-		util.Log.PanicIfError(err)
+		log.Log.PanicIfError(err)
 	}
 
 	for _, tag := range tempTags {

@@ -1,11 +1,11 @@
 package engine
 
 import (
+	"sync/atomic"
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/timer"
-	"github.com/MathieuMoalic/amumax/src/util"
 )
 
 // Asynchronous I/O queue flushes data to disk while simulation keeps running.
@@ -13,7 +13,7 @@ import (
 
 var (
 	saveQue chan func() // passes save requests to runSaver for asyc IO
-	queLen  util.Atom   // # tasks in queue
+	queLen  Atom        // # tasks in queue
 )
 
 func init() {
@@ -21,6 +21,17 @@ func init() {
 
 	saveQue = make(chan func())
 	go runSaver()
+}
+
+// Atomic int
+type Atom int32
+
+func (a *Atom) Add(v int32) {
+	atomic.AddInt32((*int32)(a), v)
+}
+
+func (a *Atom) Load() int32 {
+	return atomic.LoadInt32((*int32)(a))
 }
 
 func queOutput(f func()) {
