@@ -120,23 +120,32 @@ func (t *tesselation3d) tabulateCells() []cellLocs {
 	return cells
 }
 
+var grainCutShape = false
+
 // Find the nearest Voronoi center to the point (x, y, z). Only points inside the given shape will be
 // assigned a region.
 func (t *tesselation3d) RegionOf(x, y, z float64) int {
-	if t.shape(x, y, z) {
-		nearest := center3d{}
-		mindist := math.Inf(1)
-		for _, c := range t.centers {
-			dist := sqr(x-c.x) + sqr(y-c.y) + sqr(z-c.z)
-			if dist < mindist {
-				nearest = c
-				mindist = dist
-			}
-		}
-		return int(nearest.region)
-	} else {
-		return -1 //When the regions are rendered, any region < 0 will not be rastered.
+	if !(t.shape(x, y, z) || grainCutShape) {
+		return -1 // Regions < 0 won't be rastered
 	}
+
+	// Find the nearest center point to the (x, y, z) position
+	nearest := center3d{x, y, z, 0}
+	mindist := math.Inf(1)
+	for _, c := range t.centers {
+		dist := sqr(x-c.x) + sqr(y-c.y) + sqr(z-c.z)
+		if dist < mindist {
+			nearest = c
+			mindist = dist
+		}
+	}
+
+	// Check if the nearest point's region should be returned
+	if (t.shape(x, y, z) && !grainCutShape) || (t.shape(nearest.x, nearest.y, nearest.z) && grainCutShape) {
+		return int(nearest.region)
+	}
+
+	return -1
 }
 
 // Generate normally distributed numbers; mean = lambda, variance = lambda. If generated number < 0, return 1.
