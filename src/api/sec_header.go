@@ -2,20 +2,31 @@ package api
 
 import "github.com/MathieuMoalic/amumax/src/engine"
 
-type Header struct {
+type HeaderState struct {
 	Path   string `msgpack:"path"`
 	Status string `msgpack:"status"`
 }
 
-func newHeader() *Header {
+func initHeaderState() *HeaderState {
 	status := ""
 	if engine.Pause {
 		status = "paused"
 	} else {
 		status = "running"
 	}
-	return &Header{
+	return &HeaderState{
 		Path:   engine.OD(),
 		Status: status,
 	}
+}
+
+func (h *HeaderState) Update() {
+	status := ""
+	if engine.Pause {
+		status = "paused"
+	} else {
+		status = "running"
+	}
+	h.Path = engine.OD()
+	h.Status = status
 }

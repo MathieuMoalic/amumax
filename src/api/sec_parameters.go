@@ -1,70 +1,71 @@
 package api
 
-// import (
-// 	"net/http"
+import (
+	"net/http"
 
-// 	"github.com/MathieuMoalic/amumax/src/engine"
-// 	"github.com/MathieuMoalic/amumax/src/log"
-// 	"github.com/labstack/echo/v4"
-// )
+	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/labstack/echo/v4"
+)
 
-// var SelectedRegion int
+type Field struct {
+	Name        string `msgpack:"name"`
+	Value       string `msgpack:"value"`
+	Description string `msgpack:"description"`
+	Changed     bool   `msgpack:"changed"`
+}
 
-// func init() {
-// 	SelectedRegion = 0
-// }
+func (f *Field) IsDefault(value string) bool {
+	return true
+}
 
-// type Field struct {
-// 	Name        string `msgpack:"name"`
-// 	Value       string `msgpack:"value"`
-// 	Description string `msgpack:"description"`
-// 	Changed     bool   `msgpack:"changed"`
-// }
+type ParametersState struct {
+	ws             *WebSocketManager
+	Regions        []int   `msgpack:"regions"`
+	Fields         []Field `msgpack:"fields"`
+	SelectedRegion int     `msgpack:"selectedRegion"`
+}
 
-// func (f *Field) IsDefault(value string) bool {
-// 	return true
-// }
+func initParameterAPI(e *echo.Echo, ws *WebSocketManager) *ParametersState {
+	parametersState := ParametersState{
+		ws:             ws,
+		Regions:        engine.Regions.GetExistingIndices(),
+		SelectedRegion: 0,
+	}
+	parametersState.getFields()
+	e.POST("/api/parameter/selected-region", parametersState.postSelectParameterRegion)
+	return &parametersState
+}
+func (s *ParametersState) Update() {
+	s.getFields()
+}
 
-// type Parameters struct {
-// 	Regions        []int   `msgpack:"regions"`
-// 	Fields         []Field `msgpack:"fields"`
-// 	SelectedRegion int     `msgpack:"selectedRegion"`
-// }
+func (s *ParametersState) getFields() {
+	fields := make([]Field, 0)
+	for _, param := range engine.Params {
+		field := Field{
+			Name:        param.Name,
+			Value:       param.Value(s.SelectedRegion),
+			Description: param.Description,
+			Changed:     engine.QuantityChanged[param.Name],
+		}
+		fields = append(fields, field)
+	}
+	s.Fields = fields
+}
 
-// func newParameters() *Parameters {
-// 	return &Parameters{
-// 		Regions:        engine.Regions.GetExistingIndices(),
-// 		Fields:         getFields(),
-// 		SelectedRegion: SelectedRegion,
-// 	}
-// }
+func (s *ParametersState) postSelectParameterRegion(c echo.Context) error {
+	type Request struct {
+		SelectedRegion int `msgpack:"selectedRegion"`
+	}
+	req := new(Request)
+	if err := c.Bind(req); err != nil {
+		log.Log.Err("%v", err)
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
 
-// func getFields() []Field {
-// 	fields := make([]Field, 0)
-// 	for _, param := range engine.Params {
-// 		field := Field{
-// 			Name:        param.Name,
-// 			Value:       param.Value(SelectedRegion),
-// 			Description: param.Description,
-// 			Changed:     engine.QuantityChanged[param.Name],
-// 		}
-// 		fields = append(fields, field)
-// 	}
-// 	return fields
-// }
-
-// func postSelectParameterRegion(c echo.Context) error {
-// 	type Request struct {
-// 		SelectedRegion int `msgpack:"selectedRegion"`
-// 	}
-// 	req := new(Request)
-// 	if err := c.Bind(req); err != nil {
-// 		log.Log.Err("%v", err)
-// 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
-// 	}
-
-// 	SelectedRegion = req.SelectedRegion
-// 	preview.Refresh = true
-// 	broadcastEngineState()
-// 	return c.JSON(http.StatusOK, nil)
-// }
+	s.SelectedRegion = req.SelectedRegion
+	s.ws.engineState.Preview.Refresh = true
+	s.ws.broadcastEngineState()
+	return c.JSON(http.StatusOK, nil)
+}
