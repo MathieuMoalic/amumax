@@ -11,32 +11,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var preview Preview
-var globalQuantities []string
-var mask [][][]float32
-
-func init() {
-	preview = Preview{
-		Quantity:             "m",
-		Component:            "3D",
-		Layer:                0,
-		MaxPoints:            8192,
-		Dimensions:           [3]int{0, 0, 0},
-		Type:                 "3D",
-		VectorFieldValues:    nil,
-		VectorFieldPositions: nil,
-		ScalarField:          nil,
-		Min:                  0,
-		Max:                  0,
-		Refresh:              true,
-		NComp:                3,
-		DataPointsCount:      0,
-	}
-	// Some quantities exist where the magnetic materials are not present
-	globalQuantities = []string{"B_demag", "B_ext", "B_eff", "Edens_demag", "Edens_ext", "Edens_eff", "geom"}
-}
-
-type Preview struct {
+type PreviewState struct {
+	ws                   *WebSocketManager
+	globalQuantities     []string
+	mask                 [][][]float32
 	Quantity             string               `msgpack:"quantity"`
 	Unit                 string               `msgpack:"unit"`
 	Component            string               `msgpack:"component"`
@@ -54,76 +32,103 @@ type Preview struct {
 	DataPointsCount      int                  `msgpack:"dataPointsCount"`
 }
 
-func (p *Preview) GetQuantity() engine.Quantity {
-	quantity, exists := engine.Quantities[p.Quantity]
+func initPreviewAPI(e *echo.Echo, ws *WebSocketManager) {
+	previewState := &PreviewState{
+		Quantity:             "m",
+		Component:            "3D",
+		Layer:                0,
+		MaxPoints:            8192,
+		Dimensions:           [3]int{0, 0, 0},
+		Type:                 "3D",
+		VectorFieldValues:    nil,
+		VectorFieldPositions: nil,
+		ScalarField:          nil,
+		Min:                  0,
+		Max:                  0,
+		Refresh:              true,
+		NComp:                3,
+		DataPointsCount:      0,
+		ws:                   ws,
+		globalQuantities:     []string{"B_demag", "B_ext", "B_eff", "Edens_demag", "Edens_ext", "Edens_eff", "geom"},
+	}
+	e.POST("/api/preview/component", previewState.postPreviewComponent)
+	e.POST("/api/preview/quantity", previewState.postPreviewQuantity)
+	e.POST("/api/preview/layer", previewState.postPreviewLayer)
+	e.POST("/api/preview/maxpoints", previewState.postPreviewMaxPoints)
+	e.POST("/api/preview/refresh", previewState.postPreviewRefresh)
+
+}
+
+func (s *PreviewState) GetQuantity() engine.Quantity {
+	quantity, exists := engine.Quantities[s.Quantity]
 	if !exists {
-		log.Log.Err("Quantity not found: %v", p.Quantity)
+		log.Log.Err("Quantity not found: %v", s.Quantity)
 	}
 	return quantity
 }
 
-func (p *Preview) GetComponent() int {
-	return compStringToIndex(p.Component)
+func (s *PreviewState) GetComponent() int {
+	return compStringToIndex(s.Component)
 }
 
-func (p *Preview) Update() {
-	engine.InjectAndWait(p.UpdateQuantityBuffer)
+func (s *PreviewState) Update() {
+	engine.InjectAndWait(s.UpdateQuantityBuffer)
 }
 
-func (p *Preview) UpdateQuantityBuffer() {
-	// p.ScaleDimensions()
-	if mask == nil {
-		p.updateMask()
+func (s *PreviewState) UpdateQuantityBuffer() {
+	// s.ScaleDimensions()
+	if s.mask == nil {
+		s.updateMask()
 	}
 	componentCount := 1
-	if p.Type == "3D" {
+	if s.Type == "3D" {
 		componentCount = 3
 	}
-	GPU_in := engine.ValueOf(p.GetQuantity())
+	GPU_in := engine.ValueOf(s.GetQuantity())
 	defer cuda.Recycle(GPU_in)
 
-	CPU_out := data.NewSlice(componentCount, p.Dimensions)
-	GPU_out := cuda.NewSlice(1, p.Dimensions)
+	CPU_out := data.NewSlice(componentCount, s.Dimensions)
+	GPU_out := cuda.NewSlice(1, s.Dimensions)
 	defer GPU_out.Free()
 
-	if p.Type == "3D" {
+	if s.Type == "3D" {
 		for c := 0; c < componentCount; c++ {
-			cuda.Resize(GPU_out, GPU_in.Comp(c), p.Layer)
+			cuda.Resize(GPU_out, GPU_in.Comp(c), s.Layer)
 			data.Copy(CPU_out.Comp(c), GPU_out)
 		}
-		p.normalizeVectors(CPU_out)
-		p.UpdateVectorField(CPU_out.Vectors())
+		s.normalizeVectors(CPU_out)
+		s.UpdateVectorField(CPU_out.Vectors())
 	} else {
-		if p.GetQuantity().NComp() > 1 {
-			cuda.Resize(GPU_out, GPU_in.Comp(p.GetComponent()), p.Layer)
+		if s.GetQuantity().NComp() > 1 {
+			cuda.Resize(GPU_out, GPU_in.Comp(s.GetComponent()), s.Layer)
 			data.Copy(CPU_out.Comp(0), GPU_out)
 		} else {
-			cuda.Resize(GPU_out, GPU_in.Comp(0), p.Layer)
+			cuda.Resize(GPU_out, GPU_in.Comp(0), s.Layer)
 			data.Copy(CPU_out.Comp(0), GPU_out)
 		}
-		p.UpdateScalarField(CPU_out.Scalars())
+		s.UpdateScalarField(CPU_out.Scalars())
 	}
 }
 
-func (p *Preview) ScaleDimensions() {
-	originalSize := engine.MeshOf(p.GetQuantity()).Size()
+func (s *PreviewState) ScaleDimensions() {
+	originalSize := engine.MeshOf(s.GetQuantity()).Size()
 	width, height := float32(originalSize[0]), float32(originalSize[1])
 	points := width * height
-	if points <= float32(p.MaxPoints) {
-		p.Dimensions = [3]int{originalSize[0], originalSize[1], 1}
+	if points <= float32(s.MaxPoints) {
+		s.Dimensions = [3]int{originalSize[0], originalSize[1], 1}
 		return
 	}
 
 	// Calculate the scaling factor
-	for points >= float32(p.MaxPoints) {
+	for points >= float32(s.MaxPoints) {
 		width = width / 2
 		height = height / 2
 		points = width * height
 	}
-	p.Dimensions = [3]int{int(width), int(height), 1}
+	s.Dimensions = [3]int{int(width), int(height), 1}
 }
 
-func (p *Preview) normalizeVectors(f *data.Slice) {
+func (s *PreviewState) normalizeVectors(f *data.Slice) {
 	a := f.Vectors()
 	maxnorm := 0.
 	for i := range a[0] {
@@ -153,7 +158,7 @@ func (p *Preview) normalizeVectors(f *data.Slice) {
 	}
 }
 
-func (p *Preview) UpdateVectorField(vectorField [3][][][]float32) {
+func (s *PreviewState) UpdateVectorField(vectorField [3][][][]float32) {
 	// Calculate the total number of elements
 	yLen := len(vectorField[0][0])
 	xLen := len(vectorField[0][0][0])
@@ -183,13 +188,13 @@ func (p *Preview) UpdateVectorField(vectorField [3][][][]float32) {
 				})
 		}
 	}
-	p.VectorFieldPositions = posArray
-	p.VectorFieldValues = valArray
-	p.ScalarField = nil
-	p.DataPointsCount = len(valArray)
+	s.VectorFieldPositions = posArray
+	s.VectorFieldValues = valArray
+	s.ScalarField = nil
+	s.DataPointsCount = len(valArray)
 }
 
-func (p *Preview) UpdateScalarField(scalarField [][][]float32) {
+func (s *PreviewState) UpdateScalarField(scalarField [][][]float32) {
 	xLen := len(scalarField[0][0])
 	yLen := len(scalarField[0])
 	min, max := scalarField[0][0][0], scalarField[0][0][0]
@@ -199,8 +204,8 @@ func (p *Preview) UpdateScalarField(scalarField [][][]float32) {
 		for posy := 0; posy < yLen; posy++ {
 			// Some quantities exist where the magnetic materials are not present
 			// and we don't want to filter them out
-			if !contains(globalQuantities, p.Quantity) {
-				if mask[0][posy][posx] == 0 {
+			if !contains(s.globalQuantities, s.Quantity) {
+				if s.mask[0][posy][posx] == 0 {
 					continue
 				}
 			}
@@ -218,16 +223,16 @@ func (p *Preview) UpdateScalarField(scalarField [][][]float32) {
 		log.Log.Warn("No data in scalar field")
 	}
 
-	p.Min = min
-	p.Max = max
-	p.ScalarField = valArray
-	p.VectorFieldValues = nil
-	p.VectorFieldPositions = nil
-	p.DataPointsCount = len(valArray)
+	s.Min = min
+	s.Max = max
+	s.ScalarField = valArray
+	s.VectorFieldValues = nil
+	s.VectorFieldPositions = nil
+	s.DataPointsCount = len(valArray)
 }
 
-func (p *Preview) updateMask() {
-	p.ScaleDimensions()
+func (s *PreviewState) updateMask() {
+	s.ScaleDimensions()
 
 	// cuda full size geom
 	geom := engine.Geometry
@@ -236,17 +241,17 @@ func (p *Preview) updateMask() {
 	defer cuda.Recycle(GPU_fullsize)
 
 	// resize geom in GPU
-	GPU_resized := cuda.NewSlice(1, p.Dimensions)
+	GPU_resized := cuda.NewSlice(1, s.Dimensions)
 	defer GPU_resized.Free()
 	cuda.Resize(GPU_resized, GPU_fullsize.Comp(0), 0)
 
 	// copy resized geom from GPU to CPU
-	CPU_out := data.NewSlice(1, p.Dimensions)
+	CPU_out := data.NewSlice(1, s.Dimensions)
 	defer CPU_out.Free()
 	data.Copy(CPU_out.Comp(0), GPU_resized)
 
 	// extract mask from CPU slice
-	mask = CPU_out.Scalars()
+	s.mask = CPU_out.Scalars()
 }
 
 func contains(arr []string, val string) bool {
@@ -275,43 +280,38 @@ func compStringToIndex(comp string) int {
 	return -2
 }
 
-func newPreview() *Preview {
-	preview.Update()
-	return &preview
-}
-
-func updatePreviewType() {
+func (s *PreviewState) updatePreviewType() {
 	var fieldType string
-	isVectorField := preview.NComp == 3 && preview.GetComponent() == -1
+	isVectorField := s.NComp == 3 && s.GetComponent() == -1
 	if isVectorField {
 		fieldType = "3D"
 	} else {
 		fieldType = "2D"
 	}
-	if fieldType != preview.Type {
-		preview.Type = fieldType
-		preview.Refresh = true
+	if fieldType != s.Type {
+		s.Type = fieldType
+		s.Refresh = true
 	}
 }
 
-func validateComponent() {
-	preview.NComp = preview.GetQuantity().NComp()
-	switch preview.NComp {
+func (s *PreviewState) validateComponent() {
+	s.NComp = s.GetQuantity().NComp()
+	switch s.NComp {
 	case 1:
-		preview.Component = "None"
+		s.Component = "None"
 	case 3:
-		if preview.Component == "None" {
-			preview.Component = "3D"
+		if s.Component == "None" {
+			s.Component = "3D"
 		}
 	default:
 		log.Log.Err("Invalid number of components")
 		// reset to default
-		preview.Quantity = "m"
-		preview.Component = "3D"
+		s.Quantity = "m"
+		s.Component = "3D"
 	}
 }
 
-func postPreviewComponent(c echo.Context) error {
+func (s *PreviewState) postPreviewComponent(c echo.Context) error {
 	type Request struct {
 		Component string `msgpack:"component"`
 	}
@@ -320,15 +320,15 @@ func postPreviewComponent(c echo.Context) error {
 		log.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	preview.Component = req.Component
-	validateComponent()
-	preview.Refresh = true
-	updatePreviewType()
-	broadcastEngineState()
+	s.Component = req.Component
+	s.validateComponent()
+	s.Refresh = true
+	s.updatePreviewType()
+	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
 
-func postPreviewQuantity(c echo.Context) error {
+func (s *PreviewState) postPreviewQuantity(c echo.Context) error {
 	type Request struct {
 		Quantity string `msgpack:"quantity"`
 	}
@@ -341,15 +341,15 @@ func postPreviewQuantity(c echo.Context) error {
 	if !exists {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Quantity not found"})
 	}
-	preview.Quantity = req.Quantity
-	validateComponent()
-	preview.Refresh = true
-	updatePreviewType()
-	broadcastEngineState()
+	s.Quantity = req.Quantity
+	s.validateComponent()
+	s.Refresh = true
+	s.updatePreviewType()
+	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
 
-func postPreviewLayer(c echo.Context) error {
+func (s *PreviewState) postPreviewLayer(c echo.Context) error {
 	type Request struct {
 		Layer int `msgpack:"layer"`
 	}
@@ -359,13 +359,13 @@ func postPreviewLayer(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 
-	preview.Layer = req.Layer
-	preview.Refresh = true
-	broadcastEngineState()
+	s.Layer = req.Layer
+	s.Refresh = true
+	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
 
-func postPreviewMaxPoints(c echo.Context) error {
+func (s *PreviewState) postPreviewMaxPoints(c echo.Context) error {
 	type Request struct {
 		MaxPoints int `msgpack:"maxPoints"`
 	}
@@ -377,14 +377,14 @@ func postPreviewMaxPoints(c echo.Context) error {
 	if req.MaxPoints < 8 {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "MaxPoints must be at least 8"})
 	}
-	preview.MaxPoints = req.MaxPoints
-	preview.Refresh = true
-	engine.InjectAndWait(preview.updateMask)
-	broadcastEngineState()
+	s.MaxPoints = req.MaxPoints
+	s.Refresh = true
+	engine.InjectAndWait(s.updateMask)
+	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
 
-func postPreviewRefresh(c echo.Context) error {
-	broadcastEngineState()
+func (s *PreviewState) postPreviewRefresh(c echo.Context) error {
+	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }

@@ -13,7 +13,6 @@ func newHeader() *Header {
 		status = "paused"
 	} else {
 		status = "running"
-
 	}
 	return &Header{
 		Path:   engine.OD(),
