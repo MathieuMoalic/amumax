@@ -32,7 +32,7 @@ type PreviewState struct {
 	DataPointsCount      int                  `msgpack:"dataPointsCount"`
 }
 
-func initPreviewAPI(e *echo.Echo, ws *WebSocketManager) {
+func initPreviewAPI(e *echo.Echo, ws *WebSocketManager) *PreviewState {
 	previewState := &PreviewState{
 		Quantity:             "m",
 		Component:            "3D",
@@ -57,6 +57,7 @@ func initPreviewAPI(e *echo.Echo, ws *WebSocketManager) {
 	e.POST("/api/preview/maxpoints", previewState.postPreviewMaxPoints)
 	e.POST("/api/preview/refresh", previewState.postPreviewRefresh)
 
+	return previewState
 }
 
 func (s *PreviewState) GetQuantity() engine.Quantity {

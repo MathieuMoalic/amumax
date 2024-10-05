@@ -19,6 +19,7 @@ type WebSocketManager struct {
 	lastStep       int
 	broadcastStop  chan struct{}
 	broadcastStart sync.Once
+	engineState    *EngineState
 }
 
 type connectionManager struct {
@@ -26,7 +27,7 @@ type connectionManager struct {
 	mu    sync.Mutex
 }
 
-func NewWebSocketManager() *WebSocketManager {
+func newWebSocketManager() *WebSocketManager {
 	return &WebSocketManager{
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
@@ -106,7 +107,8 @@ func (wsManager *WebSocketManager) websocketEntrypoint(c echo.Context) error {
 }
 
 func (wsManager *WebSocketManager) broadcastEngineState() {
-	msg, err := msgpack.Marshal(NewEngineState())
+	wsManager.engineState.Update()
+	msg, err := msgpack.Marshal(wsManager.engineState)
 	if err != nil {
 		log.Log.Err("Error marshaling combined message: %v", err)
 		return
@@ -114,7 +116,7 @@ func (wsManager *WebSocketManager) broadcastEngineState() {
 
 	wsManager.connections.broadcast(msg)
 	// Reset the refresh flag
-	// preview.Refresh = false
+	wsManager.engineState.Preview.Refresh = false
 }
 
 func (wsManager *WebSocketManager) startBroadcastLoop() {

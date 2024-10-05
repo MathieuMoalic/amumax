@@ -14,6 +14,10 @@ type ConsoleState struct {
 	Hist string `msgpack:"hist"`
 }
 
+func (s ConsoleState) Update() {
+	// s.Hist = log.Log.Hist
+}
+
 func initConsoleAPI(e *echo.Echo, ws *WebSocketManager) *ConsoleState {
 	state := &ConsoleState{
 		ws:   ws,
