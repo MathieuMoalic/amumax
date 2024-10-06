@@ -15,8 +15,6 @@ var (
 func init() {
 	MFMLift = numParam(50e-9, "MFMLift", "m", reinitmfmconv)
 	MFMTipSize = numParam(1e-3, "MFMDipole", "m", reinitmfmconv)
-	DeclLValue("MFMLift", &MFMLift, "MFM lift height")
-	DeclLValue("MFMDipole", &MFMTipSize, "Height of vertically magnetized part of MFM tip")
 }
 
 func SetMFM(dst *data.Slice) {

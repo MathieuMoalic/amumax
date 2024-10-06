@@ -13,11 +13,6 @@ import (
 )
 
 func init() {
-	DeclFunc("TableSave", TableSave, "Save the data table right now.")
-	DeclFunc("TableAdd", TableAdd, "Save the data table periodically.")
-	DeclFunc("TableAddVar", TableAddVar, "Save the data table periodically.")
-	DeclFunc("TableAddAs", TableAddAs, "Save the data table periodically.")
-	DeclFunc("TableAutoSave", TableAutoSave, "Save the data table periodically.")
 	Table = TableStruct{
 		Data:           make(map[string][]float64),
 		Step:           -1,

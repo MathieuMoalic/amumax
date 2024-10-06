@@ -17,14 +17,6 @@ var (
 	MinimizeMaxTimeSeconds         = 60 * 60 * 24 * 7 // one week
 )
 
-func init() {
-	DeclFunc("Minimize", Minimize, "Use steepest conjugate gradient method to minimize the total energy")
-	DeclVar("MinimizerStop", &StopMaxDm, "Stopping max dM for Minimize")
-	DeclVar("MinimizerSamples", &DmSamples, "Number of max dM to collect for Minimize convergence check.")
-	DeclVar("MinimizeMaxSteps", &MinimizeMaxSteps, "")
-	DeclVar("MinimizeMaxTimeSeconds", &MinimizeMaxTimeSeconds, "")
-}
-
 // fixed length FIFO. Items can be added but not removed
 type fifoRing struct {
 	count int

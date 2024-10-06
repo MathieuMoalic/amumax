@@ -6,10 +6,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
-func init() {
-	DeclFunc("ext_centerBubble", CenterBubble, "centerBubble shifts m after each step to keep the bubble position close to the center of the window")
-}
-
 func centerBubble() {
 	c := GetMesh().CellSize()
 

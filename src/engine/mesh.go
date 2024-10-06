@@ -30,25 +30,6 @@ var (
 	globalmesh_ data.Mesh
 )
 
-func init() {
-	DeclVar("AutoMeshx", &AutoMeshx, "")
-	DeclVar("AutoMeshy", &AutoMeshy, "")
-	DeclVar("AutoMeshz", &AutoMeshz, "")
-	DeclVar("Tx", &Tx, "")
-	DeclVar("Ty", &Ty, "")
-	DeclVar("Tz", &Tz, "")
-	DeclVar("Nx", &Nx, "")
-	DeclVar("Ny", &Ny, "")
-	DeclVar("Nz", &Nz, "")
-	DeclVar("dx", &Dx, "")
-	DeclVar("dy", &Dy, "")
-	DeclVar("dz", &Dz, "")
-	DeclVar("PBCx", &PBCx, "")
-	DeclVar("PBCy", &PBCy, "")
-	DeclVar("PBCz", &PBCz, "")
-	DeclFunc("ReCreateMesh", ReCreateMesh, "")
-}
-
 func GetMesh() *data.Mesh {
 	CreateMesh()
 	return &globalmesh_

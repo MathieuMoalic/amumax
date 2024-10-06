@@ -14,15 +14,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
-func init() {
-	DeclFunc("AutoSaveAs", Mx3AutoSaveAs, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("AutoSaveAsChunk", Mx3AutoSaveAsChunk, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("AutoSave", Mx3AutoSave, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("SaveAs", Mx3SaveAs, "Save space-dependent quantity as the zarr standard.")
-	DeclFunc("SaveAsChunk", Mx3SaveAsChunk, "")
-	DeclFunc("Save", Mx3zSave, "Save space-dependent quantity as the zarr standard.")
-}
-
 func Mx3AutoSave(q Quantity, period float64) {
 	zVerifyAndSave(q, NameOf(q), RequestedChunking{1, 1, 1, 1}, period)
 }

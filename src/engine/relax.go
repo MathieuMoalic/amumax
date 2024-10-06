@@ -12,11 +12,6 @@ import (
 // If set to 0, relax() will stop when the average torque is steady or increasing.
 var RelaxTorqueThreshold float64 = -1.
 
-func init() {
-	DeclFunc("Relax", Relax, "Try to minimize the total energy")
-	DeclVar("RelaxTorqueThreshold", &RelaxTorqueThreshold, "MaxTorque threshold for relax(). If set to -1 (default), relax() will stop when the average torque is steady or increasing.")
-}
-
 // are we relaxing?
 var relaxing = false
 

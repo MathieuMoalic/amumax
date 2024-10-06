@@ -12,10 +12,6 @@ var (
 	DWSpeed = NewScalarValue("ext_dwspeed", "m/s", "Speed of the simulation window while following a domain wall", getShiftSpeed)
 )
 
-func init() {
-	DeclFunc("ext_centerWall", CenterWall, "centerWall(c) shifts m after each step to keep m_c close to zero")
-}
-
 func centerWall(c int) {
 	M := &M
 	mc := sAverageUniverse(M.Buffer().Comp(c))[0]

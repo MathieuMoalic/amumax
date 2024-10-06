@@ -9,10 +9,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mag"
 )
 
-func init() {
-	DeclFunc("ext_rmSurfaceCharge", RemoveLRSurfaceCharge, "Compensate magnetic charges on the left and right sides of an in-plane magnetized wire. Arguments: region, mx on left and right side, resp.")
-}
-
 // For a nanowire magnetized in-plane, with mx = mxLeft on the left end and
 // mx = mxRight on the right end (both -1 or +1), add a B field needed to compensate
 // for the surface charges on the left and right edges.

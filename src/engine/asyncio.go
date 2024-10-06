@@ -17,7 +17,6 @@ var (
 )
 
 func init() {
-	DeclFunc("Flush", drainOutput, "Flush all pending output to disk.")
 
 	saveQue = make(chan func())
 	go runSaver()

@@ -28,7 +28,6 @@ type thermField struct {
 }
 
 func init() {
-	DeclFunc("ThermSeed", ThermSeed, "Set a random seed for thermal noise")
 	registerEnergy(GetThermalEnergy, AddThermalEnergyDensity)
 	B_therm.step = -1 // invalidate noise cache
 	DeclROnly("B_therm", &B_therm, "Thermal field (T)")

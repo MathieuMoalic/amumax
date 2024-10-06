@@ -58,49 +58,11 @@ func Eval1Line(code string) interface{} {
 // holds the script state (variables etc)
 var World = script.NewWorld()
 
-// Add a function to the script world
-func DeclFunc(name string, f interface{}, doc string) {
-	World.Func(name, f, doc)
-}
-
-// Add a constant to the script world
-func DeclConst(name string, value float64, doc string) {
-	World.Const(name, value, doc)
-}
-
-// Add a read-only variable to the script world.
-// It can be changed, but not by the user.
-func DeclROnly(name string, value interface{}, doc string) {
-	World.ROnly(name, value, doc)
-	AddQuantity(name, value, doc)
-}
-
 func Export(q interface {
 	Name() string
 	Unit() string
 }, doc string) {
 	DeclROnly(q.Name(), q, cat(doc, q.Unit()))
-}
-
-// Add a (pointer to) variable to the script world
-func DeclVar(name string, value interface{}, doc string) {
-	World.Var(name, value, doc)
-	AddQuantity(name, value, doc)
-}
-
-// Hack for fixing the closure caveat:
-// Defines "t", the time variable, handled specially by Fix()
-func DeclTVar(name string, value interface{}, doc string) {
-	World.TVar(name, value, doc)
-	AddQuantity(name, value, doc)
-}
-
-// Add an LValue to the script world.
-// Assign to LValue invokes SetValue()
-func DeclLValue(name string, value LValue, doc string) {
-	AddParameter(name, value, doc)
-	World.LValue(name, newLValueWrapper(name, value), doc)
-	AddQuantity(name, value, doc)
 }
 
 // LValue is settable

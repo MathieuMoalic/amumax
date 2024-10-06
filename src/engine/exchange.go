@@ -36,11 +36,6 @@ var AddExchangeEnergyDensity = makeEdensAdder(&B_exch, -0.5) // TODO: normal fun
 
 func init() {
 	registerEnergy(GetExchangeEnergy, AddExchangeEnergyDensity)
-	DeclFunc("ext_ScaleExchange", ScaleInterExchange, "Re-scales exchange coupling between two regions.")
-	DeclFunc("ext_InterExchange", InterExchange, "Sets exchange coupling between two regions.")
-	DeclFunc("ext_ScaleDind", ScaleInterDind, "Re-scales Dind coupling between two regions.")
-	DeclFunc("ext_InterDind", InterDind, "Sets Dind coupling between two regions.")
-	DeclVar("OpenBC", &OpenBC, "Use open boundary conditions (default=false)")
 	lex2.init(Aex)
 	din2.init(Dind)
 	dbulk2.init(Dbulk)

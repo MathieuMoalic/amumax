@@ -27,9 +27,6 @@ var (
 var AddEdens_demag = makeEdensAdder(&B_demag, -0.5)
 
 func init() {
-
-	DeclVar("EnableDemag", &EnableDemag, "Enables/disables demag (default=true)")
-	DeclVar("DemagAccuracy", &DemagAccuracy, "Controls accuracy of demag kernel")
 	registerEnergy(GetDemagEnergy, AddEdens_demag)
 }
 

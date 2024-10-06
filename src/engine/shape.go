@@ -10,34 +10,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-func init() {
-	DeclFunc("Ellipsoid", Ellipsoid, "3D Ellipsoid with axes in meter")
-	DeclFunc("Ellipse", Ellipse, "2D Ellipse with axes in meter")
-	DeclFunc("Cone", Cone, "3D Cone with diameter and height in meter. The base is at z=0. If the height is positive, the tip points in the +z direction.")
-	DeclFunc("Cylinder", Cylinder, "3D Cylinder with diameter and height in meter")
-	DeclFunc("Circle", Circle, "2D Circle with diameter in meter")
-	DeclFunc("Squircle", Squircle, "2D Squircle with diameter in meter")
-	DeclFunc("Cuboid", Cuboid, "Cuboid with sides in meter")
-	DeclFunc("Rect", Rect, "2D rectangle with size in meter")
-	DeclFunc("Wave", Wave, "Wave with (Period, Min amplitude and Max amplitude) in meter")
-	DeclFunc("Triangle", Triangle, "Equilateral triangle with side in meter")
-	DeclFunc("RTriangle", RTriangle, "Rounded Equilateral triangle with side in meter")
-	DeclFunc("Diamond", Diamond, "Diamond with side in meter")
-	DeclFunc("Hexagon", Hexagon, "Hexagon with side in meter")
-	DeclFunc("Square", Square, "2D square with size in meter")
-	DeclFunc("XRange", XRange, "Part of space between x1 (inclusive) and x2 (exclusive), in meter")
-	DeclFunc("YRange", YRange, "Part of space between y1 (inclusive) and y2 (exclusive), in meter")
-	DeclFunc("ZRange", ZRange, "Part of space between z1 (inclusive) and z2 (exclusive), in meter")
-	DeclFunc("Layers", Layers, "Part of space between cell layer1 (inclusive) and layer2 (exclusive), in integer indices")
-	DeclFunc("Layer", Layer, "Single layer (along z), by integer index starting from 0")
-	DeclFunc("Universe", Universe, "Entire space")
-	DeclFunc("Cell", Cell, "Single cell with given integer index (i, j, k)")
-	DeclFunc("ImageShape", ImageShape, "Use black/white image as shape")
-	DeclFunc("GrainRoughness", GrainRoughness, "Grainy surface with different heights per grain "+
-		"with a typical grain size (first argument), minimal height (second argument), and maximal "+
-		"height (third argument). The last argument is a seed for the random number generator.")
-}
-
 // geometrical shape for setting sample geometry
 type Shape func(x, y, z float64) bool
 

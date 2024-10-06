@@ -11,10 +11,6 @@ var (
 	BubbleMz    = 1.0
 )
 
-func init() {
-	DeclVar("ext_BubbleMz", &BubbleMz, "Center magnetization 1.0 or -1.0  (default = 1.0)")
-}
-
 func bubblePos() []float64 {
 	m := M.Buffer()
 	n := GetMesh().Size()
