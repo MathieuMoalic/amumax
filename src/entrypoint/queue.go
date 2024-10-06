@@ -21,7 +21,7 @@ var (
 	numOK, numFailed atom = 0, 0
 )
 
-func RunQueue(files []string) {
+func RunQueue(files []string, flags *Flags) {
 	s := NewStateTab(files)
 	s.PrintTo(os.Stdout)
 	addr := fmt.Sprint(flags.webUIQueueHost, ":", flags.webUIQueuePort)
