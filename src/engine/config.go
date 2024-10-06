@@ -9,21 +9,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
-func init() {
-	DeclFunc("Uniform", Uniform, "Uniform magnetization in given direction")
-	DeclFunc("Vortex", Vortex, "Vortex magnetization with given circulation and core polarization")
-	DeclFunc("Antivortex", AntiVortex, "Antivortex magnetization with given circulation and core polarization")
-	DeclFunc("Radial", Radial, "Radial magnetization with given charge and core polarization")
-	DeclFunc("NeelSkyrmion", NeelSkyrmion, "Néél skyrmion magnetization with given charge and core polarization")
-	DeclFunc("BlochSkyrmion", BlochSkyrmion, "Bloch skyrmion magnetization with given chirality and core polarization")
-	DeclFunc("TwoDomain", TwoDomain, "Twodomain magnetization with with given magnetization in left domain, wall, and right domain")
-	DeclFunc("VortexWall", VortexWall, "Vortex wall magnetization with given mx in left and right domain and core circulation and polarization")
-	DeclFunc("RandomMag", RandomMag, "Random magnetization")
-	DeclFunc("RandomMagSeed", RandomMagSeed, "Random magnetization with given seed")
-	DeclFunc("Conical", Conical, "Conical state for given wave vector, cone direction, and cone angle")
-	DeclFunc("Helical", Helical, "Helical state for given wave vector")
-}
-
 // Magnetic configuration returns m vector for position (x,y,z)
 type Config func(x, y, z float64) data.Vector
 

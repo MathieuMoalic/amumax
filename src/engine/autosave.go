@@ -13,11 +13,6 @@ var (
 	autonum = make(map[string]int)         // auto number for out file
 )
 
-func init() {
-	DeclFunc("OldAutoSave", AutoSave, "Auto save space-dependent quantity every period (s).")
-	DeclFunc("AutoSnapshot", AutoSnapshot, "Auto save image of quantity every period (s).")
-}
-
 // Periodically called by run loop to save everything that's needed at this time.
 func SaveIfNeeded() {
 	for q, a := range output {

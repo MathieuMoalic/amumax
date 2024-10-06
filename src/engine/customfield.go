@@ -20,22 +20,6 @@ var (
 
 func init() {
 	registerEnergy(GetCustomEnergy, AddCustomEnergyDensity)
-	DeclFunc("AddFieldTerm", AddFieldTerm, "Add an expression to B_eff.")
-	DeclFunc("AddEdensTerm", AddEdensTerm, "Add an expression to Edens.")
-	DeclFunc("Add", Add, "Add two quantities")
-	DeclFunc("Madd", Madd, "Weighted addition: Madd(Q1,Q2,c1,c2) = c1*Q1 + c2*Q2")
-	DeclFunc("Dot", Dot, "Dot product of two vector quantities")
-	DeclFunc("Cross", Cross, "Cross product of two vector quantities")
-	DeclFunc("Mul", Mul, "Point-wise product of two quantities")
-	DeclFunc("MulMV", MulMV, "Matrix-Vector product: MulMV(AX, AY, AZ, m) = (AX·m, AY·m, AZ·m). "+
-		"The arguments Ax, Ay, Az and m are quantities with 3 componets.")
-	DeclFunc("Div", Div, "Point-wise division of two quantities")
-	DeclFunc("Const", Const, "Constant, uniform number")
-	DeclFunc("ConstVector", ConstVector, "Constant, uniform vector")
-	DeclFunc("Shifted", Shifted, "Shifted quantity")
-	DeclFunc("Masked", Masked, "Mask quantity with shape")
-	DeclFunc("Normalized", Normalized, "Normalize quantity")
-	DeclFunc("RemoveCustomFields", RemoveCustomFields, "Removes all custom fields again")
 }
 
 // Removes all customfields

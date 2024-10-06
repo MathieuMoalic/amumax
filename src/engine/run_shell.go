@@ -7,7 +7,6 @@ import (
 )
 
 func init() {
-	DeclFunc("RunShell", runShell, "Run a shell command")
 	Insecure = false
 }
 

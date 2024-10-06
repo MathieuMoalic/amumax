@@ -7,10 +7,6 @@ import (
 	"math/rand"
 )
 
-func init() {
-	DeclFunc("ext_make3dgrains", Voronoi3d, "3D Voronoi tesselation over shape (grain size, starting region number, num regions, shape, seed)")
-}
-
 func Voronoi3d(grainsize float64, startRegion int, numRegions int, inputShape Shape, seed int) {
 	SetBusy(true)
 	defer SetBusy(false)

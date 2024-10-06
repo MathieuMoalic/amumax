@@ -6,10 +6,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-func init() {
-	DeclFunc("Chunk", Mx3chunks, "")
-}
-
 type Chunk struct {
 	len int
 	nb  int

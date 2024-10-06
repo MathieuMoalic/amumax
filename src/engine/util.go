@@ -11,28 +11,9 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/httpfs"
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/MathieuMoalic/amumax/src/mag"
 	"github.com/MathieuMoalic/amumax/src/oommf"
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
-
-func init() {
-	DeclFunc("Expect", Expect, "Used for automated tests: checks if a value is close enough to the expected value")
-	DeclFunc("ExpectV", ExpectV, "Used for automated tests: checks if a vector is close enough to the expected value")
-	DeclFunc("Fprintln", Fprintln, "Print to file")
-	DeclFunc("Sign", sign, "Signum function")
-	DeclFunc("Vector", Vector, "Constructs a vector with given components")
-	DeclConst("Mu0", mag.Mu0, "Permittivity of vacuum (Tm/A)")
-	DeclFunc("Print", myprint, "Print to standard output")
-	DeclFunc("LoadFile", LoadFile, "Load a zarr data file")
-	DeclFunc("LoadOvfFile", LoadOvfFile, "Load an ovf data file")
-	DeclFunc("Index2Coord", Index2Coord, "Convert cell index to x,y,z coordinate in meter")
-	DeclFunc("NewSlice", NewSlice, "Makes a 4D array with a specified number of components (first argument) "+
-		"and a specified size nx,ny,nz (remaining arguments)")
-	DeclFunc("NewVectorMask", NewVectorMask, "Makes a 3D array of vectors")
-	DeclFunc("NewScalarMask", NewScalarMask, "Makes a 3D array of scalars")
-	DeclFunc("RegionFromCoordinate", RegionFromCoordinate, "RegionFromCoordinate")
-}
 
 func RegionFromCoordinate(x, y, z int) int {
 	return Regions.GetCell(x, y, z)

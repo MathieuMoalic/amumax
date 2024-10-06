@@ -12,14 +12,6 @@ var Regions = RegionsState{info: info{1, "regions", ""}, Indices: make(map[int]b
 
 const NREGION = 256 // maximum number of regions, limited by size of byte.
 
-func init() {
-	DeclFunc("DefRegion", DefRegion, "Define a material region with given index (0-255) and shape")
-	DeclFunc("ShapeFromRegion", ShapeFromRegion, "")
-	DeclROnly("regions", &Regions, "Outputs the region index for each cell")
-	DeclFunc("DefRegionCell", DefRegionCell, "Set a material region (first argument) in one cell "+
-		"by the index of the cell (last three arguments)")
-}
-
 // stores the region index for each cell
 type RegionsState struct {
 	gpuBuffer *cuda.Bytes                 // region data on GPU
@@ -190,17 +182,17 @@ var _ Quantity = &Regions
 
 // Re-interpret a contiguous array as a multi-dimensional array of given size.
 func reshapeBytes(array []byte, size [3]int) [][][]byte {
-	Nx, Ny, Nzz := size[X], size[Y], size[Z]
-	if Nx*Ny*Nzz != len(array) {
+	Nxx, Nyy, Nzz := size[X], size[Y], size[Z]
+	if Nxx*Nyy*Nzz != len(array) {
 		log.Log.ErrAndExit("reshapeBytes: size mismatch")
 	}
 	sliced := make([][][]byte, Nzz)
 	for i := range sliced {
-		sliced[i] = make([][]byte, Ny)
+		sliced[i] = make([][]byte, Nyy)
 	}
 	for i := range sliced {
 		for j := range sliced[i] {
-			sliced[i][j] = array[(i*Ny+j)*Nx : (i*Ny+j)*Nx+Nx]
+			sliced[i][j] = array[(i*Nyy+j)*Nxx : (i*Nyy+j)*Nxx+Nxx]
 		}
 	}
 	return sliced

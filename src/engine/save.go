@@ -15,20 +15,11 @@ import (
 )
 
 func init() {
-	DeclFunc("SaveOvf", Save, "Save space-dependent quantity once, with auto filename")
-	DeclFunc("SaveOvfAs", SaveAs, "Save space-dependent quantity with custom filename")
-
-	DeclLValue("FilenameFormat", &fformat{}, "printf formatting string for output filenames.")
-	DeclLValue("OutputFormat", &oformat{}, "Format for data files: OVF1_TEXT, OVF1_BINARY, OVF2_TEXT or OVF2_BINARY")
-
 	DeclROnly("OVF1_BINARY", OVF1_BINARY, "OutputFormat = OVF1_BINARY sets binary OVF1 output")
 	DeclROnly("OVF2_BINARY", OVF2_BINARY, "OutputFormat = OVF2_BINARY sets binary OVF2 output")
 	DeclROnly("OVF1_TEXT", OVF1_TEXT, "OutputFormat = OVF1_TEXT sets text OVF1 output")
 	DeclROnly("OVF2_TEXT", OVF2_TEXT, "OutputFormat = OVF2_TEXT sets text OVF2 output")
 	DeclROnly("DUMP", DUMP, "OutputFormat = DUMP sets text DUMP output")
-	DeclFunc("Snapshot", Snapshot, "Save image of quantity")
-	DeclFunc("SnapshotAs", SnapshotAs, "Save image of quantity with custom filename")
-	DeclVar("SnapshotFormat", &SnapshotFormat, "Image format for snapshots: jpg, png or gif.")
 }
 
 var (

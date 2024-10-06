@@ -9,8 +9,6 @@ import (
 )
 
 func init() {
-	DeclFunc("SetGeom", SetGeom, "Sets the geometry to a given shape")
-	DeclVar("EdgeSmooth", &edgeSmooth, "Geometry edge smoothing with edgeSmooth^3 samples per cell, 0=staircase, ~8=very smooth")
 	Geometry.init()
 }
 

@@ -10,15 +10,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-func init() {
-	DeclFunc("Crop", Crop, "Crops a quantity to cell ranges [x1,x2[, [y1,y2[, [z1,z2[")
-	DeclFunc("CropX", CropX, "Crops a quantity to cell ranges [x1,x2[")
-	DeclFunc("CropY", CropY, "Crops a quantity to cell ranges [y1,y2[")
-	DeclFunc("CropZ", CropZ, "Crops a quantity to cell ranges [z1,z2[")
-	DeclFunc("CropLayer", CropLayer, "Crops a quantity to a single layer")
-	DeclFunc("CropRegion", CropRegion, "Crops a quantity to a region")
-}
-
 type cropped struct {
 	parent                 Quantity
 	name                   string

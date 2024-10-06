@@ -5,10 +5,6 @@ import (
 	"math/rand"
 )
 
-func init() {
-	DeclFunc("ext_makegrains", Voronoi, "Voronoi tesselation (grain size, num regions)")
-}
-
 func Voronoi(grainsize float64, minRegion, maxRegion, seed int) {
 	SetBusy(true)
 	defer SetBusy(false)
