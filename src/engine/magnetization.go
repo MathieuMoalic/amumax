@@ -8,7 +8,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
-var M magnetization // reduced magnetization (unit length)
+var normMag magnetization // reduced magnetization (unit length)
 
 // Special buffered quantity to store magnetization
 // makes sure it's normalized etc.
@@ -17,29 +17,29 @@ type magnetization struct {
 }
 
 func (m *magnetization) GetRegionToString(region int) string {
-	v := unslice(AverageOf(m))
+	v := unslice(averageOf(m))
 	return fmt.Sprintf("(%g,%g,%g)", v[0], v[1], v[2])
 }
 
-func (m *magnetization) Mesh() *data.Mesh    { return GetMesh() }
+func (m *magnetization) Mesh() *data.Mesh    { return getMesh() }
 func (m *magnetization) NComp() int          { return 3 }
 func (m *magnetization) Name() string        { return "m" }
 func (m *magnetization) Unit() string        { return "" }
 func (m *magnetization) Buffer() *data.Slice { return m.buffer_ } // todo: rename Gpu()?
 
-func (m *magnetization) Comp(c int) ScalarField  { return Comp(m, c) }
-func (m *magnetization) SetValue(v interface{})  { m.SetInShape(nil, v.(Config)) }
-func (m *magnetization) InputType() reflect.Type { return reflect.TypeOf(Config(nil)) }
+func (m *magnetization) Comp(c int) ScalarField  { return comp(m, c) }
+func (m *magnetization) SetValue(v interface{})  { m.SetInShape(nil, v.(config)) }
+func (m *magnetization) InputType() reflect.Type { return reflect.TypeOf(config(nil)) }
 func (m *magnetization) Type() reflect.Type      { return reflect.TypeOf(new(magnetization)) }
 func (m *magnetization) Eval() interface{}       { return m }
-func (m *magnetization) average() []float64      { return sAverageMagnet(M.Buffer()) }
+func (m *magnetization) average() []float64      { return sAverageMagnet(normMag.Buffer()) }
 func (m *magnetization) Average() data.Vector    { return unslice(m.average()) }
 func (m *magnetization) normalize()              { cuda.Normalize(m.Buffer(), Geometry.Gpu()) }
 
 // allocate storage (not done by init, as mesh size may not yet be known then)
 func (m *magnetization) alloc() {
 	m.buffer_ = cuda.NewSlice(3, m.Mesh().Size())
-	m.Set(RandomMag()) // sane starting config
+	m.Set(randomMag()) // sane starting config
 }
 
 func (b *magnetization) SetArray(src *data.Slice) {
@@ -50,16 +50,16 @@ func (b *magnetization) SetArray(src *data.Slice) {
 	b.normalize()
 }
 
-func (m *magnetization) Set(c Config) {
-	CreateMesh()
+func (m *magnetization) Set(c config) {
+	createMesh()
 	m.SetInShape(nil, c)
 }
 
 func (m *magnetization) LoadFile(fname string) {
-	m.SetArray(LoadFile(fname))
+	m.SetArray(loadFile(fname))
 }
 func (m *magnetization) LoadOvfFile(fname string) {
-	m.SetArray(LoadOvfFile(fname))
+	m.SetArray(loadOvfFile(fname))
 }
 
 func (m *magnetization) Slice() (s *data.Slice, recycle bool) {
@@ -74,7 +74,7 @@ func (m *magnetization) Region(r int) *vOneReg { return vOneRegion(m, r) }
 
 // Set the value of one cell.
 func (m *magnetization) SetCell(ix, iy, iz int, v data.Vector) {
-	r := Index2Coord(ix, iy, iz)
+	r := index2Coord(ix, iy, iz)
 	if Geometry.shape != nil && !Geometry.shape(r[X], r[Y], r[Z]) {
 		return
 	}
@@ -89,17 +89,17 @@ func (m *magnetization) GetCell(ix, iy, iz int) data.Vector {
 	mx := float64(cuda.GetCell(m.Buffer(), X, ix, iy, iz))
 	my := float64(cuda.GetCell(m.Buffer(), Y, ix, iy, iz))
 	mz := float64(cuda.GetCell(m.Buffer(), Z, ix, iy, iz))
-	return Vector(mx, my, mz)
+	return vector(mx, my, mz)
 }
 
 func (m *magnetization) Quantity() []float64 { return slice(m.Average()) }
 
 // Sets the magnetization inside the shape
-func (m *magnetization) SetInShape(region Shape, conf Config) {
-	CreateMesh()
+func (m *magnetization) SetInShape(region shape, conf config) {
+	createMesh()
 
 	if region == nil {
-		region = universe
+		region = universeInner
 	}
 	host := m.Buffer().HostCopy()
 	h := host.Vectors()
@@ -108,7 +108,7 @@ func (m *magnetization) SetInShape(region Shape, conf Config) {
 	for iz := 0; iz < n[Z]; iz++ {
 		for iy := 0; iy < n[Y]; iy++ {
 			for ix := 0; ix < n[X]; ix++ {
-				r := Index2Coord(ix, iy, iz)
+				r := index2Coord(ix, iy, iz)
 				x, y, z := r[X], r[Y], r[Z]
 				if region(x, y, z) { // inside
 					m := conf(x, y, z)
@@ -123,7 +123,7 @@ func (m *magnetization) SetInShape(region Shape, conf Config) {
 }
 
 // set m to config in region
-func (m *magnetization) SetRegion(region int, conf Config) {
+func (m *magnetization) SetRegion(region int, conf config) {
 	host := m.Buffer().HostCopy()
 	h := host.Vectors()
 	n := m.Mesh().Size()
@@ -134,7 +134,7 @@ func (m *magnetization) SetRegion(region int, conf Config) {
 	for iz := 0; iz < n[Z]; iz++ {
 		for iy := 0; iy < n[Y]; iy++ {
 			for ix := 0; ix < n[X]; ix++ {
-				pos := Index2Coord(ix, iy, iz)
+				pos := index2Coord(ix, iy, iz)
 				x, y, z := pos[X], pos[Y], pos[Z]
 				if regionsArr[iz][iy][ix] == r {
 					m := conf(x, y, z)

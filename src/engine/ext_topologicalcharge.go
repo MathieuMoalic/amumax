@@ -8,19 +8,19 @@ import (
 )
 
 var (
-	Ext_TopologicalCharge        = NewScalarValue("ext_topologicalcharge", "", "2D topological charge", GetTopologicalCharge)
-	Ext_TopologicalChargeDensity = NewScalarField("ext_topologicalchargedensity", "1/m2",
-		"2D topological charge density m·(∂m/∂x ✕ ∂m/∂y)", SetTopologicalChargeDensity)
+	TopologicalCharge        = newScalarValue("ext_topologicalcharge", "", "2D topological charge", getTopologicalCharge)
+	TopologicalChargeDensity = newScalarField("ext_topologicalchargedensity", "1/m2",
+		"2D topological charge density m·(∂m/∂x ✕ ∂m/∂y)", setTopologicalChargeDensity)
 )
 
-func SetTopologicalChargeDensity(dst *data.Slice) {
-	cuda.SetTopologicalCharge(dst, M.Buffer(), M.Mesh())
+func setTopologicalChargeDensity(dst *data.Slice) {
+	cuda.SetTopologicalCharge(dst, normMag.Buffer(), normMag.Mesh())
 }
 
-func GetTopologicalCharge() float64 {
-	s := ValueOf(Ext_TopologicalChargeDensity)
+func getTopologicalCharge() float64 {
+	s := ValueOf(TopologicalChargeDensity)
 	defer cuda.Recycle(s)
-	c := GetMesh().CellSize()
-	N := GetMesh().Size()
+	c := getMesh().CellSize()
+	N := getMesh().Size()
 	return (0.25 * c[X] * c[Y] / math.Pi / float64(N[Z])) * float64(cuda.Sum(s))
 }

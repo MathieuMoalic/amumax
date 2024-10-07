@@ -15,41 +15,41 @@ import (
 )
 
 func init() {
-	DeclROnly("OVF1_BINARY", OVF1_BINARY, "OutputFormat = OVF1_BINARY sets binary OVF1 output")
-	DeclROnly("OVF2_BINARY", OVF2_BINARY, "OutputFormat = OVF2_BINARY sets binary OVF2 output")
-	DeclROnly("OVF1_TEXT", OVF1_TEXT, "OutputFormat = OVF1_TEXT sets text OVF1 output")
-	DeclROnly("OVF2_TEXT", OVF2_TEXT, "OutputFormat = OVF2_TEXT sets text OVF2 output")
-	DeclROnly("DUMP", DUMP, "OutputFormat = DUMP sets text DUMP output")
+	declROnly("OVF1_BINARY", OVF1_BINARY, "OutputFormat = OVF1_BINARY sets binary OVF1 output")
+	declROnly("OVF2_BINARY", OVF2_BINARY, "OutputFormat = OVF2_BINARY sets binary OVF2 output")
+	declROnly("OVF1_TEXT", OVF1_TEXT, "OutputFormat = OVF1_TEXT sets text OVF1 output")
+	declROnly("OVF2_TEXT", OVF2_TEXT, "OutputFormat = OVF2_TEXT sets text OVF2 output")
+	declROnly("DUMP", DUMP, "OutputFormat = DUMP sets text DUMP output")
 }
 
 var (
-	FilenameFormat = "%s%06d"    // formatting string for auto filenames.
-	SnapshotFormat = "jpg"       // user-settable snapshot format
+	filenameFormat = "%s%06d"    // formatting string for auto filenames.
+	snapshotFormat = "jpg"       // user-settable snapshot format
 	outputFormat   = OVF2_BINARY // user-settable output format
 )
 
 type fformat struct{}
 
-func (*fformat) Eval() interface{}      { return FilenameFormat }
-func (*fformat) SetValue(v interface{}) { drainOutput(); FilenameFormat = v.(string) }
+func (*fformat) Eval() interface{}      { return filenameFormat }
+func (*fformat) SetValue(v interface{}) { drainOutput(); filenameFormat = v.(string) }
 func (*fformat) Type() reflect.Type     { return reflect.TypeOf("") }
 
 type oformat struct{}
 
 func (*oformat) Eval() interface{}      { return outputFormat }
-func (*oformat) SetValue(v interface{}) { drainOutput(); outputFormat = v.(OutputFormat) }
-func (*oformat) Type() reflect.Type     { return reflect.TypeOf(OutputFormat(OVF2_BINARY)) }
+func (*oformat) SetValue(v interface{}) { drainOutput(); outputFormat = v.(outputFormatType) }
+func (*oformat) Type() reflect.Type     { return reflect.TypeOf(outputFormatType(OVF2_BINARY)) }
 
-// Save once, with auto file name
-func Save(q Quantity) {
-	qname := NameOf(q)
-	fname := autoFname(NameOf(q), outputFormat, autonum[qname])
-	SaveAs(q, fname)
+// save once, with auto file name
+func save(q Quantity) {
+	qname := nameOf(q)
+	fname := autoFname(nameOf(q), outputFormat, autonum[qname])
+	saveAs(q, fname)
 	autonum[qname]++
 }
 
 // Save under given file name (transparent async I/O).
-func SaveAs(q Quantity, fname string) {
+func saveAs(q Quantity, fname string) {
 
 	if !strings.HasPrefix(fname, OD()) {
 		fname = OD() + fname // don't clean, turns http:// in http:/
@@ -60,15 +60,15 @@ func SaveAs(q Quantity, fname string) {
 	}
 	buffer := ValueOf(q) // TODO: check and optimize for Buffer()
 	defer cuda.Recycle(buffer)
-	info := data.Meta{Time: Time, Name: NameOf(q), Unit: UnitOf(q), CellSize: MeshOf(q).CellSize()}
+	info := data.Meta{Time: Time, Name: nameOf(q), Unit: unitOf(q), CellSize: MeshOf(q).CellSize()}
 	data := buffer.HostCopy() // must be copy (async io)
 	queOutput(func() { saveAs_sync(fname, data, info, outputFormat) })
 }
 
 // Save image once, with auto file name
-func Snapshot(q Quantity) {
-	qname := NameOf(q)
-	fname := fmt.Sprintf(OD()+FilenameFormat+"."+SnapshotFormat, qname, autonum[qname])
+func snapshot(q Quantity) {
+	qname := nameOf(q)
+	fname := fmt.Sprintf(OD()+filenameFormat+"."+snapshotFormat, qname, autonum[qname])
 	s := ValueOf(q)
 	defer cuda.Recycle(s)
 	data := s.HostCopy() // must be copy (asyncio)
@@ -76,7 +76,7 @@ func Snapshot(q Quantity) {
 	autonum[qname]++
 }
 
-func SnapshotAs(q Quantity, fname string) {
+func snapshotAs(q Quantity, fname string) {
 	if !strings.HasPrefix(fname, OD()) {
 		fname = OD() + fname // don't clean, turns http:// in http:/
 	}
@@ -103,7 +103,7 @@ func snapshot_sync(fname string, output *data.Slice) {
 }
 
 // synchronous save
-func saveAs_sync(fname string, s *data.Slice, info data.Meta, format OutputFormat) {
+func saveAs_sync(fname string, s *data.Slice, info data.Meta, format outputFormatType) {
 	f, err := httpfs.Create(fname)
 	log.Log.PanicIfError(err)
 	defer f.Close()
@@ -123,10 +123,10 @@ func saveAs_sync(fname string, s *data.Slice, info data.Meta, format OutputForma
 
 }
 
-type OutputFormat int
+type outputFormatType int
 
 const (
-	OVF1_TEXT OutputFormat = iota + 1
+	OVF1_TEXT outputFormatType = iota + 1
 	OVF1_BINARY
 	OVF2_TEXT
 	OVF2_BINARY
@@ -134,7 +134,7 @@ const (
 )
 
 var (
-	StringFromOutputFormat = map[OutputFormat]string{
+	StringFromOutputFormat = map[outputFormatType]string{
 		OVF1_TEXT:   "ovf",
 		OVF1_BINARY: "ovf",
 		OVF2_TEXT:   "ovf",

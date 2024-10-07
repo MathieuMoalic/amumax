@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type Flags struct {
+type flagsType struct {
 	debug       bool
 	test        bool
 	version     bool
@@ -33,8 +33,8 @@ type Flags struct {
 	webUIQueuePort int
 }
 
-func parseFlags(rootCmd *cobra.Command) Flags {
-	flags := Flags{}
+func parseFlags(rootCmd *cobra.Command) flagsType {
+	flags := flagsType{}
 	rootCmd.Flags().BoolVarP(&flags.debug, "debug", "d", false, "Debug mode")
 	rootCmd.Flags().BoolVar(&flags.test, "test", false, "Cuda test (internal)")
 	rootCmd.Flags().BoolVarP(&flags.version, "version", "v", true, "Print version")

@@ -4,19 +4,19 @@ package engine
 
 import "github.com/MathieuMoalic/amumax/src/data"
 
-var B_eff = NewVectorField("B_eff", "T", "Effective field", SetEffectiveField)
+var B_eff = newVectorField("B_eff", "T", "Effective field", setEffectiveField)
 
 // Sets dst to the current effective field, in Tesla.
 // This is the sum of all effective field terms,
 // like demag, exchange, ...
-func SetEffectiveField(dst *data.Slice) {
-	SetDemagField(dst)    // set to B_demag...
-	AddExchangeField(dst) // ...then add other terms
-	AddAnisotropyField(dst)
-	AddMagnetoelasticField(dst)
+func setEffectiveField(dst *data.Slice) {
+	setDemagField(dst)    // set to B_demag...
+	addExchangeField(dst) // ...then add other terms
+	addAnisotropyField(dst)
+	addMagnetoelasticField(dst)
 	B_ext.AddTo(dst)
 	if !relaxing {
 		B_therm.AddTo(dst)
 	}
-	AddCustomField(dst)
+	addCustomField(dst)
 }

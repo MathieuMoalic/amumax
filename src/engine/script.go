@@ -42,31 +42,18 @@ func Eval(code string) {
 	tree.Eval()
 }
 
-func Eval1Line(code string) interface{} {
-	tree, err := World.Compile(code)
-	if err != nil {
-		log.Log.Err("%v", err.Error())
-		return nil
-	}
-	if len(tree.Children) != 1 {
-		log.Log.Err("expected single statement:%v", code)
-		return nil
-	}
-	return tree.Children[0].Eval()
-}
-
 // holds the script state (variables etc)
 var World = script.NewWorld()
 
-func Export(q interface {
+func export(q interface {
 	Name() string
 	Unit() string
 }, doc string) {
-	DeclROnly(q.Name(), q, cat(doc, q.Unit()))
+	declROnly(q.Name(), q, cat(doc, q.Unit()))
 }
 
-// LValue is settable
-type LValue interface {
+// lValue is settable
+type lValue interface {
 	SetValue(interface{}) // assigns a new value
 	Eval() interface{}    // evaluate and return result (nil for void)
 	Type() reflect.Type   // type that can be assigned and will be returned by Eval
@@ -85,15 +72,15 @@ var QuantityChanged = make(map[string]bool)
 
 // wraps LValue and provides empty Child()
 type lValueWrapper struct {
-	LValue
+	lValue
 	name string
 }
 
-func newLValueWrapper(name string, lv LValue) script.LValue {
-	return &lValueWrapper{name: name, LValue: lv}
+func newLValueWrapper(name string, lv lValue) script.LValue {
+	return &lValueWrapper{name: name, lValue: lv}
 }
 func (w *lValueWrapper) SetValue(val interface{}) {
-	w.LValue.SetValue(val)
+	w.lValue.SetValue(val)
 	QuantityChanged[w.name] = true
 }
 
@@ -101,7 +88,7 @@ func (w *lValueWrapper) Child() []script.Expr { return nil }
 func (w *lValueWrapper) Fix() script.Expr     { return script.NewConst(w) }
 
 func (w *lValueWrapper) InputType() reflect.Type {
-	if i, ok := w.LValue.(interface {
+	if i, ok := w.lValue.(interface {
 		InputType() reflect.Type
 	}); ok {
 		return i.InputType()

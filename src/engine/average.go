@@ -43,7 +43,7 @@ func sAverageMagnet(s *data.Slice) []float64 {
 // not necessarily integer as cells can have fractional volume.
 func magnetNCell() float64 {
 	if Geometry.Gpu().IsNil() {
-		return float64(GetMesh().NCell())
+		return float64(getMesh().NCell())
 	} else {
 		return float64(cuda.Sum(Geometry.Gpu()))
 	}

@@ -11,40 +11,40 @@ import (
 )
 
 // geometrical shape for setting sample geometry
-type Shape func(x, y, z float64) bool
+type shape func(x, y, z float64) bool
 
-// Wave with given diameters
-func Wave(period, amin, amax float64) Shape {
+// wave with given diameters
+func wave(period, amin, amax float64) shape {
 	return func(x, y, z float64) bool {
 		wavex := (math.Cos(x/period*2*math.Pi)/2 - 0.5) * (amax - amin) / 2
 		return y > wavex-amin/2 && y < -wavex+amin/2
 	}
 }
 
-// Ellipsoid with given diameters
-func Ellipsoid(diamx, diamy, diamz float64) Shape {
+// ellipsoid with given diameters
+func ellipsoid(diamx, diamy, diamz float64) shape {
 	return func(x, y, z float64) bool {
 		return sqr64(x/diamx)+sqr64(y/diamy)+sqr64(z/diamz) <= 0.25
 	}
 }
 
-func Ellipse(diamx, diamy float64) Shape {
-	return Ellipsoid(diamx, diamy, math.Inf(1))
+func ellipse(diamx, diamy float64) shape {
+	return ellipsoid(diamx, diamy, math.Inf(1))
 }
 
-// 3D Cone with base at z=0 and vertex at z=height.
-func Cone(diam, height float64) Shape {
+// 3D cone with base at z=0 and vertex at z=height.
+func cone(diam, height float64) shape {
 	return func(x, y, z float64) bool {
 		return (height-z)*z >= 0 && sqr64(x/diam)+sqr64(y/diam) <= 0.25*sqr64(1-z/height)
 	}
 }
 
-func Circle(diam float64) Shape {
-	return Cylinder(diam, math.Inf(1))
+func circle(diam float64) shape {
+	return cylinder(diam, math.Inf(1))
 }
 
 // cylinder along z.
-func Cylinder(diam, height float64) Shape {
+func cylinder(diam, height float64) shape {
 	return func(x, y, z float64) bool {
 		return z <= height/2 && z >= -height/2 &&
 			sqr64(x/diam)+sqr64(y/diam) <= 0.25
@@ -52,7 +52,7 @@ func Cylinder(diam, height float64) Shape {
 }
 
 // 3D Rectangular slab with given sides.
-func Cuboid(sidex, sidey, sidez float64) Shape {
+func cuboid(sidex, sidey, sidez float64) shape {
 	return func(x, y, z float64) bool {
 		rx, ry, rz := sidex/2, sidey/2, sidez/2
 		return x < rx && x > -rx && y < ry && y > -ry && z < rz && z > -rz
@@ -60,7 +60,7 @@ func Cuboid(sidex, sidey, sidez float64) Shape {
 }
 
 // 2D Rectangle with given sides.
-func Rect(sidex, sidey float64) Shape {
+func rect(sidex, sidey float64) shape {
 	return func(x, y, z float64) bool {
 		rx, ry := sidex/2, sidey/2
 		return x < rx && x > -rx && y < ry && y > -ry
@@ -68,7 +68,7 @@ func Rect(sidex, sidey float64) Shape {
 }
 
 // Equilateral triangle with given sides.
-func Triangle(side float64) Shape {
+func triangle(side float64) shape {
 	return func(x, y, z float64) bool {
 		c := math.Sqrt(3)
 		return y > -side/(2*c) && y < x*c+side/c && y < -x*c+side/c
@@ -76,31 +76,31 @@ func Triangle(side float64) Shape {
 }
 
 // Rounded Equilateral triangle with given sides.
-func RTriangle(side, diam float64) Shape {
+func rTriangle(side, diam float64) shape {
 	return func(x, y, z float64) bool {
 		c := math.Sqrt(3)
 		return y > -side/(2*c) && y < x*c+side/c && y < -x*c+side/c && math.Sqrt(sqr64(x)+sqr64(y)) < diam/2
 	}
 }
 
-// Hexagon with given sides.
-func Hexagon(side float64) Shape {
+// hexagon with given sides.
+func hexagon(side float64) shape {
 	return func(x, y, z float64) bool {
 		a, b := math.Sqrt(3), math.Sqrt(3)*side
 		return y < b/2 && y < -a*x+b && y > a*x-b && y > -b/2 && y > -a*x-b && y < a*x+b
 	}
 }
 
-// Diamond with given sides.
-func Diamond(sidex, sidey float64) Shape {
+// diamond with given sides.
+func diamond(sidex, sidey float64) shape {
 	return func(x, y, z float64) bool {
 		a, b := sidey/sidex, sidey/2
 		return y < a*x+b && y < -a*x+b && y > a*x-b && y > -a*x-b
 	}
 }
 
-// Squircle creates a 3D rounded rectangle (a generalized squircle) with specified side lengths and thickness.
-func Squircle(sidex, sidey, sidez, a float64) Shape {
+// squircle creates a 3D rounded rectangle (a generalized squircle) with specified side lengths and thickness.
+func squircle(sidex, sidey, sidez, a float64) shape {
 	// r := math.Min(sidex, sidey) / 2
 	return func(x, y, z float64) bool {
 		normX := x / (sidex / 2)
@@ -120,51 +120,51 @@ func Squircle(sidex, sidey, sidez, a float64) Shape {
 }
 
 // 2D square with given side.
-func Square(side float64) Shape {
-	return Rect(side, side)
+func square(side float64) shape {
+	return rect(side, side)
 }
 
 // All cells with x-coordinate between a and b
-func XRange(a, b float64) Shape {
+func xRange(a, b float64) shape {
 	return func(x, y, z float64) bool {
 		return x >= a && x < b
 	}
 }
 
 // All cells with y-coordinate between a and b
-func YRange(a, b float64) Shape {
+func yRange(a, b float64) shape {
 	return func(x, y, z float64) bool {
 		return y >= a && y < b
 	}
 }
 
 // All cells with z-coordinate between a and b
-func ZRange(a, b float64) Shape {
+func zRange(a, b float64) shape {
 	return func(x, y, z float64) bool {
 		return z >= a && z < b
 	}
 }
 
 // Cell layers #a (inclusive) up to #b (exclusive).
-func Layers(a, b int) Shape {
-	Nz := GetMesh().Size()[Z]
-	if a < 0 || a > Nz || b < 0 || b < a {
-		log.Log.ErrAndExit("layers %d:%d out of bounds (0 - %d)", a, b, Nz)
+func layers(a, b int) shape {
+	Nzi := getMesh().Size()[Z]
+	if a < 0 || a > Nzi || b < 0 || b < a {
+		log.Log.ErrAndExit("layers %d:%d out of bounds (0 - %d)", a, b, Nzi)
 	}
-	c := GetMesh().CellSize()[Z]
-	z1 := Index2Coord(0, 0, a)[Z] - c/2
-	z2 := Index2Coord(0, 0, b)[Z] - c/2
-	return ZRange(z1, z2)
+	c := getMesh().CellSize()[Z]
+	z1 := index2Coord(0, 0, a)[Z] - c/2
+	z2 := index2Coord(0, 0, b)[Z] - c/2
+	return zRange(z1, z2)
 }
 
-func Layer(index int) Shape {
-	return Layers(index, index+1)
+func layer(index int) shape {
+	return layers(index, index+1)
 }
 
 // Single cell with given index
-func Cell(ix, iy, iz int) Shape {
-	c := GetMesh().CellSize()
-	pos := Index2Coord(ix, iy, iz)
+func cell(ix, iy, iz int) shape {
+	c := getMesh().CellSize()
+	pos := index2Coord(ix, iy, iz)
 	x1 := pos[X] - c[X]/2
 	y1 := pos[Y] - c[Y]/2
 	z1 := pos[Z] - c[Z]/2
@@ -178,21 +178,21 @@ func Cell(ix, iy, iz int) Shape {
 	}
 }
 
-func Universe() Shape {
-	return universe
+func universe() shape {
+	return universeInner
 }
 
 // The entire space.
-func universe(x, y, z float64) bool {
+func universeInner(x, y, z float64) bool {
 	return true
 }
 
-func ImageShape(fname string) Shape {
+func imageShape(fname string) shape {
 	r, err1 := httpfs.Open(fname)
-	CheckRecoverable(err1)
+	checkRecoverable(err1)
 	defer r.Close()
 	img, _, err2 := image.Decode(r)
-	CheckRecoverable(err2)
+	checkRecoverable(err2)
 
 	width := img.Bounds().Max.X
 	height := img.Bounds().Max.Y
@@ -212,9 +212,9 @@ func ImageShape(fname string) Shape {
 	}
 
 	// stretch the image onto the gridsize
-	c := GetMesh().CellSize()
+	c := getMesh().CellSize()
 	cx, cy := c[X], c[Y]
-	N := GetMesh().Size()
+	N := getMesh().Size()
 	nx, ny := float64(N[X]), float64(N[Y])
 	w, h := float64(width), float64(height)
 	return func(x, y, z float64) bool {
@@ -228,7 +228,7 @@ func ImageShape(fname string) Shape {
 	}
 }
 
-func GrainRoughness(grainsize, zmin, zmax float64, seed int) Shape {
+func grainRoughness(grainsize, zmin, zmax float64, seed int) shape {
 	t := newTesselation(grainsize, 0, 256, int64(seed))
 	return func(x, y, z float64) bool {
 		if z <= zmin {
@@ -243,7 +243,7 @@ func GrainRoughness(grainsize, zmin, zmax float64, seed int) Shape {
 }
 
 // Transl returns a translated copy of the shape.
-func (s Shape) Transl(dx, dy, dz float64) Shape {
+func (s shape) Transl(dx, dy, dz float64) shape {
 	return func(x, y, z float64) bool {
 		return s(x-dx, y-dy, z-dz)
 	}
@@ -251,7 +251,7 @@ func (s Shape) Transl(dx, dy, dz float64) Shape {
 
 // Infinitely repeats the shape with given period in x, y, z.
 // A period of 0 or infinity means no repetition.
-func (s Shape) Repeat(periodX, periodY, periodZ float64) Shape {
+func (s shape) Repeat(periodX, periodY, periodZ float64) shape {
 	return func(x, y, z float64) bool {
 		return s(fmod(x, periodX), fmod(y, periodY), fmod(z, periodZ))
 	}
@@ -269,14 +269,14 @@ func fmod(a, b float64) float64 {
 }
 
 // Scale returns a scaled copy of the shape.
-func (s Shape) Scale(sx, sy, sz float64) Shape {
+func (s shape) Scale(sx, sy, sz float64) shape {
 	return func(x, y, z float64) bool {
 		return s(x/sx, y/sy, z/sz)
 	}
 }
 
 // Rotates the shape around the Z-axis, over θ radians.
-func (s Shape) RotZ(θ float64) Shape {
+func (s shape) RotZ(θ float64) shape {
 	cos := math.Cos(θ)
 	sin := math.Sin(θ)
 	return func(x, y, z float64) bool {
@@ -287,7 +287,7 @@ func (s Shape) RotZ(θ float64) Shape {
 }
 
 // Rotates the shape around the Y-axis, over θ radians.
-func (s Shape) RotY(θ float64) Shape {
+func (s shape) RotY(θ float64) shape {
 	cos := math.Cos(θ)
 	sin := math.Sin(θ)
 	return func(x, y, z float64) bool {
@@ -298,7 +298,7 @@ func (s Shape) RotY(θ float64) Shape {
 }
 
 // Rotates the shape around the X-axis, over θ radians.
-func (s Shape) RotX(θ float64) Shape {
+func (s shape) RotX(θ float64) shape {
 	cos := math.Cos(θ)
 	sin := math.Sin(θ)
 	return func(x, y, z float64) bool {
@@ -309,35 +309,35 @@ func (s Shape) RotX(θ float64) Shape {
 }
 
 // Union of shapes a and b (logical OR).
-func (a Shape) Add(b Shape) Shape {
+func (a shape) Add(b shape) shape {
 	return func(x, y, z float64) bool {
 		return a(x, y, z) || b(x, y, z)
 	}
 }
 
 // Intersection of shapes a and b (logical AND).
-func (a Shape) Intersect(b Shape) Shape {
+func (a shape) Intersect(b shape) shape {
 	return func(x, y, z float64) bool {
 		return a(x, y, z) && b(x, y, z)
 	}
 }
 
 // Inverse (outside) of shape (logical NOT).
-func (s Shape) Inverse() Shape {
+func (s shape) Inverse() shape {
 	return func(x, y, z float64) bool {
 		return !s(x, y, z)
 	}
 }
 
 // Removes b from a (logical a AND NOT b)
-func (a Shape) Sub(b Shape) Shape {
+func (a shape) Sub(b shape) shape {
 	return func(x, y, z float64) bool {
 		return a(x, y, z) && !b(x, y, z)
 	}
 }
 
 // Logical XOR of shapes a and b
-func (a Shape) Xor(b Shape) Shape {
+func (a shape) Xor(b shape) shape {
 	return func(x, y, z float64) bool {
 		A, B := a(x, y, z), b(x, y, z)
 		return (A || B) && !(A && B)

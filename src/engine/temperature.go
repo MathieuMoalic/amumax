@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	Temp        = NewScalarParam("Temp", "K", "Temperature")
-	E_therm     = NewScalarValue("E_therm", "J", "Thermal energy", GetThermalEnergy)
-	Edens_therm = NewScalarField("Edens_therm", "J/m3", "Thermal energy density", AddThermalEnergyDensity)
+	Temp        = newScalarParam("Temp", "K", "Temperature")
+	E_therm     = newScalarValue("E_therm", "J", "Thermal energy", getThermalEnergy)
+	Edens_therm = newScalarField("Edens_therm", "J/m3", "Thermal energy density", AddThermalEnergyDensity)
 	B_therm     thermField // Thermal effective field (T)
 )
 
@@ -28,9 +28,9 @@ type thermField struct {
 }
 
 func init() {
-	registerEnergy(GetThermalEnergy, AddThermalEnergyDensity)
+	registerEnergy(getThermalEnergy, AddThermalEnergyDensity)
 	B_therm.step = -1 // invalidate noise cache
-	DeclROnly("B_therm", &B_therm, "Thermal field (T)")
+	declROnly("B_therm", &B_therm, "Thermal field (T)")
 }
 
 func (b *thermField) AddTo(dst *data.Slice) {
@@ -79,9 +79,9 @@ func (b *thermField) update() {
 		return
 	}
 
-	N := GetMesh().NCell()
-	k2_VgammaDt := 2 * mag.Kb / (GammaLL * cellVolume() * Dt_si)
-	noise := cuda.Buffer(1, GetMesh().Size())
+	N := getMesh().NCell()
+	k2_VgammaDt := 2 * mag.Kb / (gammaLL * cellVolume() * Dt_si)
+	noise := cuda.Buffer(1, getMesh().Size())
 	defer cuda.Recycle(noise)
 
 	const mean = 0
@@ -102,7 +102,7 @@ func (b *thermField) update() {
 	b.dt = Dt_si
 }
 
-func GetThermalEnergy() float64 {
+func getThermalEnergy() float64 {
 	if Temp.isZero() || relaxing {
 		return 0
 	} else {
@@ -111,19 +111,19 @@ func GetThermalEnergy() float64 {
 }
 
 // Seeds the thermal noise generator
-func ThermSeed(seed int) {
+func thermSeed(seed int) {
 	B_therm.seed = int64(seed)
 	if B_therm.generator != 0 {
 		B_therm.generator.SetSeed(B_therm.seed)
 	}
 }
 
-func (b *thermField) Mesh() *data.Mesh       { return GetMesh() }
+func (b *thermField) Mesh() *data.Mesh       { return getMesh() }
 func (b *thermField) NComp() int             { return 3 }
 func (b *thermField) Name() string           { return "Thermal field" }
 func (b *thermField) Unit() string           { return "T" }
 func (b *thermField) average() []float64     { return qAverageUniverse(b) }
-func (b *thermField) EvalTo(dst *data.Slice) { EvalTo(b, dst) }
+func (b *thermField) EvalTo(dst *data.Slice) { evalTo(b, dst) }
 func (b *thermField) Slice() (*data.Slice, bool) {
 	b.update()
 	return b.noise, false

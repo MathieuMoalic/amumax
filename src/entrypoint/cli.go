@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var flags Flags
+var flags flagsType
 
 func Entrypoint() {
 	rootCmd := &cobra.Command{

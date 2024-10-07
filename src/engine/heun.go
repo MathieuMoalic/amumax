@@ -7,12 +7,12 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-// Adaptive Heun solver.
-type Heun struct{}
+// Adaptive heun solver.
+type heun struct{}
 
 // Adaptive Heun method, can be used as solver.Step
-func (*Heun) Step() {
-	y := M.Buffer()
+func (*heun) Step() {
+	y := normMag.Buffer()
 	dy0 := cuda.Buffer(VECTOR, y.Size())
 	defer cuda.Recycle(dy0)
 
@@ -20,7 +20,7 @@ func (*Heun) Step() {
 		Dt_si = FixDt
 	}
 
-	dt := float32(Dt_si * GammaLL)
+	dt := float32(Dt_si * gammaLL)
 	log.Assert(dt > 0)
 
 	// stage 1
@@ -39,7 +39,7 @@ func (*Heun) Step() {
 	if err < MaxErr || Dt_si <= MinDt || FixDt != 0 { // mindt check to avoid infinite loop
 		// step OK
 		cuda.Madd3(y, y, dy, dy0, 1, 0.5*dt, -0.5*dt)
-		M.normalize()
+		normMag.normalize()
 		NSteps++
 		adaptDt(math.Pow(MaxErr/err, 1./2.))
 		setLastErr(err)
@@ -54,4 +54,4 @@ func (*Heun) Step() {
 	}
 }
 
-func (*Heun) Free() {}
+func (*heun) Free() {}

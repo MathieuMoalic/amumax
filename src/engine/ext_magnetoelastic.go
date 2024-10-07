@@ -9,29 +9,29 @@ import (
 )
 
 var (
-	B1        = NewScalarParam("B1", "J/m3", "First magneto-elastic coupling constant")
-	B2        = NewScalarParam("B2", "J/m3", "Second magneto-elastic coupling constant")
-	exx       = NewScalarExcitation("exx", "", "exx component of the strain tensor")
-	eyy       = NewScalarExcitation("eyy", "", "eyy component of the strain tensor")
-	ezz       = NewScalarExcitation("ezz", "", "ezz component of the strain tensor")
-	exy       = NewScalarExcitation("exy", "", "exy component of the strain tensor")
-	exz       = NewScalarExcitation("exz", "", "exz component of the strain tensor")
-	eyz       = NewScalarExcitation("eyz", "", "eyz component of the strain tensor")
-	B_mel     = NewVectorField("B_mel", "T", "Magneto-elastic filed", AddMagnetoelasticField)
-	F_mel     = NewVectorField("F_mel", "N/m3", "Magneto-elastic force density", GetMagnetoelasticForceDensity)
-	Edens_mel = NewScalarField("Edens_mel", "J/m3", "Magneto-elastic energy density", AddMagnetoelasticEnergyDensity)
-	E_mel     = NewScalarValue("E_mel", "J", "Magneto-elastic energy", GetMagnetoelasticEnergy)
+	B1        = newScalarParam("B1", "J/m3", "First magneto-elastic coupling constant")
+	B2        = newScalarParam("B2", "J/m3", "Second magneto-elastic coupling constant")
+	exx       = newScalarExcitation("exx", "", "exx component of the strain tensor")
+	eyy       = newScalarExcitation("eyy", "", "eyy component of the strain tensor")
+	ezz       = newScalarExcitation("ezz", "", "ezz component of the strain tensor")
+	exy       = newScalarExcitation("exy", "", "exy component of the strain tensor")
+	exz       = newScalarExcitation("exz", "", "exz component of the strain tensor")
+	eyz       = newScalarExcitation("eyz", "", "eyz component of the strain tensor")
+	B_mel     = newVectorField("B_mel", "T", "Magneto-elastic filed", addMagnetoelasticField)
+	F_mel     = newVectorField("F_mel", "N/m3", "Magneto-elastic force density", getMagnetoelasticForceDensity)
+	Edens_mel = newScalarField("Edens_mel", "J/m3", "Magneto-elastic energy density", addMagnetoelasticEnergyDensity)
+	E_mel     = newScalarValue("E_mel", "J", "Magneto-elastic energy", getMagnetoelasticEnergy)
 )
 
 var (
-	zeroMel = NewScalarParam("_zeroMel", "", "utility zero parameter")
+	zeroMel = newScalarParam("_zeroMel", "", "utility zero parameter")
 )
 
 func init() {
-	registerEnergy(GetMagnetoelasticEnergy, AddMagnetoelasticEnergyDensity)
+	registerEnergy(getMagnetoelasticEnergy, addMagnetoelasticEnergyDensity)
 }
 
-func AddMagnetoelasticField(dst *data.Slice) {
+func addMagnetoelasticField(dst *data.Slice) {
 	haveMel := B1.nonZero() || B2.nonZero()
 	if !haveMel {
 		return
@@ -64,13 +64,13 @@ func AddMagnetoelasticField(dst *data.Slice) {
 	ms := Msat.MSlice()
 	defer ms.Recycle()
 
-	cuda.AddMagnetoelasticField(dst, M.Buffer(),
+	cuda.AddMagnetoelasticField(dst, normMag.Buffer(),
 		Exx, Eyy, Ezz,
 		Exy, Exz, Eyz,
 		b1, b2, ms)
 }
 
-func GetMagnetoelasticForceDensity(dst *data.Slice) {
+func getMagnetoelasticForceDensity(dst *data.Slice) {
 	haveMel := B1.nonZero() || B2.nonZero()
 	if !haveMel {
 		return
@@ -84,11 +84,11 @@ func GetMagnetoelasticForceDensity(dst *data.Slice) {
 	b2 := B2.MSlice()
 	defer b2.Recycle()
 
-	cuda.GetMagnetoelasticForceDensity(dst, M.Buffer(),
-		b1, b2, M.Mesh())
+	cuda.GetMagnetoelasticForceDensity(dst, normMag.Buffer(),
+		b1, b2, normMag.Mesh())
 }
 
-func AddMagnetoelasticEnergyDensity(dst *data.Slice) {
+func addMagnetoelasticEnergyDensity(dst *data.Slice) {
 	haveMel := B1.nonZero() || B2.nonZero()
 	if !haveMel {
 		return
@@ -133,7 +133,7 @@ func AddMagnetoelasticEnergyDensity(dst *data.Slice) {
 
 	// 1st
 	cuda.Zero(buf)
-	cuda.AddMagnetoelasticField(buf, M.Buffer(),
+	cuda.AddMagnetoelasticField(buf, normMag.Buffer(),
 		Exx, Eyy, Ezz,
 		Exy, Exz, Eyz,
 		b1, zeromel, ms)
@@ -141,7 +141,7 @@ func AddMagnetoelasticEnergyDensity(dst *data.Slice) {
 
 	// 1nd
 	cuda.Zero(buf)
-	cuda.AddMagnetoelasticField(buf, M.Buffer(),
+	cuda.AddMagnetoelasticField(buf, normMag.Buffer(),
 		Exx, Eyy, Ezz,
 		Exy, Exz, Eyz,
 		zeromel, b2, ms)
@@ -149,16 +149,16 @@ func AddMagnetoelasticEnergyDensity(dst *data.Slice) {
 }
 
 // Returns magneto-ell energy in joules.
-func GetMagnetoelasticEnergy() float64 {
+func getMagnetoelasticEnergy() float64 {
 	haveMel := B1.nonZero() || B2.nonZero()
 	if !haveMel {
 		return float64(0.0)
 	}
 
-	buf := cuda.Buffer(1, GetMesh().Size())
+	buf := cuda.Buffer(1, getMesh().Size())
 	defer cuda.Recycle(buf)
 
 	cuda.Zero(buf)
-	AddMagnetoelasticEnergyDensity(buf)
+	addMagnetoelasticEnergyDensity(buf)
 	return cellVolume() * float64(cuda.Sum(buf))
 }
