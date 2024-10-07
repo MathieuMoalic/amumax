@@ -15,14 +15,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
-// The Info interface defines the bare minimum methods a quantity must implement
-// to be accessible for scripting and I/O.
-type Info interface {
-	Name() string // number of components (scalar, vector, ...)
-	Unit() string // name used for output file (e.g. "m")
-	NComp() int   // unit, e.g. "A/m"
-}
-
 // info provides an Info implementation intended for embedding in other types.
 type info struct {
 	nComp int
@@ -57,12 +49,12 @@ type ScalarValue struct {
 	*valueFunc
 }
 
-// NewScalarValue constructs an outputable space-independent scalar quantity whose
+// newScalarValue constructs an outputable space-independent scalar quantity whose
 // value is provided by function f.
-func NewScalarValue(name, unit, desc string, f func() float64) *ScalarValue {
+func newScalarValue(name, unit, desc string, f func() float64) *ScalarValue {
 	g := func() []float64 { return []float64{f()} }
 	v := &ScalarValue{&valueFunc{info{1, name, unit}, g}}
-	Export(v, desc)
+	export(v, desc)
 	return v
 }
 
@@ -75,30 +67,30 @@ type VectorValue struct {
 	*valueFunc
 }
 
-// NewVectorValue constructs an outputable space-independent vector quantity whose
+// newVectorValue constructs an outputable space-independent vector quantity whose
 // value is provided by function f.
-func NewVectorValue(name, unit, desc string, f func() []float64) *VectorValue {
+func newVectorValue(name, unit, desc string, f func() []float64) *VectorValue {
 	v := &VectorValue{&valueFunc{info{3, name, unit}, f}}
-	Export(v, desc)
+	export(v, desc)
 	return v
 }
 
 func (v *VectorValue) Get() data.Vector     { return unslice(v.average()) }
 func (v *VectorValue) Average() data.Vector { return v.Get() }
 
-// NewVectorField constructs an outputable space-dependent vector quantity whose
+// newVectorField constructs an outputable space-dependent vector quantity whose
 // value is provided by function f.
-func NewVectorField(name, unit, desc string, f func(dst *data.Slice)) VectorField {
+func newVectorField(name, unit, desc string, f func(dst *data.Slice)) VectorField {
 	v := AsVectorField(&fieldFunc{info{3, name, unit}, f})
-	DeclROnly(name, v, cat(desc, unit))
+	declROnly(name, v, cat(desc, unit))
 	return v
 }
 
 // NewVectorField constructs an outputable space-dependent scalar quantity whose
 // value is provided by function f.
-func NewScalarField(name, unit, desc string, f func(dst *data.Slice)) ScalarField {
+func newScalarField(name, unit, desc string, f func(dst *data.Slice)) ScalarField {
 	q := AsScalarField(&fieldFunc{info{1, name, unit}, f})
-	DeclROnly(name, q, cat(desc, unit))
+	declROnly(name, q, cat(desc, unit))
 	return q
 }
 
@@ -107,9 +99,9 @@ type fieldFunc struct {
 	f func(*data.Slice)
 }
 
-func (c *fieldFunc) Mesh() *data.Mesh       { return GetMesh() }
+func (c *fieldFunc) Mesh() *data.Mesh       { return getMesh() }
 func (c *fieldFunc) average() []float64     { return qAverageUniverse(c) }
-func (c *fieldFunc) EvalTo(dst *data.Slice) { EvalTo(c, dst) }
+func (c *fieldFunc) EvalTo(dst *data.Slice) { evalTo(c, dst) }
 
 // Calculates and returns the quantity.
 // recycle is true: slice needs to be recycled.
@@ -130,16 +122,16 @@ type ScalarField struct {
 // enabling convenience methods particular to scalars.
 func AsScalarField(q Quantity) ScalarField {
 	if q.NComp() != 1 {
-		panic(fmt.Errorf("ScalarField(%v): need 1 component, have: %v", NameOf(q), q.NComp()))
+		panic(fmt.Errorf("ScalarField(%v): need 1 component, have: %v", nameOf(q), q.NComp()))
 	}
 	return ScalarField{q}
 }
 
-func (s ScalarField) average() []float64       { return AverageOf(s.Quantity) }
+func (s ScalarField) average() []float64       { return averageOf(s.Quantity) }
 func (s ScalarField) Average() float64         { return s.average()[0] }
 func (s ScalarField) Region(r int) ScalarField { return AsScalarField(inRegion(s.Quantity, r)) }
-func (s ScalarField) Name() string             { return NameOf(s.Quantity) }
-func (s ScalarField) Unit() string             { return UnitOf(s.Quantity) }
+func (s ScalarField) Name() string             { return nameOf(s.Quantity) }
+func (s ScalarField) Unit() string             { return unitOf(s.Quantity) }
 
 // VectorField enhances an outputField with methods specific to
 // a space-dependent vector quantity.
@@ -151,18 +143,18 @@ type VectorField struct {
 // enabling convenience methods particular to vectors.
 func AsVectorField(q Quantity) VectorField {
 	if q.NComp() != 3 {
-		panic(fmt.Errorf("VectorField(%v): need 3 components, have: %v", NameOf(q), q.NComp()))
+		panic(fmt.Errorf("VectorField(%v): need 3 components, have: %v", nameOf(q), q.NComp()))
 	}
 	return VectorField{q}
 }
 
-func (v VectorField) average() []float64       { return AverageOf(v.Quantity) }
+func (v VectorField) average() []float64       { return averageOf(v.Quantity) }
 func (v VectorField) Average() data.Vector     { return unslice(v.average()) }
 func (v VectorField) Region(r int) VectorField { return AsVectorField(inRegion(v.Quantity, r)) }
-func (v VectorField) Comp(c int) ScalarField   { return AsScalarField(Comp(v.Quantity, c)) }
+func (v VectorField) Comp(c int) ScalarField   { return AsScalarField(comp(v.Quantity, c)) }
 func (v VectorField) Mesh() *data.Mesh         { return MeshOf(v.Quantity) }
-func (v VectorField) Name() string             { return NameOf(v.Quantity) }
-func (v VectorField) Unit() string             { return UnitOf(v.Quantity) }
+func (v VectorField) Name() string             { return nameOf(v.Quantity) }
+func (v VectorField) Unit() string             { return unitOf(v.Quantity) }
 func (v VectorField) HostCopy() *data.Slice {
 	s := ValueOf(v.Quantity)
 	defer cuda.Recycle(s)

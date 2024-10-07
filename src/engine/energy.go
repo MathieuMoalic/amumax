@@ -13,8 +13,8 @@ import (
 var (
 	energyTerms []func() float64        // all contributions to total energy
 	edensTerms  []func(dst *data.Slice) // all contributions to total energy density (add to dst)
-	Edens_total = NewScalarField("Edens_total", "J/m3", "Total energy density", SetTotalEdens)
-	E_total     = NewScalarValue("E_total", "J", "total energy", GetTotalEnergy)
+	Edens_total = newScalarField("Edens_total", "J/m3", "Total energy density", setTotalEdens)
+	E_total     = newScalarValue("E_total", "J", "total energy", getTotalEnergy)
 )
 
 // add energy term to global energy
@@ -24,7 +24,7 @@ func registerEnergy(term func() float64, dens func(*data.Slice)) {
 }
 
 // Returns the total energy in J.
-func GetTotalEnergy() float64 {
+func getTotalEnergy() float64 {
 	E := 0.
 	for _, f := range energyTerms {
 		E += f()
@@ -34,7 +34,7 @@ func GetTotalEnergy() float64 {
 }
 
 // Set dst to total energy density in J/m3
-func SetTotalEdens(dst *data.Slice) {
+func setTotalEdens(dst *data.Slice) {
 	cuda.Zero(dst)
 	for _, addTerm := range edensTerms {
 		addTerm(dst)
@@ -43,7 +43,7 @@ func SetTotalEdens(dst *data.Slice) {
 
 // volume of one cell in m3
 func cellVolume() float64 {
-	c := GetMesh().CellSize()
+	c := getMesh().CellSize()
 	return c[0] * c[1] * c[2]
 }
 

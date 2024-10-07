@@ -14,20 +14,20 @@ import (
 )
 
 var (
-	Aex    = NewScalarParam("Aex", "J/m", "Exchange stiffness", &lex2)
-	Dind   = NewScalarParam("Dind", "J/m2", "Interfacial Dzyaloshinskii-Moriya strength", &din2)
-	Dbulk  = NewScalarParam("Dbulk", "J/m2", "Bulk Dzyaloshinskii-Moriya strength", &dbulk2)
+	Aex    = newScalarParam("Aex", "J/m", "Exchange stiffness", &lex2)
+	Dind   = newScalarParam("Dind", "J/m2", "Interfacial Dzyaloshinskii-Moriya strength", &din2)
+	Dbulk  = newScalarParam("Dbulk", "J/m2", "Bulk Dzyaloshinskii-Moriya strength", &dbulk2)
 	lex2   exchParam // inter-cell Aex
 	din2   exchParam // inter-cell Dind
 	dbulk2 exchParam // inter-cell Dbulk
 
-	B_exch     = NewVectorField("B_exch", "T", "Exchange field", AddExchangeField)
-	E_exch     = NewScalarValue("E_exch", "J", "Total exchange energy (including the DMI energy)", GetExchangeEnergy)
-	Edens_exch = NewScalarField("Edens_exch", "J/m3", "Total exchange energy density (including the DMI energy density)", AddExchangeEnergyDensity)
+	B_exch     = newVectorField("B_exch", "T", "Exchange field", addExchangeField)
+	E_exch     = newScalarValue("E_exch", "J", "Total exchange energy (including the DMI energy)", getExchangeEnergy)
+	Edens_exch = newScalarField("Edens_exch", "J/m3", "Total exchange energy density (including the DMI energy density)", AddExchangeEnergyDensity)
 
 	// Average exchange coupling with neighbors. Useful to debug inter-region exchange
-	ExchCoupling = NewScalarField("ExchCoupling", "arb.", "Average exchange coupling with neighbors", exchangeDecode)
-	DindCoupling = NewScalarField("DindCoupling", "arb.", "Average DMI coupling with neighbors", dindDecode)
+	ExchCoupling = newScalarField("ExchCoupling", "arb.", "Average exchange coupling with neighbors", exchangeDecode)
+	DindCoupling = newScalarField("DindCoupling", "arb.", "Average DMI coupling with neighbors", dindDecode)
 
 	OpenBC = false
 )
@@ -35,30 +35,25 @@ var (
 var AddExchangeEnergyDensity = makeEdensAdder(&B_exch, -0.5) // TODO: normal func
 
 func init() {
-	registerEnergy(GetExchangeEnergy, AddExchangeEnergyDensity)
-	DeclFunc("ext_ScaleExchange", ScaleInterExchange, "Re-scales exchange coupling between two regions.")
-	DeclFunc("ext_InterExchange", InterExchange, "Sets exchange coupling between two regions.")
-	DeclFunc("ext_ScaleDind", ScaleInterDind, "Re-scales Dind coupling between two regions.")
-	DeclFunc("ext_InterDind", InterDind, "Sets Dind coupling between two regions.")
-	DeclVar("OpenBC", &OpenBC, "Use open boundary conditions (default=false)")
+	registerEnergy(getExchangeEnergy, AddExchangeEnergyDensity)
 	lex2.init(Aex)
 	din2.init(Dind)
 	dbulk2.init(Dbulk)
 }
 
 // Adds the current exchange field to dst
-func AddExchangeField(dst *data.Slice) {
+func addExchangeField(dst *data.Slice) {
 	inter := !Dind.isZero()
 	bulk := !Dbulk.isZero()
 	ms := Msat.MSlice()
 	defer ms.Recycle()
 	switch {
 	case !inter && !bulk:
-		cuda.AddExchange(dst, M.Buffer(), lex2.Gpu(), ms, Regions.Gpu(), M.Mesh())
+		cuda.AddExchange(dst, normMag.Buffer(), lex2.Gpu(), ms, Regions.Gpu(), normMag.Mesh())
 	case inter && !bulk:
-		cuda.AddDMI(dst, M.Buffer(), lex2.Gpu(), din2.Gpu(), ms, Regions.Gpu(), M.Mesh(), OpenBC) // dmi+exchange
+		cuda.AddDMI(dst, normMag.Buffer(), lex2.Gpu(), din2.Gpu(), ms, Regions.Gpu(), normMag.Mesh(), OpenBC) // dmi+exchange
 	case bulk && !inter:
-		cuda.AddDMIBulk(dst, M.Buffer(), lex2.Gpu(), dbulk2.Gpu(), ms, Regions.Gpu(), M.Mesh(), OpenBC) // dmi+exchange
+		cuda.AddDMIBulk(dst, normMag.Buffer(), lex2.Gpu(), dbulk2.Gpu(), ms, Regions.Gpu(), normMag.Mesh(), OpenBC) // dmi+exchange
 		// TODO: add ScaleInterDbulk and InterDbulk
 	case inter && bulk:
 		log.Log.ErrAndExit("Cannot have interfacial-induced DMI and bulk DMI at the same time")
@@ -67,44 +62,44 @@ func AddExchangeField(dst *data.Slice) {
 
 // Set dst to the average exchange coupling per cell (average of lex2 with all neighbors).
 func exchangeDecode(dst *data.Slice) {
-	cuda.ExchangeDecode(dst, lex2.Gpu(), Regions.Gpu(), M.Mesh())
+	cuda.ExchangeDecode(dst, lex2.Gpu(), Regions.Gpu(), normMag.Mesh())
 }
 
 // Set dst to the average dmi coupling per cell (average of din2 with all neighbors).
 func dindDecode(dst *data.Slice) {
-	cuda.ExchangeDecode(dst, din2.Gpu(), Regions.Gpu(), M.Mesh())
+	cuda.ExchangeDecode(dst, din2.Gpu(), Regions.Gpu(), normMag.Mesh())
 }
 
 // Returns the current exchange energy in Joules.
-func GetExchangeEnergy() float64 {
+func getExchangeEnergy() float64 {
 	return -0.5 * cellVolume() * dot(&M_full, &B_exch)
 }
 
 // Scales the heisenberg exchange interaction between region1 and 2.
 // Scale = 1 means the harmonic mean over the regions of Aex.
-func ScaleInterExchange(region1, region2 int, scale float64) {
+func scaleInterExchange(region1, region2 int, scale float64) {
 	lex2.setScale(region1, region2, scale)
 }
 
 // Sets the exchange interaction between region 1 and 2.
-func InterExchange(region1, region2 int, value float64) {
+func interExchange(region1, region2 int, value float64) {
 	lex2.setInter(region1, region2, value)
 }
 
 // Scales the DMI interaction between region 1 and 2.
-func ScaleInterDind(region1, region2 int, scale float64) {
+func scaleInterDind(region1, region2 int, scale float64) {
 	din2.setScale(region1, region2, scale)
 }
 
 // Sets the DMI interaction between region 1 and 2.
-func InterDind(region1, region2 int, value float64) {
+func interDind(region1, region2 int, value float64) {
 	din2.setInter(region1, region2, value)
 }
 
 // stores interregion exchange stiffness and DMI
 // the interregion exchange/DMI by default is the harmonic mean (scale=1, inter=0)
 type exchParam struct {
-	parent         *RegionwiseScalar
+	parent         *regionwiseScalar
 	lut            [NREGION * (NREGION + 1) / 2]float32 // harmonic mean of regions (i,j)
 	scale          [NREGION * (NREGION + 1) / 2]float32 // extra scale factor for lut[SymmIdx(i, j)]
 	inter          [NREGION * (NREGION + 1) / 2]float32 // extra term for lut[SymmIdx(i, j)]
@@ -118,7 +113,7 @@ func (p *exchParam) invalidate() {
 	p.gpu_ok = false
 }
 
-func (p *exchParam) init(parent *RegionwiseScalar) {
+func (p *exchParam) init(parent *regionwiseScalar) {
 	for i := range p.scale {
 		p.scale[i] = 1 // default scaling
 		p.inter[i] = 0 // default additional interexchange term

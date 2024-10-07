@@ -12,24 +12,34 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-var (
-	upgrader = websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	}
-	connections = &connectionManager{
-		conns: make(map[*websocket.Conn]struct{}),
-		mu:    sync.Mutex{},
-	}
+// WebSocketManager holds state previously stored in global variables.
+type WebSocketManager struct {
+	upgrader       websocket.Upgrader
+	connections    *connectionManager
 	lastStep       int
 	broadcastStop  chan struct{}
 	broadcastStart sync.Once
-)
+	engineState    *EngineState
+}
 
 type connectionManager struct {
 	conns map[*websocket.Conn]struct{}
 	mu    sync.Mutex
+}
+
+func newWebSocketManager() *WebSocketManager {
+	return &WebSocketManager{
+		upgrader: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
+		connections: &connectionManager{
+			conns: make(map[*websocket.Conn]struct{}),
+			mu:    sync.Mutex{},
+		},
+		broadcastStop: make(chan struct{}),
+	}
 }
 
 func (cm *connectionManager) add(ws *websocket.Conn) {
@@ -37,7 +47,7 @@ func (cm *connectionManager) add(ws *websocket.Conn) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	cm.conns[ws] = struct{}{}
-	preview.Refresh = true
+	// preview.Refresh = true
 }
 
 func (cm *connectionManager) remove(ws *websocket.Conn) {
@@ -60,9 +70,9 @@ func (cm *connectionManager) broadcast(msg []byte) {
 	}
 }
 
-func websocketEntrypoint(c echo.Context) error {
+func (wsManager *WebSocketManager) websocketEntrypoint(c echo.Context) error {
 	log.Log.Debug("New WebSocket connection, upgrading...")
-	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
+	ws, err := wsManager.upgrader.Upgrade(c.Response(), c.Request(), nil)
 	log.Log.Debug("New WebSocket connection upgraded")
 	if err != nil {
 		log.Log.Err("Error upgrading connection to WebSocket: %v", err)
@@ -70,9 +80,9 @@ func websocketEntrypoint(c echo.Context) error {
 	}
 	defer ws.Close()
 
-	connections.add(ws)
-	defer connections.remove(ws)
-	broadcastEngineState()
+	wsManager.connections.add(ws)
+	defer wsManager.connections.remove(ws)
+	wsManager.broadcastEngineState()
 
 	// Channel to signal when to stop the goroutine
 	done := make(chan struct{})
@@ -91,36 +101,36 @@ func websocketEntrypoint(c echo.Context) error {
 	case <-done:
 		log.Log.Debug("Connection closed by client")
 		return nil
-	case <-broadcastStop:
+	case <-wsManager.broadcastStop:
 		return nil
 	}
 }
 
-func broadcastEngineState() {
-	msg, err := msgpack.Marshal(NewEngineState())
+func (wsManager *WebSocketManager) broadcastEngineState() {
+	wsManager.engineState.Update()
+	msg, err := msgpack.Marshal(wsManager.engineState)
 	if err != nil {
 		log.Log.Err("Error marshaling combined message: %v", err)
 		return
 	}
 
-	connections.broadcast(msg)
+	wsManager.connections.broadcast(msg)
 	// Reset the refresh flag
-	preview.Refresh = false
+	wsManager.engineState.Preview.Refresh = false
 }
 
-func startBroadcastLoop() {
-	broadcastStop = make(chan struct{})
-	broadcastStart.Do(func() {
+func (wsManager *WebSocketManager) startBroadcastLoop() {
+	wsManager.broadcastStart.Do(func() {
 		go func() {
 			for {
 				select {
-				case <-broadcastStop:
+				case <-wsManager.broadcastStop:
 					return
 				default:
-					if engine.NSteps != lastStep {
-						if len(connections.conns) > 0 {
-							broadcastEngineState()
-							lastStep = engine.NSteps
+					if engine.NSteps != wsManager.lastStep {
+						if len(wsManager.connections.conns) > 0 {
+							wsManager.broadcastEngineState()
+							wsManager.lastStep = engine.NSteps
 						}
 					}
 					time.Sleep(1 * time.Second)
@@ -128,8 +138,4 @@ func startBroadcastLoop() {
 			}
 		}()
 	})
-}
-
-func init() {
-	startBroadcastLoop()
 }

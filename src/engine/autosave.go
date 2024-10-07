@@ -13,13 +13,8 @@ var (
 	autonum = make(map[string]int)         // auto number for out file
 )
 
-func init() {
-	DeclFunc("OldAutoSave", AutoSave, "Auto save space-dependent quantity every period (s).")
-	DeclFunc("AutoSnapshot", AutoSnapshot, "Auto save image of quantity every period (s).")
-}
-
 // Periodically called by run loop to save everything that's needed at this time.
-func SaveIfNeeded() {
+func saveIfNeeded() {
 	for q, a := range output {
 		if a.needSave() {
 			a.save(q)
@@ -32,7 +27,7 @@ func SaveIfNeeded() {
 		}
 	}
 	if Table.NeedSave() {
-		TableSave()
+		tableSave()
 	}
 	if script.MMetadata.NeedSave() {
 		script.MMetadata.Save()
@@ -41,17 +36,17 @@ func SaveIfNeeded() {
 
 // Register quant to be auto-saved every period.
 // period == 0 stops autosaving.
-func AutoSave(q Quantity, period float64) {
-	autoSave(q, period, Save)
+func autoSave(q Quantity, period float64) {
+	autoSaveInner(q, period, save)
 }
 
 // Register quant to be auto-saved as image, every period.
-func AutoSnapshot(q Quantity, period float64) {
-	autoSave(q, period, Snapshot)
+func autoSnapshot(q Quantity, period float64) {
+	autoSaveInner(q, period, snapshot)
 }
 
 // register save(q) to be called every period
-func autoSave(q Quantity, period float64, save func(Quantity)) {
+func autoSaveInner(q Quantity, period float64, save func(Quantity)) {
 	if period == 0 {
 		delete(output, q)
 	} else {
@@ -62,8 +57,8 @@ func autoSave(q Quantity, period float64, save func(Quantity)) {
 // generate auto file name based on save count and FilenameFormat. E.g.:
 //
 //	m000001.ovf
-func autoFname(name string, format OutputFormat, num int) string {
-	return fmt.Sprintf(OD()+FilenameFormat+"."+StringFromOutputFormat[format], name, num)
+func autoFname(name string, format outputFormatType, num int) string {
+	return fmt.Sprintf(OD()+filenameFormat+"."+StringFromOutputFormat[format], name, num)
 }
 
 // keeps info needed to decide when a quantity needs to be periodically saved

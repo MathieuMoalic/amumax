@@ -28,42 +28,17 @@ func Start(host string, port int, tunnel string, debug bool) {
 	} else {
 		e.Logger.SetOutput(io.Discard)
 	}
-
 	// Serve the `index.html` file at the root URL
 	e.GET("/", indexFileHandler())
 
 	// Serve the other embedded static files
 	e.GET("/*", echo.WrapHandler(staticFileHandler()))
 
-	e.GET("/ws", websocketEntrypoint)
-
-	e.POST("/api/preview/component", postPreviewComponent)
-	e.POST("/api/preview/quantity", postPreviewQuantity)
-	e.POST("/api/preview/layer", postPreviewLayer)
-	e.POST("/api/preview/maxpoints", postPreviewMaxPoints)
-	e.POST("/api/preview/refresh", postPreviewRefresh)
-
-	e.POST("/api/tableplot/autosave-interval", postTablePlotAutoSaveInterval)
-	e.POST("/api/tableplot/xcolumn", postTablePlotXColumn)
-	e.POST("/api/tableplot/ycolumn", postTablePlotYColumn)
-	e.POST("/api/tableplot/maxpoints", postTablePlotMaxPoints)
-	e.POST("/api/tableplot/step", postTablePlotStep)
-
-	e.POST("/api/console/command", postConsoleCommand)
-
-	e.POST("/api/solver/type", postSolverType)
-	e.POST("/api/solver/run", postSolverRun)
-	e.POST("/api/solver/steps", postSolverSteps)
-	e.POST("/api/solver/relax", postSolverRelax)
-	e.POST("/api/solver/break", postSolverBreak)
-	e.POST("/api/solver/fixdt", postSolverFixDt)
-	e.POST("/api/solver/mindt", postSolverMinDt)
-	e.POST("/api/solver/maxdt", postSolverMaxDt)
-	e.POST("/api/solver/maxerr", postSolverMaxErr)
-
-	e.POST("/api/parameter/selected-region", postSelectParameterRegion)
-
-	e.POST("/mesh", postMesh)
+	wsManager := newWebSocketManager()
+	e.GET("/ws", wsManager.websocketEntrypoint)
+	wsManager.startBroadcastLoop()
+	engineState := initEngineStateAPI(e, wsManager)
+	wsManager.engineState = engineState
 
 	startGuiServer(e, host, port, tunnel)
 }

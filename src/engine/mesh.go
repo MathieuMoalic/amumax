@@ -30,27 +30,8 @@ var (
 	globalmesh_ data.Mesh
 )
 
-func init() {
-	DeclVar("AutoMeshx", &AutoMeshx, "")
-	DeclVar("AutoMeshy", &AutoMeshy, "")
-	DeclVar("AutoMeshz", &AutoMeshz, "")
-	DeclVar("Tx", &Tx, "")
-	DeclVar("Ty", &Ty, "")
-	DeclVar("Tz", &Tz, "")
-	DeclVar("Nx", &Nx, "")
-	DeclVar("Ny", &Ny, "")
-	DeclVar("Nz", &Nz, "")
-	DeclVar("dx", &Dx, "")
-	DeclVar("dy", &Dy, "")
-	DeclVar("dz", &Dz, "")
-	DeclVar("PBCx", &PBCx, "")
-	DeclVar("PBCy", &PBCy, "")
-	DeclVar("PBCz", &PBCz, "")
-	DeclFunc("ReCreateMesh", ReCreateMesh, "")
-}
-
-func GetMesh() *data.Mesh {
-	CreateMesh()
+func getMesh() *data.Mesh {
+	createMesh()
 	return &globalmesh_
 }
 
@@ -77,7 +58,7 @@ func closestSevenSmooth(n int) int {
 	return n
 }
 
-func SmoothMesh() {
+func smoothMesh() {
 	if Nx*Ny*Nz < 10000 {
 		log.Log.Info("No optimization to be made for small meshes")
 		return
@@ -105,16 +86,7 @@ func SmoothMesh() {
 	log.Log.Info("Grid Size: %d, %d, %d", Nx, Ny, Nz)
 }
 
-func IsValidCellSize(cellSizeX, cellSizeY, cellSizeZ float64) bool {
-	threshold := 2.5e-10
-	if (cellSizeX < threshold) || (cellSizeY < threshold) || (cellSizeZ < threshold) {
-		return false
-	} else {
-		return true
-	}
-}
-
-func ValidateGridSize() {
+func validateGridSize() {
 	max_threshold := 1000000
 	names := []string{"Nx", "Ny", "Nz"}
 	for i, N := range []int{Nx, Ny, Nz} {
@@ -126,7 +98,7 @@ func ValidateGridSize() {
 	}
 }
 
-func ValidateCellSize() {
+func validateCellSize() {
 	min_threshold := 0.25e-9
 	max_threshold := 500e-9
 	names := []string{"dx", "dy", "dz"}
@@ -141,11 +113,11 @@ func ValidateCellSize() {
 	}
 }
 
-func IsMeshCreated() bool {
+func isMeshCreated() bool {
 	return globalmesh_.Size() != [3]int{0, 0, 0}
 }
 
-func SetTiDiNi(Ti, di *float64, Ni *int, comp string) {
+func setTiDiNi(Ti, di *float64, Ni *int, comp string) {
 	if (*Ti != 0.0) && (*di != 0.0) && (*Ni != 0) {
 		log.Log.ErrAndExit("Error: Only 2 of [N%s,d%s,T%s] are needed to define the mesh, you can't define all 3 of them.", comp, comp, comp)
 	} else if (*Ti != 0.0) && (*di != 0.0) {
@@ -158,39 +130,39 @@ func SetTiDiNi(Ti, di *float64, Ni *int, comp string) {
 }
 
 // check if mesh is set, otherwise, it creates it
-func CreateMesh() {
-	if !IsMeshCreated() {
+func createMesh() {
+	if !isMeshCreated() {
 		log.Log.Info("Creating mesh")
-		SetBusy(true)
-		defer SetBusy(false)
-		SetTiDiNi(&Tx, &Dx, &Nx, "x")
-		SetTiDiNi(&Ty, &Dy, &Ny, "y")
-		SetTiDiNi(&Tz, &Dz, &Nz, "z")
-		ValidateGridSize()
-		ValidateCellSize()
+		setBusy(true)
+		defer setBusy(false)
+		setTiDiNi(&Tx, &Dx, &Nx, "x")
+		setTiDiNi(&Ty, &Dy, &Ny, "y")
+		setTiDiNi(&Tz, &Dz, &Nz, "z")
+		validateGridSize()
+		validateCellSize()
 		if AutoMeshx || AutoMeshy || AutoMeshz {
-			SmoothMesh()
+			smoothMesh()
 		}
 		globalmesh_ = *data.NewMesh(Nx, Ny, Nz, Dx, Dy, Dz, PBCx, PBCy, PBCz)
-		M.alloc()
+		normMag.alloc()
 		Regions.alloc()
 		script.MMetadata.Init(OD(), StartTime, Dx, Dy, Dz, Nx, Ny, Nz, Tx, Ty, Tz, PBCx, PBCy, PBCz, cuda.GPUInfo)
 	}
 }
 
-func ReCreateMesh(Nx, Ny, Nz int, dx, dy, dz float64, PBCx, PBCy, PBCz int) {
-	SetBusy(true)
-	defer SetBusy(false)
+func reCreateMesh(Nx, Ny, Nz int, dx, dy, dz float64, PBCx, PBCy, PBCz int) {
+	setBusy(true)
+	defer setBusy(false)
 	globalmesh_ = *data.NewMesh(Nx, Ny, Nz, dx, dy, dz, PBCx, PBCy, PBCz)
-	M.alloc()
+	normMag.alloc()
 	Regions.alloc()
 	script.MMetadata.Init(OD(), StartTime, dx, dy, dz, Nx, Ny, Nz, Tx, Ty, Tz, PBCx, PBCy, PBCz, cuda.GPUInfo)
 
-	SetBusy(true)
-	defer SetBusy(false)
+	setBusy(true)
+	defer setBusy(false)
 	// these 2 lines make sure the progress bar doesn't break when calculating the kernel
 	fmt.Print("\033[2K\r") // clearline ANSI escape code
-	kernel := mag.DemagKernel(GetMesh().Size(), GetMesh().PBC(), GetMesh().CellSize(), DemagAccuracy, CacheDir, ShowProgresBar)
-	conv_ = cuda.NewDemag(GetMesh().Size(), GetMesh().PBC(), kernel, SelfTest)
+	kernel := mag.DemagKernel(getMesh().Size(), getMesh().PBC(), getMesh().CellSize(), DemagAccuracy, CacheDir, ShowProgresBar)
+	conv_ = cuda.NewDemag(getMesh().Size(), getMesh().PBC(), kernel, SelfTest)
 
 }

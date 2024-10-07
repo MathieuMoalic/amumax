@@ -10,33 +10,28 @@ import (
 
 // Stopping relax Maxtorque in T. The user can check MaxTorque for sane values (e.g. 1e-3).
 // If set to 0, relax() will stop when the average torque is steady or increasing.
-var RelaxTorqueThreshold float64 = -1.
-
-func init() {
-	DeclFunc("Relax", Relax, "Try to minimize the total energy")
-	DeclVar("RelaxTorqueThreshold", &RelaxTorqueThreshold, "MaxTorque threshold for relax(). If set to -1 (default), relax() will stop when the average torque is steady or increasing.")
-}
+var relaxTorqueThreshold float64 = -1.
 
 // are we relaxing?
 var relaxing = false
 
-func Relax() {
+func relax() {
 	checkExchangeLenght()
-	SanityCheck()
+	sanityCheck()
 	Pause = false
 
 	// Save the settings we are changing...
 	prevType := Solvertype
 	prevErr := MaxErr
 	prevFixDt := FixDt
-	prevPrecess := Precess
+	prevPrecess := precess
 
 	// ...to restore them later
 	defer func() {
-		SetSolver(prevType)
+		setSolver(prevType)
 		MaxErr = prevErr
 		FixDt = prevFixDt
-		Precess = prevPrecess
+		precess = prevPrecess
 		relaxing = false
 		//	Temp.upd_reg = prevTemp
 		//	Temp.invalidate()
@@ -44,26 +39,26 @@ func Relax() {
 	}()
 
 	// Set good solver for relax
-	SetSolver(BOGAKISHAMPINE)
+	setSolver(BOGAKISHAMPINE)
 	FixDt = 0
-	Precess = false
+	precess = false
 	relaxing = true
 
 	// Minimize energy: take steps as long as energy goes down.
 	// This stops when energy reaches the numerical noise floor.
 	const N = 3 // evaluate energy (expensive) every N steps
 	relaxSteps(N)
-	E0 := GetTotalEnergy()
+	E0 := getTotalEnergy()
 	relaxSteps(N)
-	E1 := GetTotalEnergy()
+	E1 := getTotalEnergy()
 	for E1 < E0 && !Pause {
 		relaxSteps(N)
-		E0, E1 = E1, GetTotalEnergy()
+		E0, E1 = E1, getTotalEnergy()
 	}
 
 	// Now we are already close to equilibrium, but energy is too noisy to be used any further.
 	// So now we minimize the torque which is less noisy.
-	solver := stepper.(*RK23)
+	solver := stepper.(*rk23)
 	defer stepper.Free() // purge previous rk.k1 because FSAL will be dead wrong.
 
 	maxTorque := func() float64 {
@@ -73,10 +68,10 @@ func Relax() {
 		return cuda.Dot(solver.k1, solver.k1)
 	}
 
-	if RelaxTorqueThreshold > 0 {
+	if relaxTorqueThreshold > 0 {
 		// run as long as the max torque is above threshold. Then increase the accuracy and step more.
 		for !Pause {
-			for maxTorque() > RelaxTorqueThreshold && !Pause {
+			for maxTorque() > relaxTorqueThreshold && !Pause {
 				relaxSteps(N)
 			}
 			MaxErr /= math.Sqrt2
@@ -109,6 +104,6 @@ func relaxSteps(n int) {
 	stop := NSteps + n
 	cond := func() bool { return NSteps < stop }
 	const output = false
-	RunWhileInner(cond, output)
+	runWhileInner(cond, output)
 	Time = t0
 }

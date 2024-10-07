@@ -7,34 +7,30 @@ import (
 )
 
 var (
-	DWPos   = NewScalarValue("ext_dwpos", "m", "Position of the simulation window while following a domain wall", GetShiftPos) // TODO: make more accurate
-	DWxPos  = NewScalarValue("ext_dwxpos", "m", "Position of the simulation window while following a domain wall", GetDWxPos)
-	DWSpeed = NewScalarValue("ext_dwspeed", "m/s", "Speed of the simulation window while following a domain wall", getShiftSpeed)
+	DWPos   = newScalarValue("ext_dwpos", "m", "Position of the simulation window while following a domain wall", getShiftPos) // TODO: make more accurate
+	DWxPos  = newScalarValue("ext_dwxpos", "m", "Position of the simulation window while following a domain wall", getDWxPos)
+	DWSpeed = newScalarValue("ext_dwspeed", "m/s", "Speed of the simulation window while following a domain wall", getShiftSpeed)
 )
 
-func init() {
-	DeclFunc("ext_centerWall", CenterWall, "centerWall(c) shifts m after each step to keep m_c close to zero")
-}
-
-func centerWall(c int) {
-	M := &M
+func centerWallInner(c int) {
+	M := &normMag
 	mc := sAverageUniverse(M.Buffer().Comp(c))[0]
-	n := GetMesh().Size()
+	n := getMesh().Size()
 	tolerance := 4 / float64(n[X]) // x*2 * expected <m> change for 1 cell shift
 
 	zero := data.Vector{0, 0, 0}
-	if ShiftMagL == zero || ShiftMagR == zero {
+	if shiftMagL == zero || shiftMagR == zero {
 		sign := magsign(M.GetCell(0, n[Y]/2, n[Z]/2)[c])
-		ShiftMagL[c] = float64(sign)
-		ShiftMagR[c] = -float64(sign)
+		shiftMagL[c] = float64(sign)
+		shiftMagR[c] = -float64(sign)
 	}
 
-	sign := magsign(ShiftMagL[c])
+	sign := magsign(shiftMagL[c])
 
 	if mc < -tolerance {
-		Shift(sign)
+		shift(sign)
 	} else if mc > tolerance {
-		Shift(-sign)
+		shift(-sign)
 	}
 }
 
@@ -42,8 +38,8 @@ func centerWall(c int) {
 // between up-down (or down-up) domains (like in perpendicular media). E.g.:
 //
 //	PostStep(CenterPMAWall)
-func CenterWall(magComp int) {
-	PostStep(func() { centerWall(magComp) })
+func centerWall(magComp int) {
+	PostStep(func() { centerWallInner(magComp) })
 }
 
 func magsign(x float64) int {
@@ -64,19 +60,19 @@ var (
 )
 
 func getShiftSpeed() float64 {
-	if lastShift != GetShiftPos() {
-		lastV = (GetShiftPos() - lastShift) / (Time - lastT)
-		lastShift = GetShiftPos()
+	if lastShift != getShiftPos() {
+		lastV = (getShiftPos() - lastShift) / (Time - lastT)
+		lastShift = getShiftPos()
 		lastT = Time
 	}
 	return lastV
 }
 
-func GetDWxPos() float64 {
-	M := &M
+func getDWxPos() float64 {
+	M := &normMag
 	mx := sAverageUniverse(M.Buffer().Comp(0))[0]
-	c := GetMesh().CellSize()
-	n := GetMesh().Size()
+	c := getMesh().CellSize()
+	n := getMesh().Size()
 	position := mx * c[0] * float64(n[0]) / 2.
-	return GetShiftPos() + position
+	return getShiftPos() + position
 }

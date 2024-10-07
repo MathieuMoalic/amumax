@@ -12,36 +12,43 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "amumax [mx3 paths...]",
-	Short: "Amumax, a micromagnetic simulator",
-	Run:   cliEntrypoint,
-	Args:  cobra.ArbitraryArgs,
-}
+var flags flagsType
 
-// Define the template subcommand
-var templateCmd = &cobra.Command{
-	Use:   "template [template path]",
-	Short: "Generate files based on a template",
-	Args:  cobra.ExactArgs(1), // expects exactly one argument, the template path
-	Run: func(cmd *cobra.Command, args []string) {
-		// Call your template logic here, using args[0] for the template path
-		templatePath := args[0]
-		err := template(templatePath)
-		if err != nil {
-			color.Red(fmt.Sprintf("Error processing template: %v", err))
-			os.Exit(1)
-		}
-		color.Green("Template processed successfully")
-	},
-}
+func Entrypoint() {
+	rootCmd := &cobra.Command{
+		Use:   "amumax [mx3 paths...]",
+		Short: "Amumax, a micromagnetic simulator",
+		Run:   cliEntrypoint,
+		Args:  cobra.ArbitraryArgs,
+	}
 
-func init() {
-	// Add the template subcommand to the root command
+	// Define the template subcommand
+	templateCmd := &cobra.Command{
+		Use:   "template [template path]",
+		Short: "Generate files based on a template",
+		Args:  cobra.ExactArgs(1), // expects exactly one argument, the template path
+		Run: func(cmd *cobra.Command, args []string) {
+			// Call your template logic here, using args[0] for the template path
+			templatePath := args[0]
+			err := template(templatePath)
+			if err != nil {
+				color.Red(fmt.Sprintf("Error processing template: %v", err))
+				os.Exit(1)
+			}
+			color.Green("Template processed successfully")
+		},
+	}
 	rootCmd.AddCommand(templateCmd)
+	flags = parseFlags(rootCmd)
+
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func cliEntrypoint(cmd *cobra.Command, args []string) {
+
 	log.Log.SetDebug(flags.debug)
 	if flags.update {
 		showUpdateMenu()
@@ -72,11 +79,11 @@ func cliEntrypoint(cmd *cobra.Command, args []string) {
 		return
 	}
 	if len(args) == 0 && flags.interactive {
-		runInteractive()
+		runInteractive(&flags)
 	} else if len(args) == 1 {
-		runFileAndServe(args[0])
+		runFileAndServe(args[0], &flags)
 	} else if len(args) > 1 {
-		RunQueue(args)
+		RunQueue(args, &flags)
 	} else {
 		log.Log.ErrAndExit("No input files")
 	}

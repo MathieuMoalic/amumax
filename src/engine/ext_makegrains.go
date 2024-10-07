@@ -5,13 +5,9 @@ import (
 	"math/rand"
 )
 
-func init() {
-	DeclFunc("ext_makegrains", Voronoi, "Voronoi tesselation (grain size, num regions)")
-}
-
-func Voronoi(grainsize float64, minRegion, maxRegion, seed int) {
-	SetBusy(true)
-	defer SetBusy(false)
+func voronoi(grainsize float64, minRegion, maxRegion, seed int) {
+	setBusy(true)
+	defer setBusy(false)
 
 	t := newTesselation(grainsize, minRegion, maxRegion, int64(seed))
 	Regions.hist = append(Regions.hist, t.RegionOf)

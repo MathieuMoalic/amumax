@@ -13,24 +13,23 @@ import (
 
 var (
 	saveQue chan func() // passes save requests to runSaver for asyc IO
-	queLen  Atom        // # tasks in queue
+	queLen  atom        // # tasks in queue
 )
 
 func init() {
-	DeclFunc("Flush", drainOutput, "Flush all pending output to disk.")
 
 	saveQue = make(chan func())
 	go runSaver()
 }
 
 // Atomic int
-type Atom int32
+type atom int32
 
-func (a *Atom) Add(v int32) {
+func (a *atom) Add(v int32) {
 	atomic.AddInt32((*int32)(a), v)
 }
 
-func (a *Atom) Load() int32 {
+func (a *atom) Load() int32 {
 	return atomic.LoadInt32((*int32)(a))
 }
 

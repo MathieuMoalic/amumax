@@ -9,22 +9,18 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mag"
 )
 
-func init() {
-	DeclFunc("ext_rmSurfaceCharge", RemoveLRSurfaceCharge, "Compensate magnetic charges on the left and right sides of an in-plane magnetized wire. Arguments: region, mx on left and right side, resp.")
-}
-
 // For a nanowire magnetized in-plane, with mx = mxLeft on the left end and
 // mx = mxRight on the right end (both -1 or +1), add a B field needed to compensate
 // for the surface charges on the left and right edges.
 // This will mimic an infinitely long wire.
-func RemoveLRSurfaceCharge(region int, mxLeft, mxRight float64) {
-	SetBusy(true)
-	defer SetBusy(false)
+func removeLRSurfaceCharge(region int, mxLeft, mxRight float64) {
+	setBusy(true)
+	defer setBusy(false)
 	log.AssertArgument(mxLeft == 1 || mxLeft == -1)
 	log.AssertArgument(mxRight == 1 || mxRight == -1)
 	bsat := Msat.GetRegion(region) * mag.Mu0
 	log.AssertMsg(bsat != 0, "RemoveSurfaceCharges: Msat is zero in region "+fmt.Sprint(region))
-	B_ext.Add(compensateLRSurfaceCharges(GetMesh(), mxLeft, mxRight, bsat), nil)
+	B_ext.Add(compensateLRSurfaceCharges(getMesh(), mxLeft, mxRight, bsat), nil)
 }
 
 func compensateLRSurfaceCharges(m *data.Mesh, mxLeft, mxRight float64, bsat float64) *data.Slice {

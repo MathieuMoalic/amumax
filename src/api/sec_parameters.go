@@ -8,12 +8,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var SelectedRegion int
-
-func init() {
-	SelectedRegion = 0
-}
-
 type Field struct {
 	Name        string `msgpack:"name"`
 	Value       string `msgpack:"value"`
@@ -25,35 +19,42 @@ func (f *Field) IsDefault(value string) bool {
 	return true
 }
 
-type Parameters struct {
+type ParametersState struct {
+	ws             *WebSocketManager
 	Regions        []int   `msgpack:"regions"`
 	Fields         []Field `msgpack:"fields"`
 	SelectedRegion int     `msgpack:"selectedRegion"`
 }
 
-func newParameters() *Parameters {
-	return &Parameters{
+func initParameterAPI(e *echo.Echo, ws *WebSocketManager) *ParametersState {
+	parametersState := ParametersState{
+		ws:             ws,
 		Regions:        engine.Regions.GetExistingIndices(),
-		Fields:         getFields(),
-		SelectedRegion: SelectedRegion,
+		SelectedRegion: 0,
 	}
+	parametersState.getFields()
+	e.POST("/api/parameter/selected-region", parametersState.postSelectParameterRegion)
+	return &parametersState
+}
+func (s *ParametersState) Update() {
+	s.getFields()
 }
 
-func getFields() []Field {
+func (s *ParametersState) getFields() {
 	fields := make([]Field, 0)
 	for _, param := range engine.Params {
 		field := Field{
 			Name:        param.Name,
-			Value:       param.Value(SelectedRegion),
+			Value:       param.Value(s.SelectedRegion),
 			Description: param.Description,
 			Changed:     engine.QuantityChanged[param.Name],
 		}
 		fields = append(fields, field)
 	}
-	return fields
+	s.Fields = fields
 }
 
-func postSelectParameterRegion(c echo.Context) error {
+func (s *ParametersState) postSelectParameterRegion(c echo.Context) error {
 	type Request struct {
 		SelectedRegion int `msgpack:"selectedRegion"`
 	}
@@ -63,8 +64,8 @@ func postSelectParameterRegion(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 
-	SelectedRegion = req.SelectedRegion
-	preview.Refresh = true
-	broadcastEngineState()
+	s.SelectedRegion = req.SelectedRegion
+	s.ws.engineState.Preview.Refresh = true
+	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
