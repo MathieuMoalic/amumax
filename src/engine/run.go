@@ -15,20 +15,20 @@ import (
 
 // Solver globals
 var (
-	Time                    float64                      // time in seconds
-	alarm                   float64                      // alarm clock marks end time of run, dt adaptation must not cross it!
-	Pause                   = true                       // set pause at any time to stop running after the current step
-	postStep                []func()                     // called on after every full time step
-	Inject                           = make(chan func()) // injects code in between time steps. Used by web interface.
-	Dt_si                   float64  = 1e-15             // time step = dt_si (seconds) *dt_mul, which should be nice float32
-	MinDt, MaxDt            float64                      // minimum and maximum time step
-	MaxErr                  float64  = 1e-5              // maximum error/step
-	Headroom                float64  = 0.8               // solver headroom, (Gustafsson, 1992, Control of Error and Convergence in ODE Solvers)
-	LastErr, PeakErr        float64                      // error of last step, highest error ever
-	LastTorque              float64                      // maxTorque of last time step
-	NSteps, NUndone, NEvals int                          // number of good steps, undone steps
-	FixDt                   float64                      // fixed time step?
-	stepper                 Stepper                      // generic step, can be EulerStep, HeunStep, etc
+	Time                    float64                              // time in seconds
+	alarm                   float64                              // alarm clock marks end time of run, dt adaptation must not cross it!
+	Pause                   = true                               // set pause at any time to stop running after the current step
+	postStep                []func()                             // called on after every full time step
+	Inject                                   = make(chan func()) // injects code in between time steps. Used by web interface.
+	Dt_si                   float64          = 1e-15             // time step = dt_si (seconds) *dt_mul, which should be nice float32
+	MinDt, MaxDt            float64                              // minimum and maximum time step
+	MaxErr                  float64          = 1e-5              // maximum error/step
+	Headroom                float64          = 0.8               // solver headroom, (Gustafsson, 1992, Control of Error and Convergence in ODE Solvers)
+	LastErr, PeakErr        float64                              // error of last step, highest error ever
+	LastTorque              float64                              // maxTorque of last time step
+	NSteps, NUndone, NEvals int                                  // number of good steps, undone steps
+	FixDt                   float64                              // fixed time step?
+	stepper                 stepperInterface                     // generic step, can be EulerStep, HeunStep, etc
 	Solvertype              int
 	ProgressBar             zarr.ProgressBar
 	exchangeLenghtWarned    bool
@@ -36,16 +36,16 @@ var (
 
 func init() {
 
-	SetSolver(DORMANDPRINCE)
-	_ = NewScalarValue("dt", "s", "Time Step", func() float64 { return Dt_si })
-	_ = NewScalarValue("LastErr", "", "Error of last step", func() float64 { return LastErr })
-	_ = NewScalarValue("PeakErr", "", "Overall maxium error per step", func() float64 { return PeakErr })
-	_ = NewScalarValue("NEval", "", "Total number of torque evaluations", func() float64 { return float64(NEvals) })
+	setSolver(DORMANDPRINCE)
+	_ = newScalarValue("dt", "s", "Time Step", func() float64 { return Dt_si })
+	_ = newScalarValue("LastErr", "", "Error of last step", func() float64 { return LastErr })
+	_ = newScalarValue("PeakErr", "", "Overall maxium error per step", func() float64 { return PeakErr })
+	_ = newScalarValue("NEval", "", "Total number of torque evaluations", func() float64 { return float64(NEvals) })
 	exchangeLenghtWarned = false
 }
 
 // Time stepper like Euler, Heun, RK23
-type Stepper interface {
+type stepperInterface interface {
 	Step() // take time step using solver globals
 	Free() // free resources, if any (e.g.: RK23 previous torque)
 }
@@ -61,7 +61,7 @@ const (
 	FEHLBERG       = 6
 )
 
-func SetSolver(typ int) {
+func setSolver(typ int) {
 	// free previous solver, if any
 	if stepper != nil {
 		stepper.Free()
@@ -70,26 +70,26 @@ func SetSolver(typ int) {
 	default:
 		log.Log.ErrAndExit("SetSolver: unknown solver type:  %v", typ)
 	case BACKWARD_EULER:
-		stepper = new(BackwardEuler)
+		stepper = new(backwardEuler)
 	case EULER:
-		stepper = new(Euler)
+		stepper = new(euler)
 	case HEUN:
-		stepper = new(Heun)
+		stepper = new(heun)
 	case BOGAKISHAMPINE:
-		stepper = new(RK23)
+		stepper = new(rk23)
 	case RUNGEKUTTA:
-		stepper = new(RK4)
+		stepper = new(rk4)
 	case DORMANDPRINCE:
-		stepper = new(RK45DP)
+		stepper = new(rk45DP)
 	case FEHLBERG:
-		stepper = new(RK56)
+		stepper = new(rk56)
 	}
 	Solvertype = typ
 }
 
 // write torque to dst and increment NEvals
 func torqueFn(dst *data.Slice) {
-	SetTorque(dst)
+	setTorque(dst)
 	NEvals++
 }
 
@@ -146,24 +146,24 @@ func adaptDt(corr float64) {
 }
 
 // Run the simulation for a number of seconds.
-func RunWithoutPrecession(seconds float64) {
-	prevPrecess := Precess
-	Run(seconds)
-	Precess = prevPrecess
+func runWithoutPrecession(seconds float64) {
+	prevPrecess := precess
+	run(seconds)
+	precess = prevPrecess
 }
 
-// Run the simulation for a number of seconds.
-func Run(seconds float64) {
+// run the simulation for a number of seconds.
+func run(seconds float64) {
 	checkExchangeLenght()
 	start := Time
 	stop := Time + seconds
 	alarm = stop // don't have dt adapt to go over alarm
-	SanityCheck()
+	sanityCheck()
 	Pause = false // may be set by <-Inject
 	const output = true
 	stepper.Free() // start from a clean state
 
-	SaveIfNeeded() // allow t=0 output
+	saveIfNeeded() // allow t=0 output
 	ProgressBar = zarr.ProgressBar{}
 	ProgressBar.New(start, stop, "🧲", ShowProgresBar)
 	for (Time < stop) && !Pause {
@@ -181,24 +181,24 @@ func Run(seconds float64) {
 }
 
 // Run the simulation for a number of steps.
-func Steps(n int) {
+func steps(n int) {
 	stop := NSteps + n
-	RunWhile(func() bool { return NSteps < stop })
+	runWhile(func() bool { return NSteps < stop })
 }
 
 // Runs as long as condition returns true, saves output.
-func RunWhile(condition func() bool) {
+func runWhile(condition func() bool) {
 	checkExchangeLenght()
-	SanityCheck()
+	sanityCheck()
 	Pause = false // may be set by <-Inject
 	const output = true
 	stepper.Free() // start from a clean state
-	RunWhileInner(condition, output)
+	runWhileInner(condition, output)
 	Pause = true
 }
 
-func RunWhileInner(condition func() bool, output bool) {
-	SaveIfNeeded() // allow t=0 output
+func runWhileInner(condition func() bool, output bool) {
+	saveIfNeeded() // allow t=0 output
 	for condition() && !Pause {
 		select {
 		default:
@@ -226,7 +226,7 @@ func step(output bool) {
 		f()
 	}
 	if output {
-		SaveIfNeeded()
+		saveIfNeeded()
 	}
 }
 
@@ -247,7 +247,7 @@ func InjectAndWait(task func()) {
 	<-ready
 }
 
-func SanityCheck() {
+func sanityCheck() {
 	if Msat.isZero() {
 		log.Log.Info("Note: Msat = 0")
 	}

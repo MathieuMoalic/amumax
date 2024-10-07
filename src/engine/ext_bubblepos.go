@@ -5,16 +5,16 @@ import (
 )
 
 var (
-	BubblePos   = NewVectorValue("ext_bubblepos", "m", "Bubble core position", bubblePos)
-	BubbleDist  = NewScalarValue("ext_bubbledist", "m", "Bubble traveled distance", bubbleDist)
-	BubbleSpeed = NewScalarValue("ext_bubblespeed", "m/s", "Bubble velocity", bubbleSpeed)
+	BubblePos   = newVectorValue("ext_bubblepos", "m", "Bubble core position", bubblePos)
+	BubbleDist  = newScalarValue("ext_bubbledist", "m", "Bubble traveled distance", bubbleDist)
+	BubbleSpeed = newScalarValue("ext_bubblespeed", "m/s", "Bubble velocity", bubbleSpeed)
 	BubbleMz    = 1.0
 )
 
 func bubblePos() []float64 {
-	m := M.Buffer()
-	n := GetMesh().Size()
-	c := GetMesh().CellSize()
+	m := normMag.Buffer()
+	n := getMesh().Size()
+	c := getMesh().CellSize()
 	mz := m.Comp(Z).HostCopy().Scalars()[0]
 
 	posx, posy := 0., 0.
@@ -49,7 +49,7 @@ func bubblePos() []float64 {
 		posx = float64(weightedsum / magsum)
 	}
 
-	return []float64{(posx-float64(n[X]/2))*c[X] + GetShiftPos(), (posy-float64(n[Y]/2))*c[Y] + GetShiftYPos(), 0}
+	return []float64{(posx-float64(n[X]/2))*c[X] + getShiftPos(), (posy-float64(n[Y]/2))*c[Y] + getShiftYPos(), 0}
 }
 
 var (
@@ -64,7 +64,7 @@ func bubbleDist() float64 {
 		return 0
 	}
 
-	w := GetMesh().WorldSize()
+	w := getMesh().WorldSize()
 	dx := pos[X] - prevBpos[X]
 	dy := pos[Y] - prevBpos[Y]
 	prevBpos = [2]float64{pos[X], pos[Y]}

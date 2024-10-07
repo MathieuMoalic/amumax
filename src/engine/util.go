@@ -15,31 +15,31 @@ import (
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
-func RegionFromCoordinate(x, y, z int) int {
+func regionFromCoordinate(x, y, z int) int {
 	return Regions.GetCell(x, y, z)
 }
 
 // Returns a new new slice (3D array) with given number of components and size.
-func NewSlice(ncomp, Nx, Ny, Nz int) *data.Slice {
+func newSlice(ncomp, Nx, Ny, Nz int) *data.Slice {
 	return data.NewSlice(ncomp, [3]int{Nx, Ny, Nz})
 }
 
-func NewVectorMask(Nx, Ny, Nz int) *data.Slice {
+func newVectorMask(Nx, Ny, Nz int) *data.Slice {
 	return data.NewSlice(3, [3]int{Nx, Ny, Nz})
 }
 
-func NewScalarMask(Nx, Ny, Nz int) *data.Slice {
+func newScalarMask(Nx, Ny, Nz int) *data.Slice {
 	return data.NewSlice(1, [3]int{Nx, Ny, Nz})
 }
 
 // Constructs a vector
-func Vector(x, y, z float64) data.Vector {
+func vector(x, y, z float64) data.Vector {
 	return data.Vector{x, y, z}
 }
 
 // Test if have lies within want +/- maxError,
 // and print suited message.
-func Expect(msg string, have, want, maxError float64) {
+func expect(msg string, have, want, maxError float64) {
 	if math.IsNaN(have) || math.IsNaN(want) || math.Abs(have-want) > maxError {
 		log.Log.Info(msg, ":", " have: ", have, " want: ", want, "±", maxError)
 		CleanExit()
@@ -50,30 +50,30 @@ func Expect(msg string, have, want, maxError float64) {
 	// note: we also check "want" for NaN in case "have" and "want" are switched.
 }
 
-func ExpectV(msg string, have, want data.Vector, maxErr float64) {
+func expectV(msg string, have, want data.Vector, maxErr float64) {
 	for c := 0; c < 3; c++ {
-		Expect(fmt.Sprintf("%v[%v]", msg, c), have[c], want[c], maxErr)
+		expect(fmt.Sprintf("%v[%v]", msg, c), have[c], want[c], maxErr)
 	}
 }
 
 // Append msg to file. Used to write aggregated output of many simulations in one file.
-func Fprintln(filename string, msg ...interface{}) {
+func fprintln(filename string, msg ...interface{}) {
 	if !path.IsAbs(filename) {
 		filename = OD() + filename
 	}
 	err := httpfs.Touch(filename)
 	log.Log.PanicIfError(err)
-	err = httpfs.Append(filename, []byte(fmt.Sprintln(CustomFmt(msg))))
+	err = httpfs.Append(filename, []byte(fmt.Sprintln(customFmt(msg))))
 	log.Log.PanicIfError(err)
 }
-func LoadFile(fname string) *data.Slice {
+func loadFile(fname string) *data.Slice {
 	var s *data.Slice
 	s, err := zarr.Read(fname, OD())
 	log.Log.PanicIfError(err)
 	return s
 }
 
-func LoadOvfFile(fname string) *data.Slice {
+func loadOvfFile(fname string) *data.Slice {
 	in, err := httpfs.Open(fname)
 	log.Log.PanicIfError(err)
 	var s *data.Slice
@@ -82,9 +82,9 @@ func LoadOvfFile(fname string) *data.Slice {
 	return s
 }
 
-// Download a quantity to host,
+// download a quantity to host,
 // or just return its data when already on host.
-func Download(q Quantity) *data.Slice {
+func download(q Quantity) *data.Slice {
 	// TODO: optimize for Buffer()
 	buf := ValueOf(q)
 	defer cuda.Recycle(buf)
@@ -97,14 +97,14 @@ func Download(q Quantity) *data.Slice {
 
 // print with special formatting for some known types
 func myprint(msg ...interface{}) {
-	log.Log.Info("%v", CustomFmt(msg))
+	log.Log.Info("%v", customFmt(msg))
 }
 
 // mumax specific formatting (Slice -> average, etc).
-func CustomFmt(msg []interface{}) (fmtMsg string) {
+func customFmt(msg []interface{}) (fmtMsg string) {
 	for _, m := range msg {
 		if e, ok := m.(Quantity); ok {
-			str := fmt.Sprint(AverageOf(e))
+			str := fmt.Sprint(averageOf(e))
 			str = str[1 : len(str)-1] // remove [ ]
 			fmtMsg += fmt.Sprintf("%v, ", str)
 		} else {
@@ -119,12 +119,12 @@ func CustomFmt(msg []interface{}) (fmtMsg string) {
 }
 
 // converts cell index to coordinate, internal coordinates
-func Index2Coord(ix, iy, iz int) data.Vector {
-	m := GetMesh()
+func index2Coord(ix, iy, iz int) data.Vector {
+	m := getMesh()
 	n := m.Size()
 	c := m.CellSize()
-	x := c[X]*(float64(ix)-0.5*float64(n[X]-1)) - TotalShift
-	y := c[Y]*(float64(iy)-0.5*float64(n[Y]-1)) - TotalYShift
+	x := c[X]*(float64(ix)-0.5*float64(n[X]-1)) - totalShift
+	y := c[Y]*(float64(iy)-0.5*float64(n[Y]-1)) - totalYShift
 	z := c[Z] * (float64(iz) - 0.5*float64(n[Z]-1))
 	return data.Vector{x, y, z}
 }

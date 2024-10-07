@@ -18,7 +18,7 @@ type cropped struct {
 
 // Crop quantity to a box enclosing the given region.
 // Used to output a region of interest, even if the region is non-rectangular.
-func CropRegion(parent Quantity, region int) *cropped {
+func cropRegion(parent Quantity, region int) *cropped {
 	n := MeshOf(parent).Size()
 	// use -1 for unset values
 	x1, y1, z1 := -1, -1, -1
@@ -55,36 +55,36 @@ func CropRegion(parent Quantity, region int) *cropped {
 			}
 		}
 	}
-	return Crop(parent, x1, x2+1, y1, y2+1, z1, z2+1)
+	return crop(parent, x1, x2+1, y1, y2+1, z1, z2+1)
 }
 
-func CropLayer(parent Quantity, layer int) *cropped {
+func cropLayer(parent Quantity, layer int) *cropped {
 	n := MeshOf(parent).Size()
-	return Crop(parent, 0, n[X], 0, n[Y], layer, layer+1)
+	return crop(parent, 0, n[X], 0, n[Y], layer, layer+1)
 }
 
-func CropX(parent Quantity, x1, x2 int) *cropped {
+func cropX(parent Quantity, x1, x2 int) *cropped {
 	n := MeshOf(parent).Size()
-	return Crop(parent, x1, x2, 0, n[Y], 0, n[Z])
+	return crop(parent, x1, x2, 0, n[Y], 0, n[Z])
 }
 
-func CropY(parent Quantity, y1, y2 int) *cropped {
+func cropY(parent Quantity, y1, y2 int) *cropped {
 	n := MeshOf(parent).Size()
-	return Crop(parent, 0, n[X], y1, y2, 0, n[Z])
+	return crop(parent, 0, n[X], y1, y2, 0, n[Z])
 }
 
-func CropZ(parent Quantity, z1, z2 int) *cropped {
+func cropZ(parent Quantity, z1, z2 int) *cropped {
 	n := MeshOf(parent).Size()
-	return Crop(parent, 0, n[X], 0, n[Y], z1, z2)
+	return crop(parent, 0, n[X], 0, n[Y], z1, z2)
 }
 
-func Crop(parent Quantity, x1, x2, y1, y2, z1, z2 int) *cropped {
+func crop(parent Quantity, x1, x2, y1, y2, z1, z2 int) *cropped {
 	n := MeshOf(parent).Size()
 	log.AssertArgument(x1 < x2 && y1 < y2 && z1 < z2)
 	log.AssertArgument(x1 >= 0 && y1 >= 0 && z1 >= 0)
 	log.AssertArgument(x2 <= n[X] && y2 <= n[Y] && z2 <= n[Z])
 
-	name := NameOf(parent)
+	name := nameOf(parent)
 	if x1 != 0 || x2 != n[X] {
 		name += "_x" + rangeStr(x1, x2)
 	}
@@ -109,8 +109,8 @@ func rangeStr(a, b int) string {
 
 func (q *cropped) NComp() int             { return q.parent.NComp() }
 func (q *cropped) Name() string           { return q.name }
-func (q *cropped) Unit() string           { return UnitOf(q.parent) }
-func (q *cropped) EvalTo(dst *data.Slice) { EvalTo(q, dst) }
+func (q *cropped) Unit() string           { return unitOf(q.parent) }
+func (q *cropped) EvalTo(dst *data.Slice) { evalTo(q, dst) }
 
 func (q *cropped) Mesh() *data.Mesh {
 	c := MeshOf(q.parent) // currentMesh

@@ -7,17 +7,17 @@ import (
 )
 
 // Implicit midpoint solver.
-type BackwardEuler struct {
+type backwardEuler struct {
 	dy1 *data.Slice
 }
 
 // Euler method, can be used as solver.Step.
-func (s *BackwardEuler) Step() {
+func (s *backwardEuler) Step() {
 	log.AssertMsg(MaxErr > 0, "Backward euler solver requires MaxErr > 0")
 
 	t0 := Time
 
-	y := M.Buffer()
+	y := normMag.Buffer()
 
 	y0 := cuda.Buffer(VECTOR, y.Size())
 	defer cuda.Recycle(y0)
@@ -31,7 +31,7 @@ func (s *BackwardEuler) Step() {
 	dy1 := s.dy1
 
 	Dt_si = FixDt
-	dt := float32(Dt_si * GammaLL)
+	dt := float32(Dt_si * gammaLL)
 	log.AssertMsg(dt > 0, "Backward Euler solver requires fixed time step > 0")
 
 	// Fist guess
@@ -40,17 +40,17 @@ func (s *BackwardEuler) Step() {
 	// with temperature, previous torque cannot be used as predictor
 	if Temp.isZero() {
 		cuda.Madd2(y, y0, dy1, 1, dt) // predictor euler step with previous torque
-		M.normalize()
+		normMag.normalize()
 	}
 
 	torqueFn(dy0)
 	cuda.Madd2(y, y0, dy0, 1, dt) // y = y0 + dt * dy
-	M.normalize()
+	normMag.normalize()
 
 	// One iteration
 	torqueFn(dy1)
 	cuda.Madd2(y, y0, dy1, 1, dt) // y = y0 + dt * dy1
-	M.normalize()
+	normMag.normalize()
 
 	Time = t0 + Dt_si
 
@@ -61,7 +61,7 @@ func (s *BackwardEuler) Step() {
 	setMaxTorque(dy1)
 }
 
-func (s *BackwardEuler) Free() {
+func (s *backwardEuler) Free() {
 	s.dy1.Free()
 	s.dy1 = nil
 }

@@ -18,7 +18,7 @@ import (
 )
 
 func init() {
-	AddParameter("B_ext", B_ext, "External magnetic field (T)")
+	addParameter("B_ext", B_ext, "External magnetic field (T)")
 }
 
 // input parameter, settable by user
@@ -30,44 +30,44 @@ type regionwise struct {
 	name, unit string
 }
 
-var Params map[string]Field
+var Params map[string]field
 
-type Field struct {
+type field struct {
 	Name        string           `json:"name"`
 	Value       func(int) string `json:"value"`
 	Description string           `json:"description"`
 }
 
-func AddParameter(name string, value interface{}, doc string) {
+func addParameter(name string, value interface{}, doc string) {
 	if Params == nil {
-		Params = make(map[string]Field)
+		Params = make(map[string]field)
 	}
-	if v, ok := value.(*RegionwiseScalar); ok {
-		Params[name] = Field{
+	if v, ok := value.(*regionwiseScalar); ok {
+		Params[name] = field{
 			name,
 			v.GetRegionToString,
 			doc,
 		}
-	} else if v, ok := value.(*RegionwiseVector); ok {
-		Params[name] = Field{
+	} else if v, ok := value.(*regionwiseVector); ok {
+		Params[name] = field{
 			name,
 			v.GetRegionToString,
 			doc,
 		}
 	} else if v, ok := value.(*inputValue); ok {
-		Params[name] = Field{
+		Params[name] = field{
 			name,
 			v.GetRegionToString,
 			doc,
 		}
-	} else if v, ok := value.(*Excitation); ok {
-		Params[name] = Field{
+	} else if v, ok := value.(*excitation); ok {
+		Params[name] = field{
 			name,
 			v.GetRegionToString,
 			doc,
 		}
-	} else if v, ok := value.(*ScalarExcitation); ok {
-		Params[name] = Field{
+	} else if v, ok := value.(*scalarExcitation); ok {
+		Params[name] = field{
 			name,
 			v.GetRegionToString,
 			doc,
@@ -85,7 +85,7 @@ func (p *regionwise) init(nComp int, name, unit string, children []derived) {
 
 func (p *regionwise) MSlice() cuda.MSlice {
 	if p.IsUniform() {
-		return cuda.MakeMSlice(data.NilSlice(p.NComp(), GetMesh().Size()), p.getRegion(0))
+		return cuda.MakeMSlice(data.NilSlice(p.NComp(), getMesh().Size()), p.getRegion(0))
 	} else {
 		buf, r := p.Slice()
 		log.Assert(r)
@@ -95,26 +95,7 @@ func (p *regionwise) MSlice() cuda.MSlice {
 
 func (p *regionwise) Name() string     { return p.name }
 func (p *regionwise) Unit() string     { return p.unit }
-func (p *regionwise) Mesh() *data.Mesh { return GetMesh() }
-
-func (p *regionwise) addChild(c ...derived) {
-	for _, c := range c {
-		// TODO: no duplicates
-		if !contains(p.children, c) {
-			p.children = append(p.children, c)
-			fmt.Println(p, ".addChild", c)
-		}
-	}
-}
-
-func contains(s []derived, x derived) bool {
-	for _, y := range s {
-		if y == x {
-			return true
-		}
-	}
-	return false
-}
+func (p *regionwise) Mesh() *data.Mesh { return getMesh() }
 
 func (p *regionwise) update() {
 	if p.timestamp != Time {
@@ -205,82 +186,34 @@ func (p *regionwise) IsUniform() bool {
 
 func (p *regionwise) average() []float64 { return qAverageUniverse(p) }
 
-// parameter derived from others (not directly settable). E.g.: Bsat derived from Msat
-type DerivedParam struct {
-	lut                          // GPU storage
-	updater  func(*DerivedParam) // called to update my value
-	uptodate bool                // cleared if parents' value change
-	parents  []updater           // parents updated before I'm updated
-}
-
 // any parameter that depends on an inputParam
 type derived interface {
 	invalidate()
 }
 
-type parent interface {
-	update()
-	addChild(...derived)
-}
-
-func NewDerivedParam(nComp int, parents []parent, updater func(*DerivedParam)) *DerivedParam {
-	p := new(DerivedParam)
-	p.lut.init(nComp, p) // pass myself to update me if needed
-	p.updater = updater
-	for _, P := range parents {
-		p.parents = append(p.parents, P)
-	}
-	return p
-}
-
-func (p *DerivedParam) invalidate() {
-	p.uptodate = false
-}
-
-func (p *DerivedParam) update() {
-	for _, par := range p.parents {
-		par.update() // may invalidate me
-	}
-	if !p.uptodate {
-		p.updater(p)
-		p.gpu_ok = false
-		p.uptodate = true
-	}
-}
-
-// Get value in region r.
-func (p *DerivedParam) GetRegion(r int) []float64 {
-	lut := p.cpuLUT() // updates me if needed
-	v := make([]float64, p.NComp())
-	for c := range v {
-		v[c] = float64(lut[c][r])
-	}
-	return v
-}
-
 // specialized param with 1 component
-type RegionwiseScalar struct {
+type regionwiseScalar struct {
 	regionwise
 }
 
-func (p *RegionwiseScalar) init(name, unit, desc string, children []derived) {
+func (p *regionwiseScalar) init(name, unit, desc string, children []derived) {
 	p.regionwise.init(SCALAR, name, unit, children)
 	if !strings.HasPrefix(name, "_") { // don't export names beginning with "_" (e.g. from exciation)
-		DeclLValue(name, p, cat(desc, unit))
+		declLValue(name, p, cat(desc, unit))
 	}
 }
 
 // TODO: auto derived
-func NewScalarParam(name, unit, desc string, children ...derived) *RegionwiseScalar {
-	p := new(RegionwiseScalar)
+func newScalarParam(name, unit, desc string, children ...derived) *regionwiseScalar {
+	p := new(regionwiseScalar)
 	p.regionwise.init(SCALAR, name, unit, children)
 	if !strings.HasPrefix(name, "_") { // don't export names beginning with "_" (e.g. from exciation)
-		DeclLValue(name, p, cat(desc, unit))
+		declLValue(name, p, cat(desc, unit))
 	}
 	return p
 }
 
-func (p *RegionwiseScalar) SetRegion(region int, f script.ScalarFunction) {
+func (p *regionwiseScalar) SetRegion(region int, f script.ScalarFunction) {
 	if region == -1 {
 		p.setRegionsFunc(0, NREGION, f) // uniform
 	} else {
@@ -288,17 +221,17 @@ func (p *RegionwiseScalar) SetRegion(region int, f script.ScalarFunction) {
 	}
 }
 
-func (p *RegionwiseScalar) SetValue(v interface{}) {
+func (p *regionwiseScalar) SetValue(v interface{}) {
 	f := v.(script.ScalarFunction)
 	p.setRegionsFunc(0, NREGION, f)
 }
 
-func (p *RegionwiseScalar) Set(v float64) {
+func (p *regionwiseScalar) Set(v float64) {
 	p.setRegions(0, NREGION, []float64{v})
 }
 
-func (p *RegionwiseScalar) setRegionsFunc(r1, r2 int, f script.ScalarFunction) {
-	if IsConst(f) {
+func (p *regionwiseScalar) setRegionsFunc(r1, r2 int, f script.ScalarFunction) {
+	if isConst(f) {
 		p.setRegions(r1, r2, []float64{f.Float()})
 	} else {
 		f := f.Fix() // fix values of all variables except t
@@ -308,22 +241,22 @@ func (p *RegionwiseScalar) setRegionsFunc(r1, r2 int, f script.ScalarFunction) {
 	}
 }
 
-func (p *RegionwiseScalar) GetRegion(region int) float64 {
+func (p *regionwiseScalar) GetRegion(region int) float64 {
 	return float64(p.getRegion(region)[0])
 }
-func (p *RegionwiseScalar) GetRegionToString(region int) string {
+func (p *regionwiseScalar) GetRegionToString(region int) string {
 	v := float64(p.getRegion(region)[0])
 	return fmt.Sprintf("%g", v)
 }
 
-func (p *RegionwiseScalar) Eval() interface{}       { return p }
-func (p *RegionwiseScalar) Type() reflect.Type      { return reflect.TypeOf(new(RegionwiseScalar)) }
-func (p *RegionwiseScalar) InputType() reflect.Type { return script.ScalarFunction_t }
-func (p *RegionwiseScalar) Average() float64        { return qAverageUniverse(p)[0] }
-func (p *RegionwiseScalar) Region(r int) *sOneReg   { return sOneRegion(p, r) }
+func (p *regionwiseScalar) Eval() interface{}       { return p }
+func (p *regionwiseScalar) Type() reflect.Type      { return reflect.TypeOf(new(regionwiseScalar)) }
+func (p *regionwiseScalar) InputType() reflect.Type { return script.ScalarFunction_t }
+func (p *regionwiseScalar) Average() float64        { return qAverageUniverse(p)[0] }
+func (p *regionwiseScalar) Region(r int) *sOneReg   { return sOneRegion(p, r) }
 
 // checks if a script expression contains t (time)
-func IsConst(e script.Expr) bool {
+func isConst(e script.Expr) bool {
 	t := World.Resolve("t")
 	return !script.Contains(e, t)
 }
@@ -338,7 +271,7 @@ func cat(desc, unit string) string {
 
 // these methods should only be accesible from Go
 
-func (p *RegionwiseScalar) SetRegionValueGo(region int, v float64) {
+func (p *regionwiseScalar) SetRegionValueGo(region int, v float64) {
 	if region == -1 {
 		p.setRegions(0, NREGION, []float64{v})
 	} else {
@@ -346,7 +279,7 @@ func (p *RegionwiseScalar) SetRegionValueGo(region int, v float64) {
 	}
 }
 
-func (p *RegionwiseScalar) SetRegionFuncGo(region int, f func() float64) {
+func (p *regionwiseScalar) SetRegionFuncGo(region int, f func() float64) {
 	if region == -1 {
 		p.setFunc(0, NREGION, func() []float64 {
 			return []float64{f()}
@@ -359,20 +292,20 @@ func (p *RegionwiseScalar) SetRegionFuncGo(region int, f func() float64) {
 }
 
 // vector input parameter, settable by user
-type RegionwiseVector struct {
+type regionwiseVector struct {
 	regionwise
 }
 
-func NewVectorParam(name, unit, desc string) *RegionwiseVector {
-	p := new(RegionwiseVector)
+func newVectorParam(name, unit, desc string) *regionwiseVector {
+	p := new(regionwiseVector)
 	p.regionwise.init(VECTOR, name, unit, nil) // no vec param has children (yet)
 	if !strings.HasPrefix(name, "_") {         // don't export names beginning with "_" (e.g. from exciation)
-		DeclLValue(name, p, cat(desc, unit))
+		declLValue(name, p, cat(desc, unit))
 	}
 	return p
 }
 
-func (p *RegionwiseVector) SetRegion(region int, f script.VectorFunction) {
+func (p *regionwiseVector) SetRegion(region int, f script.VectorFunction) {
 	if region == -1 {
 		p.setRegionsFunc(0, NREGION, f) //uniform
 	} else {
@@ -380,13 +313,13 @@ func (p *RegionwiseVector) SetRegion(region int, f script.VectorFunction) {
 	}
 }
 
-func (p *RegionwiseVector) SetValue(v interface{}) {
+func (p *regionwiseVector) SetValue(v interface{}) {
 	f := v.(script.VectorFunction)
 	p.setRegionsFunc(0, NREGION, f)
 }
 
-func (p *RegionwiseVector) setRegionsFunc(r1, r2 int, f script.VectorFunction) {
-	if IsConst(f) {
+func (p *regionwiseVector) setRegionsFunc(r1, r2 int, f script.VectorFunction) {
+	if isConst(f) {
 		p.setRegions(r1, r2, slice(f.Float3()))
 	} else {
 		f := f.Fix() // fix values of all variables except t
@@ -396,23 +329,23 @@ func (p *RegionwiseVector) setRegionsFunc(r1, r2 int, f script.VectorFunction) {
 	}
 }
 
-func (p *RegionwiseVector) SetRegionFn(region int, f func() [3]float64) {
+func (p *regionwiseVector) SetRegionFn(region int, f func() [3]float64) {
 	p.setFunc(region, region+1, func() []float64 {
 		return slice(f())
 	})
 }
 
-func (p *RegionwiseVector) GetRegion(region int) [3]float64 {
+func (p *regionwiseVector) GetRegion(region int) [3]float64 {
 	v := p.getRegion(region)
 	return unslice(v)
 }
-func (p *RegionwiseVector) GetRegionToString(region int) string {
+func (p *regionwiseVector) GetRegionToString(region int) string {
 	v := unslice(p.getRegion(region))
 	return fmt.Sprintf("(%g,%g,%g)", v[0], v[1], v[2])
 }
-func (p *RegionwiseVector) Eval() interface{}       { return p }
-func (p *RegionwiseVector) Type() reflect.Type      { return reflect.TypeOf(new(RegionwiseVector)) }
-func (p *RegionwiseVector) InputType() reflect.Type { return script.VectorFunction_t }
-func (p *RegionwiseVector) Region(r int) *vOneReg   { return vOneRegion(p, r) }
-func (p *RegionwiseVector) Average() data.Vector    { return unslice(qAverageUniverse(p)) }
-func (p *RegionwiseVector) Comp(c int) ScalarField  { return Comp(p, c) }
+func (p *regionwiseVector) Eval() interface{}       { return p }
+func (p *regionwiseVector) Type() reflect.Type      { return reflect.TypeOf(new(regionwiseVector)) }
+func (p *regionwiseVector) InputType() reflect.Type { return script.VectorFunction_t }
+func (p *regionwiseVector) Region(r int) *vOneReg   { return vOneRegion(p, r) }
+func (p *regionwiseVector) Average() data.Vector    { return unslice(qAverageUniverse(p)) }
+func (p *regionwiseVector) Comp(c int) ScalarField  { return comp(p, c) }

@@ -6,33 +6,33 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
-func centerBubble() {
-	c := GetMesh().CellSize()
+func centerBubbleInner() {
+	c := getMesh().CellSize()
 
 	position := bubblePos()
 	var centerIdx [2]int
-	centerIdx[X] = int(math.Floor((position[X] - GetShiftPos()) / c[X]))
-	centerIdx[Y] = int(math.Floor((position[Y] - GetShiftYPos()) / c[Y]))
+	centerIdx[X] = int(math.Floor((position[X] - getShiftPos()) / c[X]))
+	centerIdx[Y] = int(math.Floor((position[Y] - getShiftYPos()) / c[Y]))
 
 	zero := data.Vector{0, 0, 0}
-	if ShiftMagL == zero || ShiftMagR == zero || ShiftMagD == zero || ShiftMagU == zero {
-		ShiftMagL[Z] = -BubbleMz
-		ShiftMagR[Z] = -BubbleMz
-		ShiftMagD[Z] = -BubbleMz
-		ShiftMagU[Z] = -BubbleMz
+	if shiftMagL == zero || shiftMagR == zero || shiftMagD == zero || shiftMagU == zero {
+		shiftMagL[Z] = -BubbleMz
+		shiftMagR[Z] = -BubbleMz
+		shiftMagD[Z] = -BubbleMz
+		shiftMagU[Z] = -BubbleMz
 	}
 
 	//put bubble to center
 	if centerIdx[X] != 0 {
-		Shift(-centerIdx[X])
+		shift(-centerIdx[X])
 	}
 	if centerIdx[Y] != 0 {
-		YShift(-centerIdx[Y])
+		yShift(-centerIdx[Y])
 	}
 
 }
 
 // This post-step function centers the simulation window on a bubble
-func CenterBubble() {
-	PostStep(func() { centerBubble() })
+func centerBubble() {
+	PostStep(func() { centerBubbleInner() })
 }

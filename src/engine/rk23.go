@@ -18,12 +18,12 @@ import (
 //	y{n+1}  = yn + 2/9 h k1 + 1/3 h k2 + 4/9 h k3            // 3rd order
 //	k4 = f(tn + h, y{n+1})
 //	z{n+1} = yn + 7/24 h k1 + 1/4 h k2 + 1/3 h k3 + 1/8 h k4 // 2nd order
-type RK23 struct {
+type rk23 struct {
 	k1 *data.Slice // torque at end of step is kept for beginning of next step
 }
 
-func (rk *RK23) Step() {
-	m := M.Buffer()
+func (rk *rk23) Step() {
+	m := normMag.Buffer()
 	size := m.Size()
 
 	if FixDt != 0 {
@@ -57,25 +57,25 @@ func (rk *RK23) Step() {
 	defer cuda.Recycle(k3)
 	defer cuda.Recycle(k4)
 
-	h := float32(Dt_si * GammaLL) // internal time step = Dt * gammaLL
+	h := float32(Dt_si * gammaLL) // internal time step = Dt * gammaLL
 
 	// there is no explicit stage 1: k1 from previous step
 
 	// stage 2
 	Time = t0 + (1./2.)*Dt_si
 	cuda.Madd2(m, m, rk.k1, 1, (1./2.)*h) // m = m*1 + k1*h/2
-	M.normalize()
+	normMag.normalize()
 	torqueFn(k2)
 
 	// stage 3
 	Time = t0 + (3./4.)*Dt_si
 	cuda.Madd2(m, m0, k2, 1, (3./4.)*h) // m = m0*1 + k2*3/4
-	M.normalize()
+	normMag.normalize()
 	torqueFn(k3)
 
 	// 3rd order solution
 	cuda.Madd4(m, m0, rk.k1, k2, k3, 1, (2./9.)*h, (1./3.)*h, (4./9.)*h)
-	M.normalize()
+	normMag.normalize()
 
 	// error estimate
 	Time = t0 + Dt_si
@@ -107,7 +107,7 @@ func (rk *RK23) Step() {
 	}
 }
 
-func (rk *RK23) Free() {
+func (rk *rk23) Free() {
 	rk.k1.Free()
 	rk.k1 = nil
 }

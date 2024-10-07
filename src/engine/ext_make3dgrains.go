@@ -7,9 +7,9 @@ import (
 	"math/rand"
 )
 
-func Voronoi3d(grainsize float64, startRegion int, numRegions int, inputShape Shape, seed int) {
-	SetBusy(true)
-	defer SetBusy(false)
+func voronoi3d(grainsize float64, startRegion int, numRegions int, inputShape shape, seed int) {
+	setBusy(true)
+	defer setBusy(false)
 
 	t := newTesselation3d(grainsize, numRegions, int64(seed), startRegion, inputShape)
 	Regions.hist = append(Regions.hist, t.RegionOf)
@@ -24,7 +24,7 @@ type tesselation3d struct {
 	maxRegion   int
 	rnd         *rand.Rand
 	startRegion int
-	shape       Shape      //Shape of the tesselated region
+	shape       shape      //Shape of the tesselated region
 	centers     []center3d //List of Voronoi centers
 }
 
@@ -38,7 +38,7 @@ type center3d struct {
 type cellLocs struct{ x, y, z float64 }
 
 // nRegion exclusive
-func newTesselation3d(grainsize float64, nRegion int, seed int64, startRegion int, inputShape Shape) *tesselation3d {
+func newTesselation3d(grainsize float64, nRegion int, seed int64, startRegion int, inputShape shape) *tesselation3d {
 	t := tesselation3d{grainsize,
 		nRegion,
 		rand.New(rand.NewSource(seed)),
@@ -90,14 +90,14 @@ func (t *tesselation3d) tabulateCells() []cellLocs {
 	cells := make([]cellLocs, 0)
 
 	//Get the mesh size
-	meshSize := MeshSize()
+	meshSize := meshSize()
 
 	//Iterate across all cells in the mesh, and append those that are inside the shape
 	for ix := 0; ix < meshSize[0]; ix++ {
 		for iy := 0; iy < meshSize[1]; iy++ {
 			for iz := 0; iz < meshSize[2]; iz++ {
 
-				cell := Index2Coord(ix, iy, iz)
+				cell := index2Coord(ix, iy, iz)
 
 				x := cell.X()
 				y := cell.Y()

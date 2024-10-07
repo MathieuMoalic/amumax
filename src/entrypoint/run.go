@@ -21,7 +21,7 @@ type Release struct {
 	TagName string `json:"tag_name"`
 }
 
-func runInteractive(flags *Flags) {
+func runInteractive(flags *flagsType) {
 	log.Log.Info("No input files: starting interactive session")
 	// setup outut dir
 	now := time.Now()
@@ -50,7 +50,7 @@ m = RandomMag()`)
 	engine.RunInteractive()
 }
 
-func runFileAndServe(mx3Path string, flags *Flags) {
+func runFileAndServe(mx3Path string, flags *flagsType) {
 	if _, err := os.Stat(mx3Path); errors.Is(err, os.ErrNotExist) {
 		log.Log.ErrAndExit("Error: File `%s` does not exist", mx3Path)
 	}
