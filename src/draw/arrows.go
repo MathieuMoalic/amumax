@@ -6,7 +6,7 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/raster"
+	"github.com/MathieuMoalic/amumax/src/draw/raster"
 )
 
 func drawArrows(img *image.RGBA, arr [3][][][]float32, sub int) {

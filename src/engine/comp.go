@@ -15,15 +15,15 @@ type component struct {
 	comp   int
 }
 
-// Comp returns vector component c of the parent Quantity
-func Comp(parent Quantity, c int) ScalarField {
+// comp returns vector component c of the parent Quantity
+func comp(parent Quantity, c int) ScalarField {
 	log.AssertArgument(c >= 0 && c < parent.NComp())
 	return AsScalarField(&component{parent, c})
 }
 
 func (q *component) NComp() int       { return 1 }
-func (q *component) Name() string     { return fmt.Sprint(NameOf(q.parent), "_", compname[q.comp]) }
-func (q *component) Unit() string     { return UnitOf(q.parent) }
+func (q *component) Name() string     { return fmt.Sprint(nameOf(q.parent), "_", compname[q.comp]) }
+func (q *component) Unit() string     { return unitOf(q.parent) }
 func (q *component) Mesh() *data.Mesh { return MeshOf(q.parent) }
 
 func (q *component) Slice() (*data.Slice, bool) {

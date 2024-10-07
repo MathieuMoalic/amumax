@@ -11,54 +11,38 @@ import (
 )
 
 var (
-	B_custom       = NewVectorField("B_custom", "T", "User-defined field", AddCustomField)
-	Edens_custom   = NewScalarField("Edens_custom", "J/m3", "Energy density of user-defined field.", AddCustomEnergyDensity)
-	E_custom       = NewScalarValue("E_custom", "J", "total energy of user-defined field", GetCustomEnergy)
+	B_custom       = newVectorField("B_custom", "T", "User-defined field", addCustomField)
+	Edens_custom   = newScalarField("Edens_custom", "J/m3", "Energy density of user-defined field.", addCustomEnergyDensity)
+	E_custom       = newScalarValue("E_custom", "J", "total energy of user-defined field", getCustomEnergy)
 	customTerms    []Quantity // vector
 	customEnergies []Quantity // scalar
 )
 
 func init() {
-	registerEnergy(GetCustomEnergy, AddCustomEnergyDensity)
-	DeclFunc("AddFieldTerm", AddFieldTerm, "Add an expression to B_eff.")
-	DeclFunc("AddEdensTerm", AddEdensTerm, "Add an expression to Edens.")
-	DeclFunc("Add", Add, "Add two quantities")
-	DeclFunc("Madd", Madd, "Weighted addition: Madd(Q1,Q2,c1,c2) = c1*Q1 + c2*Q2")
-	DeclFunc("Dot", Dot, "Dot product of two vector quantities")
-	DeclFunc("Cross", Cross, "Cross product of two vector quantities")
-	DeclFunc("Mul", Mul, "Point-wise product of two quantities")
-	DeclFunc("MulMV", MulMV, "Matrix-Vector product: MulMV(AX, AY, AZ, m) = (AX·m, AY·m, AZ·m). "+
-		"The arguments Ax, Ay, Az and m are quantities with 3 componets.")
-	DeclFunc("Div", Div, "Point-wise division of two quantities")
-	DeclFunc("Const", Const, "Constant, uniform number")
-	DeclFunc("ConstVector", ConstVector, "Constant, uniform vector")
-	DeclFunc("Shifted", Shifted, "Shifted quantity")
-	DeclFunc("Masked", Masked, "Mask quantity with shape")
-	DeclFunc("Normalized", Normalized, "Normalize quantity")
-	DeclFunc("RemoveCustomFields", RemoveCustomFields, "Removes all custom fields again")
+	registerEnergy(getCustomEnergy, addCustomEnergyDensity)
 }
 
 // Removes all customfields
-func RemoveCustomFields() {
+func removeCustomFields() {
 	customTerms = nil
 }
 
-// AddFieldTerm adds an effective field function (returning Teslas) to B_eff.
+// addFieldTerm adds an effective field function (returning Teslas) to B_eff.
 // Be sure to also add the corresponding energy term using AddEnergyTerm.
-func AddFieldTerm(b Quantity) {
+func addFieldTerm(b Quantity) {
 	customTerms = append(customTerms, b)
 }
 
 // AddEnergyTerm adds an energy density function (returning Joules/m³) to Edens_total.
 // Needed when AddFieldTerm was used and a correct energy is needed
 // (e.g. for Relax, Minimize, ...).
-func AddEdensTerm(e Quantity) {
+func addEdensTerm(e Quantity) {
 	customEnergies = append(customEnergies, e)
 }
 
-// AddCustomField evaluates the user-defined custom field terms
+// addCustomField evaluates the user-defined custom field terms
 // and adds the result to dst.
-func AddCustomField(dst *data.Slice) {
+func addCustomField(dst *data.Slice) {
 	for _, term := range customTerms {
 		buf := ValueOf(term)
 		cuda.Add(dst, dst, buf)
@@ -67,7 +51,7 @@ func AddCustomField(dst *data.Slice) {
 }
 
 // Adds the custom energy densities (defined with AddCustomE
-func AddCustomEnergyDensity(dst *data.Slice) {
+func addCustomEnergyDensity(dst *data.Slice) {
 	for _, term := range customEnergies {
 		buf := ValueOf(term)
 		cuda.Add(dst, dst, buf)
@@ -75,11 +59,11 @@ func AddCustomEnergyDensity(dst *data.Slice) {
 	}
 }
 
-func GetCustomEnergy() float64 {
-	buf := cuda.Buffer(1, GetMesh().Size())
+func getCustomEnergy() float64 {
+	buf := cuda.Buffer(1, getMesh().Size())
 	defer cuda.Recycle(buf)
 	cuda.Zero(buf)
-	AddCustomEnergyDensity(buf)
+	addCustomEnergyDensity(buf)
 	return cellVolume() * float64(cuda.Sum(buf))
 }
 
@@ -95,15 +79,15 @@ func (d *constValue) EvalTo(dst *data.Slice) {
 	}
 }
 
-// Const returns a constant (uniform) scalar quantity,
+// constScalar returns a constant (uniform) scalar quantity,
 // that can be used to construct custom field terms.
-func Const(v float64) Quantity {
+func constScalar(v float64) Quantity {
 	return &constValue{[]float64{v}}
 }
 
-// ConstVector returns a constant (uniform) vector quantity,
+// constVector returns a constant (uniform) vector quantity,
 // that can be used to construct custom field terms.
-func ConstVector(x, y, z float64) Quantity {
+func constVector(x, y, z float64) Quantity {
 	return &constValue{[]float64{x, y, z}}
 }
 
@@ -140,9 +124,9 @@ type mulmv struct {
 	ax, ay, az, b Quantity
 }
 
-// MulMV returns a new Quantity that evaluates to the
+// mulMV returns a new Quantity that evaluates to the
 // matrix-vector product (Ax·b, Ay·b, Az·b).
-func MulMV(Ax, Ay, Az, b Quantity) Quantity {
+func mulMV(Ax, Ay, Az, b Quantity) Quantity {
 	log.AssertArgument(Ax.NComp() == 3 &&
 		Ay.NComp() == 3 &&
 		Az.NComp() == 3 &&
@@ -182,7 +166,7 @@ func (q *mulmv) NComp() int {
 // quantities a and b. E.g.:
 //
 //	DotProct(&M, &B_ext)
-func Dot(a, b Quantity) Quantity {
+func dotProductFunc(a, b Quantity) Quantity {
 	return &dotProduct{fieldOp{a, b, 1}}
 }
 
@@ -199,7 +183,7 @@ func (d *dotProduct) EvalTo(dst *data.Slice) {
 // quantities a and b. E.g.:
 //
 //	CrossProct(&M, &B_ext)
-func Cross(a, b Quantity) Quantity {
+func cross(a, b Quantity) Quantity {
 	return &crossProduct{fieldOp{a, b, 3}}
 }
 
@@ -212,7 +196,7 @@ func (d *crossProduct) EvalTo(dst *data.Slice) {
 	cuda.CrossProduct(dst, A, B)
 }
 
-func Add(a, b Quantity) Quantity {
+func add(a, b Quantity) Quantity {
 	if a.NComp() != b.NComp() {
 		panic(fmt.Sprintf("Cannot point-wise Add %v components by %v components", a.NComp(), b.NComp()))
 	}
@@ -232,7 +216,7 @@ type pointwiseMul struct {
 	fieldOp
 }
 
-func Madd(a, b Quantity, fac1, fac2 float64) *mAddition {
+func madd(a, b Quantity, fac1, fac2 float64) *mAddition {
 	if a.NComp() != b.NComp() {
 		panic(fmt.Sprintf("Cannot point-wise add %v components by %v components", a.NComp(), b.NComp()))
 	}
@@ -248,8 +232,8 @@ func (o *mAddition) EvalTo(dst *data.Slice) {
 	cuda.Madd2(dst, A, B, float32(o.fac1), float32(o.fac2))
 }
 
-// Mul returns a new quantity that evaluates to the pointwise product a and b.
-func Mul(a, b Quantity) Quantity {
+// mul returns a new quantity that evaluates to the pointwise product a and b.
+func mul(a, b Quantity) Quantity {
 	nComp := -1
 	switch {
 	case a.NComp() == b.NComp():
@@ -304,8 +288,8 @@ type pointwiseDiv struct {
 	fieldOp
 }
 
-// Div returns a new quantity that evaluates to the pointwise product a and b.
-func Div(a, b Quantity) Quantity {
+// div returns a new quantity that evaluates to the pointwise product a and b.
+func div(a, b Quantity) Quantity {
 	nComp := -1
 	switch {
 	case a.NComp() == b.NComp():
@@ -352,9 +336,9 @@ type shifted struct {
 	dx, dy, dz int
 }
 
-// Shifted returns a new Quantity that evaluates to
+// shiftedQuant returns a new Quantity that evaluates to
 // the original, shifted over dx, dy, dz cells.
-func Shifted(q Quantity, dx, dy, dz int) Quantity {
+func shiftedQuant(q Quantity, dx, dy, dz int) Quantity {
 	log.Assert(dx != 0 || dy != 0 || dz != 0)
 	return &shifted{q, dx, dy, dz}
 }
@@ -385,19 +369,19 @@ func (q *shifted) NComp() int {
 // The shape will be only evaluated once on the mesh,
 // and will be re-evaluated after mesh change,
 // because otherwise too slow
-func Masked(q Quantity, shape Shape) Quantity {
+func maskedQuant(q Quantity, shape shape) Quantity {
 	return &masked{q, shape, nil, data.Mesh{}}
 }
 
 type masked struct {
 	orig  Quantity
-	shape Shape
+	shape shape
 	mask  *data.Slice
 	mesh  data.Mesh
 }
 
 func (q *masked) EvalTo(dst *data.Slice) {
-	if q.mesh != *GetMesh() {
+	if q.mesh != *getMesh() {
 		// When mesh is changed, mask needs an update
 		q.createMask()
 	}
@@ -411,7 +395,7 @@ func (q *masked) NComp() int {
 }
 
 func (q *masked) createMask() {
-	size := GetMesh().Size()
+	size := getMesh().Size()
 	// Prepare mask on host
 	maskhost := data.NewSlice(SCALAR, size)
 	defer maskhost.Free()
@@ -419,7 +403,7 @@ func (q *masked) createMask() {
 	for iz := 0; iz < size[Z]; iz++ {
 		for iy := 0; iy < size[Y]; iy++ {
 			for ix := 0; ix < size[X]; ix++ {
-				r := Index2Coord(ix, iy, iz)
+				r := index2Coord(ix, iy, iz)
 				if q.shape(r[X], r[Y], r[Z]) {
 					maskScalars[iz][iy][ix] = 1
 				}
@@ -430,12 +414,12 @@ func (q *masked) createMask() {
 	q.mask.Free()
 	q.mask = cuda.NewSlice(SCALAR, size)
 	data.Copy(q.mask, maskhost)
-	q.mesh = *GetMesh()
+	q.mesh = *getMesh()
 	// Remove mask from host
 }
 
-// Normalized returns a quantity that evaluates to the unit vector of q
-func Normalized(q Quantity) Quantity {
+// normalizedQuant returns a quantity that evaluates to the unit vector of q
+func normalizedQuant(q Quantity) Quantity {
 	return &normalized{q}
 }
 

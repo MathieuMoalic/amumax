@@ -6,7 +6,7 @@ type UserErr string
 
 func (e UserErr) Error() string { return string(e) }
 
-func CheckRecoverable(err error) {
+func checkRecoverable(err error) {
 	if err != nil {
 		panic(UserErr(err.Error()))
 	}

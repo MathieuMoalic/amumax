@@ -123,6 +123,7 @@
           pkgs.prefetch-npm-deps
           pkgs.nix-prefetch
           pkgs.jq
+          pkgs.podman
         ];
 
       LD_LIBRARY_PATH = "${cuda.libcufft}/lib:${cuda.libcurand}/lib:/run/opengl-driver/lib/";

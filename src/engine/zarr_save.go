@@ -14,36 +14,27 @@ import (
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
-func init() {
-	DeclFunc("AutoSaveAs", Mx3AutoSaveAs, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("AutoSaveAsChunk", Mx3AutoSaveAsChunk, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("AutoSave", Mx3AutoSave, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("SaveAs", Mx3SaveAs, "Save space-dependent quantity as the zarr standard.")
-	DeclFunc("SaveAsChunk", Mx3SaveAsChunk, "")
-	DeclFunc("Save", Mx3zSave, "Save space-dependent quantity as the zarr standard.")
+func mx3AutoSave(q Quantity, period float64) {
+	zVerifyAndSave(q, nameOf(q), requestedChunking{1, 1, 1, 1}, period)
 }
 
-func Mx3AutoSave(q Quantity, period float64) {
-	zVerifyAndSave(q, NameOf(q), RequestedChunking{1, 1, 1, 1}, period)
+func mx3AutoSaveAs(q Quantity, name string, period float64) {
+	zVerifyAndSave(q, name, requestedChunking{1, 1, 1, 1}, period)
 }
 
-func Mx3AutoSaveAs(q Quantity, name string, period float64) {
-	zVerifyAndSave(q, name, RequestedChunking{1, 1, 1, 1}, period)
-}
-
-func Mx3AutoSaveAsChunk(q Quantity, name string, period float64, rchunks RequestedChunking) {
+func mx3AutoSaveAsChunk(q Quantity, name string, period float64, rchunks requestedChunking) {
 	zVerifyAndSave(q, name, rchunks, period)
 }
 
-func Mx3SaveAs(q Quantity, name string) {
-	zVerifyAndSave(q, name, RequestedChunking{1, 1, 1, 1}, 0)
+func mx3SaveAs(q Quantity, name string) {
+	zVerifyAndSave(q, name, requestedChunking{1, 1, 1, 1}, 0)
 }
 
-func Mx3zSave(q Quantity) {
-	zVerifyAndSave(q, NameOf(q), RequestedChunking{1, 1, 1, 1}, 0)
+func mx3zSave(q Quantity) {
+	zVerifyAndSave(q, nameOf(q), requestedChunking{1, 1, 1, 1}, 0)
 }
 
-func Mx3SaveAsChunk(q Quantity, name string, rchunks RequestedChunking) {
+func mx3SaveAsChunk(q Quantity, name string, rchunks requestedChunking) {
 	zVerifyAndSave(q, name, rchunks, 0)
 }
 
@@ -57,8 +48,8 @@ type zArray struct {
 	start   float64 // Starting point
 	count   int     // Number of times it has been autosaved
 	times   []float64
-	chunks  Chunks
-	rchunks RequestedChunking
+	chunks  chunks
+	rchunks requestedChunking
 }
 
 // returns true when the time is right to save.
@@ -84,12 +75,12 @@ func (a *zArray) Save() {
 	defer cuda.Recycle(buffer)
 	data := buffer.HostCopy() // must be copy (async io)
 	t := a.count              // no desync this way
-	queOutput(func() { SyncSave(data, a.name, t, a.chunks) })
+	queOutput(func() { syncSave(data, a.name, t, a.chunks) })
 	a.count++
 }
 
 // entrypoint of all the user facing save functions
-func zVerifyAndSave(q Quantity, name string, rchunks RequestedChunking, period float64) {
+func zVerifyAndSave(q Quantity, name string, rchunks requestedChunking, period float64) {
 	if zArrayExists(q, name, rchunks) {
 		for _, z := range zArrays {
 			if z.name == name {
@@ -105,13 +96,13 @@ func zVerifyAndSave(q Quantity, name string, rchunks RequestedChunking, period f
 		err := httpfs.Mkdir(OD() + name)
 		log.Log.PanicIfError(err)
 		var b []float64
-		a := zArray{name, q, period, Time, -1, b, NewChunks(q, rchunks), rchunks}
+		a := zArray{name, q, period, Time, -1, b, newChunks(q, rchunks), rchunks}
 		zArrays = append(zArrays, &a)
 		a.Save()
 	}
 }
 
-func zArrayExists(q Quantity, name string, rchunks RequestedChunking) bool {
+func zArrayExists(q Quantity, name string, rchunks requestedChunking) bool {
 	for _, z := range zArrays {
 		if z.name == name {
 			if z.rchunks != rchunks {
@@ -127,7 +118,7 @@ func zArrayExists(q Quantity, name string, rchunks RequestedChunking) bool {
 }
 
 // synchronous chunky save
-func SyncSave(array *data.Slice, qname string, time int, chunks Chunks) {
+func syncSave(array *data.Slice, qname string, time int, chunks chunks) {
 	data := array.Tensors()
 	size := array.Size()
 	ncomp := array.NComp()

@@ -8,13 +8,9 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func newTablePlot() *TablePlot {
-	tablePlot.Update()
-	return &tablePlot
-}
-
-type TablePlot struct {
-	AutoSaveInterval float64     `msgpack:"autoSaveInterval"`
+type TablePlotState struct {
+	ws               *WebSocketManager
+	AutoSaveInterval *float64    `msgpack:"autoSaveInterval"`
 	Columns          []string    `msgpack:"columns"`
 	XColumn          string      `msgpack:"xColumn"`
 	YColumn          string      `msgpack:"yColumn"`
@@ -29,21 +25,25 @@ type TablePlot struct {
 	Step             int         `msgpack:"step"`
 }
 
-var tablePlot TablePlot
-
-func init() {
-	tablePlot = TablePlot{
-		AutoSaveInterval: engine.Table.AutoSavePeriod,
+func initTablePlotAPI(e *echo.Echo, ws *WebSocketManager) *TablePlotState {
+	t := TablePlotState{
+		ws:               ws,
+		AutoSaveInterval: &engine.Table.AutoSavePeriod,
 		XColumn:          "t",
 		YColumn:          "mx",
 		MaxPoints:        10000,
 		Step:             1,
 	}
-	tablePlot.Update()
+	e.POST("/api/tableplot/autosave-interval", t.postTablePlotAutoSaveInterval)
+	e.POST("/api/tableplot/xcolumn", t.postTablePlotXColumn)
+	e.POST("/api/tableplot/ycolumn", t.postTablePlotYColumn)
+	e.POST("/api/tableplot/maxpoints", t.postTablePlotMaxPoints)
+	e.POST("/api/tableplot/step", t.postTablePlotStep)
+	t.Update()
+	return &t
 }
 
-func (t *TablePlot) Update() {
-	t.AutoSaveInterval = engine.Table.AutoSavePeriod
+func (t *TablePlotState) Update() {
 	t.Columns = t.GetTableNames()
 	t.XColumnUnit = t.GetUnit(t.XColumn)
 	t.YColumnUnit = t.GetUnit(t.YColumn)
@@ -51,7 +51,7 @@ func (t *TablePlot) Update() {
 	t.GetMinMaxXY()
 }
 
-func (t *TablePlot) GetTablePlotData() {
+func (t *TablePlotState) GetTablePlotData() {
 	xData := t.GetColumnData(t.XColumn)
 	yData := t.GetColumnData(t.YColumn)
 	data := make([][]float64, len(xData)) // [ [x1, y1], [x2, y2], ... ]
@@ -69,7 +69,7 @@ func (t *TablePlot) GetTablePlotData() {
 	t.Data = data
 }
 
-func (t *TablePlot) GetMinMaxXY() {
+func (t *TablePlotState) GetMinMaxXY() {
 	if len(t.Data) == 0 {
 		return
 	}
@@ -99,7 +99,7 @@ func (t *TablePlot) GetMinMaxXY() {
 	t.XMax = xmax
 }
 
-func (t *TablePlot) GetColumnData(column string) []float64 {
+func (t *TablePlotState) GetColumnData(column string) []float64 {
 	engine.Table.Mu.Lock() // Lock the mutex before reading the map
 	defer engine.Table.Mu.Unlock()
 	originalData := engine.Table.Data[column]
@@ -112,7 +112,7 @@ func (t *TablePlot) GetColumnData(column string) []float64 {
 	return result
 }
 
-func (t *TablePlot) GetUnit(name string) string {
+func (t *TablePlotState) GetUnit(name string) string {
 	for _, i := range engine.Table.Columns {
 		if i.Name == name {
 			return i.Unit
@@ -121,7 +121,7 @@ func (t *TablePlot) GetUnit(name string) string {
 	return ""
 }
 
-func (t *TablePlot) ColumnExists(name string) bool {
+func (t *TablePlotState) ColumnExists(name string) bool {
 	for _, i := range engine.Table.Columns {
 		if i.Name == name {
 			return true
@@ -130,7 +130,7 @@ func (t *TablePlot) ColumnExists(name string) bool {
 	return false
 }
 
-func (t *TablePlot) GetTableNames() []string {
+func (t *TablePlotState) GetTableNames() []string {
 	names := []string{}
 	for _, column := range engine.Table.Columns {
 		names = append(names, column.Name)
@@ -138,7 +138,7 @@ func (t *TablePlot) GetTableNames() []string {
 	return names
 }
 
-func postTablePlotAutoSaveInterval(c echo.Context) error {
+func (t *TablePlotState) postTablePlotAutoSaveInterval(c echo.Context) error {
 	type Request struct {
 		AutoSaveInterval float64 `msgpack:"autoSaveInterval"`
 	}
@@ -147,11 +147,11 @@ func postTablePlotAutoSaveInterval(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	engine.Table.AutoSavePeriod = req.AutoSaveInterval
-	broadcastEngineState()
+	t.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
 
-func postTablePlotXColumn(c echo.Context) error {
+func (t *TablePlotState) postTablePlotXColumn(c echo.Context) error {
 	type Request struct {
 		XColumn string `msgpack:"XColumn"`
 	}
@@ -159,15 +159,15 @@ func postTablePlotXColumn(c echo.Context) error {
 	if err := c.Bind(req); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	if !tablePlot.ColumnExists(req.XColumn) {
+	if !t.ColumnExists(req.XColumn) {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Table column not found"})
 	}
-	tablePlot.XColumn = req.XColumn
-	broadcastEngineState()
+	t.XColumn = req.XColumn
+	t.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
 
-func postTablePlotYColumn(c echo.Context) error {
+func (t *TablePlotState) postTablePlotYColumn(c echo.Context) error {
 	type Request struct {
 		YColumn string `msgpack:"YColumn"`
 	}
@@ -175,15 +175,15 @@ func postTablePlotYColumn(c echo.Context) error {
 	if err := c.Bind(req); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	if !tablePlot.ColumnExists(req.YColumn) {
+	if !t.ColumnExists(req.YColumn) {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Table column not found"})
 	}
-	tablePlot.YColumn = req.YColumn
-	broadcastEngineState()
+	t.YColumn = req.YColumn
+	t.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
 
-func postTablePlotMaxPoints(c echo.Context) error {
+func (t *TablePlotState) postTablePlotMaxPoints(c echo.Context) error {
 	type Request struct {
 		MaxPoints int `msgpack:"maxPoints"`
 	}
@@ -192,13 +192,13 @@ func postTablePlotMaxPoints(c echo.Context) error {
 		log.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	tablePlot.MaxPoints = req.MaxPoints
-	preview.Refresh = true
-	broadcastEngineState()
+	t.MaxPoints = req.MaxPoints
+	t.ws.engineState.Preview.Refresh = true
+	t.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
 
-func postTablePlotStep(c echo.Context) error {
+func (t *TablePlotState) postTablePlotStep(c echo.Context) error {
 	type Request struct {
 		Step int `msgpack:"step"`
 	}
@@ -210,7 +210,7 @@ func postTablePlotStep(c echo.Context) error {
 	if req.Step < 1 {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Step must be at least 1"})
 	}
-	tablePlot.Step = req.Step
-	broadcastEngineState()
+	t.Step = req.Step
+	t.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }

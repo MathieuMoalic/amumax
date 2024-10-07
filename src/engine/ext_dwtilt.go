@@ -5,14 +5,14 @@ import (
 )
 
 // PMA domain wall tilt assuming straight wall.
-var DWTiltPMA = NewScalarValue("ext_dwtilt", "rad", "PMA domain wall tilt", dwTiltPMA)
+var DWTiltPMA = newScalarValue("ext_dwtilt", "rad", "PMA domain wall tilt", dwTiltPMA)
 
 func dwTiltPMA() float64 {
-	m := Download(&M)
+	m := download(&normMag)
 	mz := m.Vectors()[Z][0] // slice0
 
-	nx := GetMesh().Size()[X]
-	ny := GetMesh().Size()[Y]
+	nx := getMesh().Size()[X]
+	ny := getMesh().Size()[Y]
 	// find domain wall at these y positions:
 	y1 := 4
 	y2 := ny - 5

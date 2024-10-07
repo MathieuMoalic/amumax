@@ -9,17 +9,27 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type Console struct {
+type ConsoleState struct {
+	ws   *WebSocketManager
 	Hist string `msgpack:"hist"`
 }
 
-func newConsole() *Console {
-	return &Console{
-		Hist: log.Log.Hist,
-	}
+func (s ConsoleState) Update() {
+	// s.Hist = log.Log.Hist
 }
 
-func postConsoleCommand(c echo.Context) error {
+func initConsoleAPI(e *echo.Echo, ws *WebSocketManager) *ConsoleState {
+	state := &ConsoleState{
+		ws:   ws,
+		Hist: log.Log.Hist,
+	}
+	e.POST("/api/console/command", state.postConsoleCommand)
+	return state
+
+}
+
+func (s ConsoleState) postConsoleCommand(c echo.Context) error {
+	// TODO: return error if the command wrong
 	type Request struct {
 		Command string `msgpack:"command"`
 	}
@@ -35,6 +45,6 @@ func postConsoleCommand(c echo.Context) error {
 	}
 
 	engine.InjectAndWait(func() { engine.EvalTryRecover(req.Command) })
-	broadcastEngineState()
+	s.ws.broadcastEngineState() // Use the instance to call the method
 	return c.JSON(http.StatusOK, "")
 }

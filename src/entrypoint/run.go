@@ -17,18 +17,11 @@ import (
 	"github.com/MathieuMoalic/amumax/src/script"
 )
 
-func Entrypoint() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
 type Release struct {
 	TagName string `json:"tag_name"`
 }
 
-func runInteractive() {
+func runInteractive(flags *flagsType) {
 	log.Log.Info("No input files: starting interactive session")
 	// setup outut dir
 	now := time.Now()
@@ -57,7 +50,7 @@ m = RandomMag()`)
 	engine.RunInteractive()
 }
 
-func runFileAndServe(mx3Path string) {
+func runFileAndServe(mx3Path string, flags *flagsType) {
 	if _, err := os.Stat(mx3Path); errors.Is(err, os.ErrNotExist) {
 		log.Log.ErrAndExit("Error: File `%s` does not exist", mx3Path)
 	}

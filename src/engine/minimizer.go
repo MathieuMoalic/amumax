@@ -11,19 +11,11 @@ import (
 )
 
 var (
-	DmSamples              int     = 10   // number of dm to keep for convergence check
-	StopMaxDm              float64 = 1e-6 // stop minimizer if sampled dm is smaller than this
-	MinimizeMaxSteps       int     = 1000000
-	MinimizeMaxTimeSeconds         = 60 * 60 * 24 * 7 // one week
+	dmSamples              int     = 10   // number of dm to keep for convergence check
+	stopMaxDm              float64 = 1e-6 // stop minimizer if sampled dm is smaller than this
+	minimizeMaxSteps       int     = 1000000
+	minimizeMaxTimeSeconds         = 60 * 60 * 24 * 7 // one week
 )
-
-func init() {
-	DeclFunc("Minimize", Minimize, "Use steepest conjugate gradient method to minimize the total energy")
-	DeclVar("MinimizerStop", &StopMaxDm, "Stopping max dM for Minimize")
-	DeclVar("MinimizerSamples", &DmSamples, "Number of max dM to collect for Minimize convergence check.")
-	DeclVar("MinimizeMaxSteps", &MinimizeMaxSteps, "")
-	DeclVar("MinimizeMaxTimeSeconds", &MinimizeMaxTimeSeconds, "")
-}
 
 // fixed length FIFO. Items can be added but not removed
 type fifoRing struct {
@@ -32,7 +24,7 @@ type fifoRing struct {
 	data  []float64
 }
 
-func FifoRing(length int) fifoRing {
+func createFifoRing(length int) fifoRing {
 	return fifoRing{data: make([]float64, length)}
 }
 
@@ -62,7 +54,7 @@ type Minimizer struct {
 }
 
 func (mini *Minimizer) Step() {
-	m := M.Buffer()
+	m := normMag.Buffer()
 	size := m.Size()
 
 	if mini.k == nil {
@@ -116,7 +108,7 @@ func (mini *Minimizer) Step() {
 		mini.h = 1e-4
 	}
 
-	M.normalize()
+	normMag.normalize()
 
 	// as a convention, time does not advance during relax
 	NSteps++
@@ -131,30 +123,30 @@ var (
 	MinimizeTimeoutStep int
 )
 
-func Minimize() {
+func minimize() {
 	checkExchangeLenght()
 	MinimizeStartTime = time.Now()
-	MinimizeTimeoutStep = NSteps + MinimizeMaxSteps
-	SanityCheck()
+	MinimizeTimeoutStep = NSteps + minimizeMaxSteps
+	sanityCheck()
 	// Save the settings we are changing...
 	prevType := Solvertype
 	prevFixDt := FixDt
-	prevPrecess := Precess
+	prevPrecess := precess
 	t0 := Time
 
 	relaxing = true // disable temperature noise
 
 	// ...to restore them later
 	defer func() {
-		SetSolver(prevType)
+		setSolver(prevType)
 		FixDt = prevFixDt
-		Precess = prevPrecess
+		precess = prevPrecess
 		Time = t0
 
 		relaxing = false
 	}()
 
-	Precess = false // disable precession for torque calculation
+	precess = false // disable precession for torque calculation
 	// remove previous stepper
 	if stepper != nil {
 		stepper.Free()
@@ -164,23 +156,23 @@ func Minimize() {
 	mini := Minimizer{
 		h:      1e-4,
 		k:      nil,
-		lastDm: FifoRing(DmSamples)}
+		lastDm: createFifoRing(dmSamples)}
 	stepper = &mini
 
 	cond := func() bool {
 		maxStepsReached := MinimizeTimeoutStep < NSteps
-		maxTimeReached := int(time.Since(MinimizeStartTime).Seconds()) > MinimizeMaxTimeSeconds
-		maxDmSamplesReached := mini.lastDm.count < DmSamples
-		maxDmReached := mini.lastDm.Max() > StopMaxDm
+		maxTimeReached := int(time.Since(MinimizeStartTime).Seconds()) > minimizeMaxTimeSeconds
+		maxDmSamplesReached := mini.lastDm.count < dmSamples
+		maxDmReached := mini.lastDm.Max() > stopMaxDm
 		out := !(maxStepsReached || maxTimeReached || !(maxDmSamplesReached || maxDmReached))
 		if maxStepsReached {
-			log.Log.Info("Stopping `Minimize()`: Maximum time steps reached ( MinimizeMaxSteps= %v steps", MinimizeMaxSteps)
+			log.Log.Info("Stopping `Minimize()`: Maximum time steps reached ( MinimizeMaxSteps= %v steps", minimizeMaxSteps)
 		}
 		if maxTimeReached {
-			log.Log.Info("Stopping `Minimize()`: Maximum time reached ( MinimizeMaxTimeSeconds= %vs )", MinimizeMaxTimeSeconds)
+			log.Log.Info("Stopping `Minimize()`: Maximum time reached ( MinimizeMaxTimeSeconds= %vs )", minimizeMaxTimeSeconds)
 		}
 		return out
 	}
-	RunWhile(cond)
+	runWhile(cond)
 	Pause = true
 }
