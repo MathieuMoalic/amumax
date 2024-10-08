@@ -99,22 +99,24 @@ func (s SolverState) postSolverType(c echo.Context) error {
 
 func (s SolverState) postSolverRun(c echo.Context) error {
 	type Request struct {
-		Runtime float64 `msgpack:"runtime"`
+		Runtime string `msgpack:"runtime"`
 	}
 
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"error": "Invalid request payload: " + err.Error(),
+		})
 	}
 	engine.Break()
-	engine.InjectAndWait(func() { engine.EvalTryRecover("Run(" + strconv.FormatFloat(req.Runtime, 'f', -1, 64) + ")") })
+	engine.InjectAndWait(func() { engine.EvalTryRecover("Run(" + req.Runtime + ")") })
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, "")
 }
 
 func (s SolverState) postSolverSteps(c echo.Context) error {
 	type Request struct {
-		Steps int `msgpack:"steps"`
+		Steps string `msgpack:"steps"`
 	}
 
 	req := new(Request)
@@ -123,7 +125,7 @@ func (s SolverState) postSolverSteps(c echo.Context) error {
 	}
 
 	engine.Break()
-	engine.InjectAndWait(func() { engine.EvalTryRecover("Steps(" + strconv.Itoa(req.Steps) + ")") })
+	engine.InjectAndWait(func() { engine.EvalTryRecover("Steps(" + req.Steps + ")") })
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, "")
 }
