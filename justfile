@@ -37,21 +37,23 @@ release:
 	git checkout main
 	git pull
 	VERSION=$(date -u +'%Y.%m.%d')
-	# # just update-flake-hashes-git
-	# # just test
+	just update-flake-hashes-git
+	just test
 	
-	# # just image build-cuda build-frontend build
+	just image build-cuda build-frontend build
 
-	# # We need to commit before the release
-	# git add .
-	# git commit -m "Release of ${VERSION}"
-	# gh release create $VERSION ./build/* --title $VERSION --notes "Release of ${VERSION}"
+	# We need to commit before the release
+	git add .
+	git commit -m "Release of ${VERSION}"
+	git push
+	gh release create $VERSION ./build/* --title $VERSION --notes "Release of ${VERSION}"
 	
-	# # We update the flake with the new version based on github
-	# just update-flake-gh-hash ${VERSION}
-	# nix run . -- -v
+	# We update the flake with the new version based on github
+	just update-flake-gh-hash ${VERSION}
+	nix run . -- -v
 	git add .
 	git commit -m "Update github hash for the release of ${VERSION}"
+	git push
 
 	just copy-pcss
 
