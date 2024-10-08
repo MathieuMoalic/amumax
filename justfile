@@ -2,7 +2,7 @@ image:
 	podman build -t matmoa/amumax:build .
 
 build-cuda: 
-	podman run --rm -v $PWD:/src matmoa/amumax:build sh src/cuda/build-cuda.sh
+	podman run --rm -v $PWD:/src matmoa/amumax:build sh src/cuda/build_cuda.sh
 
 copy-pcss:
 	scp -r ./build/amumax pcss:grant_398/scratch/bin/amumax_versions/amumax$(date -I)
@@ -14,47 +14,89 @@ build-frontend:
 		-v .:/src \
 		-w /src/frontend \
 		--entrypoint /bin/sh \
-		docker.io/node:18.20.4-alpine3.20 -c 'npm install && npm run build && mv dist ../src/api/static'
+		docker.io/node:18.20.4-alpine3.20 -c 'npm install && npm run build && rm -rf ../src/api/static && mv dist ../src/api/static'
 
 build:
 	podman run --rm -v $PWD:/src matmoa/amumax:build
 
-update-flake-hashes VERSION:
+update-flake-gh-hash VERSION:
 	#!/usr/bin/env sh
 	set -euxo pipefail
-	sed -i 's/releaseVersion = "[^"]*"/releaseVersion = "'"{{VERSION}}"'"/' flake2.nix
+	sed -i 's/releaseVersion = "[^"]*"/releaseVersion = "'"{{VERSION}}"'"/' flake.nix
 
 	GH_HASH=$(nix-prefetch-github MathieuMoalic amumax --rev {{VERSION}} | jq -r '.hash')
-	sed -i "/# gh hash/ s|hash = \".*\";|hash = \"$GH_HASH\";|" flake2.nix
-
-	NPM_HASH=$(prefetch-npm-deps frontend/package-lock.json)
-	sed -i "/# npm hash/ s|npmDepsHash = \".*\";|npmDepsHash = \"$NPM_HASH\";|" flake2.nix
-
-pre-commit:
-	#!/usr/bin/env sh
-	if git diff --cached --name-only | grep -q -e "frontend/package-lock.json" -e "go.sum"; then
-		# Check if flake.nix is also staged for commit
-		if ! git diff --cached --name-only | grep -q "flake.nix"; then
-			echo "Error: lock files have changed, but flake.nix is not updated."
-			echo "Please update flake.nix accordingly."
-			exit 1  # Block the commit
-		fi
-	fi
-	# If the check passes, allow the commit
-	exit 0
+	escaped_hash=$(printf '%s' "$GH_HASH" | sed 's/[&/\]/\\&/g')
+	sed -i "s/hash = pkgs.lib.fakeHash;/hash = \"$escaped_hash\";/" flake.nix
 
 test:
 	go test ./src/...
 	
 release: 
 	#!/usr/bin/env sh
-	just test
+	set -euxo pipefail
+	git checkout main
+	git pull
 	VERSION=$(date -u +'%Y.%m.%d')
-	just update-flake $VERSION
-	git add flake.nix flake.lock
-	just image build-cuda build-frontend build
-	just pre-commit
+	# just update-flake-hashes-git
+	# just test
+	
+	# just image build-cuda build-frontend build
+
+	# We need to commit before the release
+	git add .
 	git commit -m "Release of ${VERSION}"
-	git push
 	gh release create $VERSION ./build/* --title $VERSION --notes "Release of ${VERSION}"
+	
+	# We update the flake with the new version based on github
+	just update-flake-gh-hash ${VERSION}
+	git add .
+	git commit -m "Update github hash for the release of ${VERSION}"
+	nix run . -- -v
+
 	just copy-pcss
+
+update-flake-hashes-git:
+	#!/usr/bin/env sh
+	set -euo pipefail
+
+	echo "Resetting npmDepsHash and vendorHash to placeholder values..."
+	sed -i 's/npmDepsHash = "sha256-[^\"]*";/npmDepsHash = pkgs.lib.fakeHash;/' flake.nix
+	sed -i 's/vendorHash = "sha256-[^\"]*";/vendorHash = pkgs.lib.fakeHash;/' flake.nix
+	sed -i 's/hash = "sha256-[^\"]*";/hash = pkgs.lib.fakeHash;/' flake.nix
+
+	echo "Starting the hash update process..."
+
+	update_hashes() {
+		echo "Running nix command to capture output and find new hashes..."
+		output=$(nix run .#git -- -v 2>&1 || true)
+
+		new_hash=$(echo "$output" | grep 'got:' | awk '{print $2}')
+		escaped_hash=$(printf '%s' "$new_hash" | sed 's/[&/\]/\\&/g')
+
+		if [[ -n "$new_hash" ]]; then
+			echo "New hash found: $new_hash"
+			if [[ "$output" == *"frontend-git-npm-deps.drv':"* ]]; then
+				echo "Updating npmDepsHash in flake.nix..."
+				sed -i "s/npmDepsHash = pkgs.lib.fakeHash;/npmDepsHash = \"$escaped_hash\";/" flake.nix
+			elif [[ "$output" == *"git-go-modules.drv':"* ]]; then
+				echo "Updating vendorHash in flake.nix..."
+				sed -i "s/vendorHash = pkgs.lib.fakeHash;/vendorHash = \"$escaped_hash\";/" flake.nix
+			else
+				echo "Error: None of the expected patterns found in the output." >&2
+				return 1
+			fi
+		else
+			echo "Error: No new hash found in the output." >&2
+			return 1
+		fi
+	}
+
+	echo "Updating hashes..."
+	update_hashes
+	echo "First update completed. Running the update again..."
+	update_hashes
+
+	echo "Running final test to verify updated hashes..."
+	nix run .#git -- -v
+
+	echo "Hash update process completed."

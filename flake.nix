@@ -74,37 +74,37 @@
 
     GitFrontend = buildFrontend {
       src = ./frontend;
-      npmDepsHash = "sha256-NNr/4Py+YlXK+fYDidYlygyHSuVg4dy2nYRGefX4MwA=";
+      npmDepsHash = "sha256-wBgsyo3n75/gZZxjZ0GPM9axT22QOj2GsMoYdLPH+/E=";
       version = gitVersion;
     };
 
     GitBuildAmumax = buildAmumax {
       src = ./.;
       frontend = GitFrontend;
-      vendorHash = "sha256-nCjAc54HKOeHlus9scYSq9OMnnsbsijLM/9wm5RGkTw=";
+      vendorHash = "sha256-/XBOZytutAPaYznUCaAkB4X3RawmajivU180i2jgRmI=";
       version = gitVersion;
     };
 
     #################### RELEASE ########################
-    releaseVersion = "2024.10.03"; # Set the version for the Release build
+    releaseVersion = "2024.10.08"; # Set the version for the Release build
 
     ReleaseSrc = pkgs.fetchFromGitHub {
       owner = "MathieuMoalic";
       repo = "amumax";
       rev = releaseVersion;
-      hash = "sha256-cMJKWMPHpBdRN6q5YX0POx9TCMvz2oZOuzTjtBF/ffI="; # gh hash
+      hash = "sha256-+dEDmVyboFoIe0OdB+SVFvj0MdufzEjAqO+VPnAUaPk=";
     };
 
     ReleaseFrontend = buildFrontend {
       src = "${ReleaseSrc}/frontend";
-      npmDepsHash = "sha256-NNr/4Py+YlXK+fYDidYlygyHSuVg4dy2nYRGefX4MwA=";
+      npmDepsHash = "sha256-wBgsyo3n75/gZZxjZ0GPM9axT22QOj2GsMoYdLPH+/E=";
       version = releaseVersion;
     };
 
     ReleaseBuildAmumax = buildAmumax {
       src = ReleaseSrc;
       frontend = ReleaseFrontend;
-      vendorHash = "sha256-nCjAc54HKOeHlus9scYSq9OMnnsbsijLM/9wm5RGkTw=";
+      vendorHash = "sha256-/XBOZytutAPaYznUCaAkB4X3RawmajivU180i2jgRmI=";
       version = releaseVersion;
     };
 
