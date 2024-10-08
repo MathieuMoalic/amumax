@@ -7,5 +7,5 @@ export function setAlert(message: string) {
     alert.set(message);
     setTimeout(() => {
         alert.set("");
-    }, 1000);
+    }, 10000);
 }

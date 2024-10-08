@@ -15,8 +15,8 @@
 	import { Button, Dropdown, DropdownItem, DropdownDivider } from 'flowbite-svelte';
 	import { ChevronDownOutline, ChevronRightOutline } from 'flowbite-svelte-icons';
 	let solvertypes = ['bw_euler', 'euler', 'heun', 'rk4', 'rk23', 'rk45', 'rkf56'];
-	let runSeconds = 1e-9;
-	let runSteps = 100;
+	let runSeconds = '1e-9';
+	let runSteps = '100';
 	let dropdownOpen = false;
 </script>
 
@@ -48,14 +48,14 @@
 			<!-- Run -->
 			<div class="field">
 				<Button class="h-6 w-28" outline on:click={() => postRun(runSeconds)}>Run</Button>
-				<Input class="h-6 w-32" type="number" id="run_seconds" bind:value={runSeconds} />
+				<Input class="h-6 w-32" id="run_seconds" bind:value={runSeconds} />
 				<span class="ml-6">s</span>
 			</div>
 
 			<!-- Run Steps -->
 			<div class="field">
 				<Button class="h-6 w-28" outline on:click={() => postSteps(runSteps)}>Run Steps</Button>
-				<Input class="h-6 w-32" type="number" id="run_steps" bind:value={runSteps} />
+				<Input class="h-6 w-32" id="run_steps" bind:value={runSteps} />
 			</div>
 
 			<!-- Relax -->
@@ -74,7 +74,13 @@
 			<!-- Steps -->
 			<div class="field">
 				<Label for="steps" class="h-6 w-32">Steps</Label>
-				<Input class="h-6 w-32" type="text" id="steps" placeholder={$solverState.steps} readonly />
+				<Input
+					class="h-6 w-32"
+					type="number"
+					id="steps"
+					placeholder=" {$solverState.steps}"
+					readonly
+				/>
 			</div>
 
 			<!-- Time -->
