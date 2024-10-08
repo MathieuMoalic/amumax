@@ -34,7 +34,7 @@ type flagsType struct {
 
 func parseFlags(rootCmd *cobra.Command) {
 	rootCmd.Flags().BoolVarP(&flags.debug, "debug", "d", false, "Debug mode")
-	rootCmd.Flags().BoolVarP(&flags.version, "version", "v", true, "Print version")
+	rootCmd.Flags().BoolVarP(&flags.version, "version", "v", false, "Print version")
 	rootCmd.Flags().BoolVar(&flags.vet, "vet", false, "Check input files for errors, but don't run them")
 	rootCmd.Flags().BoolVar(&flags.update, "update", false, "Update the amumax binary from the latest github release")
 	rootCmd.Flags().StringVarP(&flags.cacheDir, "cache", "c", fmt.Sprintf("%v/amumax_kernels", os.TempDir()), "Kernel cache directory (empty disables caching)")
