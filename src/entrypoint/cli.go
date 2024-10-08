@@ -64,17 +64,13 @@ func cliEntrypoint(cmd *cobra.Command, args []string) {
 	}
 	engine.Insecure = flags.insecure
 
-	// used by bootstrap launcher to test cuda
-	// successful exit means cuda was initialized fine
-	if flags.test {
-		fmt.Println(cuda.GPUInfo)
-		os.Exit(0)
-	}
-
 	defer engine.CleanExit() // flushes pending output, if any
 
 	if flags.vet {
 		vet()
+		return
+	}
+	if flags.version {
 		return
 	}
 	if len(args) == 0 && flags.interactive {

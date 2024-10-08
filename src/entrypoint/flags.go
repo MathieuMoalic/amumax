@@ -9,7 +9,6 @@ import (
 
 type flagsType struct {
 	debug       bool
-	test        bool
 	version     bool
 	vet         bool
 	update      bool
@@ -35,7 +34,6 @@ type flagsType struct {
 
 func parseFlags(rootCmd *cobra.Command) {
 	rootCmd.Flags().BoolVarP(&flags.debug, "debug", "d", false, "Debug mode")
-	rootCmd.Flags().BoolVar(&flags.test, "test", false, "Cuda test (internal)")
 	rootCmd.Flags().BoolVarP(&flags.version, "version", "v", true, "Print version")
 	rootCmd.Flags().BoolVar(&flags.vet, "vet", false, "Check input files for errors, but don't run them")
 	rootCmd.Flags().BoolVar(&flags.update, "update", false, "Update the amumax binary from the latest github release")
