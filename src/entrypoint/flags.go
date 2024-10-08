@@ -33,8 +33,7 @@ type flagsType struct {
 	webUIQueuePort int
 }
 
-func parseFlags(rootCmd *cobra.Command) flagsType {
-	flags := flagsType{}
+func parseFlags(rootCmd *cobra.Command) {
 	rootCmd.Flags().BoolVarP(&flags.debug, "debug", "d", false, "Debug mode")
 	rootCmd.Flags().BoolVar(&flags.test, "test", false, "Cuda test (internal)")
 	rootCmd.Flags().BoolVarP(&flags.version, "version", "v", true, "Print version")
@@ -58,5 +57,4 @@ func parseFlags(rootCmd *cobra.Command) flagsType {
 	rootCmd.Flags().IntVar(&flags.webUIPort, "webui-port", 35367, "Port to serve web GUI")
 	rootCmd.Flags().StringVar(&flags.webUIQueueHost, "webui-queue-host", "localhost", "Host to serve the queue web GUI (e.g., 0.0.0.0)")
 	rootCmd.Flags().IntVar(&flags.webUIQueuePort, "webui-queue-port", 35366, "Port to serve queue web GUI")
-	return flags
 }
