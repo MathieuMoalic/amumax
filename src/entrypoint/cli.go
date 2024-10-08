@@ -59,8 +59,9 @@ func cliEntrypoint(cmd *cobra.Command, args []string) {
 	cuda.Synchronous = flags.sync
 	timer.Enabled = flags.sync
 
+	printVersion()
 	if flags.version {
-		printVersion()
+		return
 	}
 	engine.Insecure = flags.insecure
 
@@ -68,9 +69,6 @@ func cliEntrypoint(cmd *cobra.Command, args []string) {
 
 	if flags.vet {
 		vet()
-		return
-	}
-	if flags.version {
 		return
 	}
 	if len(args) == 0 && flags.interactive {
