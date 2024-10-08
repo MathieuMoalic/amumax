@@ -39,7 +39,7 @@ func Entrypoint() {
 		},
 	}
 	rootCmd.AddCommand(templateCmd)
-	flags = parseFlags(rootCmd)
+	parseFlags(rootCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -48,7 +48,6 @@ func Entrypoint() {
 }
 
 func cliEntrypoint(cmd *cobra.Command, args []string) {
-
 	log.Log.SetDebug(flags.debug)
 	if flags.update {
 		showUpdateMenu()
