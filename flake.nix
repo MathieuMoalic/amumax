@@ -77,13 +77,16 @@
       npmDepsHash = "sha256-wBgsyo3n75/gZZxjZ0GPM9axT22QOj2GsMoYdLPH+/E=";
       version = gitVersion;
     };
-
-    GitBuildAmumax = buildAmumax {
-      src = ./.;
-      frontend = GitFrontend;
-      vendorHash = "sha256-/XBOZytutAPaYznUCaAkB4X3RawmajivU180i2jgRmI=";
-      version = gitVersion;
-    };
+    GitBuildAmumax = with pkgs.lib.fileset;
+      buildAmumax {
+        src = toSource {
+          root = ./.;
+          fileset = unions [./src ./go.mod ./go.sum ./main.go];
+        };
+        frontend = GitFrontend;
+        vendorHash = "sha256-/XBOZytutAPaYznUCaAkB4X3RawmajivU180i2jgRmI=";
+        version = gitVersion;
+      };
 
     #################### RELEASE ########################
     releaseVersion = "2024.10.08"; # Set the version for the Release build
