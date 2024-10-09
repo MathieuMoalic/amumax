@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -12,27 +13,32 @@ import (
 	"github.com/MathieuMoalic/amumax/src/script"
 )
 
-// Parse HH:MM:SS format into time.Duration
+// Parse D:HH:MM:SS, HH:MM:SS, or MM:SS format into time.Duration
 func parseRemainingTime(remainingTimeStr string) (time.Duration, error) {
 	// Split the time string by ":"
 	parts := strings.Split(remainingTimeStr, ":")
-	if len(parts) != 3 {
+	var days, hours, minutes, seconds int
+
+	if len(parts) == 4 {
+		days, _ = strconv.Atoi(parts[0])
+		hours, _ = strconv.Atoi(parts[1])
+		minutes, _ = strconv.Atoi(parts[2])
+		seconds, _ = strconv.Atoi(parts[3])
+	} else if len(parts) == 3 {
+		hours, _ = strconv.Atoi(parts[0])
+		minutes, _ = strconv.Atoi(parts[1])
+		seconds, _ = strconv.Atoi(parts[2])
+	} else if len(parts) == 2 {
+		minutes, _ = strconv.Atoi(parts[0])
+		seconds, _ = strconv.Atoi(parts[1])
+	} else {
 		return 0, fmt.Errorf("invalid remaining time format: %s", remainingTimeStr)
 	}
 
-	// Parse hours, minutes, and seconds
-	hours := parts[0]
-	minutes := parts[1]
-	seconds := parts[2]
+	// Calculate total duration in seconds
+	totalDuration := time.Duration(days)*24*time.Hour + time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute + time.Duration(seconds)*time.Second
 
-	// Construct a duration string in the form of "XhYmZs" to use time.ParseDuration
-	durationStr := fmt.Sprintf("%sh%sm%ss", hours, minutes, seconds)
-	duration, err := time.ParseDuration(durationStr)
-	if err != nil {
-		return 0, fmt.Errorf("error parsing duration: %v", err)
-	}
-
-	return duration, nil
+	return totalDuration, nil
 }
 
 func getSlurmEndTime() (time.Time, error) {
@@ -56,7 +62,6 @@ func getSlurmEndTime() (time.Time, error) {
 	// Parse the remaining time (HH:MM:SS) into a time.Duration
 	remainingTime, err := parseRemainingTime(remainingTimeStr)
 	if err != nil {
-		fmt.Println("Error parsing remaining time:", err)
 		return time.Time{}, err
 	}
 
