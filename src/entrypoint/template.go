@@ -245,7 +245,7 @@ func findExpressions(mx3 string) (expressions []Expression, err error) {
 }
 
 // Generates the files with the processed expressions
-func generateFiles(parentDir, mx3 string, expressions []Expression) error {
+func generateFiles(parentDir, mx3 string, expressions []Expression, flat bool) error {
 	// Generate combinations of all arrays using cartesian product
 	combinationCount := 1
 	for _, exp := range expressions {
@@ -266,15 +266,20 @@ func generateFiles(parentDir, mx3 string, expressions []Expression) error {
 			newMx3 = strings.ReplaceAll(newMx3, `"{`+exp.Original+`}"`, fmt.Sprintf("%v", value))
 		}
 
-		// Construct file path
-		fullPath := filepath.Join(parentDir, strings.Join(pathParts, "/")+".mx3")
-		err := os.MkdirAll(filepath.Dir(fullPath), os.ModePerm)
-		if err != nil {
-			return fmt.Errorf("error creating directories: %v", err)
+		joinedPath := strings.Join(pathParts, "")
+		if !flat {
+			joinedPath = strings.Join(pathParts, string(os.PathSeparator))
+		}
+		fullPath := filepath.Join(parentDir, joinedPath+".mx3")
+		if !flat {
+			err := os.MkdirAll(filepath.Dir(fullPath), os.ModePerm)
+			if err != nil {
+				return fmt.Errorf("error creating directories: %v", err)
+			}
 		}
 
 		// Write the new file
-		err = os.WriteFile(fullPath, []byte(newMx3), 0644)
+		err := os.WriteFile(fullPath, []byte(newMx3), 0644)
 		if err != nil {
 			return fmt.Errorf("error writing file %s: %v", fullPath, err)
 		}
@@ -293,7 +298,7 @@ func generateFiles(parentDir, mx3 string, expressions []Expression) error {
 }
 
 // Main function for handling the template logic
-func template(path string) (err error) {
+func template(path string, flat bool) (err error) {
 	path, err = filepath.Abs(path)
 	if err != nil {
 		return fmt.Errorf("error getting absolute path: %v", err)
@@ -311,7 +316,7 @@ func template(path string) (err error) {
 		return fmt.Errorf("error finding expressions: %v", err)
 	}
 
-	err = generateFiles(parentDir, mx3, expressions)
+	err = generateFiles(parentDir, mx3, expressions, flat)
 	if err != nil {
 		return fmt.Errorf("error generating files: %v", err)
 	}

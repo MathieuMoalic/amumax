@@ -13,6 +13,7 @@ import (
 )
 
 var flags flagsType
+var flat bool
 
 func Entrypoint() {
 	rootCmd := &cobra.Command{
@@ -28,9 +29,12 @@ func Entrypoint() {
 		Short: "Generate files based on a template",
 		Args:  cobra.ExactArgs(1), // expects exactly one argument, the template path
 		Run: func(cmd *cobra.Command, args []string) {
+			// Get the value of the "flat" flag
+			flat, _ = cmd.Flags().GetBool("flat")
+
 			// Call your template logic here, using args[0] for the template path
 			templatePath := args[0]
-			err := template(templatePath)
+			err := template(templatePath, flat)
 			if err != nil {
 				color.Red(fmt.Sprintf("Error processing template: %v", err))
 				os.Exit(1)
@@ -38,6 +42,10 @@ func Entrypoint() {
 			color.Green("Template processed successfully")
 		},
 	}
+
+	// Add the "flat" flag to the template command
+	templateCmd.Flags().BoolVar(&flat, "flat", false, "Generate flat output without subdirectories")
+
 	rootCmd.AddCommand(templateCmd)
 	parseFlags(rootCmd)
 
