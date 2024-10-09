@@ -36,13 +36,13 @@ func writeTemplateFile(t *testing.T, path string, content string) {
 	}
 }
 
-func writeParseTestClean(t *testing.T, templateContent string, expectedFiles []string, expectedContent []string) {
+func writeParseTestClean(t *testing.T, templateContent string, expectedFiles []string, expectedContent []string, flat bool) {
 	templatePath := "test_output/template"
 
 	writeTemplateFile(t, templatePath, templateContent)
 
 	// Parse template
-	err := template(templatePath)
+	err := template(templatePath, flat)
 	if err != nil {
 		t.Fatalf("Error processing template: %v", err)
 	}
@@ -66,7 +66,7 @@ func TestFormat(t *testing.T) {
 	expectedContent := []string{
 		`x:=1`,
 	}
-	writeParseTestClean(t, templateContent, expectedFiles, expectedContent)
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 func TestFormat2(t *testing.T) {
 	templateContent := `x:="{array=[1];format=%.1f}"`
@@ -76,7 +76,7 @@ func TestFormat2(t *testing.T) {
 	expectedContent := []string{
 		`x:=1`,
 	}
-	writeParseTestClean(t, templateContent, expectedFiles, expectedContent)
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 func TestFormat3(t *testing.T) {
 	templateContent := `x:="{array=[1];format=%.1f}"`
@@ -86,7 +86,7 @@ func TestFormat3(t *testing.T) {
 	expectedContent := []string{
 		`x:=1`,
 	}
-	writeParseTestClean(t, templateContent, expectedFiles, expectedContent)
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
 // Test case for simple arange expression
@@ -100,7 +100,7 @@ func TestGenerateFilesWithArange(t *testing.T) {
 		`x:=0`,
 		`x:=1`,
 	}
-	writeParseTestClean(t, templateContent, expectedFiles, expectedContent)
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 func TestGenerateFilesWithArange2(t *testing.T) {
 	templateContent := `x:="{prefix=qwe;start=0;end=1;step=1}"`
@@ -112,7 +112,7 @@ func TestGenerateFilesWithArange2(t *testing.T) {
 		`x:=0`,
 		`x:=1`,
 	}
-	writeParseTestClean(t, templateContent, expectedFiles, expectedContent)
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 func TestGenerateFilesWithArange3(t *testing.T) {
 	templateContent := `x:="{prefix=qwe;start=0;end=5;step=1}"`
@@ -130,7 +130,7 @@ func TestGenerateFilesWithArange3(t *testing.T) {
 		`x:=3`,
 		`x:=4`,
 	}
-	writeParseTestClean(t, templateContent, expectedFiles, expectedContent)
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
 func TestGenerateFilesWithArangePrefixAndFormat(t *testing.T) {
@@ -145,7 +145,7 @@ func TestGenerateFilesWithArangePrefixAndFormat(t *testing.T) {
 		`x:=1`,
 		`x:=2`,
 	}
-	writeParseTestClean(t, templateContent, expectedFiles, expectedContent)
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
 // Test case for linspace (start, end, count)
@@ -161,7 +161,7 @@ func TestGenerateFilesWithLinspace(t *testing.T) {
 		`x:=1`,
 		`x:=2`,
 	}
-	writeParseTestClean(t, templateContent, expectedFiles, expectedContent)
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
 // Test case for array
@@ -177,7 +177,7 @@ func TestGenerateFilesWithArray(t *testing.T) {
 		`x:=2.71`,
 		`x:=1.41`,
 	}
-	writeParseTestClean(t, templateContent, expectedFiles, expectedContent)
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
 // Test case for array with formatting
@@ -193,7 +193,7 @@ func TestGenerateFilesWithArrayAndFormat(t *testing.T) {
 		`x:=20`,
 		`x:=30`,
 	}
-	writeParseTestClean(t, templateContent, expectedFiles, expectedContent)
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
 // Test case for step and format together
@@ -209,7 +209,7 @@ func TestGenerateFilesWithStepAndFormat(t *testing.T) {
 		`x:=2`,
 		`x:=4`,
 	}
-	writeParseTestClean(t, templateContent, expectedFiles, expectedContent)
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
 // Test case for both linspace and step together
@@ -225,7 +225,7 @@ func TestGenerateFilesWithLinspaceAndStep(t *testing.T) {
 		`x:=2`,
 		`x:=4`,
 	}
-	writeParseTestClean(t, templateContent, expectedFiles, expectedContent)
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
 // format is %d, it should not be allowed
@@ -235,7 +235,7 @@ func TestFormatError(t *testing.T) {
 	writeTemplateFile(t, templatePath, templateContent)
 
 	// Parse template
-	err := template(templatePath)
+	err := template(templatePath, false)
 	if err.Error() != `error finding expressions: only the %f format is allowed: %d` {
 		t.Fatalf("Expected error: %v", err)
 	}
@@ -269,5 +269,26 @@ y:="{array=[3,4];format=%.0f}"`
 		"x:=2\ny:=4",
 	}
 
-	writeParseTestClean(t, templateContent, expectedFiles, expectedContent)
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
+}
+
+func TestFlat(t *testing.T) {
+	templateContent := `x:="{array=[1,2];format=%02.0f}"
+y:="{array=[3,4];format=%.0f}"`
+
+	expectedFiles := []string{
+		"test_output/013.mx3",
+		"test_output/014.mx3",
+		"test_output/023.mx3",
+		"test_output/024.mx3",
+	}
+
+	expectedContent := []string{
+		"x:=1\ny:=3",
+		"x:=1\ny:=4",
+		"x:=2\ny:=3",
+		"x:=2\ny:=4",
+	}
+
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, true)
 }
