@@ -107,6 +107,9 @@ func parsePrefix(exprMap map[string]string) (string, error) {
 func parseArray(exprMap map[string]string) ([]float64, error) {
 	if arrStr, ok := exprMap["array"]; ok {
 		arrStr = strings.Trim(arrStr, "[]")
+		if arrStr == "" {
+			return nil, fmt.Errorf("array cannot be empty")
+		}
 		// splits the string into an array of strings
 		arr := strings.Split(arrStr, ",")
 		var array []float64
@@ -118,6 +121,9 @@ func parseArray(exprMap map[string]string) ([]float64, error) {
 				return nil, fmt.Errorf("invalid array value: %v", err)
 			}
 			array = append(array, val)
+		}
+		if len(array) == 0 {
+			return nil, fmt.Errorf("array cannot be empty")
 		}
 		return array, nil
 	}
@@ -162,11 +168,22 @@ func parseRange(exprMap map[string]string) ([]float64, error) {
 		if err != nil {
 			return nil, fmt.Errorf("invalid step value: %v", err)
 		}
+		if step <= 0 {
+			return nil, fmt.Errorf("step value should be greater than 0")
+		}
+		// calculate the length of the array
+		length := int((end-start)/step) + 1
+		if length > 1000 {
+			return nil, fmt.Errorf("step value is too small (more than 1000 elements)")
+		}
 		return arange(start, end, step), nil
 	} else if countStr, ok := exprMap["count"]; ok {
 		count, err := strconv.Atoi(countStr)
 		if err != nil {
 			return nil, fmt.Errorf("invalid count value: %v", err)
+		}
+		if count <= 0 {
+			return nil, fmt.Errorf("count value should be greater than 0")
 		}
 		return linspace(start, end, count), nil
 	}
@@ -241,6 +258,9 @@ func findExpressions(mx3 string) (expressions []Expression, err error) {
 		exp.Original = extracted
 		expressions = append(expressions, exp)
 	}
+	if len(expressions) == 0 {
+		return nil, fmt.Errorf("no expressions found")
+	}
 	return expressions, nil
 }
 
@@ -263,7 +283,7 @@ func generateFiles(parentDir, mx3 string, expressions []Expression, flat bool) e
 			// formattedValue := fmt.Sprintf(exp.Format, int(value)) // Convert float64 to int
 			pathParts[j] = fmt.Sprintf("%s%s%s", exp.Prefix, formattedValue, exp.Suffix)
 			// Replace the placeholder in the mx3 template
-			newMx3 = strings.ReplaceAll(newMx3, `"{`+exp.Original+`}"`, fmt.Sprintf("%v", value))
+			newMx3 = strings.Replace(newMx3, `"{`+exp.Original+`}"`, fmt.Sprintf("%v", value), 1)
 		}
 
 		joinedPath := strings.Join(pathParts, "")
