@@ -11,17 +11,15 @@ import (
 
 type ConsoleState struct {
 	ws   *WebSocketManager
-	Hist string `msgpack:"hist"`
+	Hist *string `msgpack:"hist"`
 }
 
-func (s ConsoleState) Update() {
-	// s.Hist = log.Log.Hist
-}
+func (s ConsoleState) Update() {}
 
 func initConsoleAPI(e *echo.Echo, ws *WebSocketManager) *ConsoleState {
 	state := &ConsoleState{
 		ws:   ws,
-		Hist: log.Log.Hist,
+		Hist: &log.Log.Hist,
 	}
 	e.POST("/api/console/command", state.postConsoleCommand)
 	return state

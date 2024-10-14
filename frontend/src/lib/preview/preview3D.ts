@@ -7,14 +7,18 @@ import { writable } from 'svelte/store';
 import { disposePreview2D } from './preview2D';
 
 export function preview3D() {
+	console.debug('preview3D');
 	if (get(previewState).vectorFieldPositions == null) {
+		console.debug('No vector field positions found');
 		return;
-	} else if (get(previewState).refresh) {
+	} else if (!get(previewState).refresh) {
+		console.debug('Refreshing 3D preview');
 		disposePreview2D();
 		disposePreview3D();
 		init();
 		update();
 	} else {
+		console.debug('Initializing 3D preview');
 		update();
 	}
 }
