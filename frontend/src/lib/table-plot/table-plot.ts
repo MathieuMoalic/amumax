@@ -5,6 +5,7 @@ import { tablePlotState } from '$api/incoming/table-plot';
 export function plotTable() {
     if (chartInstance === undefined) {
         init();
+        update();
     } else {
         update();
     }
@@ -13,6 +14,10 @@ export function plotTable() {
 let chartInstance: echarts.ECharts;
 
 function update() {
+    if (chartInstance === undefined) {
+        console.debug('Chart instance is undefined');
+        return;
+    }
     let t = get(tablePlotState);
     chartInstance.setOption({
         series: [
@@ -37,6 +42,7 @@ function update() {
 export function init() {
     var chartDom = document.getElementById('table-plot')!;
     if (chartDom === null) {
+        setTimeout(init, 100);
         return;
     }
     // https://apache.github.io/echarts-handbook/en/best-practices/canvas-vs-svg

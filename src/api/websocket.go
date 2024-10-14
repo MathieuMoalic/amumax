@@ -47,7 +47,6 @@ func (cm *connectionManager) add(ws *websocket.Conn) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	cm.conns[ws] = struct{}{}
-	// preview.Refresh = true
 }
 
 func (cm *connectionManager) remove(ws *websocket.Conn) {
@@ -82,6 +81,7 @@ func (wsManager *WebSocketManager) websocketEntrypoint(c echo.Context) error {
 
 	wsManager.connections.add(ws)
 	defer wsManager.connections.remove(ws)
+	wsManager.engineState.Preview.Refresh = true
 	wsManager.broadcastEngineState()
 
 	// Channel to signal when to stop the goroutine
@@ -113,7 +113,6 @@ func (wsManager *WebSocketManager) broadcastEngineState() {
 		log.Log.Err("Error marshaling combined message: %v", err)
 		return
 	}
-
 	wsManager.connections.broadcast(msg)
 	// Reset the refresh flag
 	wsManager.engineState.Preview.Refresh = false

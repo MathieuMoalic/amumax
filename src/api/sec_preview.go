@@ -323,8 +323,8 @@ func (s *PreviewState) postPreviewComponent(c echo.Context) error {
 	}
 	s.Component = req.Component
 	s.validateComponent()
-	s.Refresh = true
 	s.updatePreviewType()
+	s.Refresh = true
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
