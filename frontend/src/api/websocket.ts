@@ -13,8 +13,7 @@ import { preview2D } from '$lib/preview/preview2D';
 import { plotTable } from '$lib/table-plot/table-plot';
 
 export let connected = writable(false);
-let wsUrl = process.env.VITE_WS_URL || '/ws'; // Fallback to '/ws' if not defined
-// let wsUrl = 'ws://localhost:35367/ws'; // Fallback to '/ws' if not defined
+let wsUrl = import.meta.env.VITE_WS_URL || '/ws';
 
 export function initializeWebSocket() {
 	let retryInterval = 1000;
