@@ -36,16 +36,16 @@ func drawArrows(img *image.RGBA, arr [3][][][]float32, sub int) {
 	c.rasterizer.Clear()
 }
 
-// A Canvas is used to draw on.
-type Canvas struct {
+// A canvas is used to draw on.
+type canvas struct {
 	*image.RGBA
 	*raster.RGBAPainter
 	rasterizer *raster.Rasterizer
 }
 
 // Make a new canvas of size w x h.
-func newCanvas(img *image.RGBA) *Canvas {
-	c := new(Canvas)
+func newCanvas(img *image.RGBA) *canvas {
+	c := new(canvas)
 	c.RGBA = img
 	c.RGBAPainter = raster.NewRGBAPainter(c.RGBA)
 	c.rasterizer = raster.NewRasterizer(img.Bounds().Max.X, img.Bounds().Max.Y)
@@ -54,7 +54,7 @@ func newCanvas(img *image.RGBA) *Canvas {
 	return c
 }
 
-func (c *Canvas) Arrow(x, y, mx, my, mz, size float32) {
+func (c *canvas) Arrow(x, y, mx, my, mz, size float32) {
 
 	arrlen := 0.4 * size
 	arrw := 0.2 * size
