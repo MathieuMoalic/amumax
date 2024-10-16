@@ -15,7 +15,7 @@ import (
 )
 
 func RenderFormat(out io.Writer, f *data.Slice, min, max string, arrowSize int, format string, colormap ...ColorMapSpec) error {
-	var codecs = map[string]codec{".png": pngfull, ".jpg": jpeg100, ".gif": GIF256}
+	var codecs = map[string]codec{".png": pngfull, ".jpg": jpeg100, ".gif": gif256}
 	ext := strings.ToLower(path.Ext(format))
 	enc := codecs[ext]
 	if enc == nil {
@@ -41,7 +41,7 @@ func jpeg100(w io.Writer, img image.Image) error {
 }
 
 // full quality gif coded, passable to Render()
-func GIF256(w io.Writer, img image.Image) error {
+func gif256(w io.Writer, img image.Image) error {
 	return gif.Encode(w, img, &gif.Options{NumColors: 256, Quantizer: nil, Drawer: nil})
 }
 
