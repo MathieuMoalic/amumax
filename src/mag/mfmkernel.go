@@ -37,8 +37,8 @@ func CalcMFMKernel(mesh *data.Mesh, lift, tipsize float64) (kernel [3]*data.Slic
 
 	// Sanity check
 	{
-		log.Assert(size[Z] >= 1 && size[Y] >= 2 && size[X] >= 2)
-		log.Assert(cellsize[X] > 0 && cellsize[Y] > 0 && cellsize[Z] > 0)
+		log.AssertMsg(size[Z] >= 1 && size[Y] >= 2 && size[X] >= 2, "Invalid MFM kernel size: size must be at least 1x2x2")
+		log.AssertMsg(cellsize[X] > 0 && cellsize[Y] > 0 && cellsize[Z] > 0, "Invalid cell size: all dimensions must be positive in CalcMFMKernel")
 		log.AssertMsg(size[X]%2 == 0 && size[Y]%2 == 0, "MFM must have even cellsize on the X and Y axis")
 		if size[Z] > 1 {
 			log.AssertMsg(size[Z]%2 == 0, "MFM only supports one cell thickness on the Z axis")

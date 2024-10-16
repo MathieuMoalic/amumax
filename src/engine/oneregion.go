@@ -9,12 +9,12 @@ import (
 )
 
 func sOneRegion(q Quantity, r int) *sOneReg {
-	log.AssertArgument(q.NComp() == 1)
+	log.AssertMsg(q.NComp() == 1, "Component mismatch: q must have 1 component in sOneRegion")
 	return &sOneReg{oneReg{q, r}}
 }
 
 func vOneRegion(q Quantity, r int) *vOneReg {
-	log.AssertArgument(q.NComp() == 3)
+	log.AssertMsg(q.NComp() == 3, "Component mismatch: q must have 3 components in vOneRegion")
 	return &vOneReg{oneReg{q, r}}
 }
 

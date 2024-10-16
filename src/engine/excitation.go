@@ -35,7 +35,7 @@ func newExcitation(name, unit, desc string) *excitation {
 
 func (p *excitation) MSlice() cuda.MSlice {
 	buf, r := p.Slice()
-	log.Assert(r)
+	log.AssertMsg(r, "Failed to retrieve slice: invalid state in excitation.MSlice")
 	return cuda.ToMSlice(buf)
 }
 

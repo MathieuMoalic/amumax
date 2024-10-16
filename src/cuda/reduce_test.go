@@ -85,7 +85,8 @@ func TestReduceMaxAbs(t *testing.T) {
 func sliceFromList(arr [][]float32, size [3]int) *data.Slice {
 	ptrs := make([]unsafe.Pointer, len(arr))
 	for i := range ptrs {
-		log.AssertArgument(len(arr[i]) == prod(size))
+		log.AssertMsg(len(arr[i]) == prod(size),
+			"Size mismatch: length of arr must be equal to the product of the provided size in sliceFromList")
 		ptrs[i] = unsafe.Pointer(&arr[i][0])
 	}
 	return data.SliceFromPtrs(size, data.CPUMemory, ptrs)

@@ -71,7 +71,9 @@ func NilSlice(nComp int, size [3]int) *Slice {
 func SliceFromPtrs(size [3]int, memType int8, ptrs []unsafe.Pointer) *Slice {
 	length := prod(size)
 	nComp := len(ptrs)
-	log.AssertArgument(nComp > 0 && length > 0)
+	log.AssertMsg(nComp > 0 && length > 0,
+		"Invalid input: number of components must be greater than 0 and size product must be greater than 0 in SliceFromPtrs")
+
 	s := new(Slice)
 	s.ptrs = make([]unsafe.Pointer, nComp)
 	s.size = size

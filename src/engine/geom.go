@@ -253,7 +253,8 @@ func (g *geom) shiftY(dy int) {
 // x range that needs to be refreshed after shift over dx
 func shiftDirtyRange(dx int) (x1, x2 int) {
 	nx := getMesh().Size()[X]
-	log.AssertArgument(dx != 0)
+	log.AssertMsg(dx != 0, "Invalid shift: dx must not be zero in shiftDirtyRange")
+
 	if dx < 0 {
 		x1 = nx + dx
 		x2 = nx

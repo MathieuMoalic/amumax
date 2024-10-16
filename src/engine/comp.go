@@ -17,7 +17,8 @@ type component struct {
 
 // comp returns vector component c of the parent Quantity
 func comp(parent Quantity, c int) ScalarField {
-	log.AssertArgument(c >= 0 && c < parent.NComp())
+	log.AssertMsg(c >= 0 && c < parent.NComp(),
+		"Invalid component: component index c must be between 0 and NComp - 1 in comp")
 	return AsScalarField(&component{parent, c})
 }
 

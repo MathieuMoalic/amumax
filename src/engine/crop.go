@@ -80,9 +80,14 @@ func cropZ(parent Quantity, z1, z2 int) *cropped {
 
 func crop(parent Quantity, x1, x2, y1, y2, z1, z2 int) *cropped {
 	n := MeshOf(parent).Size()
-	log.AssertArgument(x1 < x2 && y1 < y2 && z1 < z2)
-	log.AssertArgument(x1 >= 0 && y1 >= 0 && z1 >= 0)
-	log.AssertArgument(x2 <= n[X] && y2 <= n[Y] && z2 <= n[Z])
+	log.AssertMsg(x1 < x2 && y1 < y2 && z1 < z2,
+		"Invalid crop range: x1 must be less than x2, y1 less than y2, and z1 less than z2 in crop")
+
+	log.AssertMsg(x1 >= 0 && y1 >= 0 && z1 >= 0,
+		"Invalid crop range: x1, y1, and z1 must be non-negative in crop")
+
+	log.AssertMsg(x2 <= n[X] && y2 <= n[Y] && z2 <= n[Z],
+		"Invalid crop range: x2, y2, and z2 must be within mesh dimensions in crop")
 
 	name := nameOf(parent)
 	if x1 != 0 || x2 != n[X] {
@@ -92,7 +97,7 @@ func crop(parent Quantity, x1, x2, y1, y2, z1, z2 int) *cropped {
 		name += "_y" + rangeStr(y1, y2)
 	}
 	if z1 != 0 || z2 != n[Z] {
-		name += "_y" + rangeStr(z1, z2)
+		name += "_z" + rangeStr(z1, z2)
 	}
 
 	return &cropped{parent, name, x1, x2, y1, y2, z1, z2}

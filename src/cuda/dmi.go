@@ -13,7 +13,8 @@ import (
 func AddDMI(Beff *data.Slice, m *data.Slice, Aex_red, Dex_red SymmLUT, Msat MSlice, regions *Bytes, mesh *data.Mesh, OpenBC bool) {
 	cellsize := mesh.CellSize()
 	N := Beff.Size()
-	log.AssertArgument(m.Size() == N)
+	log.AssertMsg(m.Size() == N, "Size mismatch: m and Beff must have the same dimensions in AddDMI")
+
 	cfg := make3DConf(N)
 	var openBC byte
 	if OpenBC {

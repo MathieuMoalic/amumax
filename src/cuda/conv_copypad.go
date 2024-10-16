@@ -8,8 +8,8 @@ import (
 // Copies src (larger) into dst (smaller).
 // Used to extract demag field after convolution on padded m.
 func copyUnPad(dst, src *data.Slice, dstsize, srcsize [3]int) {
-	log.AssertArgument(dst.NComp() == 1 && src.NComp() == 1)
-	log.AssertArgument(dst.Len() == prod(dstsize) && src.Len() == prod(srcsize))
+	log.AssertMsg(dst.NComp() == 1 && src.NComp() == 1, "copyUnPad: Both destination and source must have a single component")
+	log.AssertMsg(dst.Len() == prod(dstsize) && src.Len() == prod(srcsize), "copyUnPad: Length mismatch between destination and source sizes")
 
 	cfg := make3DConf(dstsize)
 
@@ -21,8 +21,8 @@ func copyUnPad(dst, src *data.Slice, dstsize, srcsize [3]int) {
 // The remainder of dst is not filled with zeros.
 // Used to zero-pad magnetization before convolution and in the meanwhile multiply m by its length.
 func copyPadMul(dst, src, vol *data.Slice, dstsize, srcsize [3]int, Msat MSlice) {
-	log.AssertArgument(dst.NComp() == 1 && src.NComp() == 1)
-	log.Assert(dst.Len() == prod(dstsize) && src.Len() == prod(srcsize))
+	log.AssertMsg(dst.NComp() == 1 && src.NComp() == 1, "copyPadMul: Both destination and source must have a single component")
+	log.AssertMsg(dst.Len() == prod(dstsize) && src.Len() == prod(srcsize), "copyPadMul: Length mismatch between destination and source sizes")
 
 	cfg := make3DConf(srcsize)
 

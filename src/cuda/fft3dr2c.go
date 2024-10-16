@@ -22,22 +22,27 @@ func newFFT3DR2C(Nx, Ny, Nz int) fft3DR2CPlan {
 }
 
 // Execute the FFT plan, asynchronous.
-// src and dst are 3D arrays stored 1D arrays.
+// src and dst are 3D arrays stored as 1D arrays.
 func (p *fft3DR2CPlan) ExecAsync(src, dst *data.Slice) {
 	if Synchronous {
 		Sync()
 		timer.Start("fft")
 	}
-	log.AssertArgument(src.NComp() == 1 && dst.NComp() == 1)
+	log.AssertMsg(src.NComp() == 1 && dst.NComp() == 1,
+		"Component mismatch: both src and dst must have 1 component in fft3DR2CPlan.ExecAsync")
+
 	oksrclen := p.InputLen()
 	if src.Len() != oksrclen {
-		log.Log.ErrAndExit("fft size mismatch: expecting src len %v, got %v", oksrclen, src.Len())
+		log.Log.ErrAndExit("FFT size mismatch: expected src length %v, but got %v", oksrclen, src.Len())
 	}
+
 	okdstlen := p.OutputLen()
 	if dst.Len() != okdstlen {
-		log.Log.ErrAndExit("fft size mismatch: expecting dst len %v, got %v", okdstlen, dst.Len())
+		log.Log.ErrAndExit("FFT size mismatch: expected dst length %v, but got %v", okdstlen, dst.Len())
 	}
+
 	p.handle.ExecR2C(cu.DevicePtr(uintptr(src.DevPtr(0))), cu.DevicePtr(uintptr(dst.DevPtr(0))))
+
 	if Synchronous {
 		Sync()
 		timer.Stop("fft")

@@ -9,7 +9,7 @@ import (
 func SetTopologicalChargeLattice(s *data.Slice, m *data.Slice, mesh *data.Mesh) {
 	cellsize := mesh.CellSize()
 	N := s.Size()
-	log.AssertArgument(m.Size() == N)
+	log.AssertMsg(m.Size() == N, "Size mismatch: m and s must have the same dimensions in SetTopologicalChargeLattice")
 	cfg := make3DConf(N)
 	icxcy := float32(1.0 / (cellsize[X] * cellsize[Y]))
 

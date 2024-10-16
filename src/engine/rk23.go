@@ -99,7 +99,7 @@ func (rk *rk23) Step() {
 	} else {
 		// undo bad step
 		//log.Println("Bad step at t=", t0, ", err=", err)
-		log.Assert(FixDt == 0)
+		log.AssertMsg(FixDt == 0, "Invalid step: cannot undo step when FixDt is set")
 		Time = t0
 		data.Copy(m, m0)
 		NUndone++

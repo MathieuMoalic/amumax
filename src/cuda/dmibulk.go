@@ -12,7 +12,8 @@ import (
 func AddDMIBulk(Beff *data.Slice, m *data.Slice, Aex_red, D_red SymmLUT, Msat MSlice, regions *Bytes, mesh *data.Mesh, OpenBC bool) {
 	cellsize := mesh.CellSize()
 	N := Beff.Size()
-	log.AssertArgument(m.Size() == N)
+	log.AssertMsg(m.Size() == N, "Size mismatch: m and Beff must have the same dimensions in AddDMIBulk")
+
 	cfg := make3DConf(N)
 	var openBC byte
 	if OpenBC {

@@ -51,7 +51,7 @@ func (p *lut) gpuLUT() cuda.LUTPtrs {
 
 // utility for LUT of single-component data
 func (p *lut) gpuLUT1() cuda.LUTPtr {
-	log.Assert(len(p.gpu_buf) == 1)
+	log.AssertMsg(len(p.gpu_buf) == 1, "Component mismatch: gpu_buf must have exactly 1 component in gpuLUT1")
 	return cuda.LUTPtr(p.gpuLUT()[0])
 }
 

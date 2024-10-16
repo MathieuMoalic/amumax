@@ -10,8 +10,10 @@ import (
 func Crop(dst, src *data.Slice, offX, offY, offZ int) {
 	D := dst.Size()
 	S := src.Size()
-	log.AssertArgument(dst.NComp() == src.NComp())
-	log.AssertArgument(D[X]+offX <= S[X] && D[Y]+offY <= S[Y] && D[Z]+offZ <= S[Z])
+	log.AssertMsg(dst.NComp() == src.NComp(), "dst and src must have the same number of components in Crop function")
+
+	log.AssertMsg(D[X]+offX <= S[X] && D[Y]+offY <= S[Y] && D[Z]+offZ <= S[Z],
+		"Invalid crop parameters: destination size plus offset exceeds source dimensions in Crop function")
 
 	cfg := make3DConf(D)
 

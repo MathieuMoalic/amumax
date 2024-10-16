@@ -5,16 +5,16 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-// Add magneto-elasticit coupling field to the effective field.
+// Add magneto-elastic coupling field to the effective field.
 // see magnetoelasticfield.cu
 func AddMagnetoelasticField(Beff, m *data.Slice, exx, eyy, ezz, exy, exz, eyz, B1, B2, Msat MSlice) {
-	log.AssertArgument(Beff.Size() == m.Size())
-	log.AssertArgument(Beff.Size() == exx.Size())
-	log.AssertArgument(Beff.Size() == eyy.Size())
-	log.AssertArgument(Beff.Size() == ezz.Size())
-	log.AssertArgument(Beff.Size() == exy.Size())
-	log.AssertArgument(Beff.Size() == exz.Size())
-	log.AssertArgument(Beff.Size() == eyz.Size())
+	log.AssertMsg(Beff.Size() == m.Size(), "Size mismatch: Beff and m must have the same dimensions in AddMagnetoelasticField")
+	log.AssertMsg(Beff.Size() == exx.Size(), "Size mismatch: Beff and exx must have the same dimensions in AddMagnetoelasticField")
+	log.AssertMsg(Beff.Size() == eyy.Size(), "Size mismatch: Beff and eyy must have the same dimensions in AddMagnetoelasticField")
+	log.AssertMsg(Beff.Size() == ezz.Size(), "Size mismatch: Beff and ezz must have the same dimensions in AddMagnetoelasticField")
+	log.AssertMsg(Beff.Size() == exy.Size(), "Size mismatch: Beff and exy must have the same dimensions in AddMagnetoelasticField")
+	log.AssertMsg(Beff.Size() == exz.Size(), "Size mismatch: Beff and exz must have the same dimensions in AddMagnetoelasticField")
+	log.AssertMsg(Beff.Size() == eyz.Size(), "Size mismatch: Beff and eyz must have the same dimensions in AddMagnetoelasticField")
 
 	N := Beff.Len()
 	cfg := make1DConf(N)
@@ -28,10 +28,10 @@ func AddMagnetoelasticField(Beff, m *data.Slice, exx, eyy, ezz, exy, exz, eyz, B
 		N, cfg)
 }
 
-// Calculate magneto-elasticit force density
+// Calculate magneto-elastic force density
 // see magnetoelasticforce.cu
 func GetMagnetoelasticForceDensity(out, m *data.Slice, B1, B2 MSlice, mesh *data.Mesh) {
-	log.AssertArgument(out.Size() == m.Size())
+	log.AssertMsg(out.Size() == m.Size(), "Size mismatch: out and m must have the same dimensions in GetMagnetoelasticForceDensity")
 
 	cellsize := mesh.CellSize()
 	N := mesh.Size()

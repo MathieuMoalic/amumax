@@ -54,7 +54,7 @@ func Downsample(In [][][][]float32, N [3]int) [][][][]float32 {
 	scalex := Sx / Dx
 	scaley := Sy / Dy
 	scalez := Sz / Dz
-	log.Assert(scalex > 0 && scaley > 0)
+	log.AssertMsg(scalex > 0 && scaley > 0, "Scaling factors must be positive in Downsample")
 
 	for c := range Out {
 

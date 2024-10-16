@@ -175,10 +175,10 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 
 	// Sanity check
 	{
-		log.Assert(size[Z] > 0 && size[Y] > 0 && size[X] > 0)
-		log.Assert(cellsize[X] > 0 && cellsize[Y] > 0 && cellsize[Z] > 0)
-		log.Assert(pbc[X] >= 0 && pbc[Y] >= 0 && pbc[Z] >= 0)
-		log.Assert(accuracy > 0)
+		log.AssertMsg(size[Z] > 0 && size[Y] > 0 && size[X] > 0, "Grid size dimensions must be greater than 0 in calcDemagKernel")
+		log.AssertMsg(cellsize[X] > 0 && cellsize[Y] > 0 && cellsize[Z] > 0, "Cell size dimensions must be positive in calcDemagKernel")
+		log.AssertMsg(pbc[X] >= 0 && pbc[Y] >= 0 && pbc[Z] >= 0, "PBC values must be non-negative in calcDemagKernel")
+		log.AssertMsg(accuracy > 0, "Accuracy must be greater than 0 in calcDemagKernel")
 	}
 
 	// Allocate only upper diagonal part. The rest is symmetric due to reciprocity.
@@ -271,7 +271,7 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 						nv *= 2
 						nw *= 2
 
-						log.Assert(nv > 0 && nw > 0 && nx > 0 && ny > 0 && nz > 0)
+						log.AssertMsg(nv > 0 && nw > 0 && nx > 0 && ny > 0 && nz > 0, "Integration points must be greater than 0 in all dimensions (nv, nw, nx, ny, nz) in calcDemagKernel")
 
 						scale := 1 / float64(nv*nw*nx*ny*nz)
 						surface := cellsize[v] * cellsize[w] // the two directions perpendicular to direction s
