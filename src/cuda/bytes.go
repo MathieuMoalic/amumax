@@ -26,19 +26,19 @@ func NewBytes(Len int) *Bytes {
 
 // Upload src (host) to dst (gpu).
 func (dst *Bytes) Upload(src []byte) {
-	log.AssertArgument(dst.Len == len(src))
+	log.AssertMsg(dst.Len == len(src), "Upload: Length mismatch between destination (gpu) and source (host) data")
 	MemCpyHtoD(dst.Ptr, unsafe.Pointer(&src[0]), int64(dst.Len))
 }
 
 // Copy on device: dst = src.
 func (dst *Bytes) Copy(src *Bytes) {
-	log.AssertArgument(dst.Len == src.Len)
+	log.AssertMsg(dst.Len == src.Len, "Copy: Length mismatch between source and destination data on device")
 	MemCpy(dst.Ptr, src.Ptr, int64(dst.Len))
 }
 
 // Copy to host: dst = src.
 func (src *Bytes) Download(dst []byte) {
-	log.AssertArgument(src.Len == len(dst))
+	log.AssertMsg(src.Len == len(dst), "Download: Length mismatch between source (gpu) and destination (host) data")
 	MemCpyDtoH(unsafe.Pointer(&dst[0]), src.Ptr, int64(src.Len))
 }
 

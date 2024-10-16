@@ -8,7 +8,7 @@ import (
 // Add uniaxial magnetocrystalline anisotropy field to Beff.
 // see uniaxialanisotropy.cu
 func AddCubicAnisotropy2(Beff, m *data.Slice, Msat, k1, k2, k3, c1, c2 MSlice) {
-	log.AssertArgument(Beff.Size() == m.Size())
+	log.AssertMsg(Beff.Size() == m.Size(), "AddCubicAnisotropy2: Size mismatch between Beff and m slices")
 
 	N := Beff.Len()
 	cfg := make1DConf(N)
@@ -31,7 +31,7 @@ func AddCubicAnisotropy2(Beff, m *data.Slice, Msat, k1, k2, k3, c1, c2 MSlice) {
 // Add uniaxial magnetocrystalline anisotropy field to Beff.
 // see uniaxialanisotropy.cu
 func AddUniaxialAnisotropy2(Beff, m *data.Slice, Msat, k1, k2, u MSlice) {
-	log.AssertArgument(Beff.Size() == m.Size())
+	log.AssertMsg(Beff.Size() == m.Size(), "AddUniaxialAnisotropy2: Size mismatch between Beff and m slices")
 
 	checkSize(Beff, m, k1, k2, u, Msat)
 

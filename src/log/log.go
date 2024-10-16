@@ -118,23 +118,9 @@ func (l *Logs) ErrAndExit(msg string, args ...interface{}) {
 	os.Exit(1)
 }
 
-// Panics with "illegal argument" if test is false.
-func AssertArgument(test bool) {
-	if !test {
-		Log.ErrAndExit("illegal argument")
-	}
-}
-
 // Panics with msg if test is false
 func AssertMsg(test bool, msg interface{}) {
 	if !test {
 		Log.ErrAndExit("%v", msg)
-	}
-}
-
-// Panics with "assertion failed" if test is false.
-func Assert(test bool) {
-	if !test {
-		Log.ErrAndExit("assertion failed")
 	}
 }

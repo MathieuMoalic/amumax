@@ -127,15 +127,16 @@ type mulmv struct {
 // mulMV returns a new Quantity that evaluates to the
 // matrix-vector product (Ax·b, Ay·b, Az·b).
 func mulMV(Ax, Ay, Az, b Quantity) Quantity {
-	log.AssertArgument(Ax.NComp() == 3 &&
+	log.AssertMsg(Ax.NComp() == 3 &&
 		Ay.NComp() == 3 &&
 		Az.NComp() == 3 &&
-		b.NComp() == 3)
+		b.NComp() == 3,
+		"Component mismatch: Ax, Ay, Az, and b must all have 3 components in mulMV")
 	return &mulmv{Ax, Ay, Az, b}
 }
 
 func (q *mulmv) EvalTo(dst *data.Slice) {
-	log.AssertArgument(dst.NComp() == 3)
+	log.AssertMsg(dst.NComp() == 3, "Component mismatch: dst must have 3 components in EvalTo")
 	cuda.Zero(dst)
 	b := ValueOf(q.b)
 	defer cuda.Recycle(b)
@@ -146,7 +147,6 @@ func (q *mulmv) EvalTo(dst *data.Slice) {
 		cuda.Recycle(Ax)
 	}
 	{
-
 		Ay := ValueOf(q.ay)
 		cuda.AddDotProduct(dst.Comp(Y), 1, Ay, b)
 		cuda.Recycle(Ay)
@@ -277,8 +277,8 @@ func mulNN(dst, a, b *data.Slice) {
 // mul1N pointwise multiplies a scalar (1-component) with an N-component vector,
 // yielding an N-component vector stored in dst.
 func mul1N(dst, a, b *data.Slice) {
-	log.Assert(a.NComp() == 1)
-	log.Assert(dst.NComp() == b.NComp())
+	log.AssertMsg(a.NComp() == 1, "Component mismatch: a must have 1 component in mul1N")
+	log.AssertMsg(dst.NComp() == b.NComp(), "Component mismatch: dst and b must have the same number of components in mul1N")
 	for c := 0; c < dst.NComp(); c++ {
 		cuda.Mul(dst.Comp(c), a, b.Comp(c))
 	}
@@ -324,8 +324,8 @@ func divNN(dst, a, b *data.Slice) {
 }
 
 func divN1(dst, a, b *data.Slice) {
-	log.Assert(dst.NComp() == a.NComp())
-	log.Assert(b.NComp() == 1)
+	log.AssertMsg(dst.NComp() == a.NComp(), "Component mismatch: dst and a must have the same number of components in divN1")
+	log.AssertMsg(b.NComp() == 1, "Component mismatch: b must have 1 component in divN1")
 	for c := 0; c < dst.NComp(); c++ {
 		cuda.Div(dst.Comp(c), a.Comp(c), b)
 	}
@@ -339,7 +339,7 @@ type shifted struct {
 // shiftedQuant returns a new Quantity that evaluates to
 // the original, shifted over dx, dy, dz cells.
 func shiftedQuant(q Quantity, dx, dy, dz int) Quantity {
-	log.Assert(dx != 0 || dy != 0 || dz != 0)
+	log.AssertMsg(dx != 0 || dy != 0 || dz != 0, "Invalid shift: at least one of dx, dy, or dz must be non-zero in shiftedQuant")
 	return &shifted{q, dx, dy, dz}
 }
 
@@ -432,7 +432,7 @@ func (q *normalized) NComp() int {
 }
 
 func (q *normalized) EvalTo(dst *data.Slice) {
-	log.Assert(dst.NComp() == q.NComp())
+	log.AssertMsg(dst.NComp() == q.NComp(), "Component mismatch: dst must have the same number of components as the normalized quantity in EvalTo")
 	q.orig.EvalTo(dst)
 	cuda.Normalize(dst, nil)
 }

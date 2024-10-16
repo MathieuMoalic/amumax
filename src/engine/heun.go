@@ -21,7 +21,7 @@ func (*heun) Step() {
 	}
 
 	dt := float32(Dt_si * gammaLL)
-	log.Assert(dt > 0)
+	log.AssertMsg(dt > 0, "Invalid time step: dt must be positive in Heun Step")
 
 	// stage 1
 	torqueFn(dy0)
@@ -46,7 +46,7 @@ func (*heun) Step() {
 		setMaxTorque(dy)
 	} else {
 		// undo bad step
-		log.Assert(FixDt == 0)
+		log.AssertMsg(FixDt == 0, "Invalid step: cannot undo step when FixDt is set in Heun Step")
 		Time -= Dt_si
 		cuda.Madd2(y, y, dy0, 1, -dt)
 		NUndone++

@@ -39,7 +39,7 @@ func NewDemag(inputSize, PBC [3]int, kernel [3][3]*data.Slice, test bool) *Demag
 //	Bsat: saturation magnetization in Tesla
 //	B:    resulting demag field, in Tesla
 func (c *DemagConvolution) Exec(B, m, vol *data.Slice, Msat MSlice) {
-	log.AssertArgument(B.Size() == c.inputSize && m.Size() == c.inputSize)
+	log.AssertMsg(B.Size() == c.inputSize && m.Size() == c.inputSize, "Exec: Size mismatch between input slices and convolution input size")
 	if c.is2D() {
 		c.exec2D(B, m, vol, Msat)
 	} else {
@@ -135,7 +135,7 @@ func (c *DemagConvolution) init(realKern [3][3]*data.Slice) {
 
 	// logic size of FFT(kernel): store real parts only
 	c.fftKernLogicSize = fftR2COutputSizeFloats(c.realKernSize)
-	log.Assert(c.fftKernLogicSize[X]%2 == 0)
+	log.AssertMsg(c.fftKernLogicSize[X]%2 == 0, "fftKernLogicSize[X] must be even in DemagConvolution.init")
 	c.fftKernLogicSize[X] /= 2
 
 	// physical size of FFT(kernel): store only non-redundant part exploiting Y, Z mirror symmetry

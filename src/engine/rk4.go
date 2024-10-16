@@ -69,7 +69,7 @@ func (rk *rk4) Step() {
 		setMaxTorque(k4)
 	} else {
 		// undo bad step
-		log.Assert(FixDt == 0)
+		log.AssertMsg(FixDt == 0, "Invalid step: cannot undo step when FixDt is set")
 		Time = t0
 		data.Copy(m, m0)
 		NUndone++

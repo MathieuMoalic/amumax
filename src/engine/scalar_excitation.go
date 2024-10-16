@@ -31,7 +31,7 @@ func (e *scalarExcitation) GetRegionToString(region int) string {
 
 func (p *scalarExcitation) MSlice() cuda.MSlice {
 	buf, r := p.Slice()
-	log.Assert(r)
+	log.AssertMsg(r, "Failed to retrieve slice: invalid state in scalarExcitation.MSlice")
 	return cuda.ToMSlice(buf)
 }
 

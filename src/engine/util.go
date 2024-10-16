@@ -146,7 +146,7 @@ func slice(v [3]float64) []float64 {
 }
 
 func unslice(v []float64) [3]float64 {
-	log.Assert(len(v) == 3)
+	log.AssertMsg(len(v) == 3, "Length mismatch: input slice must have exactly 3 elements in unslice")
 	return [3]float64{v[0], v[1], v[2]}
 }
 

@@ -16,10 +16,15 @@ import (
 func removeLRSurfaceCharge(region int, mxLeft, mxRight float64) {
 	setBusy(true)
 	defer setBusy(false)
-	log.AssertArgument(mxLeft == 1 || mxLeft == -1)
-	log.AssertArgument(mxRight == 1 || mxRight == -1)
+	log.AssertMsg(mxLeft == 1 || mxLeft == -1,
+		"Invalid value for mxLeft: must be either +1 or -1 in removeLRSurfaceCharge")
+	log.AssertMsg(mxRight == 1 || mxRight == -1,
+		"Invalid value for mxRight: must be either +1 or -1 in removeLRSurfaceCharge")
+
 	bsat := Msat.GetRegion(region) * mag.Mu0
-	log.AssertMsg(bsat != 0, "RemoveSurfaceCharges: Msat is zero in region "+fmt.Sprint(region))
+	log.AssertMsg(bsat != 0,
+		"RemoveSurfaceCharges: Msat is zero in region "+fmt.Sprint(region))
+
 	B_ext.Add(compensateLRSurfaceCharges(getMesh(), mxLeft, mxRight, bsat), nil)
 }
 

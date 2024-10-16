@@ -88,7 +88,7 @@ func (p *regionwise) MSlice() cuda.MSlice {
 		return cuda.MakeMSlice(data.NilSlice(p.NComp(), getMesh().Size()), p.getRegion(0))
 	} else {
 		buf, r := p.Slice()
-		log.Assert(r)
+		log.AssertMsg(r, "Failed to retrieve slice: invalid state in regionwise.MSlice")
 		return cuda.ToMSlice(buf)
 	}
 }
@@ -131,8 +131,9 @@ func (p *regionwise) setUniform(v []float64) {
 
 // set in regions r1..r2(excl)
 func (p *regionwise) setRegions(r1, r2 int, v []float64) {
-	log.AssertArgument(len(v) == len(p.cpu_buf))
-	log.AssertArgument(r1 < r2) // exclusive upper bound
+	log.AssertMsg(len(v) == len(p.cpu_buf), "Size mismatch: the length of v must match the length of p.cpu_buf in setRegions")
+	log.AssertMsg(r1 < r2, "Invalid region range: r1 must be less than r2 (exclusive upper bound) in setRegions")
+
 	for r := r1; r < r2; r++ {
 		p.upd_reg[r] = nil
 		p.bufset_(r, v)
@@ -147,7 +148,8 @@ func (p *regionwise) bufset_(region int, v []float64) {
 }
 
 func (p *regionwise) setFunc(r1, r2 int, f func() []float64) {
-	log.AssertArgument(r1 < r2) // exclusive upper bound
+	log.AssertMsg(r1 < r2, "Invalid region range: r1 must be less than r2 (exclusive upper bound) in setFunc")
+
 	for r := r1; r < r2; r++ {
 		p.upd_reg[r] = f
 	}

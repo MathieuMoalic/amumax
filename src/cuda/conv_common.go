@@ -24,8 +24,8 @@ func prod(size [3]int) int {
 // and scale the kernel to compensate for unnormalized FFTs.
 // scale = 1/N, with N the FFT logical size.
 func scaleRealParts(dst, src *data.Slice, scale float32) {
-	log.AssertArgument(2*dst.Len() == src.Len())
-	log.AssertArgument(dst.NComp() == 1 && src.NComp() == 1)
+	log.AssertMsg(2*dst.Len() == src.Len(), "scaleRealParts: Source length must be twice the destination length")
+	log.AssertMsg(dst.NComp() == 1 && src.NComp() == 1, "scaleRealParts: Both destination and source must have a single component")
 
 	srcList := src.Host()[0]
 	dstList := dst.Host()[0]
