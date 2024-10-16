@@ -15,21 +15,18 @@ import (
 	"github.com/DataDog/zstd"
 )
 
-func Read(binary_path string, pwd string) (s *data.Slice, err error) {
+func Read(binary_path string, od string) (*data.Slice, error) {
 	if !path.IsAbs(binary_path) {
-		wd := ""
-		wd, err = os.Getwd()
-		log.Log.PanicIfError(err)
-		binary_path = wd + "/" + path.Dir(pwd) + "/" + binary_path
+		binary_path = path.Dir(od) + "/" + binary_path
 	}
 	binary_path = path.Clean(binary_path)
 
 	// loop and wait until the file is saved
+	log.Log.Info("Waiting for all the files to be saved before reading...")
 	for IsSaving {
-		log.Log.Info("Waiting for all the files to be saved before reading...")
 		time.Sleep(1 * time.Second)
 	}
-
+	time.Sleep(3 * time.Second)
 	zarray_path := path.Dir(binary_path) + "/.zarray"
 	log.Log.Info("Reading:  %v", binary_path)
 	io_reader, err := httpfs.Open(binary_path)
@@ -51,13 +48,9 @@ func Read(binary_path string, pwd string) (s *data.Slice, err error) {
 	tensors := array.Tensors()
 	ncomp := array.NComp()
 	compressedData, err := io.ReadAll(io_reader)
-	if err != nil {
-		panic(err)
-	}
+	log.Log.PanicIfError(err)
 	data, err := zstd.Decompress(nil, compressedData)
-	if err != nil {
-		panic(err)
-	}
+	log.Log.PanicIfError(err)
 	count := 0
 	for iz := 0; iz < sizez; iz++ {
 		for iy := 0; iy < sizey; iy++ {
