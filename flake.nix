@@ -59,7 +59,7 @@
 
         buildPhase = ''
           cp -r ${frontend} src/api/static
-          go build -v -o $out/bin/amumax -ldflags '-s -w -X github.com/MathieuMoalic/amumax/engine.VERSION=${version}' .
+          go build -v -o $out/bin/amumax -ldflags '-s -w -X github.com/MathieuMoalic/amumax/src/engine.VERSION=${version}' .
         '';
 
         doCheck = false;
