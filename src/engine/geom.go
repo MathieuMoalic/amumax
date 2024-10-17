@@ -88,7 +88,7 @@ func (geometry *geom) setGeom(s shape) {
 	cx, cy, cz := c[X], c[Y], c[Z]
 
 	log.Log.Info("Initializing geometry")
-	var ok bool
+	empty := true
 	for iz := 0; iz < n[Z]; iz++ {
 		for iy := 0; iy < n[Y]; iy++ {
 			for ix := 0; ix < n[X]; ix++ {
@@ -121,18 +121,18 @@ func (geometry *geom) setGeom(s shape) {
 				switch {
 				case allIn:
 					v[iz][iy][ix] = 1
-					ok = true
+					empty = false
 				case allOut:
 					v[iz][iy][ix] = 0
 				default:
 					v[iz][iy][ix] = geometry.cellVolume(ix, iy, iz)
-					ok = ok || (v[iz][iy][ix] != 0)
+					empty = empty && (v[iz][iy][ix] == 0)
 				}
 			}
 		}
 	}
 
-	if !ok {
+	if empty {
 		log.Log.ErrAndExit("SetGeom: geometry completely empty")
 	}
 
