@@ -88,14 +88,19 @@ func smoothMesh() {
 
 func validateGridSize() {
 	max_threshold := 1000000
-	names := []string{"Nx", "Ny", "Nz"}
+	Ni_list := []string{"Nx", "Ny", "Nz"}
 	for i, N := range []int{Nx, Ny, Nz} {
 		if N == 0.0 {
-			log.Log.ErrAndExit("Error: You have to specify  %v", names[i])
+			log.Log.ErrAndExit("Error: You have to specify  %v", Ni_list[i])
 		} else if N > max_threshold {
-			log.Log.ErrAndExit("Error: %s shouldn't be more than %d", names[i], max_threshold)
+			log.Log.ErrAndExit("Error: %s shouldn't be more than %d", Ni_list[i], max_threshold)
+		} else if N < 0 {
+			Ti := []float64{Tx, Ty, Tz}[i]
+			di := []float64{Dx, Dy, Dz}[i]
+			log.Log.ErrAndExit("Error: %s=%d shouldn't be negative, Ti: %e m, di: %e m", Ni_list[i], N, Ti, di)
 		}
 	}
+	log.Log.Debug("Grid size: %d, %d, %d", Nx, Ny, Nz)
 }
 
 func validateCellSize() {
@@ -111,6 +116,7 @@ func validateCellSize() {
 			log.Log.ErrAndExit("Error: %s shouldn't be more than %f", names[i], max_threshold)
 		}
 	}
+	log.Log.Debug("Cell size: %e, %e, %e", Dx, Dy, Dz)
 }
 
 func isMeshCreated() bool {
@@ -150,16 +156,32 @@ func createMesh() {
 	}
 }
 
-func reCreateMesh(Nx, Ny, Nz int, dx, dy, dz float64, PBCx, PBCy, PBCz int) {
+func reCreateMesh(Nx_new, Ny_new, Nz_new int, dx_new, dy_new, dz_new float64, PBCx_new, PBCy_new, PBCz_new int) {
 	setBusy(true)
 	defer setBusy(false)
-	globalmesh_ = *data.NewMesh(Nx, Ny, Nz, dx, dy, dz, PBCx, PBCy, PBCz)
+	Nx = Nx_new
+	Ny = Ny_new
+	Nz = Nz_new
+	Dx = dx_new
+	Dy = dy_new
+	Dz = dz_new
+	PBCx = PBCx_new
+	PBCy = PBCy_new
+	PBCz = PBCz_new
+	Tx = 0.0
+	Ty = 0.0
+	Tz = 0.0
+	setTiDiNi(&Tx, &Dx, &Nx, "x")
+	setTiDiNi(&Ty, &Dy, &Ny, "y")
+	setTiDiNi(&Tz, &Dz, &Nz, "z")
+	validateGridSize()
+	validateCellSize()
+	if AutoMeshx || AutoMeshy || AutoMeshz {
+		smoothMesh()
+	}
+	globalmesh_ = *data.NewMesh(Nx, Ny, Nz, Dx, Dy, Dz, PBCx, PBCy, PBCz)
 	normMag.alloc()
 	Regions.alloc()
-	script.MMetadata.Init(OD(), StartTime, dx, dy, dz, Nx, Ny, Nz, Tx, Ty, Tz, PBCx, PBCy, PBCz, cuda.GPUInfo)
-
-	setBusy(true)
-	defer setBusy(false)
 	// these 2 lines make sure the progress bar doesn't break when calculating the kernel
 	fmt.Print("\033[2K\r") // clearline ANSI escape code
 	kernel := mag.DemagKernel(getMesh().Size(), getMesh().PBC(), getMesh().CellSize(), DemagAccuracy, CacheDir, ShowProgresBar)
