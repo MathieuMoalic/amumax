@@ -8,6 +8,7 @@ import { disposePreview2D } from './preview2D';
 
 export function preview3D() {
 	if (get(previewState).vectorFieldPositions == null) {
+		disposePreview3D();
 		return;
 	} else if (get(previewState).refresh) {
 		disposePreview2D();
