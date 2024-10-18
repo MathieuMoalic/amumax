@@ -112,8 +112,8 @@ func wrapgen(filename, funcname string, argt, argn []string) {
 	// find corresponding .PTX files
 	if ls == nil {
 		dir, errd := os.Open(".")
-		defer dir.Close()
 		log.Log.PanicIfError(errd)
+		defer dir.Close()
 		var errls error
 		ls, errls = dir.Readdirnames(-1)
 		log.Log.PanicIfError(errls)

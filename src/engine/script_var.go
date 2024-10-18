@@ -58,6 +58,7 @@ func init() {
 	declVar("ShiftGeom", &shiftGeom, "Whether Shift() acts on geometry")
 	declVar("ShiftRegions", &shiftRegions, "Whether Shift() acts on regions")
 	declVar("TotalShift", &totalShift, "Amount by which the simulation has been shifted (m).")
+	declVar("EdgeCarryShift", &EdgeCarryShift, "Whether to use the current magnetization at the border for the cells inserted by Shift")
 
 	declVar("GammaLL", &gammaLL, "Gyromagnetic ratio in rad/Ts")
 	declVar("DisableZhangLiTorque", &disableZhangLiTorque, "Disables Zhang-Li torque (default=false)")
