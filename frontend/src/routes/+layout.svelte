@@ -15,8 +15,14 @@
 	});
 </script>
 
-<Alert />
-<slot />
+{#if $connected}
+	<Alert />
+	<slot />
+{:else}
+	<div class="flex h-screen items-center justify-center">
+		<Spinner size={8} />
+	</div>
+{/if}
 
 <style>
 	slot {

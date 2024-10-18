@@ -14,7 +14,7 @@ import (
 type PreviewState struct {
 	ws                   *WebSocketManager
 	globalQuantities     []string
-	layerMask            [][]float32
+	mask                 [][][]float32
 	Quantity             string               `msgpack:"quantity"`
 	Unit                 string               `msgpack:"unit"`
 	Component            string               `msgpack:"component"`
@@ -78,7 +78,7 @@ func (s *PreviewState) Update() {
 
 func (s *PreviewState) UpdateQuantityBuffer() {
 	// s.ScaleDimensions()
-	if s.layerMask == nil {
+	if s.mask == nil {
 		s.updateMask()
 	}
 	componentCount := 1
@@ -206,7 +206,7 @@ func (s *PreviewState) UpdateScalarField(scalarField [][][]float32) {
 			// Some quantities exist where the magnetic materials are not present
 			// and we don't want to filter them out
 			if !contains(s.globalQuantities, s.Quantity) {
-				if s.layerMask[posy][posx] == 0 {
+				if s.mask[0][posy][posx] == 0 {
 					continue
 				}
 			}
@@ -234,6 +234,7 @@ func (s *PreviewState) UpdateScalarField(scalarField [][][]float32) {
 
 func (s *PreviewState) updateMask() {
 	s.ScaleDimensions()
+
 	// cuda full size geom
 	geom := engine.Geometry
 	GPU_fullsize := cuda.Buffer(geom.NComp(), geom.Buffer.Size())
@@ -243,7 +244,7 @@ func (s *PreviewState) updateMask() {
 	// resize geom in GPU
 	GPU_resized := cuda.NewSlice(1, s.Dimensions)
 	defer GPU_resized.Free()
-	cuda.Resize(GPU_resized, GPU_fullsize.Comp(0), s.Layer)
+	cuda.Resize(GPU_resized, GPU_fullsize.Comp(0), 0)
 
 	// copy resized geom from GPU to CPU
 	CPU_out := data.NewSlice(1, s.Dimensions)
@@ -251,7 +252,7 @@ func (s *PreviewState) updateMask() {
 	data.Copy(CPU_out.Comp(0), GPU_resized)
 
 	// extract mask from CPU slice
-	s.layerMask = CPU_out.Scalars()[0]
+	s.mask = CPU_out.Scalars()
 }
 
 func contains(arr []string, val string) bool {
@@ -361,7 +362,6 @@ func (s *PreviewState) postPreviewLayer(c echo.Context) error {
 
 	s.Layer = req.Layer
 	s.Refresh = true
-	engine.InjectAndWait(s.updateMask)
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }

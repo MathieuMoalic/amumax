@@ -26,31 +26,32 @@
 			<Component />
 		</div>
 
-		<div class="field col-span-4">
-			{#if $meshState.Nx > 1}
-				<DataPointSlider />
-			{/if}
-		</div>
-		{#if $threeDPreview !== null}
-			<div class="field col-span-3">
-				<Button on:click={resetCamera} outline>Reset Camera</Button>
+		{#if $p.scalarField == null && $p.vectorFieldPositions == null}
+			<div class="field col-span-4">
+				No data to display for {$p.quantity}
 			</div>
 		{:else}
-			<div class="field col-span-3"></div>
-		{/if}
-
-		{#if $meshState.Nz > 1}
-			<div class="field col-span-7">
-				<Layer />
+			<div class="field col-span-4">
+				{#if $meshState.Nx > 1}
+					<DataPointSlider />
+				{/if}
 			</div>
+			{#if $threeDPreview !== null}
+				<div class="field col-span-3">
+					<Button on:click={resetCamera} outline>Reset Camera</Button>
+				</div>
+			{:else}
+				<div class="field col-span-3"></div>
+			{/if}
+
+			{#if $meshState.Nz > 1}
+				<div class="field col-span-7">
+					<Layer />
+				</div>
+			{/if}
 		{/if}
 	</div>
 	<hr />
-	{#if $p.scalarField == null && $p.vectorFieldPositions == null}
-		<div class="field col-span-4">
-			No data to display for Quantity: {$p.quantity}, Component: {$p.component}, Layer: {$p.layer}
-		</div>
-	{/if}
 	<div id="container"></div>
 	<hr />
 </section>
