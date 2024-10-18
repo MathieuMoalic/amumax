@@ -1,13 +1,6 @@
 <script lang="ts">
 	import { headerState } from '$api/incoming/header';
 	import { connected } from '$api/websocket';
-	function connectWebSocket() {
-		const ws = new WebSocket('ws://localhost:35367/ws');
-		ws.onmessage = (event) => {
-			console.log(event.data);
-			ws.close();
-		};
-	}
 </script>
 
 <section>
@@ -52,9 +45,6 @@
 			{$headerState.path}
 		</div>
 		<div class="connection">
-			<div>
-				<button on:click={connectWebSocket}>Connect</button>
-			</div>
 			{#if !$connected}
 				<div class="no">Connection lost</div>
 			{:else}

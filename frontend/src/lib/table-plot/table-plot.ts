@@ -15,6 +15,7 @@ let chartInstance: echarts.ECharts;
 
 function update() {
     if (chartInstance === undefined) {
+        console.debug('Chart instance is undefined');
         return;
     }
     let t = get(tablePlotState);
