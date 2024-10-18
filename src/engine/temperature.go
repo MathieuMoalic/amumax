@@ -4,16 +4,18 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/cuda/curand"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag"
 
 	"math"
 )
 
 var (
-	Temp        = newScalarParam("Temp", "K", "Temperature")
-	E_therm     = newScalarValue("E_therm", "J", "Thermal energy", getThermalEnergy)
-	Edens_therm = newScalarField("Edens_therm", "J/m3", "Thermal energy density", AddThermalEnergyDensity)
-	B_therm     thermField // Thermal effective field (T)
+	Temp                      = newScalarParam("Temp", "K", "Temperature")
+	E_therm                   = newScalarValue("E_therm", "J", "Thermal energy", getThermalEnergy)
+	Edens_therm               = newScalarField("Edens_therm", "J/m3", "Thermal energy density", AddThermalEnergyDensity)
+	B_therm                   thermField // Thermal effective field (T)
+	printedWarningTempOddGrid = false
 )
 
 var AddThermalEnergyDensity = makeEdensAdder(&B_therm, -1)
@@ -80,6 +82,12 @@ func (b *thermField) update() {
 	}
 
 	N := getMesh().NCell()
+
+	if !printedWarningTempOddGrid && N%2 > 0 { // T is nonzero if we have gotten this far. As noted in issue #314, this means the grid size must be even.
+		printedWarningTempOddGrid = true
+		log.Log.Warn("nonzero temperature requires an even amount of grid cells, but all axes have "+
+			"an odd number of cells: %v. This may cause a CURAND_STATUS_LENGTH_NOT_MULTIPLE error.", getMesh().Size())
+	}
 	k2_VgammaDt := 2 * mag.Kb / (gammaLL * cellVolume() * Dt_si)
 	noise := cuda.Buffer(1, getMesh().Size())
 	defer cuda.Recycle(noise)
