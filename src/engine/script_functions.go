@@ -55,6 +55,7 @@ func init() {
 	DeclFunc("Minimize", minimize, "Use steepest conjugate gradient method to minimize the total energy")
 
 	DeclFunc("DefRegion", DefRegion, "Define a material region with given index (0-255) and shape")
+	DeclFunc("RedefRegion", RedefRegion, "Reassign all cells with a given region (first argument) to a new region (second argument)")
 	DeclFunc("ShapeFromRegion", ShapeFromRegion, "")
 	DeclFunc("DefRegionCell", DefRegionCell, "Set a material region (first argument) in one cell "+
 		"by the index of the cell (last three arguments)")

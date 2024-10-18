@@ -32,6 +32,24 @@ func (r *RegionsState) GetExistingIndices() []int {
 	return indices
 }
 
+func (r *RegionsState) redefine(startId, endId int) {
+	// Loop through all cells, if their region ID matches startId, change it to endId
+	n := getMesh().Size()
+	l := r.RegionListCPU() // need to start from previous state
+	arr := reshapeBytes(l, r.Mesh().Size())
+
+	for iz := 0; iz < n[Z]; iz++ {
+		for iy := 0; iy < n[Y]; iy++ {
+			for ix := 0; ix < n[X]; ix++ {
+				if arr[iz][iy][ix] == byte(startId) {
+					arr[iz][iy][ix] = byte(endId)
+				}
+			}
+		}
+	}
+	r.gpuBuffer.Upload(l)
+}
+
 func ShapeFromRegion(id int) shape {
 	return func(x, y, z float64) bool {
 		return Regions.get(data.Vector{x, y, z}) == id
@@ -56,6 +74,33 @@ func DefRegion(id int, s shape) {
 	Regions.render(f)
 	Regions.AddIndex(id)
 	// regions.hist = append(regions.hist, f)
+}
+
+// Redefine a region with a given ID to a new ID
+func RedefRegion(startId, endId int) {
+	// Checks validity of input region IDs
+	defRegionId(startId)
+	defRegionId(endId)
+
+	hist_len := len(Regions.hist) // Only consider hist before this Redef to avoid recursion
+	f := func(x, y, z float64) int {
+		value := -1
+		for i := hist_len - 1; i >= 0; i-- {
+			f_other := Regions.hist[i]
+			region := f_other(x, y, z)
+			if region >= 0 {
+				value = region
+				break
+			}
+		}
+		if value == startId {
+			return endId
+		} else {
+			return value
+		}
+	}
+	Regions.redefine(startId, endId)
+	Regions.hist = append(Regions.hist, f)
 }
 
 // renders (rasterizes) shape, filling it with region number #id, between x1 and x2
