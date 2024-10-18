@@ -51,6 +51,7 @@ func largestPrimeFactor(n int) int {
 	}
 	return int(maxPrime)
 }
+
 func closestSevenSmooth(n int) int {
 	for largestPrimeFactor(n) > 7 {
 		n -= 1
@@ -103,6 +104,13 @@ func validateGridSize() {
 	log.Log.Debug("Grid size: %d, %d, %d", Nx, Ny, Nz)
 }
 
+func checkLargestPrimeFactor(N int, AutoMesh bool, axisName string) {
+	if largestPrimeFactor(N) > 127 && !AutoMesh {
+		log.Log.ErrAndExit("Error: %s (%d) has a prime factor larger than 127 so the mesh cannot"+
+			" be calculated. Use `AutoMesh%s = True` or change the value of %s manually", axisName, N, axisName, axisName)
+	}
+}
+
 func validateCellSize() {
 	min_threshold := 0.25e-9
 	max_threshold := 500e-9
@@ -116,6 +124,9 @@ func validateCellSize() {
 			log.Log.ErrAndExit("Error: %s shouldn't be more than %f", names[i], max_threshold)
 		}
 	}
+	checkLargestPrimeFactor(Nx, AutoMeshx, "Nx")
+	checkLargestPrimeFactor(Ny, AutoMeshy, "Ny")
+	checkLargestPrimeFactor(Nz, AutoMeshz, "Nz")
 	log.Log.Debug("Cell size: %e, %e, %e", Dx, Dy, Dz)
 }
 
