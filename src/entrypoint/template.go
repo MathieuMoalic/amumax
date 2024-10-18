@@ -10,11 +10,12 @@ import (
 )
 
 type Expression struct {
-	Prefix   string
-	Array    []float64
-	Format   string
-	Suffix   string
-	Original string
+	Prefix    string
+	Array     []string
+	Format    string
+	Suffix    string
+	Original  string
+	IsNumeric bool
 }
 
 func (e Expression) PrettyPrint() {
@@ -52,20 +53,24 @@ func linspace(start, end float64, count int) []float64 {
 	return result
 }
 
-func isFloatFormat(format string) bool {
-	// Regular expression to match formats like %f, %02.0f, %.1f, %03.0f, etc.
-	re := regexp.MustCompile(`^%[-+]?[0-9]*(\.[0-9]*)?f$`)
+func isValidFormat(format string) bool {
+	// Allow %s for strings, and float formats like %f, %02.0f, %.1f, %03.0f, etc.
+	re := regexp.MustCompile(`^%[-+]?[0-9]*(\.[0-9]*)?[fs]$`)
 	return re.MatchString(format)
 }
 
 func validateFields(exprMap map[string]string) error {
-	// check if all the field names are valid
+	// Check if all the field names are valid
+	validKeys := map[string]bool{
+		"prefix": true, "array": true, "format": true, "suffix": true,
+		"start": true, "end": true, "step": true, "count": true,
+	}
 	for key := range exprMap {
-		if key != "prefix" && key != "array" && key != "format" && key != "suffix" && key != "start" && key != "end" && key != "step" && key != "count" {
+		if !validKeys[key] && key != "original" {
 			return fmt.Errorf("invalid field name: %s", key)
 		}
 	}
-	// if array is given, start, end, step and count should not be given
+	// If array is given, start, end, step, and count should not be given
 	if _, ok := exprMap["array"]; ok {
 		if _, ok := exprMap["start"]; ok {
 			return fmt.Errorf("start should not be given when array is given")
@@ -80,14 +85,14 @@ func validateFields(exprMap map[string]string) error {
 			return fmt.Errorf("count should not be given when array is given")
 		}
 	} else {
-		// if array is not given, start, end, step or count should be given
+		// If array is not given, start and end should be given
 		if _, ok := exprMap["start"]; !ok {
 			return fmt.Errorf("start should be given when array is not given")
 		}
 		if _, ok := exprMap["end"]; !ok {
 			return fmt.Errorf("end should be given when array is not given")
 		}
-		// step or count should be given
+		// Step or count should be given
 		if _, ok := exprMap["step"]; !ok {
 			if _, ok := exprMap["count"]; !ok {
 				return fmt.Errorf("step or count should be given when array is not given")
@@ -104,23 +109,19 @@ func parsePrefix(exprMap map[string]string) (string, error) {
 	return "", nil
 }
 
-func parseArray(exprMap map[string]string) ([]float64, error) {
+func parseArray(exprMap map[string]string) ([]string, error) {
 	if arrStr, ok := exprMap["array"]; ok {
 		arrStr = strings.Trim(arrStr, "[]")
 		if arrStr == "" {
 			return nil, fmt.Errorf("array cannot be empty")
 		}
-		// splits the string into an array of strings
 		arr := strings.Split(arrStr, ",")
-		var array []float64
+		var array []string
 		for _, valStr := range arr {
-			// remove whitespace
 			valStr = strings.TrimSpace(valStr)
-			val, err := strconv.ParseFloat(string(valStr), 64)
-			if err != nil {
-				return nil, fmt.Errorf("invalid array value: %v", err)
-			}
-			array = append(array, val)
+			// Remove quotes if any
+			valStr = strings.Trim(valStr, "\"'")
+			array = append(array, valStr)
 		}
 		if len(array) == 0 {
 			return nil, fmt.Errorf("array cannot be empty")
@@ -132,8 +133,8 @@ func parseArray(exprMap map[string]string) ([]float64, error) {
 
 func parseFormat(exprMap map[string]string) (string, error) {
 	if format, ok := exprMap["format"]; ok {
-		if !isFloatFormat(format) {
-			return "", fmt.Errorf("only the %%f format is allowed: %s", format)
+		if !isValidFormat(format) {
+			return "", fmt.Errorf("invalid format: %s", format)
 		}
 		return format, nil
 	}
@@ -147,7 +148,7 @@ func parseSuffix(exprMap map[string]string) (string, error) {
 	return "", nil
 }
 
-func parseRange(exprMap map[string]string) ([]float64, error) {
+func parseRange(exprMap map[string]string) ([]string, error) {
 	start, err := strconv.ParseFloat(exprMap["start"], 64)
 	if err != nil {
 		return nil, fmt.Errorf("invalid start value: %v", err)
@@ -160,9 +161,10 @@ func parseRange(exprMap map[string]string) ([]float64, error) {
 		return nil, fmt.Errorf("start value should be less than end value")
 	}
 	if start == end {
-		return []float64{start}, nil
+		return []string{fmt.Sprintf("%v", start)}, nil
 	}
 
+	var numericArray []float64
 	if stepStr, ok := exprMap["step"]; ok {
 		step, err := strconv.ParseFloat(stepStr, 64)
 		if err != nil {
@@ -171,12 +173,11 @@ func parseRange(exprMap map[string]string) ([]float64, error) {
 		if step <= 0 {
 			return nil, fmt.Errorf("step value should be greater than 0")
 		}
-		// calculate the length of the array
 		length := int((end-start)/step) + 1
 		if length > 1000 {
 			return nil, fmt.Errorf("step value is too small (more than 1000 elements)")
 		}
-		return arange(start, end, step), nil
+		numericArray = arange(start, end, step)
 	} else if countStr, ok := exprMap["count"]; ok {
 		count, err := strconv.Atoi(countStr)
 		if err != nil {
@@ -185,9 +186,16 @@ func parseRange(exprMap map[string]string) ([]float64, error) {
 		if count <= 0 {
 			return nil, fmt.Errorf("count value should be greater than 0")
 		}
-		return linspace(start, end, count), nil
+		numericArray = linspace(start, end, count)
+	} else {
+		return nil, fmt.Errorf("invalid range specification")
 	}
-	return nil, fmt.Errorf("invalid range specification")
+
+	array := make([]string, len(numericArray))
+	for i, val := range numericArray {
+		array[i] = fmt.Sprintf("%v", val)
+	}
+	return array, nil
 }
 
 func parseExpression(exprMap map[string]string) (Expression, error) {
@@ -203,24 +211,48 @@ func parseExpression(exprMap map[string]string) (Expression, error) {
 	if err != nil {
 		return Expression{}, err
 	}
-	var array []float64
-	if exprMap["array"] == "" {
-		array, err = parseRange(exprMap)
-		if err != nil {
-			return Expression{}, err
+	var array []string
+	isNumeric := true
+	if format == "%s" {
+		isNumeric = false
+		if _, ok := exprMap["array"]; ok {
+			array, err = parseArray(exprMap)
+			if err != nil {
+				return Expression{}, err
+			}
+		} else {
+			return Expression{}, fmt.Errorf("format %s is only valid for numeric arrays", format)
 		}
 	} else {
-		array, err = parseArray(exprMap)
-		if err != nil {
-			return Expression{}, err
+		if _, ok := exprMap["array"]; ok {
+			array, err = parseArray(exprMap)
+			if err != nil {
+				return Expression{}, err
+			}
+			// Determine if the array is numeric
+			for _, val := range array {
+				if _, err = strconv.ParseFloat(val, 64); err != nil {
+					isNumeric = false
+					break
+				}
+			}
+		} else {
+			// Parse range
+			array, err = parseRange(exprMap)
+			if err != nil {
+				return Expression{}, err
+			}
 		}
 	}
-	return Expression{
-		Prefix: prefix,
-		Array:  array,
-		Format: format,
-		Suffix: suffix,
-	}, nil
+	exp := Expression{
+		Prefix:    prefix,
+		Array:     array,
+		Format:    format,
+		Suffix:    suffix,
+		IsNumeric: isNumeric,
+		Original:  exprMap["original"],
+	}
+	return exp, nil
 }
 
 // Finds expressions in the mx3 template and parses them
@@ -232,6 +264,7 @@ func findExpressions(mx3 string) (expressions []Expression, err error) {
 		extracted := match[1]
 		parts := strings.Split(extracted, ";")
 		exprMap := make(map[string]string)
+		exprMap["original"] = extracted
 
 		// Parse the expression parts
 		for _, part := range parts {
@@ -246,16 +279,10 @@ func findExpressions(mx3 string) (expressions []Expression, err error) {
 		if err = validateFields(exprMap); err != nil {
 			return nil, err
 		}
-		exp := Expression{}
-		exp.Prefix, err = parsePrefix(exprMap)
-		if err != nil {
-			return nil, err
-		}
 		exp, err := parseExpression(exprMap)
 		if err != nil {
 			return nil, err
 		}
-		exp.Original = extracted
 		expressions = append(expressions, exp)
 	}
 	if len(expressions) == 0 {
@@ -279,17 +306,38 @@ func generateFiles(parentDir, mx3 string, expressions []Expression, flat bool) e
 
 		for j, exp := range expressions {
 			value := exp.Array[indices[j]]
-			formattedValue := fmt.Sprintf(exp.Format, value)
-			// formattedValue := fmt.Sprintf(exp.Format, int(value)) // Convert float64 to int
+			var formattedValue string
+
+			// Check if format is compatible with value type
+			if exp.IsNumeric {
+				numValue, err := strconv.ParseFloat(value, 64)
+				if err != nil {
+					return fmt.Errorf("error parsing numeric value '%v': %v", value, err)
+				}
+				if strings.HasSuffix(exp.Format, "s") {
+					return fmt.Errorf("invalid format '%s' for numeric value '%v'", exp.Format, value)
+				}
+				formattedValue = fmt.Sprintf(exp.Format, numValue)
+			} else {
+				if strings.HasSuffix(exp.Format, "d") || strings.HasSuffix(exp.Format, "f") {
+					return fmt.Errorf("invalid format '%s' for string value '%v'", exp.Format, value)
+				}
+				formattedValue = fmt.Sprintf(exp.Format, value)
+			}
+			// formattedValue := fmt.Sprintf(exp.Format, value)
+
+			// Build path parts and replace placeholders
 			pathParts[j] = fmt.Sprintf("%s%s%s", exp.Prefix, formattedValue, exp.Suffix)
-			// Replace the placeholder in the mx3 template
-			newMx3 = strings.Replace(newMx3, `"{`+exp.Original+`}"`, fmt.Sprintf("%v", value), 1)
+			newMx3 = strings.Replace(newMx3, `"{`+exp.Original+`}"`, value, 1)
 		}
 
-		joinedPath := strings.Join(pathParts, "")
-		if !flat {
-			joinedPath = strings.Join(pathParts, string(os.PathSeparator))
+		var joinedPath string
+		if flat {
+			joinedPath = strings.Join(pathParts, "")
+		} else {
+			joinedPath = filepath.Join(pathParts...)
 		}
+
 		fullPath := filepath.Join(parentDir, joinedPath+".mx3")
 		if !flat {
 			err := os.MkdirAll(filepath.Dir(fullPath), os.ModePerm)

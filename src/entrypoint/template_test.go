@@ -232,13 +232,13 @@ func TestGenerateFilesWithLinspaceAndStep(t *testing.T) {
 
 // format is %d, it should not be allowed
 func TestFormatError(t *testing.T) {
-	templateContent := `x:="{array=[1];format=%d}"`
+	templateContent := `x:="{array=[1];format=%g}"`
 	templatePath := "test_output/template"
 	writeTemplateFile(t, templatePath, templateContent)
 
 	// Parse template
 	err := template(templatePath, false)
-	if err.Error() != `error finding expressions: only the %f format is allowed: %d` {
+	if err.Error() != `error finding expressions: invalid format: %g` {
 		t.Fatalf("Expected error: %v", err)
 	}
 	// check if no file is generated
@@ -360,18 +360,6 @@ func TestZeroStep(t *testing.T) {
 	}
 }
 
-// Test case with invalid format string
-func TestInvalidFormat(t *testing.T) {
-	templateContent := `x:="{array=[1];format=%q}"`
-	templatePath := "test_output/template"
-	writeTemplateFile(t, templatePath, templateContent)
-
-	err := template(templatePath, false)
-	if err == nil || err.Error() != `error finding expressions: only the %f format is allowed: %q` {
-		t.Fatalf("Expected error for invalid format, but got: %v", err)
-	}
-}
-
 // Test case with missing required fields
 func TestMissingFields(t *testing.T) {
 	templateContent := `x:="{end=5;step=1}"`
@@ -457,18 +445,6 @@ func TestSpecialCharactersInPrefixSuffix(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case with non-numeric values in array
-func TestNonNumericArrayValues(t *testing.T) {
-	templateContent := `x:="{array=[a,b,c]}"`
-	templatePath := "test_output/template"
-	writeTemplateFile(t, templatePath, templateContent)
-
-	err := template(templatePath, false)
-	if err == nil || !strings.Contains(err.Error(), `invalid array value`) {
-		t.Fatalf("Expected error for non-numeric array values, but got: %v", err)
-	}
-}
-
 // Test case with only one value in linspace
 func TestLinspaceSingleValue(t *testing.T) {
 	templateContent := `x:="{start=5;end=5;count=1}"`
@@ -533,6 +509,196 @@ c:=5`,
 		`a:=2
 b:=1
 c:=5`,
+	}
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
+}
+
+// Test case for array of strings
+func TestGenerateFilesWithStringArray(t *testing.T) {
+	templateContent := `x:="{prefix=str_;array=['apple', 'banana', 'cherry'];format=%s}"`
+	expectedFiles := []string{
+		"test_output/str_apple.mx3",
+		"test_output/str_banana.mx3",
+		"test_output/str_cherry.mx3",
+	}
+	expectedContent := []string{
+		`x:=apple`,
+		`x:=banana`,
+		`x:=cherry`,
+	}
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
+}
+
+// Test case for array of strings without format
+func TestGenerateFilesWithStringArrayNoFormat(t *testing.T) {
+	templateContent := `x:="{prefix=str_;array=['dog', 'cat', 'mouse']}"`
+	expectedFiles := []string{
+		"test_output/str_dog.mx3",
+		"test_output/str_cat.mx3",
+		"test_output/str_mouse.mx3",
+	}
+	expectedContent := []string{
+		`x:=dog`,
+		`x:=cat`,
+		`x:=mouse`,
+	}
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
+}
+
+// Test case for string array with special characters and suffix
+func TestGenerateFilesWithStringArraySpecialChars(t *testing.T) {
+	templateContent := `x:="{prefix=str_;array=['hello-world', 'foo_bar', 'baz@qux'];suffix=_test}"`
+	expectedFiles := []string{
+		"test_output/str_hello-world_test.mx3",
+		"test_output/str_foo_bar_test.mx3",
+		"test_output/str_baz@qux_test.mx3",
+	}
+	expectedContent := []string{
+		`x:=hello-world`,
+		`x:=foo_bar`,
+		`x:=baz@qux`,
+	}
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
+}
+
+// Test case for string array with numeric format (should produce an error)
+func TestStringArrayWithNumericFormatError(t *testing.T) {
+	templateContent := `x:="{array=['a','b'];format=%02.0f}"`
+	templatePath := "test_output/template"
+	writeTemplateFile(t, templatePath, templateContent)
+
+	err := template(templatePath, false)
+	if err == nil || !strings.Contains(err.Error(), `invalid format '%02.0f' for string value`) {
+		t.Fatalf("Expected error for invalid format with string array, but got: %v", err)
+	}
+}
+
+// Test case for combination of string array and numeric array
+func TestGenerateFilesWithStringAndNumericArrays(t *testing.T) {
+	templateContent := `x:="{array=['red','green']}"
+y:="{array=[1,2]}"`
+	expectedFiles := []string{
+		"test_output/red/1.mx3",
+		"test_output/red/2.mx3",
+		"test_output/green/1.mx3",
+		"test_output/green/2.mx3",
+	}
+	expectedContent := []string{
+		`x:=red
+y:=1`,
+		`x:=red
+y:=2`,
+		`x:=green
+y:=1`,
+		`x:=green
+y:=2`,
+	}
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
+}
+
+// Test case for string array with format %s
+func TestGenerateFilesWithStringArrayAndFormat(t *testing.T) {
+	templateContent := `x:="{array=['alpha','beta'];format=%s}"`
+	expectedFiles := []string{
+		"test_output/alpha.mx3",
+		"test_output/beta.mx3",
+	}
+	expectedContent := []string{
+		`x:=alpha`,
+		`x:=beta`,
+	}
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
+}
+
+// Test case for array of strings with spaces and quotes
+func TestGenerateFilesWithStringArraySpaces(t *testing.T) {
+	templateContent := `x:="{array=['first value', 'second value'];format=%s}"`
+	expectedFiles := []string{
+		"test_output/first value.mx3",
+		"test_output/second value.mx3",
+	}
+	expectedContent := []string{
+		`x:=first value`,
+		`x:=second value`,
+	}
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
+}
+
+// Test case with special characters in array elements
+func TestGenerateFilesWithStringArraySpecialElements(t *testing.T) {
+	templateContent := `x:="{array=['val$1', 'val#2', 'val&3'];format=%s}"`
+	expectedFiles := []string{
+		"test_output/val$1.mx3",
+		"test_output/val#2.mx3",
+		"test_output/val&3.mx3",
+	}
+	expectedContent := []string{
+		`x:=val$1`,
+		`x:=val#2`,
+		`x:=val&3`,
+	}
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
+}
+
+// Test case for string array with prefix and suffix
+func TestGenerateFilesWithStringArrayPrefixSuffix(t *testing.T) {
+	templateContent := `x:="{prefix=pre_;array=['one','two'];suffix=_suf;format=%s}"`
+	expectedFiles := []string{
+		"test_output/pre_one_suf.mx3",
+		"test_output/pre_two_suf.mx3",
+	}
+	expectedContent := []string{
+		`x:=one`,
+		`x:=two`,
+	}
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
+}
+
+// Test case for empty string array
+func TestEmptyStringArray(t *testing.T) {
+	templateContent := `x:="{array=[]}"`
+	templatePath := "test_output/template"
+	writeTemplateFile(t, templatePath, templateContent)
+
+	err := template(templatePath, false)
+	if err == nil || !strings.Contains(err.Error(), `array cannot be empty`) {
+		t.Fatalf("Expected error for empty string array, but got: %v", err)
+	}
+}
+
+// Test case for string array with numeric values treated as strings
+func TestStringArrayWithNumericValues(t *testing.T) {
+	templateContent := `x:="{array=['123','456'];format=%s}"`
+	expectedFiles := []string{
+		"test_output/123.mx3",
+		"test_output/456.mx3",
+	}
+	expectedContent := []string{
+		`x:=123`,
+		`x:=456`,
+	}
+	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
+}
+
+// Test case for combination of multiple string arrays
+func TestGenerateFilesWithMultipleStringArrays(t *testing.T) {
+	templateContent := `x:="{prefix=a_;array=['x','y']}"
+y:="{prefix=b_;array=['1','2'];suffix=_end}"`
+	expectedFiles := []string{
+		"test_output/a_x/b_1_end.mx3",
+		"test_output/a_x/b_2_end.mx3",
+		"test_output/a_y/b_1_end.mx3",
+		"test_output/a_y/b_2_end.mx3",
+	}
+	expectedContent := []string{
+		`x:=x
+y:=1`,
+		`x:=x
+y:=2`,
+		`x:=y
+y:=1`,
+		`x:=y
+y:=2`,
 	}
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
