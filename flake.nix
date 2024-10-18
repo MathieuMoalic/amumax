@@ -127,6 +127,8 @@
           pkgs.nix-prefetch
           pkgs.jq
           pkgs.podman
+          pkgs.delve
+          pkgs.gomodifytags
         ];
 
       LD_LIBRARY_PATH = "${cuda.libcufft}/lib:${cuda.libcurand}/lib:/run/opengl-driver/lib/";
@@ -135,6 +137,7 @@
         export PATH="${pkgs.gcc11}/bin:$PATH"
         export GOPATH=$(pwd)/.go/path
         export GOCACHE=$(pwd)/.go/cache
+        export GOENV=$(pwd)/.go/env
         export VITE_WS_URL=http://localhost:35367/ws
         mkdir -p $GOPATH $GOCACHE
       '';
