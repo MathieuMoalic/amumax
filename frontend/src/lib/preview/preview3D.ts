@@ -7,7 +7,10 @@ import { writable } from 'svelte/store';
 import { disposePreview2D } from './preview2D';
 
 export function preview3D() {
+	console.debug('preview3D');
+	console.debug(get(previewState).vectorFieldPositions);
 	if (get(previewState).vectorFieldPositions == null) {
+		disposePreview3D();
 		return;
 	} else if (get(previewState).refresh) {
 		disposePreview2D();
