@@ -11,6 +11,7 @@ import { get, writable } from 'svelte/store';
 import { preview3D } from '$lib/preview/preview3D';
 import { preview2D } from '$lib/preview/preview2D';
 import { plotTable } from '$lib/table-plot/table-plot';
+import { metricsState } from './incoming/metrics';
 
 export let connected = writable(false);
 let wsUrl = import.meta.env.VITE_WS_URL || '/ws';
@@ -91,4 +92,6 @@ export function parseMsgpack(data: ArrayBuffer) {
 	} else {
 		preview2D();
 	}
+
+	metricsState.set(msg.metrics);
 }

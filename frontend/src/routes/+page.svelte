@@ -6,6 +6,7 @@
 	import Console from '$lib/Console.svelte';
 	import Mesh from '$lib/Mesh.svelte';
 	import Parameters from '$lib/Parameters.svelte';
+	import Metrics from '$lib/Metrics.svelte';
 </script>
 
 <Header />
@@ -15,6 +16,7 @@
 	<Solver />
 	<Console />
 	<Mesh />
+	<Metrics />
 	<Parameters />
 </div>
 
@@ -24,7 +26,8 @@
 		grid-template-areas:
 			'display tableplot'
 			'console solver'
-			'parameters mesh';
+			'metrics mesh'
+			'metrics parameters';
 		margin: 0;
 		grid-gap: 10px;
 		padding: 10px;
@@ -34,14 +37,12 @@
 	@media (max-width: 1200px) {
 		.grid-container {
 			grid-template-areas:
-				'header'
 				'display'
 				'tableplot'
 				'console'
 				'solver'
 				'mesh'
-				'geometry'
-				'initialmag'
+				'metrics'
 				'parameters';
 		}
 	}
@@ -51,7 +52,6 @@
 		padding-top: rem;
 		border-radius: 5px;
 		background-color: #282a36;
-		/* max-width: 30%; */
 		overflow: hidden;
 	}
 	:global(body) {

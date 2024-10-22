@@ -20,7 +20,7 @@ func Read(binaryPath string, od string) (*data.Slice, error) {
 	// Resolve the binary path to an absolute path
 	binaryPath = resolvePath(binaryPath, od)
 
-	// Wait until all files are saved
+	// Wait until all files are saved because we might be reading them now
 	waitForSave()
 
 	// Read and parse the .zarray file
@@ -63,8 +63,12 @@ func resolvePath(binaryPath string, od string) string {
 
 // waitForSave waits until IsSaving is false
 func waitForSave() {
-	log.Log.Info("Waiting for all the files to be saved before reading...")
+	msg_sent := false
 	for IsSaving {
+		if !msg_sent {
+			log.Log.Info("Waiting for all the files to be saved before reading...")
+			msg_sent = true
+		}
 		time.Sleep(100 * time.Millisecond)
 	}
 }

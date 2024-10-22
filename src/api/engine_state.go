@@ -10,17 +10,19 @@ type EngineState struct {
 	Mesh      *MeshState       `msgpack:"mesh"`
 	Params    *ParametersState `msgpack:"parameters"`
 	TablePlot *TablePlotState  `msgpack:"tablePlot"`
+	Metrics   *MetricsState    `msgpack:"metrics"`
 }
 
 func initEngineStateAPI(e *echo.Echo, ws *WebSocketManager) *EngineState {
 	return &EngineState{
-		Header:    initHeaderState(),
+		Header:    initHeaderAPI(),
 		Console:   initConsoleAPI(e, ws),
 		Preview:   initPreviewAPI(e, ws),
 		Solver:    initSolverAPI(e, ws),
 		Mesh:      initMeshAPI(e, ws),
 		Params:    initParameterAPI(e, ws),
 		TablePlot: initTablePlotAPI(e, ws),
+		Metrics:   initMetricsAPI(e, ws),
 	}
 }
 
@@ -32,4 +34,5 @@ func (es *EngineState) Update() {
 	es.Mesh.Update()
 	es.Params.Update()
 	es.TablePlot.Update()
+	es.Metrics.Update()
 }
