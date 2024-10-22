@@ -37,7 +37,7 @@
 	.code {
 		white-space: pre-wrap;
 		overflow-y: scroll;
-		height: 20rem;
+		height: 30rem;
 		border: 1px solid #f8f8f2;
 		width: 100%;
 		padding: 5px;

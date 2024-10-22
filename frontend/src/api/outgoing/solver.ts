@@ -18,6 +18,10 @@ export function postRelax() {
     post('solver/relax', {});
 }
 
+export function postMinimize() {
+    post('solver/minimize', {});
+}
+
 export function postBreak() {
     post('solver/break', {});
 }
