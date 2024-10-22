@@ -7,7 +7,7 @@ type HeaderState struct {
 	Status string `msgpack:"status"`
 }
 
-func initHeaderState() *HeaderState {
+func initHeaderAPI() *HeaderState {
 	status := ""
 	if engine.Pause {
 		status = "paused"
