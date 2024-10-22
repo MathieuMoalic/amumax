@@ -49,7 +49,6 @@ interface ThreeDPreview {
 	controls: TrackballControls;
 	isInitialized: boolean;
 	parsingTime: number;
-	dimensions: Dimensions;
 }
 export const threeDPreview = writable<ThreeDPreview | null>(null);
 
@@ -80,7 +79,8 @@ function createCamera(): THREE.PerspectiveCamera {
 	let far = 1000;
 	const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
-	let dims = get(previewState).dimensions;
+	// let dims = get(previewState).dimensions;
+	let dims = [get(previewState).xChosenSize, get(previewState).yChosenSize];
 	let posx = dims[0] / 2;
 	let posy = dims[1] / 2;
 	let posz = Math.max(dims[0], dims[1]) * 1.5;
@@ -102,12 +102,11 @@ function createRenderer() {
 }
 
 function createControls(camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) {
-	let dims = get(previewState).dimensions;
 	const controls = new TrackballControls(camera, renderer.domElement);
 	controls.dynamicDampingFactor = 1;
 	controls.panSpeed = 0.8;
 	controls.rotateSpeed = 1;
-	controls.target.set(dims[0] / 2, dims[1] / 2, 0); // Set the center of the grid as the target
+	controls.target.set(get(previewState).xChosenSize / 2, get(previewState).yChosenSize / 2, 0); // Set the center of the grid as the target
 	controls.update();
 	return controls;
 }
@@ -170,7 +169,6 @@ function init() {
 		controls,
 		isInitialized: true,
 		parsingTime: 0,
-		dimensions: get(previewState).dimensions
 	});
 
 	function animate() {
@@ -232,7 +230,7 @@ function update() {
 }
 
 export function resetCamera() {
-	let dims = get(previewState).dimensions;
+	let dims = [ get(previewState).xChosenSize,  get(previewState).yChosenSize];
 	let posx = dims[0] / 2;
 	let posy = dims[1] / 2;
 	let posz = Math.max(dims[0], dims[1]) * 1.5;

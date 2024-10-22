@@ -64,7 +64,7 @@ export function init() {
 	// https://apache.github.io/echarts-handbook/en/best-practices/canvas-vs-svg
 	chartInstance = echarts.init(chartDom, undefined, { renderer: 'svg' });
 	let ps = get(previewState);
-	let dims = ps.dimensions;
+	let dims = [ps.xChosenSize, ps.yChosenSize];
 	let mesh = get(meshState);
 	let xData = Array.from({ length: dims[0] }, (_, i) => i * mesh.dx * 1e9);
 	let yData = Array.from({ length: dims[1] }, (_, i) => i * mesh.dy * 1e9);

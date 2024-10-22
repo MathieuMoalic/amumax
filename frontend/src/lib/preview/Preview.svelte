@@ -9,6 +9,7 @@
 	import Component from './Component.svelte';
 	import Layer from './Layer.svelte';
 	import DataPointSlider from './DataPointSlider.svelte';
+	import { postXChosenSize, postYChosenSize } from '$api/outgoing/preview';
 
 	onMount(() => {
 		resizeECharts();
@@ -27,8 +28,13 @@
 		</div>
 
 		<div class="field col-span-4">
-			{#if $meshState.Nx > 1}
-				<DataPointSlider />
+			{#if $p.xPossibleSizes.length > 0}
+				<DataPointSlider possibleSizes={$p.xPossibleSizes} postChosenSize={postXChosenSize} />
+			{/if}
+		</div>
+		<div class="field col-span-4">
+			{#if $p.yPossibleSizes.length > 0}
+				<DataPointSlider possibleSizes={$p.yPossibleSizes} postChosenSize={postYChosenSize} />
 			{/if}
 		</div>
 		{#if $threeDPreview !== null}

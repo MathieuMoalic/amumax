@@ -19,8 +19,6 @@ type PreviewState struct {
 	Unit                 string               `msgpack:"unit"`
 	Component            string               `msgpack:"component"`
 	Layer                int                  `msgpack:"layer"`
-	MaxPoints            int                  `msgpack:"maxPoints"`
-	Dimensions           [3]int               `msgpack:"dimensions"`
 	Type                 string               `msgpack:"type"`
 	VectorFieldValues    []map[string]float32 `msgpack:"vectorFieldValues"`
 	VectorFieldPositions []map[string]int     `msgpack:"vectorFieldPositions"`
@@ -29,7 +27,13 @@ type PreviewState struct {
 	Max                  float32              `msgpack:"max"`
 	Refresh              bool                 `msgpack:"refresh"`
 	NComp                int                  `msgpack:"nComp"`
-	DataPointsCount      int                  `msgpack:"dataPointsCount"`
+
+	MaxPoints       int   `msgpack:"maxPoints"`
+	DataPointsCount int   `msgpack:"dataPointsCount"`
+	XPossibleSizes  []int `msgpack:"xPossibleSizes"`
+	YPossibleSizes  []int `msgpack:"yPossibleSizes"`
+	XChosenSize     int   `msgpack:"xChosenSize"`
+	YChosenSize     int   `msgpack:"yChosenSize"`
 }
 
 func initPreviewAPI(e *echo.Echo, ws *WebSocketManager) *PreviewState {
@@ -38,7 +42,6 @@ func initPreviewAPI(e *echo.Echo, ws *WebSocketManager) *PreviewState {
 		Component:            "3D",
 		Layer:                0,
 		MaxPoints:            8192,
-		Dimensions:           [3]int{0, 0, 0},
 		Type:                 "3D",
 		VectorFieldValues:    nil,
 		VectorFieldPositions: nil,
@@ -48,19 +51,26 @@ func initPreviewAPI(e *echo.Echo, ws *WebSocketManager) *PreviewState {
 		Refresh:              true,
 		NComp:                3,
 		DataPointsCount:      0,
+		XPossibleSizes:       nil,
+		YPossibleSizes:       nil,
+		XChosenSize:          engine.Nx,
+		YChosenSize:          engine.Ny,
 		ws:                   ws,
 		globalQuantities:     []string{"B_demag", "B_ext", "B_eff", "Edens_demag", "Edens_ext", "Edens_eff", "geom"},
 	}
+	previewState.addPossibleDownscaleSizes()
 	e.POST("/api/preview/component", previewState.postPreviewComponent)
 	e.POST("/api/preview/quantity", previewState.postPreviewQuantity)
 	e.POST("/api/preview/layer", previewState.postPreviewLayer)
 	e.POST("/api/preview/maxpoints", previewState.postPreviewMaxPoints)
 	e.POST("/api/preview/refresh", previewState.postPreviewRefresh)
+	e.POST("/api/preview/XChosenSize", previewState.postXChosenSize)
+	e.POST("/api/preview/YChosenSize", previewState.postYChosenSize)
 
 	return previewState
 }
 
-func (s *PreviewState) GetQuantity() engine.Quantity {
+func (s *PreviewState) getQuantity() engine.Quantity {
 	quantity, exists := engine.Quantities[s.Quantity]
 	if !exists {
 		log.Log.Err("Quantity not found: %v", s.Quantity)
@@ -68,7 +78,7 @@ func (s *PreviewState) GetQuantity() engine.Quantity {
 	return quantity
 }
 
-func (s *PreviewState) GetComponent() int {
+func (s *PreviewState) getComponent() int {
 	return compStringToIndex(s.Component)
 }
 
@@ -77,7 +87,6 @@ func (s *PreviewState) Update() {
 }
 
 func (s *PreviewState) UpdateQuantityBuffer() {
-	// s.ScaleDimensions()
 	if s.layerMask == nil {
 		s.updateMask()
 	}
@@ -85,11 +94,11 @@ func (s *PreviewState) UpdateQuantityBuffer() {
 	if s.Type == "3D" {
 		componentCount = 3
 	}
-	GPU_in := engine.ValueOf(s.GetQuantity())
+	GPU_in := engine.ValueOf(s.getQuantity())
 	defer cuda.Recycle(GPU_in)
 
-	CPU_out := data.NewSlice(componentCount, s.Dimensions)
-	GPU_out := cuda.NewSlice(1, s.Dimensions)
+	CPU_out := data.NewSlice(componentCount, [3]int{s.XChosenSize, s.YChosenSize, 1})
+	GPU_out := cuda.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
 	defer GPU_out.Free()
 
 	if s.Type == "3D" {
@@ -100,8 +109,8 @@ func (s *PreviewState) UpdateQuantityBuffer() {
 		s.normalizeVectors(CPU_out)
 		s.UpdateVectorField(CPU_out.Vectors())
 	} else {
-		if s.GetQuantity().NComp() > 1 {
-			cuda.Resize(GPU_out, GPU_in.Comp(s.GetComponent()), s.Layer)
+		if s.getQuantity().NComp() > 1 {
+			cuda.Resize(GPU_out, GPU_in.Comp(s.getComponent()), s.Layer)
 			data.Copy(CPU_out.Comp(0), GPU_out)
 		} else {
 			cuda.Resize(GPU_out, GPU_in.Comp(0), s.Layer)
@@ -109,24 +118,6 @@ func (s *PreviewState) UpdateQuantityBuffer() {
 		}
 		s.UpdateScalarField(CPU_out.Scalars())
 	}
-}
-
-func (s *PreviewState) ScaleDimensions() {
-	originalSize := engine.MeshOf(s.GetQuantity()).Size()
-	width, height := float32(originalSize[0]), float32(originalSize[1])
-	points := width * height
-	if points <= float32(s.MaxPoints) {
-		s.Dimensions = [3]int{originalSize[0], originalSize[1], 1}
-		return
-	}
-
-	// Calculate the scaling factor
-	for points >= float32(s.MaxPoints) {
-		width = width / 2
-		height = height / 2
-		points = width * height
-	}
-	s.Dimensions = [3]int{int(width), int(height), 1}
 }
 
 func (s *PreviewState) normalizeVectors(f *data.Slice) {
@@ -233,7 +224,6 @@ func (s *PreviewState) UpdateScalarField(scalarField [][][]float32) {
 }
 
 func (s *PreviewState) updateMask() {
-	s.ScaleDimensions()
 	// cuda full size geom
 	geom := engine.Geometry
 	GPU_fullsize := cuda.Buffer(geom.NComp(), geom.Buffer.Size())
@@ -241,12 +231,12 @@ func (s *PreviewState) updateMask() {
 	defer cuda.Recycle(GPU_fullsize)
 
 	// resize geom in GPU
-	GPU_resized := cuda.NewSlice(1, s.Dimensions)
+	GPU_resized := cuda.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
 	defer GPU_resized.Free()
 	cuda.Resize(GPU_resized, GPU_fullsize.Comp(0), s.Layer)
 
 	// copy resized geom from GPU to CPU
-	CPU_out := data.NewSlice(1, s.Dimensions)
+	CPU_out := data.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
 	defer CPU_out.Free()
 	data.Copy(CPU_out.Comp(0), GPU_resized)
 
@@ -280,9 +270,24 @@ func compStringToIndex(comp string) int {
 	return -2
 }
 
+// A valid destination size is a positive integer less than or equal to srcsize that evenly divides srcsize.
+func (s *PreviewState) addPossibleDownscaleSizes() {
+	// iterate over engine.Nx and engine.Ny
+	for dstsize := 1; dstsize <= engine.Nx; dstsize++ {
+		if engine.Nx%dstsize == 0 {
+			s.XPossibleSizes = append(s.XPossibleSizes, dstsize)
+		}
+	}
+	for dstsize := 1; dstsize <= engine.Ny; dstsize++ {
+		if engine.Ny%dstsize == 0 {
+			s.YPossibleSizes = append(s.YPossibleSizes, dstsize)
+		}
+	}
+}
+
 func (s *PreviewState) updatePreviewType() {
 	var fieldType string
-	isVectorField := s.NComp == 3 && s.GetComponent() == -1
+	isVectorField := s.NComp == 3 && s.getComponent() == -1
 	if isVectorField {
 		fieldType = "3D"
 	} else {
@@ -295,7 +300,7 @@ func (s *PreviewState) updatePreviewType() {
 }
 
 func (s *PreviewState) validateComponent() {
-	s.NComp = s.GetQuantity().NComp()
+	s.NComp = s.getQuantity().NComp()
 	switch s.NComp {
 	case 1:
 		s.Component = "None"
@@ -386,6 +391,53 @@ func (s *PreviewState) postPreviewMaxPoints(c echo.Context) error {
 }
 
 func (s *PreviewState) postPreviewRefresh(c echo.Context) error {
+	s.ws.broadcastEngineState()
+	return c.JSON(http.StatusOK, nil)
+}
+
+func containsInt(arr []int, target int) bool {
+	for _, v := range arr {
+		if v == target {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *PreviewState) postXChosenSize(c echo.Context) error {
+	type Request struct {
+		XChosenSize int `msgpack:"xChosenSize"`
+	}
+	req := new(Request)
+	if err := c.Bind(req); err != nil {
+		log.Log.Err("%v", err)
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
+	if !containsInt(s.XPossibleSizes, req.XChosenSize) {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid xChosenSize"})
+	}
+	s.XChosenSize = req.XChosenSize
+	s.Refresh = true
+	engine.InjectAndWait(s.updateMask)
+	s.ws.broadcastEngineState()
+	return c.JSON(http.StatusOK, nil)
+}
+
+func (s *PreviewState) postYChosenSize(c echo.Context) error {
+	type Request struct {
+		YChosenSize int `msgpack:"yChosenSize"`
+	}
+	req := new(Request)
+	if err := c.Bind(req); err != nil {
+		log.Log.Err("%v", err)
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+	}
+	if !containsInt(s.YPossibleSizes, req.YChosenSize) {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid yChosenSize"})
+	}
+	s.YChosenSize = req.YChosenSize
+	s.Refresh = true
+	engine.InjectAndWait(s.updateMask)
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
