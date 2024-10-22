@@ -8,8 +8,6 @@ export interface Preview {
 	unit: string;
 	component: string;
 	layer: number;
-	maxPoints: number;
-	dimensions: [number, number, number];
 	type: string;
 	vectorFieldValues: VectorField;
 	vectorFieldPositions: VectorField;
@@ -18,7 +16,13 @@ export interface Preview {
 	max: number;
 	refresh: boolean;
 	nComp: number;
+
+	maxPoints: number;
 	dataPointsCount: number;
+	xPossibleSizes: number[]
+	yPossibleSizes: number[]
+	xChosenSize: number
+	yChosenSize: number
 }
 
 export const previewState = writable<Preview>({
@@ -27,7 +31,6 @@ export const previewState = writable<Preview>({
 	component: '',
 	layer: 0,
 	maxPoints: 0,
-	dimensions: [0, 0, 0],
 	type: '',
 	vectorFieldValues: [],
 	vectorFieldPositions: [],
@@ -36,5 +39,9 @@ export const previewState = writable<Preview>({
 	max: 0,
 	refresh: false,
 	nComp: 0,
-	dataPointsCount: 0
+	dataPointsCount: 0,
+	xPossibleSizes: [],
+	yPossibleSizes: [],
+	xChosenSize: 0,
+	yChosenSize: 0
 });
