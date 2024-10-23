@@ -169,7 +169,7 @@ func saveKernel(fname string, kernel [3][3]*data.Slice) error {
 
 // Calculates the magnetostatic kernel by brute-force integration
 // of magnetic charges over the faces and averages over cell volumes.
-func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, showMagnets bool) (kernel [3][3]*data.Slice) {
+func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, showProgressBar bool) (kernel [3][3]*data.Slice) {
 	// Add zero-padding in non-PBC directions
 	size := padSize(gridsize, pbc)
 
@@ -206,8 +206,7 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 	progress, progmax := 0, (1+(r2[Y]-r1[Y]))*(1+(r2[Z]-r1[Z])) // progress bar
 	done := make(chan struct{}, 3)                              // parallel calculation of one component done?
 
-	ProgressBar := zarr.ProgressBar{}
-	ProgressBar.New(0, float64(progmax), "🔧", showMagnets)
+	ProgressBar := zarr.NewProgressBar(0, float64(progmax), "🔧", showProgressBar)
 	// Start brute integration
 	// 9 nested loops, does that stress you out?
 	// Fortunately, the 5 inner ones usually loop over just one element.

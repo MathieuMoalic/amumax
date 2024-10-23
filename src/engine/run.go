@@ -164,8 +164,8 @@ func run(seconds float64) {
 	stepper.Free() // start from a clean state
 
 	saveIfNeeded() // allow t=0 output
-	ProgressBar = zarr.ProgressBar{}
-	ProgressBar.New(start, stop, "🧲", ShowProgresBar)
+	ProgressBar := zarr.NewProgressBar(start, stop, "🧲", ShowProgresBar)
+
 	for (Time < stop) && !Pause {
 		select {
 		default:
