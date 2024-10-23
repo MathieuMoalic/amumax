@@ -14,13 +14,13 @@ import { plotTable } from '$lib/table-plot/table-plot';
 import { metricsState } from './incoming/metrics';
 
 export let connected = writable(false);
-let wsUrl = import.meta.env.VITE_WS_URL || '/ws';
 
 export function initializeWebSocket() {
 	let retryInterval = 1000;
 	let ws: WebSocket | null = null;
 
 	function connect() {
+		let wsUrl = '/ws';
 		console.debug('Connecting to WebSocket server at', wsUrl);
 		ws = new WebSocket(wsUrl);
 		ws.binaryType = 'arraybuffer';
