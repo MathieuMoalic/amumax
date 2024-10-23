@@ -15,10 +15,14 @@ import (
 
 func doUpdate(tag string) {
 	color.Green("Downloading version %s", tag)
-	resp, err := http.Get(fmt.Sprintf("https://github.com/MathieuMoalic/amumax/src/releases/download/%s/amumax", tag))
+	resp, err := http.Get(fmt.Sprintf("https://github.com/MathieuMoalic/amumax/releases/download/%s/amumax", tag))
 	if err != nil {
 		log.Log.PanicIfError(err)
 	}
+	if resp.StatusCode != http.StatusOK {
+		log.Log.PanicIfError(fmt.Errorf("failed to download the binary, status: %s", resp.Status))
+	}
+
 	defer resp.Body.Close()
 	err = selfupdate.Apply(resp.Body, selfupdate.Options{})
 	if err != nil {
