@@ -86,6 +86,6 @@ func cliEntrypoint(cmd *cobra.Command, args []string) {
 	} else if len(args) > 1 {
 		RunQueue(args, &flags)
 	} else {
-		log.Log.ErrAndExit("No input files")
+		_ = cmd.Help()
 	}
 }
