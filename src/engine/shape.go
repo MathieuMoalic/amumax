@@ -6,7 +6,7 @@ import (
 	_ "image/png"
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
@@ -188,7 +188,7 @@ func universeInner(x, y, z float64) bool {
 }
 
 func imageShape(fname string) shape {
-	r, err1 := httpfs.Open(fname)
+	r, err1 := fsutil.Open(fname)
 	checkRecoverable(err1)
 	defer r.Close()
 	img, _, err2 := image.Decode(r)

@@ -6,7 +6,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/script"
 	"github.com/MathieuMoalic/amumax/src/zarr"
@@ -39,7 +39,7 @@ type column struct {
 	Name   string
 	Unit   string
 	buffer []byte
-	io     httpfs.WriteCloseFlusher
+	io     fsutil.WriteCloseFlusher
 }
 
 func (ts *tableStruct) WriteToBuffer() {
@@ -94,20 +94,20 @@ func (ts *tableStruct) Exists(q Quantity, name string) bool {
 }
 
 func (ts *tableStruct) AddColumn(name, unit string) {
-	err := httpfs.Mkdir(OD() + "table/" + name)
+	err := fsutil.Mkdir(OD() + "table/" + name)
 	log.Log.PanicIfError(err)
-	f, err := httpfs.Create(OD() + "table/" + name + "/0")
+	f, err := fsutil.Create(OD() + "table/" + name + "/0")
 	log.Log.PanicIfError(err)
 	ts.Columns = append(ts.Columns, column{Name: name, Unit: unit, buffer: []byte{}, io: f})
 }
 
 func tableInit() {
-	err := httpfs.Remove(OD() + "table")
+	err := fsutil.Remove(OD() + "table")
 	log.Log.PanicIfError(err)
 	zarr.MakeZgroup("table", OD(), &zGroups)
-	err = httpfs.Mkdir(OD() + "table/t")
+	err = fsutil.Mkdir(OD() + "table/t")
 	log.Log.PanicIfError(err)
-	f, err := httpfs.Create(OD() + "table/t/0")
+	f, err := fsutil.Create(OD() + "table/t/0")
 	log.Log.PanicIfError(err)
 	Table.Columns = append(Table.Columns, column{"t", "s", []byte{}, f})
 	tableAdd(&normMag)

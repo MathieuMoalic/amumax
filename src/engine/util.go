@@ -9,7 +9,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/oommf"
 	"github.com/MathieuMoalic/amumax/src/zarr"
@@ -61,11 +61,12 @@ func fprintln(filename string, msg ...interface{}) {
 	if !path.IsAbs(filename) {
 		filename = OD() + filename
 	}
-	err := httpfs.Touch(filename)
+	err := fsutil.Touch(filename)
 	log.Log.PanicIfError(err)
-	err = httpfs.Append(filename, []byte(fmt.Sprintln(customFmt(msg))))
+	err = fsutil.Append(filename, []byte(fmt.Sprintln(customFmt(msg))))
 	log.Log.PanicIfError(err)
 }
+
 func loadFile(fname string) *data.Slice {
 	var s *data.Slice
 	s, err := zarr.Read(fname, OD())
@@ -74,7 +75,7 @@ func loadFile(fname string) *data.Slice {
 }
 
 func loadOvfFile(fname string) *data.Slice {
-	in, err := httpfs.Open(fname)
+	in, err := fsutil.Open(fname)
 	log.Log.PanicIfError(err)
 	var s *data.Slice
 	s, _, err = oommf.Read(in)
