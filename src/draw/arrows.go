@@ -6,7 +6,8 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/draw/raster"
+	"github.com/golang/freetype/raster"
+	"golang.org/x/image/math/fixed"
 )
 
 func drawArrows(img *image.RGBA, arr [3][][][]float32, sub int) {
@@ -73,10 +74,9 @@ func (c *canvas) Arrow(x, y, mx, my, mz, size float32) {
 	r1 := arrlen * norm * float32(math.Cos(math.Asin(float64(mz))))
 	r2 := arrw * norm
 
-	pt1 := pt((r1*cos)+x, -(r1*sin)+y)
-	pt2 := pt((r2*sin-r1*cos)+x, -(-r2*cos-r1*sin)+y)
-	pt3 := pt((-r2*sin-r1*cos)+x, -(r2*cos-r1*sin)+y)
-
+	pt1 := fixed.Point26_6{X: fixed.Int26_6((r1 * cos) + x), Y: fixed.Int26_6(-(r1 * sin) + y)}
+	pt2 := fixed.Point26_6{X: fixed.Int26_6((r2*sin - r1*cos) + x), Y: fixed.Int26_6(-(-r2*cos - r1*sin) + y)}
+	pt3 := fixed.Point26_6{X: fixed.Int26_6((-r2*sin - r1*cos) + x), Y: fixed.Int26_6(-(r2*cos - r1*sin) + y)}
 	var path raster.Path
 	path.Start(pt1)
 	path.Add1(pt2)
@@ -84,14 +84,6 @@ func (c *canvas) Arrow(x, y, mx, my, mz, size float32) {
 	path.Add1(pt1)
 
 	c.rasterizer.AddPath(path)
-}
-
-func pt(x, y float32) raster.Point {
-	return raster.Point{X: fix32(x), Y: fix32(y)}
-}
-
-func fix32(x float32) raster.Fix32 {
-	return raster.Fix32(int(x * (1 << 8)))
 }
 
 func imax(a, b int) int {
