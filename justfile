@@ -1,3 +1,8 @@
+run-dev:
+	podman run -it --rm -p 35367:35367 -v $PWD:/src \
+	--device=nvidia.com/gpu=all \
+	matmoa/amumax:build bash
+
 image:
 	podman build -t matmoa/amumax:build .
 

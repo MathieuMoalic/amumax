@@ -94,7 +94,7 @@ func (m *MetricsState) getGPUStats1() {
 		}
 	}
 	if pid_fields == nil {
-		m.Error = "No pid found in nvidia-smi output"
+		m.Error = "Couldn't find the process ID in nvidia-smi output, this is normal if running inside a container"
 		log.Log.Warn("%s", m.Error)
 		return
 	}
@@ -107,7 +107,11 @@ func (m *MetricsState) getGPUStats1() {
 	m.GpuName = pid_fields[2]
 	m.GpuUUID = pid_fields[3]
 }
+
 func (m *MetricsState) getGPUStats2() {
+	if m.GpuUUID == "" {
+		return
+	}
 	// filter using the gpu uuid
 	cmd := exec.Command("nvidia-smi",
 		"--query-gpu=uuid,temperature.gpu,power.draw,memory.total,utilization.gpu,power.limit",
