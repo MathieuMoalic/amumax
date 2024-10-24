@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
@@ -49,9 +49,9 @@ func InitIO(mx3Path, od, cachedir string, skipexists, forceclean, showprogressba
 	}
 	outputdir = od
 	if strings.HasPrefix(outputdir, "http://") {
-		httpfs.SetWD(outputdir + "/../")
+		fsutil.SetWD(outputdir + "/../")
 	}
-	if httpfs.IsDir(od) {
+	if fsutil.IsDir(od) {
 		// if directory exists and --skip-exist flag is set, skip the directory
 		if SkipExists {
 			log.Log.Warn("Directory `%s` exists, skipping `%s` because of --skip-exist flag.", od, mx3Path)
@@ -59,11 +59,11 @@ func InitIO(mx3Path, od, cachedir string, skipexists, forceclean, showprogressba
 			// if directory exists and --force-clean flag is set, remove the directory
 		} else if ForceClean {
 			log.Log.Warn("Cleaning `%s`", od)
-			log.Log.PanicIfError(httpfs.Remove(od))
-			log.Log.PanicIfError(httpfs.Mkdir(od))
+			log.Log.PanicIfError(fsutil.Remove(od))
+			log.Log.PanicIfError(fsutil.Mkdir(od))
 		}
 	} else {
-		log.Log.PanicIfError(httpfs.Mkdir(od))
+		log.Log.PanicIfError(fsutil.Mkdir(od))
 	}
 	zarr.InitZgroup(OD())
 }

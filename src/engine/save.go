@@ -9,7 +9,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/draw"
-	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/oommf"
 )
@@ -92,7 +92,7 @@ func snapshotAs(q Quantity, fname string) {
 
 // synchronous snapshot
 func snapshot_sync(fname string, output *data.Slice) {
-	f, err := httpfs.Create(fname)
+	f, err := fsutil.Create(fname)
 	log.Log.PanicIfError(err)
 	defer f.Close()
 	arrowSize := 16
@@ -104,7 +104,7 @@ func snapshot_sync(fname string, output *data.Slice) {
 
 // synchronous save
 func saveAs_sync(fname string, s *data.Slice, info data.Meta, format outputFormatType) {
-	f, err := httpfs.Create(fname)
+	f, err := fsutil.Create(fname)
 	log.Log.PanicIfError(err)
 	defer f.Close()
 

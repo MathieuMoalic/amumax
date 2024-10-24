@@ -3,7 +3,7 @@ package zarr
 import (
 	"encoding/json"
 
-	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
@@ -40,7 +40,7 @@ func SaveFileZarray(path string, size [3]int, ncomp int, time int, cz int, cy in
 	z.Chunks = [5]int{1, cz, cy, cx, cc}
 	z.Shape = [5]int{time + 1, size[2], size[1], size[0], ncomp}
 
-	f, err := httpfs.Create(path)
+	f, err := fsutil.Create(path)
 	log.Log.PanicIfError(err)
 	defer f.Close()
 	enc := json.NewEncoder(f)

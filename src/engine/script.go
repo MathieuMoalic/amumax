@@ -5,13 +5,13 @@ package engine
 import (
 	"reflect"
 
-	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/script"
 )
 
 func CompileFile(fname string) (*script.BlockStmt, error) {
-	bytes, err := httpfs.Read(fname)
+	bytes, err := fsutil.Read(fname)
 	if err != nil {
 		return nil, err
 	}

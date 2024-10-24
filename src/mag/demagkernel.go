@@ -8,7 +8,7 @@ import (
 
 	"github.com/DataDog/zstd"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/timer"
 	"github.com/MathieuMoalic/amumax/src/zarr"
@@ -32,8 +32,8 @@ func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, ca
 		return
 	}
 	// Make sure cache directory exists
-	if !httpfs.Exists(cacheDir) {
-		err := httpfs.Mkdir(cacheDir)
+	if !fsutil.Exists(cacheDir) {
+		err := fsutil.Mkdir(cacheDir)
 		if err != nil {
 			log.Log.Warn("Unable to create kernel cache directory: %v", err)
 		}
@@ -46,7 +46,7 @@ func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, ca
 	}()
 
 	basename := kernelName(gridsize, pbc, cellsize, accuracy, cacheDir)
-	if httpfs.Exists(basename) {
+	if fsutil.Exists(basename) {
 		log.Log.Info("Loading kernel from cache")
 		var err error
 		kernel, err = loadKernel(basename, padSize(gridsize, pbc))
@@ -137,7 +137,7 @@ func kernelName(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cac
 }
 
 func loadKernel(fname string, size [3]int) ([3][3]*data.Slice, error) {
-	compressedData, err := httpfs.Read(fname)
+	compressedData, err := fsutil.Read(fname)
 	if err != nil {
 		return [3][3]*data.Slice{}, err
 	}

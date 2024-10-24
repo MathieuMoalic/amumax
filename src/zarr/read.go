@@ -12,7 +12,7 @@ import (
 
 	"github.com/DataDog/zstd"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
@@ -102,7 +102,7 @@ func readAndDecompressData(binaryPath string) ([]byte, error) {
 
 	for retries := 0; retries < maxRetries; retries++ {
 		// Open the file
-		ioReader, err := httpfs.Open(binaryPath)
+		ioReader, err := fsutil.Open(binaryPath)
 		if err != nil {
 			lastErr = err
 			log.Log.Info("Error opening file: %v, retrying in %v...", err, retryDelay)

@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/fatih/color"
 )
 
@@ -16,7 +16,7 @@ var Log Logs
 
 type Logs struct {
 	Hist    string                   // console history for GUI
-	logfile httpfs.WriteCloseFlusher // saves history of input commands +  output
+	logfile fsutil.WriteCloseFlusher // saves history of input commands +  output
 	debug   bool
 	path    string
 }
@@ -47,7 +47,7 @@ func (l *Logs) Init(zarrPath string) {
 
 func (l *Logs) createLogFile() {
 	var err error
-	l.logfile, err = httpfs.Create(l.path)
+	l.logfile, err = fsutil.Create(l.path)
 	if err != nil {
 		color.Red(fmt.Sprintf("Error creating the log file: %v", err))
 	}

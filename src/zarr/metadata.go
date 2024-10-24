@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
@@ -85,7 +85,7 @@ func (m *Metadata) NeedSave() bool {
 }
 func (m *Metadata) Save() {
 	if m.Path != "" {
-		zattrs, err := httpfs.Create(m.Path)
+		zattrs, err := fsutil.Create(m.Path)
 		log.Log.PanicIfError(err)
 		defer zattrs.Close()
 		json_meta, err := json.MarshalIndent(m.Fields, "", "\t")

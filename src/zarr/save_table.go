@@ -5,7 +5,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
@@ -32,7 +32,7 @@ func SaveFileTableZarray(path string, zTableAutoSaveStep int) {
 	z.Chunks = [1]int{zTableAutoSaveStep + 1}
 	z.Shape = [1]int{zTableAutoSaveStep + 1}
 
-	f, err := httpfs.Create(path + "/.zarray")
+	f, err := fsutil.Create(path + "/.zarray")
 	log.Log.PanicIfError(err)
 
 	defer f.Close()

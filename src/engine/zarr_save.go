@@ -9,7 +9,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/httpfs"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
@@ -62,9 +62,9 @@ func (a *zArray) SaveAttrs() {
 	// keeping the whole array of times wastes a few MB of RAM
 	u, err := json.Marshal(zarr.Zattrs{Buffer: a.times})
 	log.Log.PanicIfError(err)
-	err = httpfs.Remove(OD() + a.name + "/.zattrs")
+	err = fsutil.Remove(OD() + a.name + "/.zattrs")
 	log.Log.PanicIfError(err)
-	err = httpfs.Put(OD()+a.name+"/.zattrs", []byte(string(u)))
+	err = fsutil.Put(OD()+a.name+"/.zattrs", []byte(string(u)))
 	log.Log.PanicIfError(err)
 }
 
@@ -89,11 +89,11 @@ func zVerifyAndSave(q Quantity, name string, rchunks requestedChunking, period f
 			}
 		}
 	} else {
-		if httpfs.Exists(OD() + name) {
-			err := httpfs.Remove(OD() + name)
+		if fsutil.Exists(OD() + name) {
+			err := fsutil.Remove(OD() + name)
 			log.Log.PanicIfError(err)
 		}
-		err := httpfs.Mkdir(OD() + name)
+		err := fsutil.Mkdir(OD() + name)
 		log.Log.PanicIfError(err)
 		var b []float64
 		a := zArray{name, q, period, Time, -1, b, newChunks(q, rchunks), rchunks}
@@ -131,7 +131,7 @@ func syncSave(array *data.Slice, qname string, time int, chunks chunks) {
 			for icz := 0; icz < chunks.z.nb; icz++ {
 				for icc := 0; icc < chunks.c.nb; icc++ {
 					bdata := []byte{}
-					f, err := httpfs.Create(fmt.Sprintf(OD()+"%s/%d.%d.%d.%d.%d", qname, time+1, icz, icy, icx, icc))
+					f, err := fsutil.Create(fmt.Sprintf(OD()+"%s/%d.%d.%d.%d.%d", qname, time+1, icz, icy, icx, icc))
 					log.Log.PanicIfError(err)
 					defer f.Close()
 					for iz := 0; iz < chunks.z.len; iz++ {
