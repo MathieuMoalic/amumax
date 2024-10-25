@@ -72,9 +72,13 @@
 
 			<!-- Run Steps -->
 			<div class="flex items-center space-x-2">
-				<Button class="w-1/3" outline on:click={() => postSteps(runSteps)}>Run Steps</Button>
+				<Button
+					class="inline-flex h-11 items-center whitespace-nowrap px-4 py-2"
+					outline
+					on:click={() => postSteps(runSteps)}>Run Steps</Button
+				>
 				<Input
-					class="w-2/3"
+					class="w-full"
 					id="run_steps"
 					bind:value={runSteps}
 					placeholder="Number of steps"
