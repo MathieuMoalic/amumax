@@ -119,9 +119,9 @@ func validateCellSize() {
 		if d == 0.0 {
 			log.Log.ErrAndExit("Error: You have to specify  %v", names[i])
 		} else if d < min_threshold {
-			log.Log.ErrAndExit("Error: %s shouldn't be less than %f", names[i], min_threshold)
+			log.Log.Warn("Warning: %s shouldn't be less than %f", names[i], min_threshold)
 		} else if d > max_threshold {
-			log.Log.ErrAndExit("Error: %s shouldn't be more than %f", names[i], max_threshold)
+			log.Log.Warn("Warning: %s shouldn't be more than %f", names[i], max_threshold)
 		}
 	}
 	checkLargestPrimeFactor(Nx, AutoMeshx, "Nx")
