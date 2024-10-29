@@ -129,6 +129,7 @@
           pkgs.podman
           pkgs.delve
           pkgs.gomodifytags
+          pkgs.websocat
         ];
 
       LD_LIBRARY_PATH = "${cuda.libcufft}/lib:${cuda.libcurand}/lib:/run/opengl-driver/lib/";
