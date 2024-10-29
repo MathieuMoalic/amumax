@@ -59,15 +59,16 @@ function update() {
 	});
 }
 
-export function init() {
+function init() {
 	var chartDom = document.getElementById('container')!;
 	// https://apache.github.io/echarts-handbook/en/best-practices/canvas-vs-svg
 	chartInstance = echarts.init(chartDom, undefined, { renderer: 'svg' });
 	let ps = get(previewState);
 	let dims = [ps.xChosenSize, ps.yChosenSize];
 	let mesh = get(meshState);
-	let xData = Array.from({ length: dims[0] }, (_, i) => i * mesh.dx * 1e9);
-	let yData = Array.from({ length: dims[1] }, (_, i) => i * mesh.dy * 1e9);
+	// console.log(mesh.Nx/ps.xChosenSize);
+	let xData = Array.from({ length: dims[0] }, (_, i) => i * mesh.dx * 1e9 * mesh.Nx/ps.xChosenSize);
+	let yData = Array.from({ length: dims[1] }, (_, i) => i * mesh.dy * 1e9* mesh.Ny/ps.yChosenSize);
 
 	let aspectRatio = dims[0] / dims[1]; // Calculate the aspect ratio
 
@@ -193,7 +194,7 @@ export function init() {
 					color: '#fff'
 				},
 				inRange: {
-					color: ['#313695', '#ffffff', '#a50026']
+					color: getColorMap(ps.min, ps.max)
 				},
 				left: 'right'
 			}
