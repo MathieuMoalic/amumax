@@ -283,6 +283,20 @@ func (s *PreviewState) addPossibleDownscaleSizes() {
 			s.YPossibleSizes = append(s.YPossibleSizes, dstsize)
 		}
 	}
+	// the XChosenSize is the highest possible size that is below 1024
+	for i := len(s.XPossibleSizes) - 1; i >= 0; i-- {
+		if s.XPossibleSizes[i] <= 1024 {
+			s.XChosenSize = s.XPossibleSizes[i]
+			break
+		}
+	}
+	// the YChosenSize is the highest possible size that is below 1024
+	for i := len(s.YPossibleSizes) - 1; i >= 0; i-- {
+		if s.YPossibleSizes[i] <= 1024 {
+			s.YChosenSize = s.YPossibleSizes[i]
+			break
+		}
+	}
 }
 
 func (s *PreviewState) updatePreviewType() {
