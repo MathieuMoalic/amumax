@@ -3,8 +3,9 @@ package api
 import "github.com/MathieuMoalic/amumax/src/engine"
 
 type HeaderState struct {
-	Path   string `msgpack:"path"`
-	Status string `msgpack:"status"`
+	Path    string  `msgpack:"path"`
+	Status  string  `msgpack:"status"`
+	Version *string `msgpack:"version"`
 }
 
 func initHeaderAPI() *HeaderState {
@@ -15,8 +16,9 @@ func initHeaderAPI() *HeaderState {
 		status = "running"
 	}
 	return &HeaderState{
-		Path:   engine.OD(),
-		Status: status,
+		Path:    engine.OD(),
+		Status:  status,
+		Version: &engine.VERSION,
 	}
 }
 
