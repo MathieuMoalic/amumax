@@ -49,8 +49,8 @@ tar -xJf tmp > /dev/null
 cp -L libcurand-linux-x86_64-10.3.6.39-archive/lib/libcurand.so.10 .
 
 # Clean up
-rm -r libcufft-linux-x86_64-10.9.0.58-archive
-rm -r libcurand-linux-x86_64-10.3.6.39-archive
+rm -rf libcufft-linux-x86_64-10.9.0.58-archive
+rm -rf libcurand-linux-x86_64-10.3.6.39-archive
 rm tmp
 
 # Make amumax executable
