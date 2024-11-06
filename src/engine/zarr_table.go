@@ -44,6 +44,7 @@ type column struct {
 
 func (ts *tableStruct) WriteToBuffer() {
 	buf := []float64{}
+	buf = append(buf, float64(ts.Step))
 	// always save the current time
 	buf = append(buf, Time)
 	// for each quantity we append each component to the buffer
@@ -105,11 +106,8 @@ func tableInit() {
 	err := fsutil.Remove(OD() + "table")
 	log.Log.PanicIfError(err)
 	zarr.MakeZgroup("table", OD(), &zGroups)
-	err = fsutil.Mkdir(OD() + "table/t")
-	log.Log.PanicIfError(err)
-	f, err := fsutil.Create(OD() + "table/t/0")
-	log.Log.PanicIfError(err)
-	Table.Columns = append(Table.Columns, column{"t", "s", []byte{}, f})
+	Table.AddColumn("step", "")
+	Table.AddColumn("t", "s")
 	tableAdd(&normMag)
 	go tablesAutoFlush()
 
