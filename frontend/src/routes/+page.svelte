@@ -47,7 +47,7 @@
 		}
 	}
 	:global(section) {
-		border: 2px solid #f8f8f2;
+		border: 2px solid #929290;
 		padding: 10px;
 		padding-top: rem;
 		border-radius: 5px;
@@ -55,7 +55,7 @@
 		overflow: hidden;
 	}
 	:global(body) {
-		font-family: 'Arial', sans-serif;
+		font-family: 'Liberation Sans', sans-serif;
 	}
 	:global(section > h2) {
 		background-color: #6272a4;

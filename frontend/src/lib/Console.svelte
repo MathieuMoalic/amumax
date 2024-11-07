@@ -60,13 +60,13 @@
 		white-space: pre-wrap;
 		overflow-y: scroll;
 		height: 30rem;
-		border: 1px solid #f8f8f2;
+		border: 1px solid #929290;
 		width: 100%;
 		padding: 5px;
 	}
 	input {
 		padding: 5px;
-		border: 1px solid #f8f8f2;
+		border: 1px solid #929290;
 		width: 100%;
 	}
 </style>
