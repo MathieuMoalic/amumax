@@ -1,7 +1,4 @@
-import { get } from 'svelte/store';
 import { post } from '$api/post';
-
-import { tablePlotState } from '$api/incoming/table-plot';
 
 export function postXColumn(XColumn: string) {
 	post('tableplot/xcolumn', { XColumn });
@@ -11,8 +8,8 @@ export function postYColumn(YColumn: string) {
 	post('tableplot/ycolumn', { YColumn });
 }
 
-export function postAutoSaveInterval(inputFieldValue: string) {
-	post('tableplot/autosave-interval', { autoSaveInterval: parseFloat(inputFieldValue) });
+export function postAutoSaveInterval(autoSaveInterval: string) {
+	post('tableplot/autosave-interval', { autoSaveInterval });
 }
 
 export function postMaxPoints(inputFieldValue: string) {

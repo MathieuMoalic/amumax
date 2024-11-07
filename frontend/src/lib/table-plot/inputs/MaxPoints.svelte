@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { tablePlotState } from '$api/incoming/table-plot';
 	import { postMaxPoints } from '$api/outgoing/table-plot';
-	import { Input } from 'flowbite-svelte';
-
+	import { ButtonGroup, Input, InputAddon } from 'flowbite-svelte';
 	let value = '';
 	function inputChanged() {
 		if (value === '') {
@@ -12,13 +11,12 @@
 	}
 </script>
 
-<div class="m-3 flex flex-col gap-2">
-	<div class="flex items-center justify-center">Data points</div>
+<ButtonGroup class="flex h-11">
+	<InputAddon class="w-fit whitespace-nowrap !bg-transparent ">Max Points</InputAddon>
 	<Input
-		class="w-24"
-		type="number"
+		class="w-full truncate"
 		bind:value
 		on:change={inputChanged}
-		placeholder=" {$tablePlotState.data.length}"
+		placeholder=" {$tablePlotState.maxPoints}"
 	/>
-</div>
+</ButtonGroup>
