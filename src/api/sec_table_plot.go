@@ -140,13 +140,13 @@ func (t *TablePlotState) GetTableNames() []string {
 
 func (t *TablePlotState) postTablePlotAutoSaveInterval(c echo.Context) error {
 	type Request struct {
-		AutoSaveInterval float64 `msgpack:"autoSaveInterval"`
+		AutoSaveInterval string `msgpack:"autoSaveInterval"`
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	engine.Table.AutoSavePeriod = req.AutoSaveInterval
+	engine.InjectAndWait(func() { engine.EvalTryRecover("TableAutoSave(" + req.AutoSaveInterval + ")") })
 	t.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }

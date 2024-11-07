@@ -2,12 +2,11 @@
 	import { tablePlotState } from '$api/incoming/table-plot';
 	import { onMount } from 'svelte';
 	import { resizeECharts } from './table-plot';
-	import TimeStep from './fields/TimeStep.svelte';
-	import Step from './fields/Step.svelte';
-	import XColumn from './fields/XColumn.svelte';
-	import YColumn from './fields/YColumn.svelte';
-	import DataPointsCount from './fields/DataPointsCount.svelte';
-
+	import MaxPoints from './inputs/MaxPoints.svelte';
+	import AutoSaveInterval from './inputs/AutoSaveInterval.svelte';
+	import XColumn from './inputs/XColumn.svelte';
+	import YColumn from './inputs/YColumn.svelte';
+	import Step from './inputs/Step.svelte';
 	onMount(() => {
 		resizeECharts();
 	});
@@ -17,26 +16,32 @@
 	<h2 class="mb-4 text-2xl font-semibold">Table Plot</h2>
 	{#if $tablePlotState.data.length === 0}
 		<div class="msg">
-			<p>No table data, use <code>TableSave()</code> to save data.</p>
+			<p>
+				No table data, use <code>TableSave()</code> or set a non-zero autosave interval to save data.
+			</p>
+			<div class="mt-5 w-72">
+				<AutoSaveInterval />
+			</div>
 		</div>
 	{:else}
-		<div class="m-3 grid grid-cols-10 gap-2">
-			<div class="field col-span-2">
-				<TimeStep />
-			</div>
-			<div class="field col-span-2">
-				<DataPointsCount />
-			</div>
-			<div class="field col-span-2">
-				<Step />
-			</div>
-			<div class="field col-span-2">
+		<div class="m-1 flex flex-wrap" id="parent-fields">
+			<div class="basis-1/2">
 				<XColumn />
 			</div>
-			<div class="field col-span-2">
+			<div class="basis-1/2">
 				<YColumn />
 			</div>
+			<div class="basis-4/12">
+				<MaxPoints />
+			</div>
+			<div class="basis-2/12">
+				<Step />
+			</div>
+			<div class="basis-6/12">
+				<AutoSaveInterval />
+			</div>
 		</div>
+
 		<hr />
 		<div id="table-plot"></div>
 	{/if}
@@ -53,7 +58,7 @@
 	.msg {
 		color: #888;
 	}
-	.field {
-		@apply flex items-center justify-center border-0 border-green-500;
+	#parent-fields > div {
+		@apply p-1;
 	}
 </style>

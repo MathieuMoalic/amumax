@@ -1,23 +1,24 @@
 <script lang="ts">
 	import { tablePlotState } from '$api/incoming/table-plot';
 	import { postAutoSaveInterval } from '$api/outgoing/table-plot';
-	import { Input } from 'flowbite-svelte';
+	import { ButtonGroup, Input, InputAddon } from 'flowbite-svelte';
 	let value = '';
 	function inputChanged() {
 		if (value === '') {
 			return;
 		}
 		postAutoSaveInterval(value);
+		value = '';
 	}
 </script>
 
-<div class="m-3 flex flex-col gap-2">
-	<div class="flex items-center justify-center">Time step (s)</div>
+<ButtonGroup class="flex h-11">
+	<InputAddon class="w-fit whitespace-nowrap !bg-transparent">AutoSave Interval</InputAddon>
 	<Input
-		class="w-24"
-		type="number"
+		class="w-full truncate"
 		bind:value
 		on:change={inputChanged}
 		placeholder=" {$tablePlotState.autoSaveInterval}"
 	/>
-</div>
+	<InputAddon class="w-16 !bg-transparent">s</InputAddon>
+</ButtonGroup>
