@@ -9,7 +9,7 @@
 
 <Button
 	outline
-	class="h-11 w-full justify-between {isDisabled ? 'cursor-not-allowed opacity-50' : ''}"
+	class="h-11 w-full {isDisabled ? 'cursor-not-allowed opacity-50' : ''}"
 	on:click={resetCamera}
 	disabled={isDisabled}>Reset Camera</Button
 >

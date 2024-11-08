@@ -8,7 +8,7 @@
 
 <Button outline color="primary" class="h-11 w-full justify-between">
 	<span>X Axis: </span>
-	<span class="truncate text-white">{$tablePlotState.xColumn}</span>
+	<span class="truncate font-bold text-white">{$tablePlotState.xColumn}</span>
 	<ChevronDownOutline class="h-5 w-5 text-gray-500" />
 </Button>
 <Dropdown bind:open={dropdownOpen} class="w-3/4">

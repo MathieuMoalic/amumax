@@ -47,12 +47,14 @@
 		</div>
 	</div>
 	<hr />
-	{#if $p.scalarField == null && $p.vectorFieldPositions == null}
-		<div class="basis-1/2">
-			No data to display for Quantity: {$p.quantity}, Component: {$p.component}, Layer: {$p.layer}
-		</div>
-	{/if}
-	<div id="container"></div>
+	<div class="relative h-[500px] w-full">
+		{#if $p.scalarField == null && $p.vectorFieldPositions == null}
+			<div class="absolute inset-0 flex items-center justify-center text-6xl text-gray-600">
+				NO DATA
+			</div>
+		{/if}
+		<div id="container"></div>
+	</div>
 	<hr />
 </section>
 

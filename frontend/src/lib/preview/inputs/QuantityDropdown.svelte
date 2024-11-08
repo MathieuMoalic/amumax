@@ -9,7 +9,8 @@
 </script>
 
 <Button outline class="h-11 w-full justify-between">
-	<span class="truncate">
+	<span>Quantity: </span>
+	<span class="truncate font-bold text-white">
 		{$p.quantity}
 	</span>
 	<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" />

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Slider from './Slider.svelte';
+	import Slider from '$components/Slider.svelte';
 	import { meshState } from '$api/incoming/mesh';
 	import { previewState as p } from '$api/incoming/preview';
 	import { postLayer } from '$api/outgoing/preview';

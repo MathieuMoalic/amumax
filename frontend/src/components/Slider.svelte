@@ -49,13 +49,13 @@
 
 	<!-- Min and Max labels -->
 	<div class="pointer-events-none absolute inset-0 flex items-center justify-between px-4">
-		<span class="font-bold text-white">{values[0]}</span>
-		<span class="font-bold text-white">{values[values.length - 1]}</span>
+		<span class=" text-gray-400">{values[0]}</span>
+		<span class=" text-gray-400">{values[values.length - 1]}</span>
 	</div>
 
 	<!-- Current value label -->
 	<div class="pointer-events-none absolute inset-0 flex items-center justify-center">
-		<span class="font-bold text-white">{label} = {value}</span>
+		<span class=" text-gray-200">{label} = {value}</span>
 	</div>
 </div>
 
