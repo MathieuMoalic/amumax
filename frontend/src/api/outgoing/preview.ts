@@ -10,8 +10,8 @@ export function postQuantity(quantity: string) {
 	post('preview/quantity', { quantity });
 }
 
-export function postLayer() {
-	post('preview/layer', { layer: get(previewState).layer });
+export function postLayer(layer: number) {
+	post('preview/layer', { layer });
 }
 
 export function postXChosenSize(xChosenSize: number) {

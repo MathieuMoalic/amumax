@@ -8,13 +8,12 @@
 	let dropdownOpen = false;
 </script>
 
-<Button outline class="flex items-center overflow-hidden text-ellipsis whitespace-nowrap">
+<Button outline class="h-11 w-full justify-between">
 	<span class="truncate">
 		{$p.quantity}
 	</span>
 	<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" />
 </Button>
-
 <Dropdown bind:open={dropdownOpen} placement="right-start">
 	{#each quantities['Common'] as quantity}
 		<DropdownItem
