@@ -20,6 +20,7 @@ const config = {
 		}),
 		alias: {
 			$api: "src/api",
+			$components: "src/components",
 		},
 	}
 };

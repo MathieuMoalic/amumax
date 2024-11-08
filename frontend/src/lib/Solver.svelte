@@ -31,7 +31,8 @@
 			<!-- Solver Type -->
 			<div>
 				<Button outline color="primary" class="flex w-full items-center justify-between">
-					<span>Solver: {$solverState.type}</span>
+					<span>Solver: </span>
+					<span class="truncate font-bold text-white">{$solverState.type}</span>
 					<ChevronDownOutline class="h-5 w-5 text-gray-500" />
 				</Button>
 				<Dropdown

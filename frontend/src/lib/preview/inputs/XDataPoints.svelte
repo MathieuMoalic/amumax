@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Slider from './Slider.svelte';
+	import Slider from '$components/Slider.svelte';
 	import { previewState as p } from '$api/incoming/preview';
 	import { postXChosenSize } from '$api/outgoing/preview';
 </script>
