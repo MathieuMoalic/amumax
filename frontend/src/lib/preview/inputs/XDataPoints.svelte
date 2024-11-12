@@ -7,6 +7,6 @@
 <Slider
 	label="X Data Points"
 	bind:value={$p.xChosenSize}
-	values={$p.yPossibleSizes}
+	values={$p.xPossibleSizes}
 	onChangeFunction={postXChosenSize}
 />
