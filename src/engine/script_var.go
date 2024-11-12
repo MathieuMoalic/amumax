@@ -12,6 +12,7 @@ func declTVar(name string, value interface{}, doc string) {
 	World.TVar(name, value, doc)
 	addQuantity(name, value, doc)
 }
+
 func init() {
 	declTVar("t", &Time, "Total simulated time (s)")
 
@@ -64,4 +65,10 @@ func init() {
 	declVar("DisableZhangLiTorque", &disableZhangLiTorque, "Disables Zhang-Li torque (default=false)")
 	declVar("DisableSlonczewskiTorque", &disableSlonczewskiTorque, "Disables Slonczewski torque (default=false)")
 	declVar("DoPrecess", &precess, "Enables LL precession (default=true)")
+
+	declVar("PreviewXDataPoints", &PreviewXDataPoints, "Number of data points in the x direction for the 2D/3D preview")
+	declVar("PreviewYDataPoints", &PreviewYDataPoints, "Number of data points in the y direction for the 2D/3D preview")
 }
+
+var PreviewXDataPoints = 100
+var PreviewYDataPoints = 100

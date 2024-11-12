@@ -14,6 +14,11 @@ import (
 )
 
 func Start(host string, port int, tunnel string, debug bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Log.Warn("WebUI crashed: %v", r)
+		}
+	}()
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
