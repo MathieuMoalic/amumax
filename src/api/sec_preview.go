@@ -280,6 +280,21 @@ func contains(arr []string, val string) bool {
 	return false
 }
 
+func closestInArray(arr []int, target int) int {
+	closest := arr[0]
+	minDiff := math.Abs(float64(target - closest))
+
+	for _, num := range arr {
+		diff := math.Abs(float64(target - num))
+		if diff < minDiff {
+			minDiff = diff
+			closest = num
+		}
+	}
+
+	return closest
+}
+
 func compStringToIndex(comp string) int {
 	switch comp {
 	case "x":
@@ -303,9 +318,9 @@ func (s *PreviewState) addPossibleDownscaleSizes() {
 	for engine.Nx == 0 || engine.Ny == 0 {
 		time.Sleep(1 * time.Second)
 	}
-	// if engine.Nx == 0 || engine.Ny == 0 {
-	// 	log.Log.Err("Nx or Ny is 0")
-	// }
+	if engine.Nx == 0 || engine.Ny == 0 {
+		log.Log.Err("Nx or Ny is 0")
+	}
 	// iterate over engine.Nx and engine.Ny
 	for dstsize := 1; dstsize <= engine.Nx; dstsize++ {
 		if engine.Nx%dstsize == 0 {
@@ -317,19 +332,18 @@ func (s *PreviewState) addPossibleDownscaleSizes() {
 			s.YPossibleSizes = append(s.YPossibleSizes, dstsize)
 		}
 	}
-	// the XChosenSize is the highest possible size that is below 100
-	for i := len(s.XPossibleSizes) - 1; i >= 0; i-- {
-		if s.XPossibleSizes[i] <= 100 {
-			s.XChosenSize = s.XPossibleSizes[i]
-			break
-		}
+	if len(s.YPossibleSizes) == 0 || len(s.XPossibleSizes) == 0 {
+		log.Log.Err("No possible sizes found")
 	}
-	// the YChosenSize is the highest possible size that is below 100
-	for i := len(s.YPossibleSizes) - 1; i >= 0; i-- {
-		if s.YPossibleSizes[i] <= 100 {
-			s.YChosenSize = s.YPossibleSizes[i]
-			break
-		}
+	if engine.PreviewXDataPoints != 0 {
+		s.XChosenSize = closestInArray(s.XPossibleSizes, engine.PreviewXDataPoints)
+	} else {
+		s.XChosenSize = closestInArray(s.XPossibleSizes, 100)
+	}
+	if engine.PreviewYDataPoints != 0 {
+		s.YChosenSize = closestInArray(s.YPossibleSizes, engine.PreviewYDataPoints)
+	} else {
+		s.YChosenSize = closestInArray(s.YPossibleSizes, 100)
 	}
 }
 
