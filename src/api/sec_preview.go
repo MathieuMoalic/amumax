@@ -3,6 +3,7 @@ package api
 import (
 	"math"
 	"net/http"
+	"time"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
@@ -87,8 +88,20 @@ func (s *PreviewState) Update() {
 }
 
 func (s *PreviewState) UpdateQuantityBuffer() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Log.Warn("Recovered from panic in UpdateQuantityBuffer: %v", r)
+			s.ScalarField = nil
+			s.VectorFieldPositions = nil
+			s.VectorFieldValues = nil
+		}
+	}()
 	if s.layerMask == nil {
 		s.updateMask()
+	}
+	if s.XChosenSize == 0 || s.YChosenSize == 0 {
+		log.Log.Debug("XChosenSize or YChosenSize is 0")
+		return
 	}
 	componentCount := 1
 	if s.Type == "3D" {
@@ -197,8 +210,10 @@ func (s *PreviewState) UpdateScalarField(scalarField [][][]float32) {
 			// Some quantities exist where the magnetic materials are not present
 			// and we don't want to filter them out
 			if !contains(s.globalQuantities, s.Quantity) {
-				if s.layerMask[posy][posx] == 0 {
-					continue
+				if s.layerMask != nil {
+					if s.layerMask[posy][posx] == 0 {
+						continue
+					}
 				}
 			}
 			val := scalarField[0][posy][posx]
@@ -224,6 +239,18 @@ func (s *PreviewState) UpdateScalarField(scalarField [][][]float32) {
 }
 
 func (s *PreviewState) updateMask() {
+	defer func() {
+		if r := recover(); r != nil {
+			// Handle the panic, possibly log the error
+			log.Log.Warn("Recovered from panic in updateMask: %v", r)
+			// Optionally, reset s.layerMask or handle it appropriately
+			s.layerMask = nil
+		}
+	}()
+	if s.XChosenSize == 0 || s.YChosenSize == 0 {
+		log.Log.Debug("XChosenSize or YChosenSize is 0")
+		return
+	}
 	// cuda full size geom
 	geom := engine.Geometry
 	GPU_fullsize := cuda.Buffer(geom.NComp(), geom.Buffer.Size())
@@ -272,6 +299,13 @@ func compStringToIndex(comp string) int {
 
 // A valid destination size is a positive integer less than or equal to srcsize that evenly divides srcsize.
 func (s *PreviewState) addPossibleDownscaleSizes() {
+	// retry until engine.Nx and engine.Ny are not 0
+	for engine.Nx == 0 || engine.Ny == 0 {
+		time.Sleep(1 * time.Second)
+	}
+	// if engine.Nx == 0 || engine.Ny == 0 {
+	// 	log.Log.Err("Nx or Ny is 0")
+	// }
 	// iterate over engine.Nx and engine.Ny
 	for dstsize := 1; dstsize <= engine.Nx; dstsize++ {
 		if engine.Nx%dstsize == 0 {
@@ -283,16 +317,16 @@ func (s *PreviewState) addPossibleDownscaleSizes() {
 			s.YPossibleSizes = append(s.YPossibleSizes, dstsize)
 		}
 	}
-	// the XChosenSize is the highest possible size that is below 1024
+	// the XChosenSize is the highest possible size that is below 100
 	for i := len(s.XPossibleSizes) - 1; i >= 0; i-- {
-		if s.XPossibleSizes[i] <= 1024 {
+		if s.XPossibleSizes[i] <= 100 {
 			s.XChosenSize = s.XPossibleSizes[i]
 			break
 		}
 	}
-	// the YChosenSize is the highest possible size that is below 1024
+	// the YChosenSize is the highest possible size that is below 100
 	for i := len(s.YPossibleSizes) - 1; i >= 0; i-- {
-		if s.YPossibleSizes[i] <= 1024 {
+		if s.YPossibleSizes[i] <= 100 {
 			s.YChosenSize = s.YPossibleSizes[i]
 			break
 		}
