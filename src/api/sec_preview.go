@@ -54,8 +54,8 @@ func initPreviewAPI(e *echo.Echo, ws *WebSocketManager) *PreviewState {
 		DataPointsCount:      0,
 		XPossibleSizes:       nil,
 		YPossibleSizes:       nil,
-		XChosenSize:          engine.Nx,
-		YChosenSize:          engine.Ny,
+		XChosenSize:          engine.Mesh.Nx,
+		YChosenSize:          engine.Mesh.Ny,
 		ws:                   ws,
 		globalQuantities:     []string{"B_demag", "B_ext", "B_eff", "Edens_demag", "Edens_ext", "Edens_eff", "geom"},
 	}
@@ -314,21 +314,21 @@ func compStringToIndex(comp string) int {
 
 // A valid destination size is a positive integer less than or equal to srcsize that evenly divides srcsize.
 func (s *PreviewState) addPossibleDownscaleSizes() {
-	// retry until engine.Nx and engine.Ny are not 0
-	for engine.Nx == 0 || engine.Ny == 0 {
+	// retry until engine.Mesh.Nx and engine.Mesh.Ny are not 0
+	for engine.Mesh.Nx == 0 || engine.Mesh.Ny == 0 {
 		time.Sleep(1 * time.Second)
 	}
-	if engine.Nx == 0 || engine.Ny == 0 {
+	if engine.Mesh.Nx == 0 || engine.Mesh.Ny == 0 {
 		log.Log.Err("Nx or Ny is 0")
 	}
-	// iterate over engine.Nx and engine.Ny
-	for dstsize := 1; dstsize <= engine.Nx; dstsize++ {
-		if engine.Nx%dstsize == 0 {
+	// iterate over engine.Mesh.Nx and engine.Mesh.Ny
+	for dstsize := 1; dstsize <= engine.Mesh.Nx; dstsize++ {
+		if engine.Mesh.Nx%dstsize == 0 {
 			s.XPossibleSizes = append(s.XPossibleSizes, dstsize)
 		}
 	}
-	for dstsize := 1; dstsize <= engine.Ny; dstsize++ {
-		if engine.Ny%dstsize == 0 {
+	for dstsize := 1; dstsize <= engine.Mesh.Ny; dstsize++ {
+		if engine.Mesh.Ny%dstsize == 0 {
 			s.YPossibleSizes = append(s.YPossibleSizes, dstsize)
 		}
 	}

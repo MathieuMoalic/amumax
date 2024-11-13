@@ -48,7 +48,7 @@ func uniform(mx, my, mz float64) config {
 // Make a vortex magnetization with given circulation and core polarization (+1 or -1).
 // The core is smoothed over a few exchange lengths and should easily relax to its ground state.
 func vortex(circ, pol int) config {
-	diam2 := 2 * sqr64(getMesh().CellSize()[X])
+	diam2 := 2 * sqr64(GetMesh().CellSize()[X])
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
 		r := math.Sqrt(r2)
@@ -60,7 +60,7 @@ func vortex(circ, pol int) config {
 }
 
 func neelSkyrmion(charge, pol int) config {
-	w := 8 * getMesh().CellSize()[X]
+	w := 8 * GetMesh().CellSize()[X]
 	w2 := w * w
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
@@ -73,7 +73,7 @@ func neelSkyrmion(charge, pol int) config {
 }
 
 func blochSkyrmion(charge, pol int) config {
-	w := 8 * getMesh().CellSize()[X]
+	w := 8 * GetMesh().CellSize()[X]
 	w2 := w * w
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
@@ -86,7 +86,7 @@ func blochSkyrmion(charge, pol int) config {
 }
 
 func antiVortex(circ, pol int) config {
-	diam2 := 2 * sqr64(getMesh().CellSize()[X])
+	diam2 := 2 * sqr64(GetMesh().CellSize()[X])
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
 		r := math.Sqrt(r2)
@@ -110,7 +110,7 @@ func radial(charge, pol int) config {
 
 // Make a vortex wall configuration.
 func vortexWall(mleft, mright float64, circ, pol int) config {
-	h := getMesh().WorldSize()[Y]
+	h := GetMesh().WorldSize()[Y]
 	v := vortex(circ, pol)
 	return func(x, y, z float64) data.Vector {
 		if x < -h/2 {
@@ -141,7 +141,7 @@ func noNaN(v data.Vector, pol int) data.Vector {
 //	twoDomain(1,0,0,  0,0,1,  -1,0,0) // head-to-head domains with perpendicular (Bloch) wall
 //	twoDomain(0,0,1,  1,0,0,   0,0,-1)// up-down domains with Bloch wall
 func twoDomain(mx1, my1, mz1, mxwall, mywall, mzwall, mx2, my2, mz2 float64) config {
-	ww := 2 * getMesh().CellSize()[X] // wall width in cells
+	ww := 2 * GetMesh().CellSize()[X] // wall width in cells
 	return func(x, y, z float64) data.Vector {
 		var m data.Vector
 		if x < 0 {

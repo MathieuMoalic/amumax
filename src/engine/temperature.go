@@ -81,15 +81,15 @@ func (b *thermField) update() {
 		return
 	}
 
-	N := getMesh().NCell()
+	N := GetMesh().NCell()
 
 	if !printedWarningTempOddGrid && N%2 > 0 { // T is nonzero if we have gotten this far. As noted in issue #314, this means the grid size must be even.
 		printedWarningTempOddGrid = true
 		log.Log.Warn("nonzero temperature requires an even amount of grid cells, but all axes have "+
-			"an odd number of cells: %v. This may cause a CURAND_STATUS_LENGTH_NOT_MULTIPLE error.", getMesh().Size())
+			"an odd number of cells: %v. This may cause a CURAND_STATUS_LENGTH_NOT_MULTIPLE error.", GetMesh().Size())
 	}
 	k2_VgammaDt := 2 * mag.Kb / (gammaLL * cellVolume() * Dt_si)
-	noise := cuda.Buffer(1, getMesh().Size())
+	noise := cuda.Buffer(1, GetMesh().Size())
 	defer cuda.Recycle(noise)
 
 	const mean = 0
@@ -126,7 +126,7 @@ func thermSeed(seed int) {
 	}
 }
 
-func (b *thermField) Mesh() *data.Mesh       { return getMesh() }
+func (b *thermField) Mesh() *data.MeshType   { return GetMesh() }
 func (b *thermField) NComp() int             { return 3 }
 func (b *thermField) Name() string           { return "Thermal field" }
 func (b *thermField) Unit() string           { return "T" }

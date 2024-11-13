@@ -121,7 +121,7 @@ func customFmt(msg []interface{}) (fmtMsg string) {
 
 // converts cell index to coordinate, internal coordinates
 func index2Coord(ix, iy, iz int) data.Vector {
-	m := getMesh()
+	m := GetMesh()
 	n := m.Size()
 	c := m.CellSize()
 	x := c[X]*(float64(ix)-0.5*float64(n[X]-1)) - totalShift

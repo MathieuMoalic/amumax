@@ -271,16 +271,16 @@ func checkExchangeLenght() {
 		Aex_r := Aex.GetRegion(region)
 		lex := math.Sqrt(2 * Aex_r / (mag.Mu0 * Msat_r * Msat_r))
 		if !exchangeLenghtWarned {
-			if Dx > lex {
-				log.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dx (%.3g nm) in region %d", lex*1e9, Dx*1e9, region)
+			if Mesh.Dx > lex {
+				log.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dx (%.3g nm) in region %d", lex*1e9, Mesh.Dx*1e9, region)
 				exchangeLenghtWarned = true
 			}
-			if Dy > lex {
-				log.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dy (%.3g nm) in region %d", lex*1e9, Dy*1e9, region)
+			if Mesh.Dy > lex {
+				log.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dy (%.3g nm) in region %d", lex*1e9, Mesh.Dy*1e9, region)
 				exchangeLenghtWarned = true
 			}
-			if Dz > lex && Nz > 1 {
-				log.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dz (%.3g nm) in region %d", lex*1e9, Dz*1e9, region)
+			if Mesh.Dz > lex && Mesh.Nz > 1 {
+				log.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dz (%.3g nm) in region %d", lex*1e9, Mesh.Dz*1e9, region)
 				exchangeLenghtWarned = true
 			}
 		}

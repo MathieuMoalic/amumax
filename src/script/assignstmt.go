@@ -4,11 +4,7 @@ import (
 	"go/ast"
 	"go/token"
 	"reflect"
-
-	"github.com/MathieuMoalic/amumax/src/zarr"
 )
-
-var MMetadata zarr.Metadata
 
 // compiles a (single) assign statement lhs = rhs
 func (w *World) compileAssignStmt(a *ast.AssignStmt) Expr {
@@ -61,7 +57,7 @@ type assignStmt struct {
 
 func (a *assignStmt) Eval() interface{} {
 	if loopNestingCount == 0 {
-		MMetadata.Add(a.name, a.rhs.Eval())
+		// engine.EngineState.Metadata.Add(a.name, a.rhs.Eval())
 	}
 	a.lhs.SetValue(a.rhs.Eval())
 	return nil

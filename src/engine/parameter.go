@@ -85,7 +85,7 @@ func (p *regionwise) init(nComp int, name, unit string, children []derived) {
 
 func (p *regionwise) MSlice() cuda.MSlice {
 	if p.IsUniform() {
-		return cuda.MakeMSlice(data.NilSlice(p.NComp(), getMesh().Size()), p.getRegion(0))
+		return cuda.MakeMSlice(data.NilSlice(p.NComp(), GetMesh().Size()), p.getRegion(0))
 	} else {
 		buf, r := p.Slice()
 		log.AssertMsg(r, "Failed to retrieve slice: invalid state in regionwise.MSlice")
@@ -93,9 +93,9 @@ func (p *regionwise) MSlice() cuda.MSlice {
 	}
 }
 
-func (p *regionwise) Name() string     { return p.name }
-func (p *regionwise) Unit() string     { return p.unit }
-func (p *regionwise) Mesh() *data.Mesh { return getMesh() }
+func (p *regionwise) Name() string         { return p.name }
+func (p *regionwise) Unit() string         { return p.unit }
+func (p *regionwise) Mesh() *data.MeshType { return GetMesh() }
 
 func (p *regionwise) update() {
 	if p.timestamp != Time {

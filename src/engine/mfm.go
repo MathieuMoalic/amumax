@@ -18,7 +18,7 @@ func init() {
 }
 
 func setMFM(dst *data.Slice) {
-	buf := cuda.Buffer(3, getMesh().Size())
+	buf := cuda.Buffer(3, GetMesh().Size())
 	defer cuda.Recycle(buf)
 	if mfmconv_ == nil {
 		reinitmfmconv()
@@ -35,7 +35,7 @@ func reinitmfmconv() {
 	setBusy(true)
 	defer setBusy(false)
 	if mfmconv_ == nil {
-		mfmconv_ = cuda.NewMFM(getMesh(), mfmLift.v, mfmTipSize.v, CacheDir)
+		mfmconv_ = cuda.NewMFM(GetMesh(), mfmLift.v, mfmTipSize.v, CacheDir)
 	} else {
 		mfmconv_.Reinit(mfmLift.v, mfmTipSize.v, CacheDir)
 	}

@@ -155,7 +155,7 @@ func getMagnetoelasticEnergy() float64 {
 		return float64(0.0)
 	}
 
-	buf := cuda.Buffer(1, getMesh().Size())
+	buf := cuda.Buffer(1, GetMesh().Size())
 	defer cuda.Recycle(buf)
 
 	cuda.Zero(buf)

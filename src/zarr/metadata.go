@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 )
@@ -17,24 +18,12 @@ type Metadata struct {
 	lastSave  time.Time
 }
 
-func (m *Metadata) Init(currentDir string, StartTime time.Time, dx, dy, dz float64, Nx, Ny, Nz int, Tx, Ty, Tz float64, PBCx, PBCy, PBCz int, GPUInfo string) {
+func (m *Metadata) Init(currentDir string, StartTime time.Time, GPUInfo string) {
 	if m.Fields == nil {
 		m.Fields = make(map[string]interface{})
 	}
-	m.Fields["start_time"] = StartTime
-	m.Fields["dx"] = dx
-	m.Fields["dy"] = dy
-	m.Fields["dz"] = dz
-	m.Fields["Nx"] = Nx
-	m.Fields["Ny"] = Ny
-	m.Fields["Nz"] = Nz
-	m.Fields["Tx"] = Tx
-	m.Fields["Ty"] = Ty
-	m.Fields["Tz"] = Tz
-	m.Fields["PBCx"] = PBCx
-	m.Fields["PBCy"] = PBCy
-	m.Fields["PBCz"] = PBCz
-	m.Fields["gpu"] = GPUInfo
+	m.Add("start_time", StartTime.Format(time.UnixDate))
+	m.Add("gpu", GPUInfo)
 	m.Path = currentDir + ".zattrs"
 	m.startTime = StartTime
 	m.Save()
@@ -93,4 +82,19 @@ func (m *Metadata) Save() {
 		_, err = zattrs.Write([]byte(json_meta))
 		log.Log.PanicIfError(err)
 	}
+}
+
+func (m *Metadata) AddMesh(mesh *data.MeshType) {
+	m.Add("dx", mesh.Dx)
+	m.Add("dy", mesh.Dy)
+	m.Add("dz", mesh.Dz)
+	m.Add("Nx", mesh.Nx)
+	m.Add("Ny", mesh.Ny)
+	m.Add("Nz", mesh.Nz)
+	m.Add("Tx", mesh.Tx)
+	m.Add("Ty", mesh.Ty)
+	m.Add("Tz", mesh.Tz)
+	m.Add("PBCx", mesh.PBCx)
+	m.Add("PBCy", mesh.PBCy)
+	m.Add("PBCz", mesh.PBCz)
 }

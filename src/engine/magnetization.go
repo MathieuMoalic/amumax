@@ -21,11 +21,11 @@ func (m *magnetization) GetRegionToString(region int) string {
 	return fmt.Sprintf("(%g,%g,%g)", v[0], v[1], v[2])
 }
 
-func (m *magnetization) Mesh() *data.Mesh    { return getMesh() }
-func (m *magnetization) NComp() int          { return 3 }
-func (m *magnetization) Name() string        { return "m" }
-func (m *magnetization) Unit() string        { return "" }
-func (m *magnetization) Buffer() *data.Slice { return m.buffer_ } // todo: rename Gpu()?
+func (m *magnetization) Mesh() *data.MeshType { return GetMesh() }
+func (m *magnetization) NComp() int           { return 3 }
+func (m *magnetization) Name() string         { return "m" }
+func (m *magnetization) Unit() string         { return "" }
+func (m *magnetization) Buffer() *data.Slice  { return m.buffer_ } // todo: rename Gpu()?
 
 func (m *magnetization) Comp(c int) ScalarField  { return comp(m, c) }
 func (m *magnetization) SetValue(v interface{})  { m.SetInShape(nil, v.(config)) }
@@ -51,7 +51,6 @@ func (b *magnetization) SetArray(src *data.Slice) {
 }
 
 func (m *magnetization) Set(c config) {
-	createMesh()
 	m.SetInShape(nil, c)
 }
 
@@ -96,8 +95,6 @@ func (m *magnetization) Quantity() []float64 { return slice(m.Average()) }
 
 // Sets the magnetization inside the shape
 func (m *magnetization) SetInShape(region shape, conf config) {
-	createMesh()
-
 	if region == nil {
 		region = universeInner
 	}

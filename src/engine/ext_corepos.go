@@ -35,7 +35,7 @@ func corePos() []float64 {
 		max, -1, abs(mz[maxY-1][maxX]), 1, abs(mz[maxY+1][maxX])) -
 		float64(Ny)/2 + 0.5
 
-	c := getMesh().CellSize()
+	c := GetMesh().CellSize()
 	pos[X] *= c[X]
 	pos[Y] *= c[Y]
 	pos[Z] = float64(m_z[maxZ][maxY][maxX]) // 3rd coordinate is core polarization

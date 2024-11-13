@@ -7,7 +7,7 @@ import (
 )
 
 func centerBubbleInner() {
-	c := getMesh().CellSize()
+	c := GetMesh().CellSize()
 
 	position := bubblePos()
 	var centerIdx [2]int

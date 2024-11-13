@@ -26,18 +26,18 @@ type MeshState struct {
 func initMeshAPI(e *echo.Echo, ws *WebSocketManager) *MeshState {
 	meshState := MeshState{
 		ws:   ws,
-		Dx:   &engine.Dx,
-		Dy:   &engine.Dy,
-		Dz:   &engine.Dz,
-		Nx:   &engine.Nx,
-		Ny:   &engine.Ny,
-		Nz:   &engine.Nz,
-		Tx:   &engine.Tx,
-		Ty:   &engine.Ty,
-		Tz:   &engine.Tz,
-		PBCx: &engine.PBCx,
-		PBCy: &engine.PBCy,
-		PBCz: &engine.PBCz,
+		Dx:   &engine.Mesh.Dx,
+		Dy:   &engine.Mesh.Dy,
+		Dz:   &engine.Mesh.Dz,
+		Nx:   &engine.Mesh.Nx,
+		Ny:   &engine.Mesh.Ny,
+		Nz:   &engine.Mesh.Nz,
+		Tx:   &engine.Mesh.Tx,
+		Ty:   &engine.Mesh.Ty,
+		Tz:   &engine.Mesh.Tz,
+		PBCx: &engine.Mesh.PBCx,
+		PBCy: &engine.Mesh.PBCy,
+		PBCz: &engine.Mesh.PBCz,
 	}
 	e.POST("/api/mesh", meshState.postMesh)
 	return &meshState

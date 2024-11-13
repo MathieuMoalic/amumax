@@ -34,7 +34,7 @@ func (r *RegionsState) GetExistingIndices() []int {
 
 func (r *RegionsState) redefine(startId, endId int) {
 	// Loop through all cells, if their region ID matches startId, change it to endId
-	n := getMesh().Size()
+	n := GetMesh().Size()
 	l := r.RegionListCPU() // need to start from previous state
 	arr := reshapeBytes(l, r.Mesh().Size())
 
@@ -106,7 +106,7 @@ func RedefRegion(startId, endId int) {
 // renders (rasterizes) shape, filling it with region number #id, between x1 and x2
 // TODO: a tidbit expensive
 func (r *RegionsState) render(f func(x, y, z float64) int) {
-	mesh := getMesh()
+	mesh := GetMesh()
 	regionArray1D := r.RegionListCPU() // need to start from previous state
 	regionArray3D := reshapeBytes(regionArray1D, mesh.Size())
 
@@ -149,7 +149,7 @@ func (r *RegionsState) RegionListCPU() []byte {
 
 func DefRegionCell(id int, x, y, z int) {
 	defRegionId(id)
-	index := data.Index(getMesh().Size(), x, y, z)
+	index := data.Index(GetMesh().Size(), x, y, z)
 	Regions.gpuBuffer.Set(index, byte(id))
 }
 
@@ -165,14 +165,14 @@ func (r *RegionsState) Average() float64 { return r.average()[0] }
 
 // Set the region of one cell
 func (r *RegionsState) SetCell(ix, iy, iz int, region int) {
-	size := getMesh().Size()
+	size := GetMesh().Size()
 	i := data.Index(size, ix, iy, iz)
 	r.gpuBuffer.Set(i, byte(region))
 	r.AddIndex(region)
 }
 
 func (r *RegionsState) GetCell(ix, iy, iz int) int {
-	size := getMesh().Size()
+	size := GetMesh().Size()
 	i := data.Index(size, ix, iy, iz)
 	return int(r.gpuBuffer.Get(i))
 }
@@ -181,7 +181,6 @@ func defRegionId(id int) {
 	if id < 0 || id > NREGION {
 		log.Log.ErrAndExit("region id should be 0 -%d, have: %d", NREGION, id)
 	}
-	createMesh()
 	Regions.AddIndex(id)
 }
 
@@ -252,7 +251,7 @@ func (b *RegionsState) shift(dx int) {
 	cuda.ShiftBytes(r2, r1, b.Mesh(), dx, newreg)
 	r1.Copy(r2)
 
-	n := getMesh().Size()
+	n := GetMesh().Size()
 	x1, x2 := shiftDirtyRange(dx)
 
 	for iz := 0; iz < n[Z]; iz++ {
@@ -277,7 +276,7 @@ func (b *RegionsState) shiftY(dy int) {
 	cuda.ShiftBytesY(r2, r1, b.Mesh(), dy, newreg)
 	r1.Copy(r2)
 
-	n := getMesh().Size()
+	n := GetMesh().Size()
 	y1, y2 := shiftDirtyRange(dy)
 
 	for iz := 0; iz < n[Z]; iz++ {
@@ -293,7 +292,7 @@ func (b *RegionsState) shiftY(dy int) {
 	}
 }
 
-func (r *RegionsState) Mesh() *data.Mesh { return getMesh() }
+func (r *RegionsState) Mesh() *data.MeshType { return GetMesh() }
 
 func prod(s [3]int) int {
 	return s[0] * s[1] * s[2]
