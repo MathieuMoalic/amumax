@@ -22,10 +22,10 @@ func comp(parent Quantity, c int) ScalarField {
 	return AsScalarField(&component{parent, c})
 }
 
-func (q *component) NComp() int       { return 1 }
-func (q *component) Name() string     { return fmt.Sprint(nameOf(q.parent), "_", compname[q.comp]) }
-func (q *component) Unit() string     { return unitOf(q.parent) }
-func (q *component) Mesh() *data.Mesh { return MeshOf(q.parent) }
+func (q *component) NComp() int           { return 1 }
+func (q *component) Name() string         { return fmt.Sprint(nameOf(q.parent), "_", compname[q.comp]) }
+func (q *component) Unit() string         { return unitOf(q.parent) }
+func (q *component) Mesh() *data.MeshType { return MeshOf(q.parent) }
 
 func (q *component) Slice() (*data.Slice, bool) {
 	p := q.parent

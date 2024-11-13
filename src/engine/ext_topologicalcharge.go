@@ -20,7 +20,7 @@ func setTopologicalChargeDensity(dst *data.Slice) {
 func getTopologicalCharge() float64 {
 	s := ValueOf(TopologicalChargeDensity)
 	defer cuda.Recycle(s)
-	c := getMesh().CellSize()
-	N := getMesh().Size()
+	c := GetMesh().CellSize()
+	N := GetMesh().Size()
 	return (0.25 * c[X] * c[Y] / math.Pi / float64(N[Z])) * float64(cuda.Sum(s))
 }

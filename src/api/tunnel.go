@@ -13,7 +13,6 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/engine"
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/MathieuMoalic/amumax/src/script"
 	"github.com/kevinburke/ssh_config"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
@@ -186,13 +185,13 @@ func startTunnel(hostAndPort string) {
 	}()
 }
 
-// getLocalPortWithRetry attempts to retrieve and parse the local port from MMetadata, retrying on failure.
+// getLocalPortWithRetry attempts to retrieve and parse the local port from Metadata, retrying on failure.
 func getLocalPortWithRetry(maxRetries int, retryInterval time.Duration) (uint16, error) {
 	var localPort uint16
 	var err error
 
 	for i := 0; i < maxRetries; i++ {
-		port, ok := script.MMetadata.Get("port").(string)
+		port, ok := engine.EngineState.Metadata.Get("port").(string)
 		if ok {
 			localPort, err = stringToUint16(port)
 			if err == nil {

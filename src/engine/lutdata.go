@@ -82,7 +82,7 @@ func (b *lut) NComp() int { return len(b.cpu_buf) }
 
 // uncompress the table to a full array with parameter values per cell.
 func (p *lut) Slice() (*data.Slice, bool) {
-	b := cuda.Buffer(p.NComp(), getMesh().Size())
+	b := cuda.Buffer(p.NComp(), GetMesh().Size())
 	p.EvalTo(b)
 	return b, true
 }

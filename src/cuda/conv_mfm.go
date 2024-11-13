@@ -18,7 +18,7 @@ type MFMConvolution struct {
 	fwPlan      fft3DR2CPlan   // Forward FFT (1 component)
 	bwPlan      fft3DC2RPlan   // Backward FFT (1 component)
 	kern        [3]*data.Slice // Real-space kernel (host)
-	mesh        *data.Mesh
+	mesh        *data.MeshType
 }
 
 func (c *MFMConvolution) Free() {
@@ -94,7 +94,7 @@ func (c *MFMConvolution) Reinit(lift, tipsize float64, cachedir string) {
 }
 
 // Initializes a convolution to evaluate the demag field for the given mesh geometry.
-func NewMFM(mesh *data.Mesh, lift, tipsize float64, cachedir string) *MFMConvolution {
+func NewMFM(mesh *data.MeshType, lift, tipsize float64, cachedir string) *MFMConvolution {
 	k := mag.MFMKernel(mesh, lift, tipsize, cachedir)
 	size := mesh.Size()
 	c := new(MFMConvolution)

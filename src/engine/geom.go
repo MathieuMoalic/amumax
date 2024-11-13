@@ -208,7 +208,7 @@ func (g *geom) shift(dx int) {
 	cuda.ShiftX(s2, s, dx, newv, newv)
 	data.Copy(s, s2)
 
-	n := getMesh().Size()
+	n := GetMesh().Size()
 	x1, x2 := shiftDirtyRange(dx)
 
 	for iz := 0; iz < n[Z]; iz++ {
@@ -238,7 +238,7 @@ func (g *geom) shiftY(dy int) {
 	cuda.ShiftY(s2, s, dy, newv, newv)
 	data.Copy(s, s2)
 
-	n := getMesh().Size()
+	n := GetMesh().Size()
 	y1, y2 := shiftDirtyRange(dy)
 
 	for iz := 0; iz < n[Z]; iz++ {
@@ -256,7 +256,7 @@ func (g *geom) shiftY(dy int) {
 
 // x range that needs to be refreshed after shift over dx
 func shiftDirtyRange(dx int) (x1, x2 int) {
-	nx := getMesh().Size()[X]
+	nx := GetMesh().Size()[X]
 	log.AssertMsg(dx != 0, "Invalid shift: dx must not be zero in shiftDirtyRange")
 
 	if dx < 0 {
@@ -269,4 +269,4 @@ func shiftDirtyRange(dx int) (x1, x2 int) {
 	return
 }
 
-func (g *geom) Mesh() *data.Mesh { return getMesh() }
+func (g *geom) Mesh() *data.MeshType { return GetMesh() }

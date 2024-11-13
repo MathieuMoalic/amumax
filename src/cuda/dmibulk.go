@@ -9,7 +9,7 @@ import (
 
 // Add effective field due to bulk Dzyaloshinskii-Moriya interaction to Beff.
 // See dmibulk.cu
-func AddDMIBulk(Beff *data.Slice, m *data.Slice, Aex_red, D_red SymmLUT, Msat MSlice, regions *Bytes, mesh *data.Mesh, OpenBC bool) {
+func AddDMIBulk(Beff *data.Slice, m *data.Slice, Aex_red, D_red SymmLUT, Msat MSlice, regions *Bytes, mesh *data.MeshType, OpenBC bool) {
 	cellsize := mesh.CellSize()
 	N := Beff.Size()
 	log.AssertMsg(m.Size() == N, "Size mismatch: m and Beff must have the same dimensions in AddDMIBulk")

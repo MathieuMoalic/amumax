@@ -6,7 +6,7 @@ import (
 
 // Add Slonczewski ST torque to torque (Tesla).
 // see slonczewski.cu
-func AddSlonczewskiTorque2(torque, m *data.Slice, Msat, J, fixedP, alpha, pol, λ, ε_prime MSlice, thickness MSlice, flp float64, mesh *data.Mesh) {
+func AddSlonczewskiTorque2(torque, m *data.Slice, Msat, J, fixedP, alpha, pol, λ, ε_prime MSlice, thickness MSlice, flp float64, mesh *data.MeshType) {
 	N := torque.Len()
 	cfg := make1DConf(N)
 	meshThickness := mesh.WorldSize()[Z]

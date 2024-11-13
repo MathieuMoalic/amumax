@@ -4,8 +4,6 @@ package engine
 
 import (
 	"fmt"
-
-	"github.com/MathieuMoalic/amumax/src/script"
 )
 
 var (
@@ -29,8 +27,8 @@ func saveIfNeeded() {
 	if Table.NeedSave() {
 		tableSave()
 	}
-	if script.MMetadata.NeedSave() {
-		script.MMetadata.Save()
+	if EngineState.Metadata.NeedSave() {
+		EngineState.Metadata.Save()
 	}
 }
 

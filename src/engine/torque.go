@@ -80,7 +80,7 @@ func addSTTorque(dst *data.Slice) {
 		defer xi.Recycle()
 		pol := Pol.MSlice()
 		defer pol.Recycle()
-		cuda.AddZhangLiTorque(dst, normMag.Buffer(), msat, j, alpha, xi, pol, getMesh())
+		cuda.AddZhangLiTorque(dst, normMag.Buffer(), msat, j, alpha, xi, pol, GetMesh())
 	}
 	if !disableSlonczewskiTorque && !FixedLayer.isZero() {
 		msat := Msat.MSlice()
@@ -103,7 +103,7 @@ func addSTTorque(dst *data.Slice) {
 			msat, j, fixedP, alpha, pol, lambda, epsPrime,
 			thickness,
 			currentSignFromFixedLayerPosition[fixedLayerPosition],
-			getMesh())
+			GetMesh())
 	}
 }
 

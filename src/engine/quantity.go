@@ -23,13 +23,13 @@ func addQuantity(name string, value interface{}, doc string) {
 }
 
 func meshSize() [3]int {
-	return getMesh().Size()
+	return GetMesh().Size()
 }
 
 func sizeOf(q Quantity) [3]int {
 	// quantity defines its own, custom, implementation:
 	if s, ok := q.(interface {
-		Mesh() *data.Mesh
+		Mesh() *data.MeshType
 	}); ok {
 		return s.Mesh().Size()
 	}
@@ -70,14 +70,14 @@ func unitOf(q Quantity) string {
 	return "?"
 }
 
-func MeshOf(q Quantity) *data.Mesh {
+func MeshOf(q Quantity) *data.MeshType {
 	// quantity defines its own, custom, implementation:
 	if s, ok := q.(interface {
-		Mesh() *data.Mesh
+		Mesh() *data.MeshType
 	}); ok {
 		return s.Mesh()
 	}
-	return getMesh()
+	return GetMesh()
 }
 
 func ValueOf(q Quantity) *data.Slice {

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/MathieuMoalic/amumax/src/script"
 	"github.com/MathieuMoalic/amumax/src/timer"
 )
 
@@ -38,7 +37,7 @@ func CleanExit() {
 	if SyncAndLog {
 		timer.Print(os.Stdout)
 	}
-	script.MMetadata.Add("steps", NSteps)
-	script.MMetadata.End()
+	EngineState.Metadata.Add("steps", NSteps)
+	EngineState.Metadata.End()
 	log.Log.FlushToFile()
 }

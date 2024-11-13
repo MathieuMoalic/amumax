@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/MathieuMoalic/amumax/src/engine"
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/MathieuMoalic/amumax/src/script"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -63,8 +63,8 @@ func startGuiServer(e *echo.Echo, host string, port int, tunnel string) {
 			go startTunnel(tunnel)
 		}
 
-		script.MMetadata.Add("webui", addr)
-		script.MMetadata.Add("port", port)
+		engine.EngineState.Metadata.Add("webui", addr)
+		engine.EngineState.Metadata.Add("port", port)
 
 		// Attempt to start the server
 		err = e.Start(addr)

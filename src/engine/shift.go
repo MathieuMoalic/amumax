@@ -18,7 +18,7 @@ func getShiftYPos() float64 { return -totalYShift }
 
 // shift the simulation window over dx cells in X direction
 func shift(dx int) {
-	totalShift += float64(dx) * getMesh().CellSize()[X] // needed to re-init geom, regions
+	totalShift += float64(dx) * GetMesh().CellSize()[X] // needed to re-init geom, regions
 	if shiftM {
 		shiftMag(normMag.Buffer(), dx) // TODO: M.shift?
 	}
@@ -47,7 +47,7 @@ func shiftMag(m *data.Slice, dx int) {
 
 // shift the simulation window over dy cells in Y direction
 func yShift(dy int) {
-	totalYShift += float64(dy) * getMesh().CellSize()[Y] // needed to re-init geom, regions
+	totalYShift += float64(dy) * GetMesh().CellSize()[Y] // needed to re-init geom, regions
 	if shiftM {
 		shiftMagY(normMag.Buffer(), dy)
 	}

@@ -43,7 +43,7 @@ func setTotalEdens(dst *data.Slice) {
 
 // volume of one cell in m3
 func cellVolume() float64 {
-	c := getMesh().CellSize()
+	c := GetMesh().CellSize()
 	return c[0] * c[1] * c[2]
 }
 

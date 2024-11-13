@@ -60,7 +60,7 @@ func addCustomEnergyDensity(dst *data.Slice) {
 }
 
 func getCustomEnergy() float64 {
-	buf := cuda.Buffer(1, getMesh().Size())
+	buf := cuda.Buffer(1, GetMesh().Size())
 	defer cuda.Recycle(buf)
 	cuda.Zero(buf)
 	addCustomEnergyDensity(buf)
@@ -370,18 +370,18 @@ func (q *shifted) NComp() int {
 // and will be re-evaluated after mesh change,
 // because otherwise too slow
 func maskedQuant(q Quantity, shape shape) Quantity {
-	return &masked{q, shape, nil, data.Mesh{}}
+	return &masked{q, shape, nil, data.MeshType{}}
 }
 
 type masked struct {
 	orig  Quantity
 	shape shape
 	mask  *data.Slice
-	mesh  data.Mesh
+	mesh  data.MeshType
 }
 
 func (q *masked) EvalTo(dst *data.Slice) {
-	if q.mesh != *getMesh() {
+	if q.mesh != *GetMesh() {
 		// When mesh is changed, mask needs an update
 		q.createMask()
 	}
@@ -395,7 +395,7 @@ func (q *masked) NComp() int {
 }
 
 func (q *masked) createMask() {
-	size := getMesh().Size()
+	size := GetMesh().Size()
 	// Prepare mask on host
 	maskhost := data.NewSlice(SCALAR, size)
 	defer maskhost.Free()
@@ -414,7 +414,7 @@ func (q *masked) createMask() {
 	q.mask.Free()
 	q.mask = cuda.NewSlice(SCALAR, size)
 	data.Copy(q.mask, maskhost)
-	q.mesh = *getMesh()
+	q.mesh = *GetMesh()
 	// Remove mask from host
 }
 

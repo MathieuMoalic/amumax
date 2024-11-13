@@ -3,8 +3,17 @@ package engine
 // Add a (pointer to) variable to the script world
 func declVar(name string, value interface{}, doc string) {
 	World.Var(name, value, doc)
-	addQuantity(name, value, doc)
+	if v, ok := value.(Quantity); ok {
+		Quantities[name] = v
+	}
 }
+
+// // Add a (pointer to) variable to the script world
+// func declVarWithCallback(name string, value interface{}, doc string, callback func()) {
+// 	World.Var(name, value, doc)
+// 	addQuantity(name, value, doc)
+// 	callback()
+// }
 
 // Hack for fixing the closure caveat:
 // Defines "t", the time variable, handled specially by Fix()
@@ -29,21 +38,21 @@ func init() {
 	declVar("ext_BubbleMz", &BubbleMz, "Center magnetization 1.0 or -1.0  (default = 1.0)")
 	declVar("EdgeSmooth", &edgeSmooth, "Geometry edge smoothing with edgeSmooth^3 samples per cell, 0=staircase, ~8=very smooth")
 
-	declVar("AutoMeshx", &AutoMeshx, "")
-	declVar("AutoMeshy", &AutoMeshy, "")
-	declVar("AutoMeshz", &AutoMeshz, "")
-	declVar("Tx", &Tx, "")
-	declVar("Ty", &Ty, "")
-	declVar("Tz", &Tz, "")
-	declVar("Nx", &Nx, "")
-	declVar("Ny", &Ny, "")
-	declVar("Nz", &Nz, "")
-	declVar("dx", &Dx, "")
-	declVar("dy", &Dy, "")
-	declVar("dz", &Dz, "")
-	declVar("PBCx", &PBCx, "")
-	declVar("PBCy", &PBCy, "")
-	declVar("PBCz", &PBCz, "")
+	declVar("AutoMeshx", &Mesh.AutoMeshx, "")
+	declVar("AutoMeshy", &Mesh.AutoMeshy, "")
+	declVar("AutoMeshz", &Mesh.AutoMeshz, "")
+	declVar("Tx", &Mesh.Tx, "")
+	declVar("Ty", &Mesh.Ty, "")
+	declVar("Tz", &Mesh.Tz, "")
+	declVar("Nx", &Mesh.Nx, "")
+	declVar("Ny", &Mesh.Ny, "")
+	declVar("Nz", &Mesh.Nz, "")
+	declVar("dx", &Mesh.Dx, "")
+	declVar("dy", &Mesh.Dy, "")
+	declVar("dz", &Mesh.Dz, "")
+	declVar("PBCx", &Mesh.PBCx, "")
+	declVar("PBCy", &Mesh.PBCy, "")
+	declVar("PBCz", &Mesh.PBCz, "")
 	declVar("MinimizerStop", &stopMaxDm, "Stopping max dM for Minimize")
 	declVar("MinimizerSamples", &dmSamples, "Number of max dM to collect for Minimize convergence check.")
 	declVar("MinimizeMaxSteps", &minimizeMaxSteps, "")

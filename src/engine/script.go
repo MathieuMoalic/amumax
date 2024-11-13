@@ -4,11 +4,23 @@ package engine
 
 import (
 	"reflect"
+	"strings"
 
+	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/script"
 )
+
+var Mesh data.MeshType
+
+func init() {
+	Mesh = data.MeshType{Nx: 0, Ny: 0, Nz: 0, Dx: 0, Dy: 0, Dz: 0, Tx: 0, Ty: 0, Tz: 0, PBCx: 0, PBCy: 0, PBCz: 0, AutoMeshx: false, AutoMeshy: false, AutoMeshz: false}
+}
+func GetMesh() *data.MeshType {
+	return &Mesh
+}
 
 func CompileFile(fname string) (*script.BlockStmt, error) {
 	bytes, err := fsutil.Read(fname)
@@ -64,8 +76,44 @@ func EvalFile(code *script.BlockStmt) {
 	for i := range code.Children {
 		formatted := rmln(script.Format(code.Node[i]))
 		log.Log.Command(formatted)
-		code.Children[i].Eval()
+		exp := code.Children[i]
+		exp.Eval()
+		if isMeshExpression(exp) {
+			if Mesh.ReadyToCreate() {
+				setBusy(true)
+				defer setBusy(false)
+				Mesh.CreateMesh()
+				normMag.alloc()
+				Regions.alloc()
+				EngineState.Metadata.Init(OD(), StartTime, cuda.GPUInfo)
+				EngineState.Metadata.AddMesh(&Mesh)
+			}
+		}
 	}
+}
+
+func isMeshExpression(exp script.Expr) bool {
+	namesToCheck := []string{"Nx", "Ny", "Nz", "Dx", "Dy", "Dz", "Tx", "Ty", "Tz"}
+	val := reflect.ValueOf(exp)
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+
+	if nameField := val.FieldByName("name"); nameField.IsValid() {
+		name := strings.ToLower(nameField.String())
+		return containsIgnoreCase(namesToCheck, name)
+	}
+	return false
+}
+
+func containsIgnoreCase(s []string, target string) bool {
+	target = strings.ToLower(target)
+	for _, v := range s {
+		if strings.ToLower(v) == target {
+			return true
+		}
+	}
+	return false
 }
 
 var QuantityChanged = make(map[string]bool)

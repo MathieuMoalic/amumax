@@ -9,7 +9,7 @@
 # Desc: Time (s): 0
 # Desc: |m x h|: 0.39767182754665648
 # Desc: User Comment:
-# meshtype: rectangular
+# data.MeshType: rectangular
 # meshunit: m
 # xbase: 1e-08
 # ybase: 1e-08

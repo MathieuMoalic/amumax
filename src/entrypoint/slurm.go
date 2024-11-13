@@ -10,7 +10,6 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/engine"
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/MathieuMoalic/amumax/src/script"
 )
 
 // Parse D:HH:MM:SS, HH:MM:SS, or MM:SS format into time.Duration
@@ -97,8 +96,8 @@ func setEndTimerIfSlurm() {
 }
 
 func getSlurmMetadata() {
-	script.MMetadata.Add("slurm_user", os.Getenv("SLURM_JOB_USER"))
-	script.MMetadata.Add("slurm_partition", os.Getenv("SLURM_JOB_PARTITION"))
-	script.MMetadata.Add("slurm_job_id", os.Getenv("SLURM_JOB_ID"))
-	script.MMetadata.Add("slurm_node", os.Getenv("SLURM_JOB_NODELIST"))
+	engine.EngineState.Metadata.Add("slurm_user", os.Getenv("SLURM_JOB_USER"))
+	engine.EngineState.Metadata.Add("slurm_partition", os.Getenv("SLURM_JOB_PARTITION"))
+	engine.EngineState.Metadata.Add("slurm_job_id", os.Getenv("SLURM_JOB_ID"))
+	engine.EngineState.Metadata.Add("slurm_node", os.Getenv("SLURM_JOB_NODELIST"))
 }

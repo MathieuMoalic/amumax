@@ -13,8 +13,8 @@ var (
 
 func bubblePos() []float64 {
 	m := normMag.Buffer()
-	n := getMesh().Size()
-	c := getMesh().CellSize()
+	n := GetMesh().Size()
+	c := GetMesh().CellSize()
 	mz := m.Comp(Z).HostCopy().Scalars()[0]
 
 	posx, posy := 0., 0.
@@ -64,7 +64,7 @@ func bubbleDist() float64 {
 		return 0
 	}
 
-	w := getMesh().WorldSize()
+	w := GetMesh().WorldSize()
 	dx := pos[X] - prevBpos[X]
 	dy := pos[Y] - prevBpos[Y]
 	prevBpos = [2]float64{pos[X], pos[Y]}
