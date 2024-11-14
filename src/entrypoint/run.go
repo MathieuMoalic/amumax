@@ -67,24 +67,27 @@ func runFileAndServe(mx3Path string, flags *flagsType) {
 	go log.Log.AutoFlushToFile()
 
 	mx3Path = engine.InputFile
-
-	var code *script.BlockStmt
-	var err2 error
-	if mx3Path != "" {
-		// first we compile the entire file into an executable tree
-		code, err2 = engine.CompileFile(mx3Path)
-		if err2 != nil {
-			log.Log.ErrAndExit("Error while parsing `%s`: %v", mx3Path, err2)
+	if flags.newParser {
+		engine.EngineState.Start(mx3Path)
+	} else {
+		var code *script.BlockStmt
+		var err2 error
+		if mx3Path != "" {
+			// first we compile the entire file into an executable tree
+			code, err2 = engine.CompileFile(mx3Path)
+			if err2 != nil {
+				log.Log.ErrAndExit("Error while parsing `%s`: %v", mx3Path, err2)
+			}
+			log.Log.PanicIfError(err2)
 		}
-		log.Log.PanicIfError(err2)
-	}
 
-	// now the parser is not used anymore so it can handle web requests
-	if flags.webUIEnabled {
-		go api.Start(flags.webUIHost, flags.webUIPort, flags.tunnel, flags.debug)
+		// now the parser is not used anymore so it can handle web requests
+		if flags.webUIEnabled {
+			go api.Start(flags.webUIHost, flags.webUIPort, flags.tunnel, flags.debug)
+		}
+		// start executing the tree, possibly injecting commands from web gui
+		engine.EvalFile(code)
 	}
-	// start executing the tree, possibly injecting commands from web gui
-	engine.EvalFile(code)
 
 	if flags.interactive {
 		engine.RunInteractive()
