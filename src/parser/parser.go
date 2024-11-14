@@ -1,12 +1,10 @@
-package main
+package parser
 
 import (
-	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"strconv"
 	"strings"
 )
 
@@ -22,6 +20,8 @@ type Statement struct {
 	Cond     string      // Condition expression (for-loops, if-statements)
 	Post     string      // Post expression in for-loops
 	Body     []Statement // Body statements for loops or if-statements
+	Expr     ast.Expr    // RHS expression for assignments
+	ArgExprs []ast.Expr  // Argument expressions for function calls
 }
 
 // ScriptParser parses and stores statements from a script.
@@ -38,11 +38,11 @@ func NewScriptParser() *ScriptParser {
 }
 
 // Parse parses a script, wrapping it in a main function to process each statement.
-func (p *ScriptParser) Parse(script string) ([]Statement, error) {
+func (p *ScriptParser) Parse(script string) error {
 	wrappedScript := "package main\nfunc main() {\n" + script + "\n}"
 	file, err := parser.ParseFile(p.fset, "", wrappedScript, parser.AllErrors)
 	if err != nil {
-		return nil, fmt.Errorf("parsing error: %v", err)
+		return fmt.Errorf("parsing error: %v", err)
 	}
 
 	// Extract and process the main function statements
@@ -58,7 +58,7 @@ func (p *ScriptParser) Parse(script string) ([]Statement, error) {
 			p.processNode(stmt)
 		}
 	}
-	return p.statements, nil
+	return nil
 }
 
 // processNode routes each AST node type to the appropriate processing function.
@@ -93,17 +93,12 @@ func (p *ScriptParser) processAssignment(assign *ast.AssignStmt) {
 		stmt.Type = "assignment"
 	}
 
-	lhsExprs := []string{}
-	for _, lhs := range assign.Lhs {
-		lhsExprs = append(lhsExprs, p.formatExpr(lhs))
-	}
-	rhsExprs := []string{}
-	for _, rhs := range assign.Rhs {
-		rhsExprs = append(rhsExprs, p.formatExpr(rhs))
-	}
+	stmt.Name = p.formatExpr(assign.Lhs[0])
+	stmt.Expr = assign.Rhs[0] // Store the RHS expression
 
-	stmt.Name = strings.Join(lhsExprs, ", ")
-	stmt.Value = strings.Join(rhsExprs, ", ")
+	// Add this line to set the Value field
+	stmt.Value = p.formatExpr(assign.Rhs[0])
+
 	p.statements = append(p.statements, stmt)
 }
 
@@ -113,8 +108,9 @@ func (p *ScriptParser) processFunctionCall(call *ast.CallExpr) {
 		Type:     "function_call",
 		Name:     p.formatExpr(call.Fun),
 		LineNum:  p.fset.Position(call.Pos()).Line - 2,
-		Original: call,
+		ArgExprs: call.Args, // Store argument expressions
 	}
+	// Keep Args field for backward compatibility if needed
 	for _, arg := range call.Args {
 		stmt.Args = append(stmt.Args, p.formatExpr(arg))
 	}
@@ -287,56 +283,4 @@ func (p *ScriptParser) formatAssign(assign *ast.AssignStmt) string {
 // formatIncDec formats an increment/decrement statement.
 func (p *ScriptParser) formatIncDec(stmt *ast.IncDecStmt) string {
 	return fmt.Sprintf("%s%s", p.formatExpr(stmt.X), stmt.Tok.String())
-}
-
-// Execute interprets each statement and calls corresponding backend functions
-func (p *ScriptParser) Execute(backend *SimulationBackend) error {
-	for _, stmt := range p.statements {
-		switch stmt.Type {
-		case "assignment", "declaration":
-			// Determine the type of value
-			value, err := parseValue(stmt.Value)
-			if err != nil {
-				return fmt.Errorf("error setting parameter %s: %v", stmt.Name, err)
-			}
-			backend.SetParameter(stmt.Name, value)
-		case "function_call":
-			// Handle function calls as before
-			switch stmt.Name {
-			case "SetGeom":
-				backend.SetGeometry(stmt.Args)
-			case "TableAutoSave":
-				if interval, err := strconv.ParseFloat(stmt.Args[0], 64); err == nil {
-					backend.TableAutoSave(interval)
-				}
-			case "Run":
-				if timestep, err := strconv.ParseFloat(stmt.Args[0], 64); err == nil {
-					backend.RunSimulation(timestep)
-				}
-			default:
-				return fmt.Errorf("unsupported function: %s", stmt.Name)
-			}
-		}
-	}
-	return nil
-}
-
-// parseValue parses a string into the appropriate type: int, float64, or string.
-func parseValue(value string) (interface{}, error) {
-	// Attempt to parse as int
-	if intVal, err := strconv.Atoi(value); err == nil {
-		return intVal, nil
-	}
-
-	// Attempt to parse as float (e.g., for scientific notation like 4e-9)
-	if floatVal, err := strconv.ParseFloat(value, 64); err == nil {
-		return floatVal, nil
-	}
-
-	// Check if it's a quoted string literal
-	if strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"") {
-		return value[1 : len(value)-1], nil // Remove quotes
-	}
-
-	return nil, errors.New("unsupported data type for value")
 }

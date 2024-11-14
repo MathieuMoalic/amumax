@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	"reflect"
@@ -32,7 +32,7 @@ func TestParseAssignment(t *testing.T) {
 	parser := NewScriptParser()
 	script := `x := 10`
 
-	statements, err := parser.Parse(script)
+	err := parser.Parse(script)
 	if err != nil {
 		t.Fatalf("Parse error: %v", err)
 	}
@@ -46,8 +46,8 @@ func TestParseAssignment(t *testing.T) {
 		},
 	}
 
-	if !statementsEqual(statements, expected) {
-		t.Errorf("Expected %v, got %v", expected, statements)
+	if !statementsEqual(parser.statements, expected) {
+		t.Errorf("Expected %v, got %v", expected, parser.statements)
 	}
 }
 
@@ -55,7 +55,7 @@ func TestParseFunctionCall(t *testing.T) {
 	parser := NewScriptParser()
 	script := `Println("Hello, World")`
 
-	statements, err := parser.Parse(script)
+	err := parser.Parse(script)
 	if err != nil {
 		t.Fatalf("Parse error: %v", err)
 	}
@@ -69,8 +69,8 @@ func TestParseFunctionCall(t *testing.T) {
 		},
 	}
 
-	if !statementsEqual(statements, expected) {
-		t.Errorf("Expected %v, got %v", expected, statements)
+	if !statementsEqual(parser.statements, expected) {
+		t.Errorf("Expected %v, got %v", expected, parser.statements)
 	}
 }
 
@@ -78,7 +78,7 @@ func TestParseForLoop(t *testing.T) {
 	parser := NewScriptParser()
 	script := `for i := 0; i < 5; i++ { Println(i) }`
 
-	statements, err := parser.Parse(script)
+	err := parser.Parse(script)
 	if err != nil {
 		t.Fatalf("Parse error: %v", err)
 	}
@@ -101,8 +101,8 @@ func TestParseForLoop(t *testing.T) {
 		},
 	}
 
-	if !statementsEqual(statements, expected) {
-		t.Errorf("Expected %v, got %v", expected, statements)
+	if !statementsEqual(parser.statements, expected) {
+		t.Errorf("Expected %v, got %v", expected, parser.statements)
 	}
 }
 
@@ -111,7 +111,7 @@ func TestParseRangeLoop(t *testing.T) {
 	script := `values := []int{1, 2, 3}
 for _, v := range values { Println(v) }`
 
-	statements, err := parser.Parse(script)
+	err := parser.Parse(script)
 	if err != nil {
 		t.Fatalf("Parse error: %v", err)
 	}
@@ -140,8 +140,8 @@ for _, v := range values { Println(v) }`
 		},
 	}
 
-	if !statementsEqual(statements, expected) {
-		t.Errorf("Expected %v, got %v", expected, statements)
+	if !statementsEqual(parser.statements, expected) {
+		t.Errorf("Expected %v, got %v", expected, parser.statements)
 	}
 }
 
@@ -150,7 +150,7 @@ func TestParseMultipleAssignments(t *testing.T) {
 	script := `x := 10
 y := x + 5`
 
-	statements, err := parser.Parse(script)
+	err := parser.Parse(script)
 	if err != nil {
 		t.Fatalf("Parse error: %v", err)
 	}
@@ -170,8 +170,8 @@ y := x + 5`
 		},
 	}
 
-	if !statementsEqual(statements, expected) {
-		t.Errorf("Expected %v, got %v", expected, statements)
+	if !statementsEqual(parser.statements, expected) {
+		t.Errorf("Expected %v, got %v", expected, parser.statements)
 	}
 }
 
@@ -180,7 +180,7 @@ func TestParseIncDec(t *testing.T) {
 	script := `x := 10
 x++`
 
-	statements, err := parser.Parse(script)
+	err := parser.Parse(script)
 	if err != nil {
 		t.Fatalf("Parse error: %v", err)
 	}
@@ -200,8 +200,8 @@ x++`
 		},
 	}
 
-	if !statementsEqual(statements, expected) {
-		t.Errorf("Expected %v, got %v", expected, statements)
+	if !statementsEqual(parser.statements, expected) {
+		t.Errorf("Expected %v, got %v", expected, parser.statements)
 	}
 }
 
@@ -209,7 +209,7 @@ func TestParseBinaryOperation(t *testing.T) {
 	parser := NewScriptParser()
 	script := `x := 5 + 3`
 
-	statements, err := parser.Parse(script)
+	err := parser.Parse(script)
 	if err != nil {
 		t.Fatalf("Parse error: %v", err)
 	}
@@ -223,8 +223,8 @@ func TestParseBinaryOperation(t *testing.T) {
 		},
 	}
 
-	if !statementsEqual(statements, expected) {
-		t.Errorf("Expected %v, got %v", expected, statements)
+	if !statementsEqual(parser.statements, expected) {
+		t.Errorf("Expected %v, got %v", expected, parser.statements)
 	}
 }
 
@@ -233,7 +233,7 @@ func TestParseArrayIndexing(t *testing.T) {
 	script := `arr := []int{1, 2, 3}
 x := arr[1]`
 
-	statements, err := parser.Parse(script)
+	err := parser.Parse(script)
 	if err != nil {
 		t.Fatalf("Parse error: %v", err)
 	}
@@ -253,8 +253,8 @@ x := arr[1]`
 		},
 	}
 
-	if !statementsEqual(statements, expected) {
-		t.Errorf("Expected %v, got %v", expected, statements)
+	if !statementsEqual(parser.statements, expected) {
+		t.Errorf("Expected %v, got %v", expected, parser.statements)
 	}
 }
 
@@ -262,7 +262,7 @@ func TestParseNestedFunctionCall(t *testing.T) {
 	parser := NewScriptParser()
 	script := `x := max(5, min(2, 3))`
 
-	statements, err := parser.Parse(script)
+	err := parser.Parse(script)
 	if err != nil {
 		t.Fatalf("Parse error: %v", err)
 	}
@@ -276,8 +276,8 @@ func TestParseNestedFunctionCall(t *testing.T) {
 		},
 	}
 
-	if !statementsEqual(statements, expected) {
-		t.Errorf("Expected %v, got %v", expected, statements)
+	if !statementsEqual(parser.statements, expected) {
+		t.Errorf("Expected %v, got %v", expected, parser.statements)
 	}
 }
 
@@ -285,7 +285,7 @@ func TestParseIfStatement(t *testing.T) {
 	parser := NewScriptParser()
 	script := `if x > 5 { Println("Greater") }`
 
-	statements, err := parser.Parse(script)
+	err := parser.Parse(script)
 	if err != nil {
 		t.Fatalf("Parse error: %v", err)
 	}
@@ -306,8 +306,8 @@ func TestParseIfStatement(t *testing.T) {
 		},
 	}
 
-	if !statementsEqual(statements, expected) {
-		t.Errorf("Expected %v, got %v", expected, statements)
+	if !statementsEqual(parser.statements, expected) {
+		t.Errorf("Expected %v, got %v", expected, parser.statements)
 	}
 }
 
@@ -315,7 +315,7 @@ func TestParseAssignmentWithBinaryExpr(t *testing.T) {
 	parser := NewScriptParser()
 	script := `y := x * (z + 1)`
 
-	statements, err := parser.Parse(script)
+	err := parser.Parse(script)
 	if err != nil {
 		t.Fatalf("Parse error: %v", err)
 	}
@@ -329,7 +329,7 @@ func TestParseAssignmentWithBinaryExpr(t *testing.T) {
 		},
 	}
 
-	if !statementsEqual(statements, expected) {
-		t.Errorf("Expected %v, got %v", expected, statements)
+	if !statementsEqual(parser.statements, expected) {
+		t.Errorf("Expected %v, got %v", expected, parser.statements)
 	}
 }
