@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"strconv"
 	"strings"
 )
 
@@ -285,4 +287,56 @@ func (p *ScriptParser) formatAssign(assign *ast.AssignStmt) string {
 // formatIncDec formats an increment/decrement statement.
 func (p *ScriptParser) formatIncDec(stmt *ast.IncDecStmt) string {
 	return fmt.Sprintf("%s%s", p.formatExpr(stmt.X), stmt.Tok.String())
+}
+
+// Execute interprets each statement and calls corresponding backend functions
+func (p *ScriptParser) Execute(backend *SimulationBackend) error {
+	for _, stmt := range p.statements {
+		switch stmt.Type {
+		case "assignment", "declaration":
+			// Determine the type of value
+			value, err := parseValue(stmt.Value)
+			if err != nil {
+				return fmt.Errorf("error setting parameter %s: %v", stmt.Name, err)
+			}
+			backend.SetParameter(stmt.Name, value)
+		case "function_call":
+			// Handle function calls as before
+			switch stmt.Name {
+			case "SetGeom":
+				backend.SetGeometry(stmt.Args)
+			case "TableAutoSave":
+				if interval, err := strconv.ParseFloat(stmt.Args[0], 64); err == nil {
+					backend.TableAutoSave(interval)
+				}
+			case "Run":
+				if timestep, err := strconv.ParseFloat(stmt.Args[0], 64); err == nil {
+					backend.RunSimulation(timestep)
+				}
+			default:
+				return fmt.Errorf("unsupported function: %s", stmt.Name)
+			}
+		}
+	}
+	return nil
+}
+
+// parseValue parses a string into the appropriate type: int, float64, or string.
+func parseValue(value string) (interface{}, error) {
+	// Attempt to parse as int
+	if intVal, err := strconv.Atoi(value); err == nil {
+		return intVal, nil
+	}
+
+	// Attempt to parse as float (e.g., for scientific notation like 4e-9)
+	if floatVal, err := strconv.ParseFloat(value, 64); err == nil {
+		return floatVal, nil
+	}
+
+	// Check if it's a quoted string literal
+	if strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"") {
+		return value[1 : len(value)-1], nil // Remove quotes
+	}
+
+	return nil, errors.New("unsupported data type for value")
 }
