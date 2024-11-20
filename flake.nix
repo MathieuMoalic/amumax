@@ -95,7 +95,7 @@
       owner = "MathieuMoalic";
       repo = "amumax";
       rev = releaseVersion;
-      hash = pkgs.lib.fakeHash;
+      hash = "sha256-CVEaadFEx0mNuEklQoP1eXTgPgiKWeI1NBBMAm1xFYI=";
     };
 
     ReleaseFrontend = buildFrontend {
