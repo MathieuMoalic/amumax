@@ -89,7 +89,7 @@
       };
 
     #################### RELEASE ########################
-    releaseVersion = "2024.11.08"; # Set the version for the Release build
+    releaseVersion = "2024.11.20"; # Set the version for the Release build
 
     ReleaseSrc = pkgs.fetchFromGitHub {
       owner = "MathieuMoalic";
