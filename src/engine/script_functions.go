@@ -52,7 +52,7 @@ func init() {
 	DeclFunc("ext_make3dgrains", voronoi3d, "3D Voronoi tesselation over shape (grain size, starting region number, num regions, shape, seed)")
 	DeclFunc("ext_makegrains", voronoi, "Voronoi tesselation (grain size, num regions)")
 	DeclFunc("ext_rmSurfaceCharge", removeLRSurfaceCharge, "Compensate magnetic charges on the left and right sides of an in-plane magnetized wire. Arguments: region, mx on left and right side, resp.")
-	DeclFunc("SetGeom", setGeom, "Sets the geometry to a given shape")
+	DeclFunc("SetGeom", Geometry.setGeom, "Sets the geometry to a given shape")
 	DeclFunc("ReCreateMesh", data.ReCreateMesh, "")
 	DeclFunc("Minimize", minimize, "Use steepest conjugate gradient method to minimize the total energy")
 

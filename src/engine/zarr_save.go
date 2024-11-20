@@ -81,7 +81,7 @@ func (a *zArray) Save() {
 
 // entrypoint of all the user facing save functions
 func zVerifyAndSave(q Quantity, name string, rchunks requestedChunking, period float64) {
-	if zArrayExists(q, name, rchunks) && period != 0 {
+	if period != 0 && zArrayExists(q, name, rchunks) {
 		for _, z := range zArrays {
 			if z.name == name {
 				z.period = period
