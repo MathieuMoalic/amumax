@@ -16,10 +16,6 @@ type MeshType struct {
 	created                         bool
 }
 
-// func GetMesh() *MeshType {
-// 	return &Mesh
-// }
-
 // NewMesh creates a new mesh.
 func NewMesh(nx, ny, nz int, dx, dy, dz float64, pbcx, pbcy, pbcz int) *MeshType {
 	return &MeshType{nx, ny, nz, dx, dy, dz, 0, 0, 0, pbcx, pbcy, pbcz, false, false, false, false}

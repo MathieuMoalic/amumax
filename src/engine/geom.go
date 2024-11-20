@@ -13,33 +13,33 @@ func init() {
 }
 
 var (
-	Geometry   geom
+	Geometry   GeometryType
 	edgeSmooth int = 0 // disabled by default
 )
 
-type geom struct {
+type GeometryType struct {
 	info
 	Buffer *data.Slice
 	shape  shape
 }
 
-func (g *geom) init() {
+func (g *GeometryType) init() {
 	g.Buffer = nil
 	g.info = info{1, "geom", ""}
 	declROnly("geom", g, "Cell fill fraction (0..1)")
 }
 
-func (g *geom) Gpu() *data.Slice {
+func (g *GeometryType) Gpu() *data.Slice {
 	if g.Buffer == nil {
-		g.Buffer = data.NilSlice(1, g.Mesh().Size())
+		g.Buffer = data.NilSlice(1, Mesh.Size())
 	}
 	return g.Buffer
 }
 
-func (g *geom) Slice() (*data.Slice, bool) {
+func (g *GeometryType) Slice() (*data.Slice, bool) {
 	s := g.Gpu()
 	if s.IsNil() {
-		buffer := cuda.Buffer(g.NComp(), g.Mesh().Size())
+		buffer := cuda.Buffer(g.NComp(), Mesh.Size())
 		cuda.Memset(buffer, 1)
 		return buffer, true
 	} else {
@@ -47,11 +47,11 @@ func (g *geom) Slice() (*data.Slice, bool) {
 	}
 }
 
-func (q *geom) EvalTo(dst *data.Slice) { evalTo(q, dst) }
+func (q *GeometryType) EvalTo(dst *data.Slice) { evalTo(q, dst) }
 
 var _ Quantity = &Geometry
 
-func (g *geom) average() []float64 {
+func (g *GeometryType) average() []float64 {
 	s, r := g.Slice()
 	if r {
 		defer cuda.Recycle(s)
@@ -59,40 +59,35 @@ func (g *geom) average() []float64 {
 	return sAverageUniverse(s)
 }
 
-func (g *geom) Average() float64 { return g.average()[0] }
+func (g *GeometryType) Average() float64 { return g.average()[0] }
 
-func setGeom(s shape) {
-	Geometry.setGeom(s)
-}
-
-func (geometry *geom) setGeom(s shape) {
+func (g *GeometryType) setGeom(s shape) {
 	setBusy(true)
 	defer setBusy(false)
+	Mesh.CreateMesh()
+	normMag.alloc()
+	Regions.alloc()
 
 	if s == nil {
 		// TODO: would be nice not to save volume if entirely filled
 		s = universeInner
 	}
 
-	geometry.shape = s
-	if geometry.Gpu().IsNil() {
-		geometry.Buffer = cuda.NewSlice(1, geometry.Mesh().Size())
+	g.shape = s
+	if g.Gpu().IsNil() {
+		g.Buffer = cuda.NewSlice(1, Mesh.Size())
 	}
 
-	host := data.NewSlice(1, geometry.Gpu().Size())
+	host := data.NewSlice(1, g.Gpu().Size())
 	array := host.Scalars()
 	V := host
 	v := array
-	n := geometry.Mesh().Size()
-	c := geometry.Mesh().CellSize()
-	cx, cy, cz := c[X], c[Y], c[Z]
 
-	log.Log.Info("Initializing geometry")
+	log.Log.Info("Initializing geometry: %e, %e, %e", Mesh.Dx, Mesh.Dy, Mesh.Dz)
 	empty := true
-	for iz := 0; iz < n[Z]; iz++ {
-		for iy := 0; iy < n[Y]; iy++ {
-			for ix := 0; ix < n[X]; ix++ {
-
+	for iz := 0; iz < Mesh.Nz; iz++ {
+		for iy := 0; iy < Mesh.Ny; iy++ {
+			for ix := 0; ix < Mesh.Nx; ix++ {
 				r := index2Coord(ix, iy, iz)
 				x0, y0, z0 := r[X], r[Y], r[Z]
 
@@ -105,9 +100,9 @@ func (geometry *geom) setGeom(s shape) {
 				}
 
 				if edgeSmooth != 0 { // center is sufficient if we're not really smoothing
-					for _, Δx := range []float64{-cx / 2, cx / 2} {
-						for _, Δy := range []float64{-cy / 2, cy / 2} {
-							for _, Δz := range []float64{-cz / 2, cz / 2} {
+					for _, Δx := range []float64{-Mesh.Dx / 2, Mesh.Dx / 2} {
+						for _, Δy := range []float64{-Mesh.Dy / 2, Mesh.Dy / 2} {
+							for _, Δz := range []float64{-Mesh.Dz / 2, Mesh.Dz / 2} {
 								if s(x0+Δx, y0+Δy, z0+Δz) { // inside
 									allOut = false
 								} else {
@@ -118,6 +113,7 @@ func (geometry *geom) setGeom(s shape) {
 					}
 				}
 
+				// log.Log.Info("iz: %d, iy: %d, ix: %d, v:", v)
 				switch {
 				case allIn:
 					v[iz][iy][ix] = 1
@@ -125,22 +121,22 @@ func (geometry *geom) setGeom(s shape) {
 				case allOut:
 					v[iz][iy][ix] = 0
 				default:
-					v[iz][iy][ix] = geometry.cellVolume(ix, iy, iz)
+					v[iz][iy][ix] = g.cellVolume(ix, iy, iz)
 					empty = empty && (v[iz][iy][ix] == 0)
 				}
 			}
 		}
 	}
-
 	if empty {
 		log.Log.ErrAndExit("SetGeom: geometry completely empty")
 	}
 
-	data.Copy(geometry.Buffer, V)
+	data.Copy(g.Buffer, V)
 
 	// M inside geom but previously outside needs to be re-inited
 	needupload := false
 	geomlist := host.Host()[0]
+	log.Log.Info("mag: %v", normMag)
 	mhost := normMag.Buffer().HostCopy()
 	m := mhost.Host()
 	rng := rand.New(rand.NewSource(0))
@@ -162,12 +158,10 @@ func (geometry *geom) setGeom(s shape) {
 }
 
 // Sample edgeSmooth^3 points inside the cell to estimate its volume.
-func (g *geom) cellVolume(ix, iy, iz int) float32 {
+func (g *GeometryType) cellVolume(ix, iy, iz int) float32 {
 	r := index2Coord(ix, iy, iz)
 	x0, y0, z0 := r[X], r[Y], r[Z]
 
-	c := Geometry.Mesh().CellSize()
-	cx, cy, cz := c[X], c[Y], c[Z]
 	s := Geometry.shape
 	var vol float32
 
@@ -175,11 +169,11 @@ func (g *geom) cellVolume(ix, iy, iz int) float32 {
 	S := float64(edgeSmooth)
 
 	for dx := 0; dx < N; dx++ {
-		Δx := -cx/2 + (cx / (2 * S)) + (cx/S)*float64(dx)
+		Δx := -Mesh.Dx/2 + (Mesh.Dx / (2 * S)) + (Mesh.Dx/S)*float64(dx)
 		for dy := 0; dy < N; dy++ {
-			Δy := -cy/2 + (cy / (2 * S)) + (cy/S)*float64(dy)
+			Δy := -Mesh.Dy/2 + (Mesh.Dy / (2 * S)) + (Mesh.Dy/S)*float64(dy)
 			for dz := 0; dz < N; dz++ {
-				Δz := -cz/2 + (cz / (2 * S)) + (cz/S)*float64(dz)
+				Δz := -Mesh.Dz/2 + (Mesh.Dz / (2 * S)) + (Mesh.Dz/S)*float64(dz)
 
 				if s(x0+Δx, y0+Δy, z0+Δz) { // inside
 					vol++
@@ -190,11 +184,11 @@ func (g *geom) cellVolume(ix, iy, iz int) float32 {
 	return vol / float32(N*N*N)
 }
 
-func (g *geom) GetCell(ix, iy, iz int) float64 {
+func (g *GeometryType) GetCell(ix, iy, iz int) float64 {
 	return float64(cuda.GetCell(g.Gpu(), 0, ix, iy, iz))
 }
 
-func (g *geom) shift(dx int) {
+func (g *GeometryType) shift(dx int) {
 	// empty mask, nothing to do
 	if g == nil || g.Buffer.IsNil() {
 		return
@@ -202,17 +196,16 @@ func (g *geom) shift(dx int) {
 
 	// allocated mask: shift
 	s := g.Buffer
-	s2 := cuda.Buffer(1, g.Mesh().Size())
+	s2 := cuda.Buffer(1, Mesh.Size())
 	defer cuda.Recycle(s2)
 	newv := float32(1) // initially fill edges with 1's
 	cuda.ShiftX(s2, s, dx, newv, newv)
 	data.Copy(s, s2)
 
-	n := GetMesh().Size()
 	x1, x2 := shiftDirtyRange(dx)
 
-	for iz := 0; iz < n[Z]; iz++ {
-		for iy := 0; iy < n[Y]; iy++ {
+	for iz := 0; iz < Mesh.Nz; iz++ {
+		for iy := 0; iy < Mesh.Ny; iy++ {
 			for ix := x1; ix < x2; ix++ {
 				r := index2Coord(ix, iy, iz) // includes shift
 				if !g.shape(r[X], r[Y], r[Z]) {
@@ -224,7 +217,7 @@ func (g *geom) shift(dx int) {
 
 }
 
-func (g *geom) shiftY(dy int) {
+func (g *GeometryType) shiftY(dy int) {
 	// empty mask, nothing to do
 	if g == nil || g.Buffer.IsNil() {
 		return
@@ -232,17 +225,16 @@ func (g *geom) shiftY(dy int) {
 
 	// allocated mask: shift
 	s := g.Buffer
-	s2 := cuda.Buffer(1, g.Mesh().Size())
+	s2 := cuda.Buffer(1, Mesh.Size())
 	defer cuda.Recycle(s2)
 	newv := float32(1) // initially fill edges with 1's
 	cuda.ShiftY(s2, s, dy, newv, newv)
 	data.Copy(s, s2)
 
-	n := GetMesh().Size()
 	y1, y2 := shiftDirtyRange(dy)
 
-	for iz := 0; iz < n[Z]; iz++ {
-		for ix := 0; ix < n[X]; ix++ {
+	for iz := 0; iz < Mesh.Nz; iz++ {
+		for ix := 0; ix < Mesh.Nx; ix++ {
 			for iy := y1; iy < y2; iy++ {
 				r := index2Coord(ix, iy, iz) // includes shift
 				if !g.shape(r[X], r[Y], r[Z]) {
@@ -256,7 +248,7 @@ func (g *geom) shiftY(dy int) {
 
 // x range that needs to be refreshed after shift over dx
 func shiftDirtyRange(dx int) (x1, x2 int) {
-	nx := GetMesh().Size()[X]
+	nx := Mesh.Size()[X]
 	log.AssertMsg(dx != 0, "Invalid shift: dx must not be zero in shiftDirtyRange")
 
 	if dx < 0 {
@@ -268,5 +260,3 @@ func shiftDirtyRange(dx int) (x1, x2 int) {
 	}
 	return
 }
-
-func (g *geom) Mesh() *data.MeshType { return GetMesh() }
