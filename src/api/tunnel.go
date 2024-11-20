@@ -50,7 +50,7 @@ func loadPrivateKeys() []ssh.AuthMethod {
 		}
 		signer, err := ssh.ParsePrivateKey(key)
 		if err != nil {
-			log.Log.Debug("Error parsing private key %s: %v", keyFile, err)
+			log.Log.Err("Error parsing private key %s: %v", keyFile, err)
 			continue
 		}
 		methods = append(methods, ssh.PublicKeys(signer))
