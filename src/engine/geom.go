@@ -113,7 +113,6 @@ func (g *GeometryType) setGeom(s shape) {
 					}
 				}
 
-				// log.Log.Info("iz: %d, iy: %d, ix: %d, v:", v)
 				switch {
 				case allIn:
 					v[iz][iy][ix] = 1
