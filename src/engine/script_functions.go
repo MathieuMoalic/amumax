@@ -4,7 +4,7 @@ import "github.com/MathieuMoalic/amumax/src/data"
 
 func init() {
 	DeclFunc("Flush", drainOutput, "Flush all pending output to disk.")
-	DeclFunc("OldAutoSave", autoSave, "Auto save space-dependent quantity every period (s).")
+	DeclFunc("AutoSaveOvf", autoSaveOvf, "Auto save space-dependent quantity every period (s).")
 	DeclFunc("AutoSnapshot", autoSnapshot, "Auto save image of quantity every period (s).")
 	DeclFunc("Chunk", mx3chunks, "")
 	DeclFunc("Uniform", uniform, "Uniform magnetization in given direction")
@@ -70,8 +70,8 @@ func init() {
 	DeclFunc("Exit", Exit, "Exit from the program")
 	DeclFunc("RunShell", runShell, "Run a shell command")
 
-	DeclFunc("SaveOvf", save, "Save space-dependent quantity once, with auto filename")
-	DeclFunc("SaveOvfAs", saveAs, "Save space-dependent quantity with custom filename")
+	DeclFunc("SaveOvf", saveovf, "Save space-dependent quantity once, with auto filename")
+	DeclFunc("SaveOvfAs", saveOvfAs, "Save space-dependent quantity with custom filename")
 	DeclFunc("Snapshot", snapshot, "Save image of quantity")
 	DeclFunc("SnapshotAs", snapshotAs, "Save image of quantity with custom filename")
 
@@ -118,12 +118,12 @@ func init() {
 	DeclFunc("NewScalarMask", newScalarMask, "Makes a 3D array of scalars")
 	DeclFunc("RegionFromCoordinate", regionFromCoordinate, "RegionFromCoordinate")
 
-	DeclFunc("AutoSaveAs", mx3AutoSaveAs, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("AutoSaveAsChunk", mx3AutoSaveAsChunk, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("AutoSave", mx3AutoSave, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("SaveAs", mx3SaveAs, "Save space-dependent quantity as the zarr standard.")
-	DeclFunc("SaveAsChunk", mx3SaveAsChunk, "")
-	DeclFunc("Save", mx3zSave, "Save space-dependent quantity as the zarr standard.")
+	DeclFunc("AutoSaveAs", autoSaveAs, "Auto save space-dependent quantity every period (s) as the zarr standard.")
+	DeclFunc("AutoSaveAsChunk", autoSaveAsChunk, "Auto save space-dependent quantity every period (s) as the zarr standard.")
+	DeclFunc("AutoSave", autoSave, "Auto save space-dependent quantity every period (s) as the zarr standard.")
+	DeclFunc("SaveAs", saveAs, "Save space-dependent quantity as the zarr standard.")
+	DeclFunc("SaveAsChunk", saveAsChunk, "")
+	DeclFunc("Save", save, "Save space-dependent quantity as the zarr standard.")
 
 	DeclFunc("TableSave", tableSave, "Save the data table right now.")
 	DeclFunc("TableAdd", tableAdd, "Save the data table periodically.")

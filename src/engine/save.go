@@ -40,16 +40,16 @@ func (*oformat) Eval() interface{}      { return outputFormat }
 func (*oformat) SetValue(v interface{}) { drainOutput(); outputFormat = v.(outputFormatType) }
 func (*oformat) Type() reflect.Type     { return reflect.TypeOf(outputFormatType(OVF2_BINARY)) }
 
-// save once, with auto file name
-func save(q Quantity) {
+// saveovf once, with auto file name
+func saveovf(q Quantity) {
 	qname := nameOf(q)
 	fname := autoFname(nameOf(q), outputFormat, autonum[qname])
-	saveAs(q, fname)
+	saveOvfAs(q, fname)
 	autonum[qname]++
 }
 
 // Save under given file name (transparent async I/O).
-func saveAs(q Quantity, fname string) {
+func saveOvfAs(q Quantity, fname string) {
 
 	if !strings.HasPrefix(fname, OD()) {
 		fname = OD() + fname // don't clean, turns http:// in http:/
