@@ -14,27 +14,27 @@ import (
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
-func mx3AutoSave(q Quantity, period float64) {
+func autoSave(q Quantity, period float64) {
 	zVerifyAndSave(q, nameOf(q), requestedChunking{1, 1, 1, 1}, period)
 }
 
-func mx3AutoSaveAs(q Quantity, name string, period float64) {
+func autoSaveAs(q Quantity, name string, period float64) {
 	zVerifyAndSave(q, name, requestedChunking{1, 1, 1, 1}, period)
 }
 
-func mx3AutoSaveAsChunk(q Quantity, name string, period float64, rchunks requestedChunking) {
+func autoSaveAsChunk(q Quantity, name string, period float64, rchunks requestedChunking) {
 	zVerifyAndSave(q, name, rchunks, period)
 }
 
-func mx3SaveAs(q Quantity, name string) {
+func saveAs(q Quantity, name string) {
 	zVerifyAndSave(q, name, requestedChunking{1, 1, 1, 1}, 0)
 }
 
-func mx3zSave(q Quantity) {
+func save(q Quantity) {
 	zVerifyAndSave(q, nameOf(q), requestedChunking{1, 1, 1, 1}, 0)
 }
 
-func mx3SaveAsChunk(q Quantity, name string, rchunks requestedChunking) {
+func saveAsChunk(q Quantity, name string, rchunks requestedChunking) {
 	zVerifyAndSave(q, name, rchunks, 0)
 }
 
