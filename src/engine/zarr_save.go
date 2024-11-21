@@ -88,6 +88,12 @@ func zVerifyAndSave(q Quantity, name string, rchunks requestedChunking, period f
 				z.Save()
 			}
 		}
+	} else if period == 0 && zArrayExists(q, name, rchunks) {
+		for _, z := range zArrays {
+			if z.name == name {
+				z.period = period
+			}
+		}
 	} else {
 		if fsutil.Exists(OD() + name) {
 			err := fsutil.Remove(OD() + name)
