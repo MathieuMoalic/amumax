@@ -19,11 +19,7 @@ func saveIfNeeded() {
 			a.count++
 		}
 	}
-	for _, z := range zArrays {
-		if z.needSave() {
-			z.Save()
-		}
-	}
+	saveZarrArrays()
 	if Table.NeedSave() {
 		tableSave()
 	}

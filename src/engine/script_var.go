@@ -38,9 +38,6 @@ func init() {
 	declVar("ext_BubbleMz", &BubbleMz, "Center magnetization 1.0 or -1.0  (default = 1.0)")
 	declVar("EdgeSmooth", &edgeSmooth, "Geometry edge smoothing with edgeSmooth^3 samples per cell, 0=staircase, ~8=very smooth")
 
-	declVar("AutoMeshx", &Mesh.AutoMeshx, "")
-	declVar("AutoMeshy", &Mesh.AutoMeshy, "")
-	declVar("AutoMeshz", &Mesh.AutoMeshz, "")
 	declVar("Tx", &Mesh.Tx, "")
 	declVar("Ty", &Mesh.Ty, "")
 	declVar("Tz", &Mesh.Tz, "")

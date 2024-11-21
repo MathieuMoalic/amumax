@@ -64,9 +64,7 @@ func (g *GeometryType) Average() float64 { return g.average()[0] }
 func (g *GeometryType) setGeom(s shape) {
 	setBusy(true)
 	defer setBusy(false)
-	Mesh.CreateMesh()
-	normMag.alloc()
-	Regions.alloc()
+	CreateMesh()
 
 	if s == nil {
 		// TODO: would be nice not to save volume if entirely filled
@@ -83,7 +81,6 @@ func (g *GeometryType) setGeom(s shape) {
 	V := host
 	v := array
 
-	log.Log.Info("Initializing geometry: %e, %e, %e", Mesh.Dx, Mesh.Dy, Mesh.Dz)
 	empty := true
 	for iz := 0; iz < Mesh.Nz; iz++ {
 		for iy := 0; iy < Mesh.Ny; iy++ {
@@ -135,7 +132,6 @@ func (g *GeometryType) setGeom(s shape) {
 	// M inside geom but previously outside needs to be re-inited
 	needupload := false
 	geomlist := host.Host()[0]
-	log.Log.Info("mag: %v", normMag)
 	mhost := normMag.Buffer().HostCopy()
 	m := mhost.Host()
 	rng := rand.New(rand.NewSource(0))

@@ -1,7 +1,5 @@
 package engine
 
-import "github.com/MathieuMoalic/amumax/src/data"
-
 func init() {
 	DeclFunc("Flush", drainOutput, "Flush all pending output to disk.")
 	DeclFunc("AutoSaveOvf", autoSaveOvf, "Auto save space-dependent quantity every period (s).")
@@ -53,8 +51,15 @@ func init() {
 	DeclFunc("ext_makegrains", voronoi, "Voronoi tesselation (grain size, num regions)")
 	DeclFunc("ext_rmSurfaceCharge", removeLRSurfaceCharge, "Compensate magnetic charges on the left and right sides of an in-plane magnetized wire. Arguments: region, mx on left and right side, resp.")
 	DeclFunc("SetGeom", Geometry.setGeom, "Sets the geometry to a given shape")
-	DeclFunc("ReCreateMesh", data.ReCreateMesh, "")
 	DeclFunc("Minimize", minimize, "Use steepest conjugate gradient method to minimize the total energy")
+
+	DeclFunc("ReCreateMesh", ReCreateMesh, "")
+	DeclFunc("SmoothMesh", SmoothMesh, "")
+	DeclFunc("SetMesh", Mesh.SetMesh, "")
+	DeclFunc("SetGridSize", Mesh.SetGridSize, "")
+	DeclFunc("SetCellSize", Mesh.SetCellSize, "")
+	DeclFunc("SetPBC", Mesh.SetPBC, "")
+	DeclFunc("SetTotalSize", Mesh.SetTotalSize, "")
 
 	DeclFunc("DefRegion", DefRegion, "Define a material region with given index (0-255) and shape")
 	DeclFunc("RedefRegion", RedefRegion, "Reassign all cells with a given region (first argument) to a new region (second argument)")
