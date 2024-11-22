@@ -9,8 +9,9 @@ type Zattrs struct {
 	Buffer []float64 `json:"t"`
 }
 
-func MakeZgroup(name string, od string, zGroups *[]string) {
+func MakeZgroup(name string, od string) {
 	exists := false
+	zGroups := &[]string{}
 	for _, v := range *zGroups {
 		if name == v {
 			exists = true
