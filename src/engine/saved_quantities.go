@@ -45,7 +45,6 @@ func (sq *savedQuantity) SaveAttrs() {
 
 // Save writes the data to disk and updates the times.
 func (sq *savedQuantity) Save() {
-	log.Log.Info("Saving %v at t=%v", sq.name, Time)
 	sq.times = append(sq.times, Time)
 	sq.SaveAttrs()
 	buffer := ValueOf(sq.q)
