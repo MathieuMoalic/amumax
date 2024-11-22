@@ -12,6 +12,7 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/MathieuMoalic/amumax/src/api"
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/log"
 )
@@ -23,11 +24,13 @@ var (
 
 func RunQueue(files []string, flags *flagsType) {
 	s := NewStateTab(files)
-	s.PrintTo(os.Stdout)
-	addr := fmt.Sprint(flags.webUIQueueHost, ":", flags.webUIQueuePort)
+	addr, _, err := api.FindAvailablePort(flags.webUIQueueHost, flags.webUIQueuePort)
+	log.Log.PanicIfError(err)
+	log.Log.Info("Queue web UI at %v", addr)
+	s.printJobList()
 	go s.ListenAndServe(addr)
 	s.Run()
-	fmt.Println(numOK.get(), "OK, ", numFailed.get(), "failed")
+	log.Log.Command(fmt.Sprintf("%d OK; %d Failed", numOK.get(), numFailed.get()))
 	os.Exit(int(exitStatus))
 }
 
@@ -108,14 +111,15 @@ func (a *atom) get() int { return int(atomic.LoadInt32((*int32)(a))) }
 func (a *atom) inc()     { atomic.AddInt32((*int32)(a), 1) }
 
 func run(inFile string, gpu int) {
-	fmt.Println("Running", inFile, "on GPU", gpu)
+	log.Log.Command(fmt.Sprintf("Running %s on GPU %d", inFile, gpu))
 	err := exec.Command(os.Args[0], "-g", fmt.Sprint(gpu), inFile).Run()
 	if err != nil {
-		fmt.Println("failed", inFile, "on GPU", gpu, ":", err)
+		log.Log.Command(fmt.Sprintf("FAILED %s on GPU %d: %v", inFile, gpu, err))
 		exitStatus = 1
 		numFailed.inc()
 		return
 	}
+	log.Log.Command(fmt.Sprintf("DONE %s on GPU %d", inFile, gpu))
 	numOK.inc()
 }
 
@@ -130,12 +134,14 @@ func initGPUs(nGpu int) chan int {
 	return idle
 }
 
-func (s *stateTab) PrintTo(w io.Writer) {
+func (s *stateTab) printJobList() {
 	s.lock.Lock()
 	defer s.lock.Unlock()
+	log.Log.Command("Job list:")
 	for i, j := range s.jobs {
-		fmt.Fprintf(w, "%3d %v %v\n", i, j.inFile, j.webAddr)
+		log.Log.Command(fmt.Sprintf("%3d %v %v", i, j.inFile, j.webAddr))
 	}
+	log.Log.Command("Starting ...")
 }
 
 func GetLocalIP() string {

@@ -53,7 +53,7 @@ func startGuiServer(e *echo.Echo, host string, port int, tunnel string) {
 
 	for i := 0; i < maxRetries; i++ {
 		// Find an available port
-		addr, port, err := findAvailablePort(host, port)
+		addr, port, err := FindAvailablePort(host, port)
 		if err != nil {
 			log.Log.ErrAndExit("Failed to find available port: %v", err)
 		}
@@ -88,7 +88,7 @@ func startGuiServer(e *echo.Echo, host string, port int, tunnel string) {
 	log.Log.Err("Failed to start server after multiple attempts")
 }
 
-func findAvailablePort(host string, startPort int) (string, string, error) {
+func FindAvailablePort(host string, startPort int) (string, string, error) {
 	// Loop to find the first available port
 	for port := startPort; port <= 65535; port++ {
 		address := net.JoinHostPort(host, strconv.Itoa(port))
