@@ -53,7 +53,7 @@ func init() {
 	DeclFunc("SetGeom", Geometry.setGeom, "Sets the geometry to a given shape")
 	DeclFunc("Minimize", minimize, "Use steepest conjugate gradient method to minimize the total energy")
 
-	DeclFunc("ReCreateMesh", ReCreateMesh, "")
+	// DeclFunc("ReCreateMesh", ReCreateMesh, "")
 	DeclFunc("SmoothMesh", SmoothMesh, "")
 	DeclFunc("SetMesh", Mesh.SetMesh, "")
 	DeclFunc("SetGridSize", Mesh.SetGridSize, "")
@@ -123,12 +123,12 @@ func init() {
 	DeclFunc("NewScalarMask", newScalarMask, "Makes a 3D array of scalars")
 	DeclFunc("RegionFromCoordinate", regionFromCoordinate, "RegionFromCoordinate")
 
-	DeclFunc("AutoSaveAs", autoSaveAs, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("AutoSaveAsChunk", autoSaveAsChunk, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("AutoSave", autoSave, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("SaveAs", saveAs, "Save space-dependent quantity as the zarr standard.")
-	DeclFunc("SaveAsChunk", saveAsChunk, "")
-	DeclFunc("Save", save, "Save space-dependent quantity as the zarr standard.")
+	DeclFunc("AutoSaveAs", savedQuantities.autoSaveAs, "Auto save space-dependent quantity every period (s) as the zarr standard.")
+	DeclFunc("AutoSaveAsChunk", savedQuantities.autoSaveAsChunk, "Auto save space-dependent quantity every period (s) as the zarr standard.")
+	DeclFunc("AutoSave", savedQuantities.autoSave, "Auto save space-dependent quantity every period (s) as the zarr standard.")
+	DeclFunc("SaveAs", savedQuantities.saveAs, "Save space-dependent quantity as the zarr standard.")
+	DeclFunc("SaveAsChunk", savedQuantities.saveAsChunk, "")
+	DeclFunc("Save", savedQuantities.save, "Save space-dependent quantity as the zarr standard.")
 
 	DeclFunc("TableSave", tableSave, "Save the data table right now.")
 	DeclFunc("TableAdd", tableAdd, "Save the data table periodically.")

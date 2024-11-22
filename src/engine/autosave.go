@@ -19,7 +19,7 @@ func saveIfNeeded() {
 			a.count++
 		}
 	}
-	saveZarrArrays()
+	savedQuantities.SaveIfNeeded()
 	if Table.NeedSave() {
 		tableSave()
 	}

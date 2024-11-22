@@ -105,7 +105,7 @@ func (ts *tableStruct) AddColumn(name, unit string) {
 func tableInit() {
 	err := fsutil.Remove(OD() + "table")
 	log.Log.PanicIfError(err)
-	zarr.MakeZgroup("table", OD(), &zGroups)
+	zarr.MakeZgroup("table", OD())
 	Table.AddColumn("step", "")
 	Table.AddColumn("t", "s")
 	tableAdd(&normMag)

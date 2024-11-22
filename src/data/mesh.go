@@ -172,8 +172,9 @@ func (m *MeshType) validateGridSize() {
 
 func (m *MeshType) checkLargestPrimeFactor(N int, axisName string) {
 	if m.largestPrimeFactor(N) > 127 {
-		log.Log.Warn("%s (%d) has a prime factor larger than 127 so the mesh cannot"+
-			" be calculated. Use `AutoMesh(bool,bool,bool)` or change the value of %s manually or you might have CUDA errors.", axisName, N, axisName)
+		log.Log.Warn("%s (%d) has a prime factor larger than 127 so the mesh cannot", axisName, N)
+		log.Log.Warn("be calculated. Use `AutoMesh(bool,bool,bool)` or change the value")
+		log.Log.Warn("of %s manually or you might have CUDA errors.", axisName)
 	}
 }
 
