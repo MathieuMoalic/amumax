@@ -1,6 +1,8 @@
 package zarr
 
 import (
+	"strings"
+
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 )
@@ -11,7 +13,9 @@ type Zattrs struct {
 
 func InitZgroup(name string, od string) {
 	err := fsutil.Mkdir(od + name)
-	log.Log.PanicIfError(err)
+	if err != nil && !strings.Contains(err.Error(), "file exists") {
+		log.Log.PanicIfError(err)
+	}
 	path := ""
 	if name == "" {
 		path = od + ".zgroup"
