@@ -65,5 +65,5 @@ func InitIO(mx3Path, od, cachedir string, skipexists, forceclean, showprogressba
 	} else {
 		log.Log.PanicIfError(fsutil.Mkdir(od))
 	}
-	zarr.InitZgroup(OD())
+	zarr.InitZgroup("", OD())
 }
