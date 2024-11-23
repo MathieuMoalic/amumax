@@ -13,7 +13,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func Start(host string, port int, tunnel string, debug bool) {
+func Start(host string, port int, basePath string, tunnel string, debug bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Log.Warn("WebUI crashed: %v", r)
@@ -33,16 +33,19 @@ func Start(host string, port int, tunnel string, debug bool) {
 	} else {
 		e.Logger.SetOutput(io.Discard)
 	}
+
+	api := e.Group(basePath)
+
 	// Serve the `index.html` file at the root URL
-	e.GET("/", indexFileHandler())
+	api.GET("/", indexFileHandler(basePath))
 
 	// Serve the other embedded static files
-	e.GET("/*", echo.WrapHandler(staticFileHandler()))
+	api.GET("/*", echo.WrapHandler(staticFileHandler(basePath)))
 
 	wsManager := newWebSocketManager()
-	e.GET("/ws", wsManager.websocketEntrypoint)
+	api.GET("/ws", wsManager.websocketEntrypoint)
 	wsManager.startBroadcastLoop()
-	engineState := initEngineStateAPI(e, wsManager)
+	engineState := initEngineStateAPI(api, wsManager)
 	wsManager.engineState = engineState
 
 	startGuiServer(e, host, port, tunnel)

@@ -35,7 +35,7 @@ type MetricsState struct {
 	GpuVramTotal          int     `msgpack:"gpuVramTotal"`
 }
 
-func initMetricsAPI(e *echo.Echo, ws *WebSocketManager) *MetricsState {
+func initMetricsAPI(e *echo.Group, ws *WebSocketManager) *MetricsState {
 	pid := os.Getpid()
 	metricState := &MetricsState{PID: pid, ws: ws}
 	metricState.Update()

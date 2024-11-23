@@ -45,7 +45,9 @@ Aex = 10e-12
 alpha = 1
 m = RandomMag()`)
 	if flags.webUIEnabled {
-		go api.Start(flags.webUIHost, flags.webUIPort, flags.tunnel, flags.debug)
+		host, port, path, err := parseAddrPath(flags.webUIAddress)
+		log.Log.PanicIfError(err)
+		go api.Start(host, port, path, flags.tunnel, flags.debug)
 	}
 	engine.RunInteractive()
 }
@@ -81,7 +83,9 @@ func runFileAndServe(mx3Path string, flags *flagsType) {
 
 	// now the parser is not used anymore so it can handle web requests
 	if flags.webUIEnabled {
-		go api.Start(flags.webUIHost, flags.webUIPort, flags.tunnel, flags.debug)
+		host, port, path, err := parseAddrPath(flags.webUIAddress)
+		log.Log.PanicIfError(err)
+		go api.Start(host, port, path, flags.tunnel, flags.debug)
 	}
 	// start executing the tree, possibly injecting commands from web gui
 	engine.EvalFile(code)
