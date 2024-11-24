@@ -2,10 +2,8 @@ package api
 
 import (
 	"embed"
-	"fmt"
 	"io/fs"
 	"net/http"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -27,22 +25,12 @@ func staticFileHandler(basePath string) http.Handler {
 }
 
 // Serve the `index.html` file.
-func indexFileHandler(path string) echo.HandlerFunc {
+func indexFileHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		// Read the index.html file
 		indexFile, err := staticFiles.ReadFile("static/index.html")
 		if err != nil {
 			return c.String(http.StatusInternalServerError, "Index file not found")
 		}
-
-		// Convert to string for manipulation
-		indexContent := string(indexFile)
-
-		// Inject the `BASE_PATH` variable and `console.log("test")` before the closing </body> tag
-		injectedContent := strings.Replace(indexContent, "</body>",
-			fmt.Sprintf(`<script>const BASE_PATH = "%s";</script></body>`, path), 1)
-
-		// Serve the modified content
-		return c.Blob(http.StatusOK, "text/html", []byte(injectedContent))
+		return c.Blob(http.StatusOK, "text/html", indexFile)
 	}
 }
