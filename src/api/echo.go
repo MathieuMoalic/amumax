@@ -36,8 +36,13 @@ func Start(host string, port int, basePath string, tunnel string, debug bool) {
 
 	api := e.Group(basePath)
 
+	// redirect "" to "/"
+	api.GET("", func(c echo.Context) error {
+		return c.Redirect(301, basePath+"/")
+	})
+
 	// Serve the `index.html` file at the root URL
-	api.GET("/", indexFileHandler(basePath))
+	api.GET("/", indexFileHandler())
 
 	// Serve the other embedded static files
 	api.GET("/*", echo.WrapHandler(staticFileHandler(basePath)))
