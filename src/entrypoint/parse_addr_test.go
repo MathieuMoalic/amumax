@@ -24,7 +24,7 @@ func TestValidHostPort(t *testing.T) {
 
 func TestValidHostOnly(t *testing.T) {
 	input := "host"
-	expectedHost, expectedPort, expectedPath := "host", 0, ""
+	expectedHost, expectedPort, expectedPath := "host", 35367, ""
 	host, port, path, err := parseAddrPath(input)
 	if err != nil {
 		t.Errorf("Unexpected error for input %q: %v", input, err)
@@ -60,7 +60,7 @@ func TestValidHostPortPath(t *testing.T) {
 
 func TestValidHostPath(t *testing.T) {
 	input := "host/path"
-	expectedHost, expectedPort, expectedPath := "host", 0, "/path"
+	expectedHost, expectedPort, expectedPath := "host", 35367, "/path"
 	host, port, path, err := parseAddrPath(input)
 	if err != nil {
 		t.Errorf("Unexpected error for input %q: %v", input, err)
@@ -78,7 +78,7 @@ func TestValidHostPath(t *testing.T) {
 
 func TestValidPortOnly(t *testing.T) {
 	input := ":8080"
-	expectedHost, expectedPort, expectedPath := "", 8080, ""
+	expectedHost, expectedPort, expectedPath := "localhost", 8080, ""
 	host, port, path, err := parseAddrPath(input)
 	if err != nil {
 		t.Errorf("Unexpected error for input %q: %v", input, err)
@@ -96,7 +96,7 @@ func TestValidPortOnly(t *testing.T) {
 
 func TestValidPortPath(t *testing.T) {
 	input := ":8080/path"
-	expectedHost, expectedPort, expectedPath := "", 8080, "/path"
+	expectedHost, expectedPort, expectedPath := "localhost", 8080, "/path"
 	host, port, path, err := parseAddrPath(input)
 	if err != nil {
 		t.Errorf("Unexpected error for input %q: %v", input, err)
@@ -138,7 +138,7 @@ func TestInvalidFragment(t *testing.T) {
 
 func TestValidHostWithEmptyPort(t *testing.T) {
 	input := "host:/path"
-	expectedHost, expectedPort, expectedPath := "host", 0, "/path"
+	expectedHost, expectedPort, expectedPath := "host", 35367, "/path"
 	host, port, path, err := parseAddrPath(input)
 	if err != nil {
 		t.Errorf("Unexpected error for input %q: %v", input, err)
@@ -156,7 +156,7 @@ func TestValidHostWithEmptyPort(t *testing.T) {
 
 func TestValidEmptyHostWithEmptyHostAndPort(t *testing.T) {
 	input := ":/path"
-	expectedHost, expectedPort, expectedPath := "", 0, "/path"
+	expectedHost, expectedPort, expectedPath := "localhost", 35367, "/path"
 	host, port, path, err := parseAddrPath(input)
 	if err != nil {
 		t.Errorf("Unexpected error for input %q: %v", input, err)

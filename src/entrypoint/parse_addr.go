@@ -54,6 +54,12 @@ func parseAddrPath(URI string) (host string, port int, path string, err error) {
 			return "", 0, "", fmt.Errorf("queries and fragments are not allowed. %s", validFormatMsg)
 		}
 	}
+	if host == "" {
+		host = "localhost"
+	}
+	if port == 0 {
+		port = 35367
+	}
 
 	return host, port, path, nil
 }

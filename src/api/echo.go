@@ -53,10 +53,10 @@ func Start(host string, port int, basePath string, tunnel string, debug bool) {
 	engineState := initEngineStateAPI(api, wsManager)
 	wsManager.engineState = engineState
 
-	startGuiServer(e, host, port, tunnel)
+	startGuiServer(e, host, basePath, port, tunnel)
 }
 
-func startGuiServer(e *echo.Echo, host string, port int, tunnel string) {
+func startGuiServer(e *echo.Echo, host string, basePath string, port int, tunnel string) {
 	const maxRetries = 5
 
 	for i := 0; i < maxRetries; i++ {
@@ -65,7 +65,7 @@ func startGuiServer(e *echo.Echo, host string, port int, tunnel string) {
 		if err != nil {
 			log.Log.ErrAndExit("Failed to find available port: %v", err)
 		}
-		log.Log.Info("Serving the web UI at http://%s", addr)
+		log.Log.Info("Serving the web UI at http://%s%s", addr, basePath)
 
 		if tunnel != "" {
 			go startTunnel(tunnel)
