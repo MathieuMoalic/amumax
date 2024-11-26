@@ -198,6 +198,9 @@ func (s *Slice) Host() [][]float32 {
 
 // Returns a copy of the Slice, allocated on CPU.
 func (s *Slice) HostCopy() *Slice {
+	if s == nil {
+		panic("nil slice")
+	}
 	cpy := NewSlice(s.NComp(), s.Size())
 	Copy(cpy, s)
 	return cpy
@@ -207,24 +210,24 @@ func Copy(dst, src *Slice) {
 	if dst.NComp() != src.NComp() || dst.Len() != src.Len() {
 		panic(fmt.Sprintf("slice copy: illegal sizes: dst: %vx%v, src: %vx%v", dst.NComp(), dst.Len(), src.NComp(), src.Len()))
 	}
-	d, s := dst.GPUAccess(), src.GPUAccess()
+	dstIsGpu, srcIsGpu := dst.GPUAccess(), src.GPUAccess()
 	bytes := SIZEOF_FLOAT32 * int64(dst.Len())
 	switch {
 	default:
 		panic("bug")
-	case d && s:
+	case dstIsGpu && srcIsGpu:
 		for c := 0; c < dst.NComp(); c++ {
 			memCpy(dst.DevPtr(c), src.DevPtr(c), bytes)
 		}
-	case s && !d:
+	case srcIsGpu && !dstIsGpu:
 		for c := 0; c < dst.NComp(); c++ {
 			memCpyDtoH(dst.ptrs[c], src.DevPtr(c), bytes)
 		}
-	case !s && d:
+	case !srcIsGpu && dstIsGpu:
 		for c := 0; c < dst.NComp(); c++ {
 			memCpyHtoD(dst.DevPtr(c), src.ptrs[c], bytes)
 		}
-	case !d && !s:
+	case !dstIsGpu && !srcIsGpu:
 		dst, src := dst.Host(), src.Host()
 		for c := range dst {
 			copy(dst[c], src[c])

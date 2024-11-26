@@ -11,7 +11,7 @@ import (
 type Geometry struct {
 	EngineState *EngineStateStruct
 	edgeSmooth  int
-	Buffer      *data.Slice
+	GpuSlice    *data.Slice
 	shape       shape
 }
 
@@ -34,10 +34,10 @@ func NewGeom(engineState *EngineStateStruct) *Geometry {
 // }
 
 func (g *Geometry) Gpu() *data.Slice {
-	if g.Buffer == nil {
-		g.Buffer = data.NilSlice(1, g.EngineState.Mesh.Size())
+	if g.GpuSlice == nil {
+		g.GpuSlice = data.NilSlice(1, g.EngineState.Mesh.Size())
 	}
-	return g.Buffer
+	return g.GpuSlice
 }
 
 // func (g *geom) Slice() (*data.Slice, bool) {
@@ -78,22 +78,18 @@ func (g *Geometry) setGeom(s shape) {
 
 	g.shape = s
 	if g.Gpu().IsNil() {
-		g.Buffer = cuda.NewSlice(1, g.EngineState.Mesh.Size())
+		g.GpuSlice = cuda.NewSlice(1, g.EngineState.Mesh.Size())
 	}
 
-	host := data.NewSlice(1, g.Gpu().Size())
-	array := host.Scalars()
-	V := host
-	v := array
-	n := g.EngineState.Mesh.Size()
-	c := g.EngineState.Mesh.CellSize()
-	cx, cy, cz := c[X], c[Y], c[Z]
+	CpuSlice := data.NewSlice(1, g.Gpu().Size())
+	array := CpuSlice.Scalars()
+	mesh := g.EngineState.Mesh
 
 	log.Log.Info("Initializing geometry")
 	empty := true
-	for iz := 0; iz < n[Z]; iz++ {
-		for iy := 0; iy < n[Y]; iy++ {
-			for ix := 0; ix < n[X]; ix++ {
+	for iz := 0; iz < mesh.Nz; iz++ {
+		for iy := 0; iy < mesh.Ny; iy++ {
+			for ix := 0; ix < mesh.Nx; ix++ {
 
 				r := g.EngineState.Utils.Index2Coord(ix, iy, iz)
 				x0, y0, z0 := r[X], r[Y], r[Z]
@@ -107,9 +103,9 @@ func (g *Geometry) setGeom(s shape) {
 				}
 
 				if g.edgeSmooth != 0 { // center is sufficient if we're not really smoothing
-					for _, Δx := range []float64{-cx / 2, cx / 2} {
-						for _, Δy := range []float64{-cy / 2, cy / 2} {
-							for _, Δz := range []float64{-cz / 2, cz / 2} {
+					for _, Δx := range []float64{-mesh.Dx / 2, mesh.Dx / 2} {
+						for _, Δy := range []float64{-mesh.Dy / 2, mesh.Dy / 2} {
+							for _, Δz := range []float64{-mesh.Dz / 2, mesh.Dz / 2} {
 								if s(x0+Δx, y0+Δy, z0+Δz) { // inside
 									allOut = false
 								} else {
@@ -122,13 +118,13 @@ func (g *Geometry) setGeom(s shape) {
 
 				switch {
 				case allIn:
-					v[iz][iy][ix] = 1
+					array[iz][iy][ix] = 1
 					empty = false
 				case allOut:
-					v[iz][iy][ix] = 0
+					array[iz][iy][ix] = 0
 				default:
-					v[iz][iy][ix] = g.cellVolume(ix, iy, iz)
-					empty = empty && (v[iz][iy][ix] == 0)
+					array[iz][iy][ix] = g.cellVolume(ix, iy, iz)
+					empty = empty && (array[iz][iy][ix] == 0)
 				}
 			}
 		}
@@ -138,12 +134,11 @@ func (g *Geometry) setGeom(s shape) {
 		log.Log.ErrAndExit("SetGeom: geometry completely empty")
 	}
 
-	data.Copy(g.Buffer, V)
-
+	data.Copy(g.GpuSlice, CpuSlice)
 	// M inside geom but previously outside needs to be re-inited
 	needupload := false
-	geomlist := host.Host()[0]
-	mhost := NormMag.Buffer().HostCopy()
+	geomlist := CpuSlice.Host()[0]
+	mhost := g.EngineState.NormMag.Buffer().HostCopy()
 	m := mhost.Host()
 	rng := rand.New(rand.NewSource(0))
 	for i := range m[0] {
@@ -157,10 +152,10 @@ func (g *Geometry) setGeom(s shape) {
 		}
 	}
 	if needupload {
-		data.Copy(NormMag.Buffer(), mhost)
+		data.Copy(g.EngineState.NormMag.Buffer(), mhost)
 	}
 
-	NormMag.normalize() // removes m outside vol
+	g.EngineState.NormMag.normalize() // removes m outside vol
 }
 
 // Sample edgeSmooth^3 points inside the cell to estimate its volume.
