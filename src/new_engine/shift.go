@@ -1,14 +1,10 @@
 package new_engine
 
-import (
-	"github.com/MathieuMoalic/amumax/src/data"
-)
-
 var (
-	totalShift, totalYShift                    float64                        // accumulated window shift (X and Y) in meter
-	shiftMagL, shiftMagR, shiftMagU, shiftMagD data.Vector                    // when shifting m, put these value at the left/right edge.
-	shiftM, shiftGeom, shiftRegions            bool        = true, true, true // should shift act on magnetization, geometry, regions?
-	EdgeCarryShift                             bool        = true             // Use the values of M at the border for the new cells
+	totalShift, totalYShift float64 // accumulated window shift (X and Y) in meter
+	// shiftMagL, shiftMagR, shiftMagU, shiftMagD data.Vector                    // when shifting m, put these value at the left/right edge.
+	// shiftM, shiftGeom, shiftRegions            bool        = true, true, true // should shift act on magnetization, geometry, regions?
+	EdgeCarryShift bool = true // Use the values of M at the border for the new cells
 )
 
 // // position of the window lab frame

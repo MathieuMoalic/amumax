@@ -61,10 +61,6 @@ func (g *geom) average() []float64 {
 
 func (g *geom) Average() float64 { return g.average()[0] }
 
-func setGeom(s shape) {
-	Geometry.setGeom(s)
-}
-
 func (geometry *geom) setGeom(s shape) {
 	setBusy(true)
 	defer setBusy(false)
