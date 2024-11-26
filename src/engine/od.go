@@ -18,7 +18,7 @@ var (
 	CacheDir       string
 	SkipExists     bool
 	ForceClean     bool
-	ShowProgresBar bool
+	HideProgresBar bool
 	SelfTest       bool
 	SyncAndLog     bool
 )
@@ -32,11 +32,11 @@ func OD() string {
 
 // SetOD sets the output directory where auto-saved files will be stored.
 // The -o flag can also be used for this purpose.
-func InitIO(mx3Path, od, cachedir string, skipexists, forceclean, showprogressbar, selftest, syncandlog bool) {
+func InitIO(mx3Path, od, cachedir string, skipexists, forceclean, hideprogressbar, selftest, syncandlog bool) {
 	CacheDir = cachedir
 	SkipExists = skipexists
 	ForceClean = forceclean
-	ShowProgresBar = showprogressbar
+	HideProgresBar = hideprogressbar
 	SelfTest = selftest
 	SyncAndLog = syncandlog
 

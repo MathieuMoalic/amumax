@@ -36,7 +36,7 @@ func RunQueue(files []string, flags *flags.FlagsType) {
 	log.Log.Info("Queue web UI at %v", addr)
 	s.printJobList()
 	go s.ListenAndServe(addr)
-	s.Run()
+	s.Run(flags)
 	log.Log.Command(fmt.Sprintf("%d OK; %d Failed", numOK.get(), numFailed.get()))
 	os.Exit(int(exitStatus))
 }
@@ -90,7 +90,7 @@ func (s *stateTab) Finish(j job) {
 }
 
 // Runs all the jobs in stateTab.
-func (s *stateTab) Run() {
+func (s *stateTab) Run(flags *flags.FlagsType) {
 	nGPU := cu.DeviceGetCount()
 	idle := initGPUs(nGPU)
 	for {
@@ -101,7 +101,7 @@ func (s *stateTab) Run() {
 			break
 		}
 		go func() {
-			run(j.inFile, gpu)
+			run(j.inFile, gpu, flags)
 			s.Finish(j)
 			idle <- gpu
 		}()
@@ -117,9 +117,63 @@ type atom int32
 func (a *atom) get() int { return int(atomic.LoadInt32((*int32)(a))) }
 func (a *atom) inc()     { atomic.AddInt32((*int32)(a), 1) }
 
-func run(inFile string, gpu int) {
-	log.Log.Command(fmt.Sprintf("Running %s on GPU %d", inFile, gpu))
-	err := exec.Command(os.Args[0], "-g", fmt.Sprint(gpu), inFile).Run()
+func run(inFile string, gpu int, flags *flags.FlagsType) {
+	// invalid flags: Version, Update, Gpu, Interactive, OutputDir, SelfTest
+	// add all of the other flags to the command line
+	cmd := []string{os.Args[0]}
+
+	// Add valid flags to the command line
+	if flags.Debug {
+		cmd = append(cmd, "--debug")
+	}
+	if flags.Vet {
+		cmd = append(cmd, "--vet")
+	}
+	if flags.CacheDir != fmt.Sprintf("%v/amumax_kernels", os.TempDir()) {
+		cmd = append(cmd, "--cache", flags.CacheDir)
+	}
+	if flags.Silent {
+		cmd = append(cmd, "--silent")
+	}
+	if flags.Sync {
+		cmd = append(cmd, "--sync")
+	}
+	if flags.ForceClean {
+		cmd = append(cmd, "--force-clean")
+	}
+	if flags.SkipExists {
+		cmd = append(cmd, "--skip-exist")
+	}
+	if flags.HideProgressBar {
+		cmd = append(cmd, "--hide-progress-bar")
+	}
+	if flags.Tunnel != "" {
+		cmd = append(cmd, "--tunnel", flags.Tunnel)
+	}
+	if flags.Insecure {
+		cmd = append(cmd, "--insecure")
+	}
+	if flags.NewParser {
+		cmd = append(cmd, "--new-parser")
+	}
+	if flags.WebUIDisabled {
+		cmd = append(cmd, "--webui-disable")
+	}
+	if flags.WebUIAddress != "localhost:35367" {
+		cmd = append(cmd, "--webui-addr", flags.WebUIAddress)
+	}
+	// GPU and Input File
+	cmd = append(cmd, "--gpu", fmt.Sprintf("%d", gpu), inFile)
+
+	// cmd := []string{os.Args[0], "-g", fmt.Sprint(gpu), inFile}
+	// log.Log.Command(fmt.Sprintf("Running %s on GPU %d", inFile, gpu))
+	// concat all the flags and the input file
+	cmdString := ""
+	for _, c := range cmd {
+		cmdString += c + " "
+	}
+	log.Log.Command(fmt.Sprintf("Running %s", cmdString))
+	err := exec.Command(cmd[0], cmd[1:]...).Run()
 	if err != nil {
 		log.Log.Command(fmt.Sprintf("FAILED %s on GPU %d: %v", inFile, gpu, err))
 		exitStatus = 1
