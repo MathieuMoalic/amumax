@@ -42,6 +42,9 @@ release:
 	git checkout main
 	git pull
 	VERSION=$(date -u +'%Y.%m.%d')
+	gh release view $VERSION &>/dev/null && gh release delete $VERSION -y
+	git show-ref --tags $VERSION &>/dev/null && git tag -d $VERSION && git push --tags
+
 	just update-flake-hashes-git
 	just test
 	

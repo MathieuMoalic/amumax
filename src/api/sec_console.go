@@ -16,7 +16,7 @@ type ConsoleState struct {
 
 func (s ConsoleState) Update() {}
 
-func initConsoleAPI(e *echo.Echo, ws *WebSocketManager) *ConsoleState {
+func initConsoleAPI(e *echo.Group, ws *WebSocketManager) *ConsoleState {
 	state := &ConsoleState{
 		ws:   ws,
 		Hist: &log.Log.Hist,

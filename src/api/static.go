@@ -12,12 +12,16 @@ import (
 var staticFiles embed.FS
 
 // Create a sub FS excluding the `index.html` to serve static files.
-func staticFileHandler() http.Handler {
+func staticFileHandler(basePath string) http.Handler {
 	fsys, err := fs.Sub(staticFiles, "static")
 	if err != nil {
 		panic(err)
 	}
-	return http.FileServer(http.FS(fsys))
+	fileServer := http.FileServer(http.FS(fsys))
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Strip the basePath from the request URL
+		http.StripPrefix(basePath+"/", fileServer).ServeHTTP(w, r)
+	})
 }
 
 // Serve the `index.html` file.

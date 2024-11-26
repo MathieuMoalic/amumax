@@ -13,7 +13,7 @@ type EngineState struct {
 	Metrics   *MetricsState    `msgpack:"metrics"`
 }
 
-func initEngineStateAPI(e *echo.Echo, ws *WebSocketManager) *EngineState {
+func initEngineStateAPI(e *echo.Group, ws *WebSocketManager) *EngineState {
 	return &EngineState{
 		Header:    initHeaderAPI(),
 		Console:   initConsoleAPI(e, ws),

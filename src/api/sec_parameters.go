@@ -26,7 +26,7 @@ type ParametersState struct {
 	SelectedRegion int     `msgpack:"selectedRegion"`
 }
 
-func initParameterAPI(e *echo.Echo, ws *WebSocketManager) *ParametersState {
+func initParameterAPI(e *echo.Group, ws *WebSocketManager) *ParametersState {
 	parametersState := ParametersState{
 		ws:             ws,
 		Regions:        engine.Regions.GetExistingIndices(),

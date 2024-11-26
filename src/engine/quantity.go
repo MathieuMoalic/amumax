@@ -37,7 +37,7 @@ func sizeOf(q Quantity) [3]int {
 	return meshSize()
 }
 
-func AverageOf(q Quantity) []float64 {
+func averageOf(q Quantity) []float64 {
 	// quantity defines its own, custom, implementation:
 	if s, ok := q.(interface {
 		average() []float64
