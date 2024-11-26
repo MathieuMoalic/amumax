@@ -105,7 +105,7 @@ func myprint(msg ...interface{}) {
 func customFmt(msg []interface{}) (fmtMsg string) {
 	for _, m := range msg {
 		if e, ok := m.(Quantity); ok {
-			str := fmt.Sprint(averageOf(e))
+			str := fmt.Sprint(AverageOf(e))
 			str = str[1 : len(str)-1] // remove [ ]
 			fmtMsg += fmt.Sprintf("%v, ", str)
 		} else {

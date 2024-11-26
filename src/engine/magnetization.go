@@ -8,7 +8,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
-var normMag magnetization // reduced magnetization (unit length)
+var NormMag magnetization // reduced magnetization (unit length)
 
 // Special buffered quantity to store magnetization
 // makes sure it's normalized etc.
@@ -17,7 +17,7 @@ type magnetization struct {
 }
 
 func (m *magnetization) GetRegionToString(region int) string {
-	v := unslice(averageOf(m))
+	v := unslice(AverageOf(m))
 	return fmt.Sprintf("(%g,%g,%g)", v[0], v[1], v[2])
 }
 
@@ -32,12 +32,12 @@ func (m *magnetization) SetValue(v interface{})  { m.SetInShape(nil, v.(config))
 func (m *magnetization) InputType() reflect.Type { return reflect.TypeOf(config(nil)) }
 func (m *magnetization) Type() reflect.Type      { return reflect.TypeOf(new(magnetization)) }
 func (m *magnetization) Eval() interface{}       { return m }
-func (m *magnetization) average() []float64      { return sAverageMagnet(normMag.Buffer()) }
+func (m *magnetization) average() []float64      { return sAverageMagnet(NormMag.Buffer()) }
 func (m *magnetization) Average() data.Vector    { return unslice(m.average()) }
 func (m *magnetization) normalize()              { cuda.Normalize(m.Buffer(), Geometry.Gpu()) }
 
 // allocate storage (not done by init, as mesh size may not yet be known then)
-func (m *magnetization) alloc() {
+func (m *magnetization) Alloc() {
 	m.buffer_ = cuda.NewSlice(3, m.Mesh().Size())
 	m.Set(randomMag()) // sane starting config
 }

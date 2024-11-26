@@ -13,7 +13,7 @@ var (
 )
 
 func centerWallInner(c int) {
-	M := &normMag
+	M := &NormMag
 	mc := sAverageUniverse(M.Buffer().Comp(c))[0]
 	n := GetMesh().Size()
 	tolerance := 4 / float64(n[X]) // x*2 * expected <m> change for 1 cell shift
@@ -69,7 +69,7 @@ func getShiftSpeed() float64 {
 }
 
 func getDWxPos() float64 {
-	M := &normMag
+	M := &NormMag
 	mx := sAverageUniverse(M.Buffer().Comp(0))[0]
 	c := GetMesh().CellSize()
 	n := GetMesh().Size()

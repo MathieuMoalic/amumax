@@ -58,8 +58,8 @@ func (m *Metadata) Get(key string) interface{} {
 }
 
 func (m *Metadata) End() {
-	m.Fields["end_time"] = time.Now().Format(time.UnixDate)
-	m.Fields["total_time"] = fmt.Sprint(time.Since(m.startTime))
+	m.Add("end_time", time.Now().Format(time.UnixDate))
+	m.Add("total_time", fmt.Sprint(time.Since(m.startTime)))
 	m.Save()
 }
 

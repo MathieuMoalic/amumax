@@ -1,4 +1,4 @@
-package entrypoint
+package queue
 
 // File que for distributing multiple input files over GPUs.
 
@@ -13,6 +13,7 @@ import (
 	"sync/atomic"
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
+	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
@@ -21,10 +22,10 @@ var (
 	numOK, numFailed atom = 0, 0
 )
 
-func RunQueue(files []string, flags *flagsType) {
+func RunQueue(files []string, flags *flags.FlagsType) {
 	s := NewStateTab(files)
 	s.PrintTo(os.Stdout)
-	addr := fmt.Sprint(flags.webUIQueueHost, ":", flags.webUIQueuePort)
+	addr := fmt.Sprint(flags.WebUIQueueHost, ":", flags.WebUIQueuePort)
 	go s.ListenAndServe(addr)
 	s.Run()
 	fmt.Println(numOK.get(), "OK, ", numFailed.get(), "failed")
