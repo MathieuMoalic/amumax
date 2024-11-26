@@ -23,7 +23,7 @@ type MeshState struct {
 	PBCz *int     `msgpack:"PBCz"`
 }
 
-func initMeshAPI(e *echo.Echo, ws *WebSocketManager) *MeshState {
+func initMeshAPI(e *echo.Group, ws *WebSocketManager) *MeshState {
 	meshState := MeshState{
 		ws:   ws,
 		Dx:   &engine.Mesh.Dx,

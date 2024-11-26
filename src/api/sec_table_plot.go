@@ -25,7 +25,7 @@ type TablePlotState struct {
 	Step             int         `msgpack:"step"`
 }
 
-func initTablePlotAPI(e *echo.Echo, ws *WebSocketManager) *TablePlotState {
+func initTablePlotAPI(e *echo.Group, ws *WebSocketManager) *TablePlotState {
 	t := TablePlotState{
 		ws:               ws,
 		AutoSaveInterval: &engine.Table.AutoSavePeriod,

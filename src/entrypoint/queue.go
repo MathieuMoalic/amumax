@@ -24,7 +24,12 @@ var (
 
 func RunQueue(files []string, flags *flagsType) {
 	s := NewStateTab(files)
-	addr, _, err := api.FindAvailablePort(flags.webUIQueueHost, flags.webUIQueuePort)
+	host, port, path, err := parseAddrPath(flags.webUIQueueAddress)
+	log.Log.PanicIfError(err)
+	if path != "" {
+		log.Log.ErrAndExit("Path not supported for queue web UI")
+	}
+	addr, _, err := api.FindAvailablePort(host, port)
 	log.Log.PanicIfError(err)
 	log.Log.Info("Queue web UI at %v", addr)
 	s.printJobList()
