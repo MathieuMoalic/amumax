@@ -23,7 +23,6 @@ func (p *ScriptParser) Execute() error {
 		case "function_call":
 			fn, ok := p.EngineState.World.Functions[stmt.Name]
 			if !ok {
-
 				return fmt.Errorf("unsupported function: %s", stmt.Name)
 			}
 			args := []interface{}{}
