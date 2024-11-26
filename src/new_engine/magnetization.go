@@ -7,8 +7,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
-var NormMag Magnetization // reduced magnetization (unit length)
-
 // Special buffered quantity to store Magnetization
 // makes sure it's normalized etc.
 type Magnetization struct {

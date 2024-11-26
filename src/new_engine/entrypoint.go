@@ -17,7 +17,6 @@ import (
 
 func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.FlagsType) {
 	log.Log.SetDebug(givenFlags.Debug)
-	log.Log.SetDebug(givenFlags.Debug)
 	if givenFlags.Update {
 		update.ShowUpdateMenu()
 		return
