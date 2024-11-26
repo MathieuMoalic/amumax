@@ -6,6 +6,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 var Regions = RegionsState{info: info{1, "regions", ""}, Indices: make(map[int]bool)} // global regions map
@@ -292,7 +293,7 @@ func (b *RegionsState) shiftY(dy int) {
 	}
 }
 
-func (r *RegionsState) Mesh() *data.MeshType { return GetMesh() }
+func (r *RegionsState) Mesh() *mesh.Mesh { return GetMesh() }
 
 func prod(s [3]int) int {
 	return s[0] * s[1] * s[2]

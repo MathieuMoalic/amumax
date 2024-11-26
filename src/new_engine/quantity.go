@@ -38,7 +38,7 @@ type Quantity interface {
 // 	return 0
 // }
 
-// //	func (q *Quantity) Mesh() *data.MeshType {
+// //	func (q *Quantity) Mesh() *mesh.Mesh {
 // //		return nil
 // //	}
 
@@ -84,10 +84,10 @@ type Quantity interface {
 // 	return "?"
 // }
 
-// // func (q *Quantity) MeshOf(q Quantity) *data.MeshType {
+// // func (q *Quantity) MeshOf(q Quantity) *mesh.Mesh {
 // // 	// quantity defines its own, custom, implementation:
 // // 	if s, ok := q.(interface {
-// // 		Mesh() *data.MeshType
+// // 		Mesh() *mesh.Mesh
 // // 	}); ok {
 // // 		return s.Mesh()
 // // 	}

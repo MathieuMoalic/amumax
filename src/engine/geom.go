@@ -6,6 +6,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 func init() {
@@ -265,4 +266,4 @@ func shiftDirtyRange(dx int) (x1, x2 int) {
 	return
 }
 
-func (g *geom) Mesh() *data.MeshType { return GetMesh() }
+func (g *geom) Mesh() *mesh.Mesh { return GetMesh() }
