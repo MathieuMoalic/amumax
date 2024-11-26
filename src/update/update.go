@@ -1,4 +1,4 @@
-package entrypoint
+package update
 
 import (
 	"encoding/json"
@@ -57,7 +57,7 @@ func getTags() (tags []string) {
 	return
 }
 
-func showUpdateMenu() {
+func ShowUpdateMenu() {
 	tags := getTags()
 
 	// Create the prompt

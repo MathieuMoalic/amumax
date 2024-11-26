@@ -56,7 +56,7 @@ func ShapeFromRegion(id int) shape {
 	}
 }
 
-func (r *RegionsState) alloc() {
+func (r *RegionsState) Alloc() {
 	r.gpuBuffer = cuda.NewBytes(r.Mesh().NCell())
 	DefRegion(0, universeInner)
 }

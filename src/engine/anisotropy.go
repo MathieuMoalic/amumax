@@ -70,8 +70,8 @@ func addCubicAnisotropyFrom(dst *data.Slice, M magnetization, Msat, Kc1, Kc2, Kc
 
 // Add the anisotropy field to dst
 func addAnisotropyField(dst *data.Slice) {
-	addUniaxialAnisotropyFrom(dst, normMag, Msat, Ku1, Ku2, AnisU)
-	addCubicAnisotropyFrom(dst, normMag, Msat, Kc1, Kc2, Kc3, AnisC1, AnisC2)
+	addUniaxialAnisotropyFrom(dst, NormMag, Msat, Ku1, Ku2, AnisU)
+	addCubicAnisotropyFrom(dst, NormMag, Msat, Kc1, Kc2, Kc3, AnisC1, AnisC2)
 }
 
 // Add the anisotropy energy density to dst
@@ -93,29 +93,29 @@ func addAnisotropyEnergyDensity(dst *data.Slice) {
 	if haveUnixial {
 		// 1st
 		cuda.Zero(buf)
-		addUniaxialAnisotropyFrom(buf, normMag, Msat, Ku1, sZero, AnisU)
+		addUniaxialAnisotropyFrom(buf, NormMag, Msat, Ku1, sZero, AnisU)
 		cuda.AddDotProduct(dst, -1./2., buf, Mf)
 
 		// 2nd
 		cuda.Zero(buf)
-		addUniaxialAnisotropyFrom(buf, normMag, Msat, sZero, Ku2, AnisU)
+		addUniaxialAnisotropyFrom(buf, NormMag, Msat, sZero, Ku2, AnisU)
 		cuda.AddDotProduct(dst, -1./4., buf, Mf)
 	}
 
 	if haveCubic {
 		// 1st
 		cuda.Zero(buf)
-		addCubicAnisotropyFrom(buf, normMag, Msat, Kc1, sZero, sZero, AnisC1, AnisC2)
+		addCubicAnisotropyFrom(buf, NormMag, Msat, Kc1, sZero, sZero, AnisC1, AnisC2)
 		cuda.AddDotProduct(dst, -1./4., buf, Mf)
 
 		// 2nd
 		cuda.Zero(buf)
-		addCubicAnisotropyFrom(buf, normMag, Msat, sZero, Kc2, sZero, AnisC1, AnisC2)
+		addCubicAnisotropyFrom(buf, NormMag, Msat, sZero, Kc2, sZero, AnisC1, AnisC2)
 		cuda.AddDotProduct(dst, -1./6., buf, Mf)
 
 		// 3nd
 		cuda.Zero(buf)
-		addCubicAnisotropyFrom(buf, normMag, Msat, sZero, sZero, Kc3, AnisC1, AnisC2)
+		addCubicAnisotropyFrom(buf, NormMag, Msat, sZero, sZero, Kc3, AnisC1, AnisC2)
 		cuda.AddDotProduct(dst, -1./8., buf, Mf)
 	}
 }

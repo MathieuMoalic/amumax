@@ -11,7 +11,7 @@ func declLValue(name string, value lValue, doc string) {
 func init() {
 	declLValue("MFMLift", &mfmLift, "MFM lift height")
 	declLValue("MFMDipole", &mfmTipSize, "Height of vertically magnetized part of MFM tip")
-	declLValue("m", &normMag, `Reduced magnetization (unit length)`)
+	declLValue("m", &NormMag, `Reduced magnetization (unit length)`)
 
 	declLValue("FilenameFormat", &fformat{}, "printf formatting string for output filenames.")
 	declLValue("OutputFormat", &oformat{}, "Format for data files: OVF1_TEXT, OVF1_BINARY, OVF2_TEXT or OVF2_BINARY")

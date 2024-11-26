@@ -15,20 +15,20 @@ type ProgressBar struct {
 	stop        float64
 	last        int
 	out         *color.Color
-	enabled     bool
+	disabled    bool
 	symbol      string
 	symbolWidth int
 	minLength   int
 	lastUpdate  time.Time
 }
 
-func NewProgressBar(start float64, stop float64, symbol string, enabled bool) *ProgressBar {
+func NewProgressBar(start float64, stop float64, symbol string, hideProgressBar bool) *ProgressBar {
 	return &ProgressBar{
 		start:       start,
 		stop:        stop,
 		last:        -1,
 		out:         color.New(color.FgGreen),
-		enabled:     enabled,
+		disabled:    hideProgressBar,
 		symbol:      symbol,
 		symbolWidth: 2, // Width of the symbol in characters
 		minLength:   1, // Minimum bar length in symbols
@@ -62,7 +62,7 @@ func (bar *ProgressBar) calculateDimensions(percentage int) (int, int) {
 }
 
 func (bar *ProgressBar) Update(currentTime float64) {
-	if !bar.enabled {
+	if bar.disabled {
 		return
 	}
 	now := time.Now()
@@ -106,7 +106,7 @@ func (bar *ProgressBar) Update(currentTime float64) {
 }
 
 func (bar *ProgressBar) Finish() {
-	if bar.enabled {
+	if !bar.disabled {
 		_, filledLength := bar.calculateDimensions(100)
 
 		filledSymbols := strings.Repeat(bar.symbol, filledLength)

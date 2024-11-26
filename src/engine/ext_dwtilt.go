@@ -8,7 +8,7 @@ import (
 var DWTiltPMA = newScalarValue("ext_dwtilt", "rad", "PMA domain wall tilt", dwTiltPMA)
 
 func dwTiltPMA() float64 {
-	m := download(&normMag)
+	m := download(&NormMag)
 	mz := m.Vectors()[Z][0] // slice0
 
 	nx := GetMesh().Size()[X]
