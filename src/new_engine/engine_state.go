@@ -122,7 +122,7 @@ func (s *EngineStateStruct) initIO() {
 	} else {
 		log.Log.PanicIfError(fsutil.Mkdir(s.ZarrPath))
 	}
-	zarr.InitZgroup(s.ZarrPath)
+	zarr.InitZgroup("", s.ZarrPath)
 }
 
 func (s *EngineStateStruct) initLog() {
@@ -143,7 +143,7 @@ func (s *EngineStateStruct) initTable() {
 	}
 	err := fsutil.Remove(s.ZarrPath + "table")
 	log.Log.PanicIfError(err)
-	zarr.MakeZgroup("table", s.ZarrPath, &[]string{})
+	zarr.InitZgroup("table", s.ZarrPath)
 	s.Table.AddColumn("step", "")
 	s.Table.AddColumn("t", "s")
 	s.Table.tableAdd(&engine.NormMag)
