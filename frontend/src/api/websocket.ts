@@ -18,9 +18,9 @@ export let connected = writable(false);
 export function initializeWebSocket() {
 	let retryInterval = 1000;
 	let ws: WebSocket | null = null;
-
+	
 	function connect() {
-		let wsUrl = '/ws';
+		let wsUrl = './ws';
 		console.debug('Connecting to WebSocket server at', wsUrl);
 		ws = new WebSocket(wsUrl);
 		ws.binaryType = 'arraybuffer';

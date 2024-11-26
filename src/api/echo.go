@@ -13,7 +13,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func Start(host string, port int, tunnel string, debug bool) {
+func Start(host string, port int, basePath string, tunnel string, debug bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Log.Warn("WebUI crashed: %v", r)
@@ -33,22 +33,30 @@ func Start(host string, port int, tunnel string, debug bool) {
 	} else {
 		e.Logger.SetOutput(io.Discard)
 	}
+
+	api := e.Group(basePath)
+
+	// redirect "" to "/"
+	api.GET("", func(c echo.Context) error {
+		return c.Redirect(301, basePath+"/")
+	})
+
 	// Serve the `index.html` file at the root URL
-	e.GET("/", indexFileHandler())
+	api.GET("/", indexFileHandler())
 
 	// Serve the other embedded static files
-	e.GET("/*", echo.WrapHandler(staticFileHandler()))
+	api.GET("/*", echo.WrapHandler(staticFileHandler(basePath)))
 
 	wsManager := newWebSocketManager()
-	e.GET("/ws", wsManager.websocketEntrypoint)
+	api.GET("/ws", wsManager.websocketEntrypoint)
 	wsManager.startBroadcastLoop()
-	engineState := initEngineStateAPI(e, wsManager)
+	engineState := initEngineStateAPI(api, wsManager)
 	wsManager.engineState = engineState
 
-	startGuiServer(e, host, port, tunnel)
+	startGuiServer(e, host, basePath, port, tunnel)
 }
 
-func startGuiServer(e *echo.Echo, host string, port int, tunnel string) {
+func startGuiServer(e *echo.Echo, host string, basePath string, port int, tunnel string) {
 	const maxRetries = 5
 
 	for i := 0; i < maxRetries; i++ {
@@ -57,7 +65,7 @@ func startGuiServer(e *echo.Echo, host string, port int, tunnel string) {
 		if err != nil {
 			log.Log.ErrAndExit("Failed to find available port: %v", err)
 		}
-		log.Log.Info("Serving the web UI at http://%s", addr)
+		log.Log.Info("Serving the web UI at http://%s%s", addr, basePath)
 
 		if tunnel != "" {
 			go startTunnel(tunnel)

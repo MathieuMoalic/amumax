@@ -1,7 +1,7 @@
 import { setAlert } from "$lib/alerts/alert";
 
 export async function post(endpoint: string, data: any) {
-    const response = await fetch(`/api/${endpoint}`, {
+    const response = await fetch(`./api/${endpoint}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
