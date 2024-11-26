@@ -36,14 +36,14 @@ func randomDir(rng *rand.Rand) data.Vector {
 	return data.Vector{x, y, z}
 }
 
-// Returns a uniform magnetization state. E.g.:
-//
-//	M = uniform(1, 0, 0)) // saturated along X
-func uniform(mx, my, mz float64) config {
-	return func(x, y, z float64) data.Vector {
-		return data.Vector{mx, my, mz}
-	}
-}
+// // Returns a uniform magnetization state. E.g.:
+// //
+// //	M = uniform(1, 0, 0)) // saturated along X
+// func uniform(mx, my, mz float64) config {
+// 	return func(x, y, z float64) data.Vector {
+// 		return data.Vector{mx, my, mz}
+// 	}
+// }
 
 // // Make a vortex magnetization with given circulation and core polarization (+1 or -1).
 // // The core is smoothed over a few exchange lengths and should easily relax to its ground state.

@@ -113,7 +113,7 @@ func squircle(sidex, sidey, sidez, a float64) shape {
 		normX := x / (sidex / 2)
 		normY := y / (sidey / 2)
 
-		value := math.Pow(normX, 2) + math.Pow(normY, 2) - a*math.Pow(normX, 2)*math.Pow(normY, 2)
+		value := normX*normX + normY*normY - a*normX*normX*normY*normY
 
 		if math.Abs(x) > sidex/2 && math.Abs(y) > sidey/2 {
 			return false

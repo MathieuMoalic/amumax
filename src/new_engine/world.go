@@ -20,6 +20,33 @@ func NewWorld(engineState *EngineStateStruct) *World {
 	}
 	w.RegisterFunction("TableAutoSave", w.EngineState.Table.TableAutoSave)
 
+	w.registerMeshVariables()
+	w.registerShapeFunctions()
+	return w
+}
+
+func (w *World) registerShapeFunctions() {
+	w.RegisterFunction("wave", wave)
+	w.RegisterFunction("ellipsoid", ellipsoid)
+	w.RegisterFunction("ellipse", ellipse)
+	w.RegisterFunction("cone", cone)
+	w.RegisterFunction("circle", circle)
+	w.RegisterFunction("cylinder", cylinder)
+	w.RegisterFunction("cuboid", cuboid)
+	w.RegisterFunction("rect", rect)
+	w.RegisterFunction("triangle", triangle)
+	w.RegisterFunction("rTriangle", rTriangle)
+	w.RegisterFunction("hexagon", hexagon)
+	w.RegisterFunction("diamond", diamond)
+	w.RegisterFunction("squircle", squircle)
+	w.RegisterFunction("square", square)
+	w.RegisterFunction("xRange", xRange)
+	w.RegisterFunction("yRange", yRange)
+	w.RegisterFunction("zRange", zRange)
+	w.RegisterFunction("universe", universe)
+}
+
+func (w *World) registerMeshVariables() {
 	w.RegisterVariable("Nx", &w.EngineState.Mesh.Nx)
 	w.RegisterVariable("Ny", &w.EngineState.Mesh.Ny)
 	w.RegisterVariable("Nz", &w.EngineState.Mesh.Nz)
@@ -29,7 +56,6 @@ func NewWorld(engineState *EngineStateStruct) *World {
 	w.RegisterVariable("Tx", &w.EngineState.Mesh.Tx)
 	w.RegisterVariable("Ty", &w.EngineState.Mesh.Ty)
 	w.RegisterVariable("Tz", &w.EngineState.Mesh.Tz)
-	return w
 }
 
 // RegisterFunction registers a pre-defined function in the world.
