@@ -127,7 +127,7 @@ func AsScalarField(q Quantity) ScalarField {
 	return ScalarField{q}
 }
 
-func (s ScalarField) average() []float64       { return averageOf(s.Quantity) }
+func (s ScalarField) average() []float64       { return AverageOf(s.Quantity) }
 func (s ScalarField) Average() float64         { return s.average()[0] }
 func (s ScalarField) Region(r int) ScalarField { return AsScalarField(inRegion(s.Quantity, r)) }
 func (s ScalarField) Name() string             { return nameOf(s.Quantity) }
@@ -148,7 +148,7 @@ func AsVectorField(q Quantity) VectorField {
 	return VectorField{q}
 }
 
-func (v VectorField) average() []float64       { return averageOf(v.Quantity) }
+func (v VectorField) average() []float64       { return AverageOf(v.Quantity) }
 func (v VectorField) Average() data.Vector     { return unslice(v.average()) }
 func (v VectorField) Region(r int) VectorField { return AsVectorField(inRegion(v.Quantity, r)) }
 func (v VectorField) Comp(c int) ScalarField   { return AsScalarField(comp(v.Quantity, c)) }

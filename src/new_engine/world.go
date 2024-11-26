@@ -66,7 +66,7 @@ func (w *World) RegisterUserVariable(name string, value interface{}) {
 	}
 	if w.isMeshExpression(name) {
 		if w.EngineState.Mesh.ReadyToCreate() {
-			w.EngineState.Mesh.CreateMesh()
+			w.EngineState.Mesh.Create()
 			w.EngineState.NormMag.alloc()
 			// engine.Regions.Alloc()
 			w.EngineState.Metadata.AddMesh(w.EngineState.Mesh)

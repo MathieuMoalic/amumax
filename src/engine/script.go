@@ -16,7 +16,7 @@ import (
 var Mesh data.MeshType
 
 func init() {
-	Mesh = data.MeshType{Nx: 0, Ny: 0, Nz: 0, Dx: 0, Dy: 0, Dz: 0, Tx: 0, Ty: 0, Tz: 0, PBCx: 0, PBCy: 0, PBCz: 0, AutoMeshx: false, AutoMeshy: false, AutoMeshz: false}
+	// Mesh = data.MeshType{Nx: 0, Ny: 0, Nz: 0, Dx: 0, Dy: 0, Dz: 0, Tx: 0, Ty: 0, Tz: 0, PBCx: 0, PBCy: 0, PBCz: 0, AutoMeshx: false, AutoMeshy: false, AutoMeshz: false}
 }
 func GetMesh() *data.MeshType {
 	return &Mesh
@@ -82,7 +82,7 @@ func EvalFile(code *script.BlockStmt) {
 			if Mesh.ReadyToCreate() {
 				setBusy(true)
 				defer setBusy(false)
-				Mesh.CreateMesh()
+				CreateMesh()
 				NormMag.Alloc()
 				Regions.Alloc()
 				EngineState.Metadata.Init(OD(), StartTime, cuda.GPUInfo)

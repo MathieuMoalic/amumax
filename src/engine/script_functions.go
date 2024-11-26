@@ -1,10 +1,8 @@
 package engine
 
-import "github.com/MathieuMoalic/amumax/src/data"
-
 func init() {
 	DeclFunc("Flush", drainOutput, "Flush all pending output to disk.")
-	DeclFunc("OldAutoSave", autoSave, "Auto save space-dependent quantity every period (s).")
+	DeclFunc("AutoSaveOvf", autoSaveOVF, "Auto save space-dependent quantity every period (s).")
 	DeclFunc("AutoSnapshot", autoSnapshot, "Auto save image of quantity every period (s).")
 	DeclFunc("Chunk", mx3chunks, "")
 	DeclFunc("Uniform", uniform, "Uniform magnetization in given direction")
@@ -52,9 +50,16 @@ func init() {
 	DeclFunc("ext_make3dgrains", voronoi3d, "3D Voronoi tesselation over shape (grain size, starting region number, num regions, shape, seed)")
 	DeclFunc("ext_makegrains", voronoi, "Voronoi tesselation (grain size, num regions)")
 	DeclFunc("ext_rmSurfaceCharge", removeLRSurfaceCharge, "Compensate magnetic charges on the left and right sides of an in-plane magnetized wire. Arguments: region, mx on left and right side, resp.")
-	DeclFunc("SetGeom", setGeom, "Sets the geometry to a given shape")
-	DeclFunc("ReCreateMesh", data.ReCreateMesh, "")
+	DeclFunc("SetGeom", Geometry.setGeom, "Sets the geometry to a given shape")
 	DeclFunc("Minimize", minimize, "Use steepest conjugate gradient method to minimize the total energy")
+
+	// DeclFunc("ReCreateMesh", ReCreateMesh, "")
+	DeclFunc("SmoothMesh", SmoothMesh, "")
+	DeclFunc("SetMesh", Mesh.SetMesh, "")
+	DeclFunc("SetGridSize", Mesh.SetGridSize, "")
+	DeclFunc("SetCellSize", Mesh.SetCellSize, "")
+	DeclFunc("SetPBC", Mesh.SetPBC, "")
+	DeclFunc("SetTotalSize", Mesh.SetTotalSize, "")
 
 	DeclFunc("DefRegion", DefRegion, "Define a material region with given index (0-255) and shape")
 	DeclFunc("RedefRegion", RedefRegion, "Reassign all cells with a given region (first argument) to a new region (second argument)")
@@ -70,8 +75,8 @@ func init() {
 	DeclFunc("Exit", Exit, "Exit from the program")
 	DeclFunc("RunShell", runShell, "Run a shell command")
 
-	DeclFunc("SaveOvf", save, "Save space-dependent quantity once, with auto filename")
-	DeclFunc("SaveOvfAs", saveAs, "Save space-dependent quantity with custom filename")
+	DeclFunc("SaveOvf", saveOVF, "Save space-dependent quantity once, with auto filename")
+	DeclFunc("SaveOvfAs", saveAsOVF, "Save space-dependent quantity with custom filename")
 	DeclFunc("Snapshot", snapshot, "Save image of quantity")
 	DeclFunc("SnapshotAs", snapshotAs, "Save image of quantity with custom filename")
 
@@ -118,12 +123,12 @@ func init() {
 	DeclFunc("NewScalarMask", newScalarMask, "Makes a 3D array of scalars")
 	DeclFunc("RegionFromCoordinate", regionFromCoordinate, "RegionFromCoordinate")
 
-	DeclFunc("AutoSaveAs", mx3AutoSaveAs, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("AutoSaveAsChunk", mx3AutoSaveAsChunk, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("AutoSave", mx3AutoSave, "Auto save space-dependent quantity every period (s) as the zarr standard.")
-	DeclFunc("SaveAs", mx3SaveAs, "Save space-dependent quantity as the zarr standard.")
-	DeclFunc("SaveAsChunk", mx3SaveAsChunk, "")
-	DeclFunc("Save", mx3zSave, "Save space-dependent quantity as the zarr standard.")
+	DeclFunc("AutoSaveAs", savedQuantities.autoSaveAs, "Auto save space-dependent quantity every period (s) as the zarr standard.")
+	DeclFunc("AutoSaveAsChunk", savedQuantities.autoSaveAsChunk, "Auto save space-dependent quantity every period (s) as the zarr standard.")
+	DeclFunc("AutoSave", savedQuantities.autoSave, "Auto save space-dependent quantity every period (s) as the zarr standard.")
+	DeclFunc("SaveAs", savedQuantities.saveAs, "Save space-dependent quantity as the zarr standard.")
+	DeclFunc("SaveAsChunk", savedQuantities.saveAsChunk, "")
+	DeclFunc("Save", savedQuantities.save, "Save space-dependent quantity as the zarr standard.")
 
 	DeclFunc("TableSave", tableSave, "Save the data table right now.")
 	DeclFunc("TableAdd", tableAdd, "Save the data table periodically.")

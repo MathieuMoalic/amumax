@@ -28,11 +28,9 @@ type FlagsType struct {
 	Insecure    bool
 	NewParser   bool
 
-	WebUIEnabled   bool
-	WebUIHost      string
-	WebUIPort      int
-	WebUIQueueHost string
-	WebUIQueuePort int
+	WebUIEnabled      bool
+	WebUIAddress      string
+	WebUIQueueAddress string
 }
 
 func ParseFlags(rootCmd *cobra.Command) {
@@ -55,8 +53,6 @@ func ParseFlags(rootCmd *cobra.Command) {
 	rootCmd.Flags().BoolVarP(&Flags.NewParser, "new-parser", "p", false, "New parser")
 
 	rootCmd.Flags().BoolVar(&Flags.WebUIEnabled, "webui-enable", true, "Whether to enable the web interface")
-	rootCmd.Flags().StringVar(&Flags.WebUIHost, "webui-host", "localhost", "Host to serve web GUI (e.g., 0.0.0.0)")
-	rootCmd.Flags().IntVar(&Flags.WebUIPort, "webui-port", 35367, "Port to serve web GUI")
-	rootCmd.Flags().StringVar(&Flags.WebUIQueueHost, "webui-queue-host", "localhost", "Host to serve the queue web GUI (e.g., 0.0.0.0)")
-	rootCmd.Flags().IntVar(&Flags.WebUIQueuePort, "webui-queue-port", 35366, "Port to serve queue web GUI")
+	rootCmd.Flags().StringVar(&Flags.WebUIAddress, "webui-addr", "localhost:35367", "Address (URI) to serve web GUI (e.g., 0.0.0.0:8080/proxy/worker1)")
+	rootCmd.Flags().StringVar(&Flags.WebUIQueueAddress, "webui-queue-addr", "localhost:35366", "Address (URI) to serve Queue web GUI (e.g., 0.0.0.0:8080/proxy/worker1)")
 }
