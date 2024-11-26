@@ -16,10 +16,11 @@ type Magnetization struct {
 	buffer_     *data.Slice
 }
 
-func NewMagnetization() *Magnetization {
-	m := &Magnetization{}
-	// m.buffer_
-	return m
+func NewMagnetization(es *EngineStateStruct) *Magnetization {
+	return &Magnetization{
+		EngineState: es,
+		buffer_:     nil,
+	}
 }
 
 // func (m *Magnetization) GetRegionToString(region int) string {
@@ -40,13 +41,11 @@ func (m *Magnetization) Eval() interface{}       { return m }
 
 // func (m *Magnetization) average() []float64      { return sAverageMagnet(NormMag.Buffer()) }
 // func (m *Magnetization) Average() data.Vector    { return unslice(m.average()) }
-func (m *Magnetization) normalize() { cuda.Normalize(m.Buffer(), m.EngineState.Geom.Gpu()) }
+func (m *Magnetization) normalize() { cuda.Normalize(m.Buffer(), m.EngineState.Geometry.Gpu()) }
 
 // allocate storage (not done by init, as mesh size may not yet be known then)
 func (m *Magnetization) alloc() {
-	m.EngineState.Log.Debug("Allocating magnetization")
 	m.buffer_ = cuda.NewSlice(3, m.EngineState.Mesh.Size())
-	m.EngineState.Log.Debug("Allocating magnetization2")
 	m.Set(randomMag()) // sane starting config
 }
 
@@ -118,7 +117,7 @@ func (m *Magnetization) SetInShape(region shape, conf config) {
 	for iz := 0; iz < n[Z]; iz++ {
 		for iy := 0; iy < n[Y]; iy++ {
 			for ix := 0; ix < n[X]; ix++ {
-				r := m.index2Coord(ix, iy, iz)
+				r := m.EngineState.Utils.Index2Coord(ix, iy, iz)
 				x, y, z := r[X], r[Y], r[Z]
 				if region(x, y, z) { // inside
 					m := conf(x, y, z)
@@ -157,13 +156,3 @@ func (m *Magnetization) SetInShape(region shape, conf config) {
 // 	}
 // 	m.SetArray(host)
 // }
-
-// converts cell index to coordinate, internal coordinates
-func (m *Magnetization) index2Coord(ix, iy, iz int) data.Vector {
-	n := m.EngineState.Mesh.Size()
-	c := m.EngineState.Mesh.CellSize()
-	x := c[X]*(float64(ix)-0.5*float64(n[X]-1)) - totalShift
-	y := c[Y]*(float64(iy)-0.5*float64(n[Y]-1)) - totalYShift
-	z := c[Z] * (float64(iz) - 0.5*float64(n[Z]-1))
-	return data.Vector{x, y, z}
-}

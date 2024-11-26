@@ -18,22 +18,24 @@ import (
 )
 
 type EngineStateStruct struct {
-	Metadata   zarr.Metadata
-	Log        log.Logs
-	Flags      *flags.FlagsType
 	ZarrPath   string
 	Script     string
 	ScriptPath string
-	Table      TableStruct
-	Solver     Solver
+	Flags      *flags.FlagsType
+	Metadata   *zarr.Metadata
 	World      *World
+	Log        *log.Logs
+	Table      *TableStruct
+	Solver     *Solver
 	Mesh       *data.MeshType
 	NormMag    *Magnetization
-	Geom       *geom
+	Geometry   *Geometry
+	Regions    *Regions
+	Utils      *Utils
 }
 
 func NewEngineState(givenFlags *flags.FlagsType) *EngineStateStruct {
-	return &EngineStateStruct{Flags: givenFlags}
+	return &EngineStateStruct{Flags: givenFlags, Metadata: &zarr.Metadata{}}
 }
 
 func (s *EngineStateStruct) Start(mx3path string) {
@@ -45,7 +47,6 @@ func (s *EngineStateStruct) Start(mx3path string) {
 	s.Script = string(scriptBytes)
 	s.ScriptPath = mx3path
 	s.run()
-
 }
 
 func (s *EngineStateStruct) StartInteractive() {
@@ -71,13 +72,15 @@ func (s *EngineStateStruct) run() {
 	defer s.CleanExit()
 	s.initIO()
 	s.initLog()
-	s.initTable()
 	s.initMetadata()
+	s.initTable()
 	s.Mesh = &data.MeshType{}
-	s.NormMag = NewMagnetization()
-	s.Geom = &geom{EngineState: s}
-	scriptParser := NewScriptParser(s)
 	s.World = NewWorld(s)
+	s.NormMag = NewMagnetization(s)
+	s.Regions = NewRegions(s)
+	s.Geometry = NewGeom(s)
+	s.Utils = NewUtils(s)
+	scriptParser := NewScriptParser(s)
 	err := scriptParser.Parse(s.Script)
 	if err != nil {
 		s.Log.ErrAndExit("Error parsing script: %v", err)
@@ -126,6 +129,7 @@ func (s *EngineStateStruct) initIO() {
 }
 
 func (s *EngineStateStruct) initLog() {
+	s.Log = &log.Logs{}
 	s.Log.Info("Input file: %s", s.ScriptPath)
 	s.Log.Info("Output directory: %s", s.ZarrPath)
 	s.Log.Init(s.ZarrPath)
@@ -134,7 +138,7 @@ func (s *EngineStateStruct) initLog() {
 }
 
 func (s *EngineStateStruct) initTable() {
-	s.Table = TableStruct{
+	s.Table = &TableStruct{
 		engineState:    s,
 		Data:           make(map[string][]float64),
 		Step:           -1,
@@ -151,6 +155,7 @@ func (s *EngineStateStruct) initTable() {
 }
 
 func (s *EngineStateStruct) initMetadata() {
+	s.Metadata = &zarr.Metadata{}
 	s.Metadata.Init(s.ZarrPath, time.Now(), cuda.GPUInfo)
 }
 
