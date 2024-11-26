@@ -13,8 +13,15 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
+type Meta struct {
+	Name, Unit     string
+	Time, TimeStep float64
+	CellSize       [3]float64
+	MeshUnit       string
+}
+
 // Read any OOMMF file, autodetect OVF1/OVF2 format
-func Read(in io.Reader) (s *data.Slice, meta data.Meta, err error) {
+func Read(in io.Reader) (s *data.Slice, meta Meta, err error) {
 	//in := fullReader{bufio.NewReader(in_)}
 	info := readHeader(in)
 
@@ -39,19 +46,19 @@ func Read(in io.Reader) (s *data.Slice, meta data.Meta, err error) {
 		readOVF2DataBinary8(in, data_)
 	}
 
-	return data_, data.Meta{Name: info.Title, Time: info.TotalTime, Unit: info.ValueUnit, CellSize: info.StepSize}, nil
+	return data_, Meta{Name: info.Title, Time: info.TotalTime, Unit: info.ValueUnit, CellSize: info.StepSize}, nil
 }
 
-func ReadFile(fname string) (*data.Slice, data.Meta, error) {
+func ReadFile(fname string) (*data.Slice, Meta, error) {
 	f, err := os.Open(fname)
 	if err != nil {
-		return nil, data.Meta{}, err
+		return nil, Meta{}, err
 	}
 	defer f.Close()
 	return Read(bufio.NewReader(f))
 }
 
-func MustReadFile(fname string) (*data.Slice, data.Meta) {
+func MustReadFile(fname string) (*data.Slice, Meta) {
 	s, t, err := ReadFile(fname)
 	log.Log.PanicIfError(err)
 	return s, t

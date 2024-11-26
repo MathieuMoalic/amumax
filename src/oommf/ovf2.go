@@ -10,13 +10,13 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-func WriteOVF2(out io.Writer, q *data.Slice, meta data.Meta, dataformat string) {
+func WriteOVF2(out io.Writer, q *data.Slice, meta Meta, dataformat string) {
 	writeOVF2Header(out, q, meta)
 	writeOVF2Data(out, q, dataformat)
 	hdr(out, "End", "Segment")
 }
 
-func writeOVF2Header(out io.Writer, q *data.Slice, meta data.Meta) {
+func writeOVF2Header(out io.Writer, q *data.Slice, meta Meta) {
 	gridsize := q.Size()
 	cellsize := meta.CellSize
 
