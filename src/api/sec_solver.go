@@ -23,7 +23,7 @@ type SolverState struct {
 	Maxerr     *float64 `msgpack:"maxerr"`
 }
 
-func initSolverAPI(e *echo.Echo, ws *WebSocketManager) *SolverState {
+func initSolverAPI(e *echo.Group, ws *WebSocketManager) *SolverState {
 	solverState := SolverState{
 		ws:         ws,
 		Type:       getSolverName(engine.Solvertype),

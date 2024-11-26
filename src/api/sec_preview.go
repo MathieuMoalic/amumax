@@ -37,7 +37,7 @@ type PreviewState struct {
 	YChosenSize     int   `msgpack:"yChosenSize"`
 }
 
-func initPreviewAPI(e *echo.Echo, ws *WebSocketManager) *PreviewState {
+func initPreviewAPI(e *echo.Group, ws *WebSocketManager) *PreviewState {
 	previewState := &PreviewState{
 		Quantity:             "m",
 		Component:            "3D",
