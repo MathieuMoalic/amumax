@@ -20,7 +20,7 @@ func getShiftYPos() float64 { return -totalYShift }
 func shift(dx int) {
 	totalShift += float64(dx) * GetMesh().CellSize()[X] // needed to re-init geom, regions
 	if shiftM {
-		shiftMag(normMag.Buffer(), dx) // TODO: M.shift?
+		shiftMag(NormMag.Buffer(), dx) // TODO: M.shift?
 	}
 	if shiftRegions {
 		Regions.shift(dx)
@@ -28,7 +28,7 @@ func shift(dx int) {
 	if shiftGeom {
 		Geometry.shift(dx)
 	}
-	normMag.normalize()
+	NormMag.normalize()
 }
 
 func shiftMag(m *data.Slice, dx int) {
@@ -49,7 +49,7 @@ func shiftMag(m *data.Slice, dx int) {
 func yShift(dy int) {
 	totalYShift += float64(dy) * GetMesh().CellSize()[Y] // needed to re-init geom, regions
 	if shiftM {
-		shiftMagY(normMag.Buffer(), dy)
+		shiftMagY(NormMag.Buffer(), dy)
 	}
 	if shiftRegions {
 		Regions.shiftY(dy)
@@ -57,7 +57,7 @@ func yShift(dy int) {
 	if shiftGeom {
 		Geometry.shiftY(dy)
 	}
-	normMag.normalize()
+	NormMag.normalize()
 }
 
 func shiftMagY(m *data.Slice, dy int) {

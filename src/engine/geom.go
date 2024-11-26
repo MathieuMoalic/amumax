@@ -141,7 +141,7 @@ func (geometry *geom) setGeom(s shape) {
 	// M inside geom but previously outside needs to be re-inited
 	needupload := false
 	geomlist := host.Host()[0]
-	mhost := normMag.Buffer().HostCopy()
+	mhost := NormMag.Buffer().HostCopy()
 	m := mhost.Host()
 	rng := rand.New(rand.NewSource(0))
 	for i := range m[0] {
@@ -155,10 +155,10 @@ func (geometry *geom) setGeom(s shape) {
 		}
 	}
 	if needupload {
-		data.Copy(normMag.Buffer(), mhost)
+		data.Copy(NormMag.Buffer(), mhost)
 	}
 
-	normMag.normalize() // removes m outside vol
+	NormMag.normalize() // removes m outside vol
 }
 
 // Sample edgeSmooth^3 points inside the cell to estimate its volume.

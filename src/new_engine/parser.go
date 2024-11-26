@@ -1,4 +1,4 @@
-package parser
+package new_engine
 
 import (
 	"fmt"
@@ -26,14 +26,16 @@ type Statement struct {
 
 // ScriptParser parses and stores statements from a script.
 type ScriptParser struct {
-	statements []Statement
-	fset       *token.FileSet
+	EngineState *EngineStateStruct
+	statements  []Statement
+	fset        *token.FileSet
 }
 
 // NewScriptParser initializes and returns a new ScriptParser instance.
-func NewScriptParser() *ScriptParser {
+func NewScriptParser(es *EngineStateStruct) *ScriptParser {
 	return &ScriptParser{
-		fset: token.NewFileSet(),
+		EngineState: es,
+		fset:        token.NewFileSet(),
 	}
 }
 
@@ -137,7 +139,7 @@ func (p *ScriptParser) processIfStmt(ifStmt *ast.IfStmt) {
 		LineNum: p.fset.Position(ifStmt.Pos()).Line - 2,
 	}
 	if ifStmt.Body != nil {
-		bodyParser := NewScriptParser()
+		bodyParser := NewScriptParser(p.EngineState)
 		bodyParser.fset = p.fset
 		for _, node := range ifStmt.Body.List {
 			bodyParser.processNode(node)
@@ -165,7 +167,7 @@ func (p *ScriptParser) processForLoop(loop *ast.ForStmt) {
 
 	// Process the body
 	if loop.Body != nil {
-		bodyParser := NewScriptParser()
+		bodyParser := NewScriptParser(p.EngineState)
 		bodyParser.fset = p.fset
 		for _, node := range loop.Body.List {
 			bodyParser.processNode(node)
@@ -193,7 +195,7 @@ func (p *ScriptParser) processRangeLoop(loop *ast.RangeStmt) {
 
 	// Process body statements
 	if loop.Body != nil {
-		bodyParser := NewScriptParser()
+		bodyParser := NewScriptParser(p.EngineState)
 		bodyParser.fset = p.fset
 		for _, node := range loop.Body.List {
 			bodyParser.processNode(node)

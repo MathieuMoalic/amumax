@@ -6,13 +6,17 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/new_engine"
+	"github.com/MathieuMoalic/amumax/src/queue"
+	"github.com/MathieuMoalic/amumax/src/slurm"
 	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/update"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
-var flags flagsType
 var flat bool
 
 func Entrypoint() {
@@ -47,7 +51,7 @@ func Entrypoint() {
 	templateCmd.Flags().BoolVar(&flat, "flat", false, "Generate flat output without subdirectories")
 
 	rootCmd.AddCommand(templateCmd)
-	parseFlags(rootCmd)
+	flags.ParseFlags(rootCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -56,35 +60,39 @@ func Entrypoint() {
 }
 
 func cliEntrypoint(cmd *cobra.Command, args []string) {
-	log.Log.SetDebug(flags.debug)
-	if flags.update {
-		showUpdateMenu()
+	if flags.Flags.NewParser {
+		new_engine.Entrypoint(cmd, args, &flags.Flags)
 		return
 	}
-	go setEndTimerIfSlurm()
-	cuda.Init(flags.gpu)
+	log.Log.SetDebug(flags.Flags.Debug)
+	if flags.Flags.Update {
+		update.ShowUpdateMenu()
+		return
+	}
+	go slurm.SetEndTimerIfSlurm()
+	cuda.Init(flags.Flags.Gpu)
 
-	cuda.Synchronous = flags.sync
-	timer.Enabled = flags.sync
+	cuda.Synchronous = flags.Flags.Sync
+	timer.Enabled = flags.Flags.Sync
 
 	printVersion()
-	if flags.version {
+	if flags.Flags.Version {
 		return
 	}
-	engine.Insecure = flags.insecure
+	engine.Insecure = flags.Flags.Insecure
 
 	defer engine.CleanExit() // flushes pending output, if any
 
-	if flags.vet {
+	if flags.Flags.Vet {
 		vet()
 		return
 	}
-	if len(args) == 0 && flags.interactive {
-		runInteractive(&flags)
+	if len(args) == 0 && flags.Flags.Interactive {
+		runInteractive(&flags.Flags)
 	} else if len(args) == 1 {
-		runFileAndServe(args[0], &flags)
+		runFileAndServe(args[0], &flags.Flags)
 	} else if len(args) > 1 {
-		RunQueue(args, &flags)
+		queue.RunQueue(args, &flags.Flags)
 	} else {
 		_ = cmd.Help()
 	}

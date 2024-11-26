@@ -17,7 +17,7 @@ func (s *backwardEuler) Step() {
 
 	t0 := Time
 
-	y := normMag.Buffer()
+	y := NormMag.Buffer()
 
 	y0 := cuda.Buffer(VECTOR, y.Size())
 	defer cuda.Recycle(y0)
@@ -40,17 +40,17 @@ func (s *backwardEuler) Step() {
 	// with temperature, previous torque cannot be used as predictor
 	if Temp.isZero() {
 		cuda.Madd2(y, y0, dy1, 1, dt) // predictor euler step with previous torque
-		normMag.normalize()
+		NormMag.normalize()
 	}
 
 	torqueFn(dy0)
 	cuda.Madd2(y, y0, dy0, 1, dt) // y = y0 + dt * dy
-	normMag.normalize()
+	NormMag.normalize()
 
 	// One iteration
 	torqueFn(dy1)
 	cuda.Madd2(y, y0, dy1, 1, dt) // y = y0 + dt * dy1
-	normMag.normalize()
+	NormMag.normalize()
 
 	Time = t0 + Dt_si
 

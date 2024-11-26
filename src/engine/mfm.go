@@ -27,7 +27,7 @@ func setMFM(dst *data.Slice) {
 	msat := Msat.MSlice()
 	defer msat.Recycle()
 
-	mfmconv_.Exec(buf, normMag.Buffer(), Geometry.Gpu(), msat)
+	mfmconv_.Exec(buf, NormMag.Buffer(), Geometry.Gpu(), msat)
 	cuda.Madd3(dst, buf.Comp(0), buf.Comp(1), buf.Comp(2), 1, 1, 1)
 }
 

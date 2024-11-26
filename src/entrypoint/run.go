@@ -13,6 +13,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/script"
 )
@@ -21,13 +22,13 @@ type Release struct {
 	TagName string `json:"tag_name"`
 }
 
-func runInteractive(flags *flagsType) {
+func runInteractive(flags *flags.FlagsType) {
 	log.Log.Info("No input files: starting interactive session")
 	// setup outut dir
 	now := time.Now()
 	outdir := fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
 
-	engine.InitIO(outdir, outdir, flags.cacheDir, flags.skipExists, flags.forceClean, flags.progress, flags.selfTest, flags.sync)
+	engine.InitIO(outdir, outdir, flags.CacheDir, flags.SkipExists, flags.ForceClean, flags.Progress, flags.SelfTest, flags.Sync)
 	log.Log.Info("Input file: %s", "none")
 	log.Log.Info("Output directory: %s", engine.OD())
 	log.Log.Init(engine.OD())
@@ -44,22 +45,22 @@ Msat = 1e6
 Aex = 10e-12
 alpha = 1
 m = RandomMag()`)
-	if flags.webUIEnabled {
-		go api.Start(flags.webUIHost, flags.webUIPort, flags.tunnel, flags.debug)
+	if flags.WebUIEnabled {
+		go api.Start(flags.WebUIHost, flags.WebUIPort, flags.Tunnel, flags.Debug)
 	}
 	engine.RunInteractive()
 }
 
-func runFileAndServe(mx3Path string, flags *flagsType) {
+func runFileAndServe(mx3Path string, flags *flags.FlagsType) {
 	if _, err := os.Stat(mx3Path); errors.Is(err, os.ErrNotExist) {
 		log.Log.ErrAndExit("Error: File `%s` does not exist", mx3Path)
 	}
 	outputdir := strings.TrimSuffix(mx3Path, ".mx3") + ".zarr"
 
-	if flags.outputDir != "" {
-		outputdir = flags.outputDir
+	if flags.OutputDir != "" {
+		outputdir = flags.OutputDir
 	}
-	engine.InitIO(mx3Path, outputdir, flags.cacheDir, flags.skipExists, flags.forceClean, flags.progress, flags.selfTest, flags.sync)
+	engine.InitIO(mx3Path, outputdir, flags.CacheDir, flags.SkipExists, flags.ForceClean, flags.Progress, flags.SelfTest, flags.Sync)
 	log.Log.Info("Input file: %s", mx3Path)
 	log.Log.Info("Output directory: %s", engine.OD())
 
@@ -67,29 +68,26 @@ func runFileAndServe(mx3Path string, flags *flagsType) {
 	go log.Log.AutoFlushToFile()
 
 	mx3Path = engine.InputFile
-	if flags.newParser {
-		engine.EngineState.Start(mx3Path)
-	} else {
-		var code *script.BlockStmt
-		var err2 error
-		if mx3Path != "" {
-			// first we compile the entire file into an executable tree
-			code, err2 = engine.CompileFile(mx3Path)
-			if err2 != nil {
-				log.Log.ErrAndExit("Error while parsing `%s`: %v", mx3Path, err2)
-			}
-			log.Log.PanicIfError(err2)
-		}
 
-		// now the parser is not used anymore so it can handle web requests
-		if flags.webUIEnabled {
-			go api.Start(flags.webUIHost, flags.webUIPort, flags.tunnel, flags.debug)
+	var code *script.BlockStmt
+	var err2 error
+	if mx3Path != "" {
+		// first we compile the entire file into an executable tree
+		code, err2 = engine.CompileFile(mx3Path)
+		if err2 != nil {
+			log.Log.ErrAndExit("Error while parsing `%s`: %v", mx3Path, err2)
 		}
-		// start executing the tree, possibly injecting commands from web gui
-		engine.EvalFile(code)
+		log.Log.PanicIfError(err2)
 	}
 
-	if flags.interactive {
+	// now the parser is not used anymore so it can handle web requests
+	if flags.WebUIEnabled {
+		go api.Start(flags.WebUIHost, flags.WebUIPort, flags.Tunnel, flags.Debug)
+	}
+	// start executing the tree, possibly injecting commands from web gui
+	engine.EvalFile(code)
+
+	if flags.Interactive {
 		engine.RunInteractive()
 	}
 }

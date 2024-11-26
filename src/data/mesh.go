@@ -16,10 +16,6 @@ type MeshType struct {
 	created                         bool
 }
 
-// func GetMesh() *MeshType {
-// 	return &Mesh
-// }
-
 // NewMesh creates a new mesh.
 func NewMesh(nx, ny, nz int, dx, dy, dz float64, pbcx, pbcy, pbcz int) *MeshType {
 	return &MeshType{nx, ny, nz, dx, dy, dz, 0, 0, 0, pbcx, pbcy, pbcz, false, false, false, false}
@@ -160,7 +156,7 @@ func (m *MeshType) validateCellSize() {
 }
 
 func (m *MeshType) isMeshCreated() bool {
-	return m.Size() != [3]int{0, 0, 0}
+	return m.created
 }
 
 func setTiDiNi(Ti, di *float64, Ni *int, comp string) {

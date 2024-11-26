@@ -13,7 +13,7 @@ type rk4 struct {
 }
 
 func (rk *rk4) Step() {
-	m := normMag.Buffer()
+	m := NormMag.Buffer()
 	size := m.Size()
 
 	if FixDt != 0 {
@@ -41,18 +41,18 @@ func (rk *rk4) Step() {
 	// stage 2
 	Time = t0 + (1./2.)*Dt_si
 	cuda.Madd2(m, m, k1, 1, (1./2.)*h) // m = m*1 + k1*h/2
-	normMag.normalize()
+	NormMag.normalize()
 	torqueFn(k2)
 
 	// stage 3
 	cuda.Madd2(m, m0, k2, 1, (1./2.)*h) // m = m0*1 + k2*1/2
-	normMag.normalize()
+	NormMag.normalize()
 	torqueFn(k3)
 
 	// stage 4
 	Time = t0 + Dt_si
 	cuda.Madd2(m, m0, k3, 1, 1.*h) // m = m0*1 + k3*1
-	normMag.normalize()
+	NormMag.normalize()
 	torqueFn(k4)
 
 	err := cuda.MaxVecDiff(k1, k4) * float64(h)
@@ -62,7 +62,7 @@ func (rk *rk4) Step() {
 		// step OK
 		// 4th order solution
 		cuda.Madd5(m, m0, k1, k2, k3, k4, 1, (1./6.)*h, (1./3.)*h, (1./3.)*h, (1./6.)*h)
-		normMag.normalize()
+		NormMag.normalize()
 		NSteps++
 		adaptDt(math.Pow(MaxErr/err, 1./4.))
 		setLastErr(err)

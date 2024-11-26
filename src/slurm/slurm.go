@@ -1,4 +1,4 @@
-package entrypoint
+package slurm
 
 import (
 	"fmt"
@@ -70,7 +70,7 @@ func getSlurmEndTime() (time.Time, error) {
 }
 
 // Example usage
-func setEndTimerIfSlurm() {
+func SetEndTimerIfSlurm() {
 	// Check if running in SLURM
 	if os.Getenv("SLURM_JOB_ID") != "" {
 		getSlurmMetadata()

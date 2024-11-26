@@ -1,4 +1,4 @@
-package parser
+package new_engine
 
 import (
 	"errors"
@@ -9,34 +9,36 @@ import (
 	"strings"
 )
 
-func (p *ScriptParser) Execute(backend *SimulationBackend) error {
-	variables := make(map[string]interface{})
+func (p *ScriptParser) Execute() error {
 	for _, stmt := range p.statements {
 		switch stmt.Type {
 		case "assignment", "declaration":
 			// Evaluate the RHS expression
-			value, err := p.evaluateExpression(stmt.Expr, backend, variables)
+			value, err := p.evaluateExpression(stmt.Expr)
 			if err != nil {
 				return fmt.Errorf("error evaluating expression: %v", err)
 			}
-			// Store the value in the local variables map
-			variables[stmt.Name] = value
-			// Also set the parameter in the backend
-			backend.SetParameter(stmt.Name, value)
+
+			p.EngineState.World.RegisterUserVariable(stmt.Name, value)
 		case "function_call":
-			fn, ok := functionRegistry[stmt.Name]
+			fn, ok := p.EngineState.World.Functions[stmt.Name]
 			if !ok {
+
 				return fmt.Errorf("unsupported function: %s", stmt.Name)
 			}
 			args := []interface{}{}
 			for _, argExpr := range stmt.ArgExprs {
-				argValue, err := p.evaluateExpression(argExpr, backend, variables)
+				argValue, err := p.evaluateExpression(argExpr)
 				if err != nil {
 					return fmt.Errorf("error evaluating argument in function '%s': %v", stmt.Name, err)
 				}
 				args = append(args, argValue)
 			}
-			_, err := fn(backend, args)
+			fnTyped, ok := fn.(func([]interface{}) (interface{}, error))
+			if !ok {
+				return fmt.Errorf("invalid function type for: %s", stmt.Name)
+			}
+			_, err := fnTyped(args)
 			if err != nil {
 				return fmt.Errorf("error executing function %s: %v", stmt.Name, err)
 			}
@@ -45,12 +47,12 @@ func (p *ScriptParser) Execute(backend *SimulationBackend) error {
 	return nil
 }
 
-func (p *ScriptParser) evaluateExpression(expr ast.Expr, backend *SimulationBackend, variables map[string]interface{}) (interface{}, error) {
+func (p *ScriptParser) evaluateExpression(expr ast.Expr) (interface{}, error) {
 	switch e := expr.(type) {
 	case *ast.BasicLit:
 		return parseValue(e.Value)
 	case *ast.Ident:
-		if val, ok := variables[e.Name]; ok {
+		if val, ok := p.EngineState.World.Variables[e.Name]; ok {
 			return val, nil
 		}
 		return nil, fmt.Errorf("undefined variable: %s", e.Name)
@@ -58,19 +60,23 @@ func (p *ScriptParser) evaluateExpression(expr ast.Expr, backend *SimulationBack
 		funcName := p.formatExpr(e.Fun)
 		args := []interface{}{}
 		for _, argExpr := range e.Args {
-			argValue, err := p.evaluateExpression(argExpr, backend, variables)
+			argValue, err := p.evaluateExpression(argExpr)
 			if err != nil {
 				return nil, err
 			}
 			args = append(args, argValue)
 		}
-		fn, ok := functionRegistry[funcName]
+		fn, ok := p.EngineState.World.Functions[funcName]
 		if !ok {
 			return nil, fmt.Errorf("unsupported function: %s", funcName)
 		}
-		return fn(backend, args)
+		fnTyped, ok := fn.(func([]interface{}) (interface{}, error))
+		if !ok {
+			return nil, fmt.Errorf("invalid function type for: %s", funcName)
+		}
+		return fnTyped(args)
 	case *ast.UnaryExpr: // Handle unary expressions, e.g., -1.5
-		val, err := p.evaluateExpression(e.X, backend, variables)
+		val, err := p.evaluateExpression(e.X)
 		if err != nil {
 			return nil, err
 		}
@@ -96,7 +102,7 @@ func (p *ScriptParser) parseArrayLiteral(lit *ast.CompositeLit) (interface{}, er
 	var elements []interface{}
 
 	for _, elt := range lit.Elts {
-		val, err := p.evaluateExpression(elt, nil, nil)
+		val, err := p.evaluateExpression(elt)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing array element: %v", err)
 		}

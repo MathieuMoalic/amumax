@@ -49,7 +49,7 @@ func (ts *tableStruct) WriteToBuffer() {
 	buf = append(buf, Time)
 	// for each quantity we append each component to the buffer
 	for _, q := range ts.quantities {
-		buf = append(buf, averageOf(q)...)
+		buf = append(buf, AverageOf(q)...)
 	}
 	// size of buf should be same as size of []Ztable
 	ts.Mu.Lock() // Lock the mutex before modifying the map
@@ -108,7 +108,7 @@ func tableInit() {
 	zarr.MakeZgroup("table", OD(), &zGroups)
 	Table.AddColumn("step", "")
 	Table.AddColumn("t", "s")
-	tableAdd(&normMag)
+	tableAdd(&NormMag)
 	go tablesAutoFlush()
 
 }

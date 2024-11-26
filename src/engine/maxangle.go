@@ -11,7 +11,7 @@ var (
 )
 
 func setSpinAngle(dst *data.Slice) {
-	cuda.SetMaxAngle(dst, normMag.Buffer(), lex2.Gpu(), Regions.Gpu(), normMag.Mesh())
+	cuda.SetMaxAngle(dst, NormMag.Buffer(), lex2.Gpu(), Regions.Gpu(), NormMag.Mesh())
 }
 
 func getMaxAngle() float64 {

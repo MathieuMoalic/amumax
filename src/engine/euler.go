@@ -9,7 +9,7 @@ type euler struct{}
 
 // Euler method, can be used as solver.Step.
 func (*euler) Step() {
-	y := normMag.Buffer()
+	y := NormMag.Buffer()
 	dy0 := cuda.Buffer(VECTOR, y.Size())
 	defer cuda.Recycle(dy0)
 
@@ -30,7 +30,7 @@ func (*euler) Step() {
 	setLastErr(float64(dt) * LastTorque)
 
 	cuda.Madd2(y, y, dy0, 1, dt) // y = y + dt * dy
-	normMag.normalize()
+	NormMag.normalize()
 	Time += Dt_si
 	NSteps++
 }
