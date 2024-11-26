@@ -6,32 +6,33 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
-func MFMKernel(mesh *data.MeshType, lift, tipsize float64, cacheDir string) (kernel [3]*data.Slice) {
+func MFMKernel(mesh *mesh.Mesh, lift, tipsize float64, cacheDir string) (kernel [3]*data.Slice) {
 	return CalcMFMKernel(mesh, lift, tipsize)
 
 }
 
 // Kernel for the vertical derivative of the force on an MFM tip due to mx, my, mz.
 // This is the 2nd derivative of the energy w.r.t. z.
-func CalcMFMKernel(mesh *data.MeshType, lift, tipsize float64) (kernel [3]*data.Slice) {
+func CalcMFMKernel(kernelMesh *mesh.Mesh, lift, tipsize float64) (kernel [3]*data.Slice) {
 
 	const TipCharge = 1 / Mu0 // tip charge
 	const Δ = 1e-9            // tip oscillation, take 2nd derivative over this distance
 	log.AssertMsg(lift > 0, "MFM tip crashed into sample, please lift the new one higher")
 
 	{ // Kernel mesh is 2x larger than input, instead in case of PBC
-		pbc := mesh.PBC()
-		sz := padSize(mesh.Size(), pbc)
-		cs := mesh.CellSize()
-		mesh = data.NewMesh(sz[X], sz[Y], sz[Z], cs[X], cs[Y], cs[Z], pbc[0], pbc[1], pbc[2])
+		pbc := kernelMesh.PBC()
+		sz := padSize(kernelMesh.Size(), pbc)
+		cs := kernelMesh.CellSize()
+		kernelMesh = mesh.NewMesh(sz[X], sz[Y], sz[Z], cs[X], cs[Y], cs[Z], pbc[0], pbc[1], pbc[2])
 	}
 
 	// Shorthand
-	size := mesh.Size()
-	pbc := mesh.PBC()
-	cellsize := mesh.CellSize()
+	size := kernelMesh.Size()
+	pbc := kernelMesh.PBC()
+	cellsize := kernelMesh.CellSize()
 	volume := cellsize[X] * cellsize[Y] * cellsize[Z]
 	fmt.Println("calculating MFM kernel")
 
@@ -48,7 +49,7 @@ func CalcMFMKernel(mesh *data.MeshType, lift, tipsize float64) (kernel [3]*data.
 	// Allocate only upper diagonal part. The rest is symmetric due to reciprocity.
 	var K [3][][][]float32
 	for i := 0; i < 3; i++ {
-		kernel[i] = data.NewSlice(1, mesh.Size())
+		kernel[i] = data.NewSlice(1, kernelMesh.Size())
 		K[i] = kernel[i].Scalars()
 	}
 

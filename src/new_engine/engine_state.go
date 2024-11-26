@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/timer"
 	"github.com/MathieuMoalic/amumax/src/zarr"
 	"github.com/fatih/color"
@@ -26,7 +26,7 @@ type EngineStateStruct struct {
 	Log             *log.Logs
 	Table           *TableStruct
 	Solver          *Solver
-	Mesh            *data.MeshType
+	Mesh            *mesh.Mesh
 	Magnetization   *Magnetization
 	Geometry        *Geometry
 	Regions         *Regions
@@ -75,7 +75,7 @@ func (s *EngineStateStruct) run() {
 	s.initLog()
 	s.initMetadata()
 	s.initTable()
-	s.Mesh = &data.MeshType{}
+	s.Mesh = &mesh.Mesh{}
 	s.Solver = NewSolver(s)
 	s.World = NewWorld(s)
 	s.Magnetization = NewMagnetization(s)

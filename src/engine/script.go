@@ -7,18 +7,18 @@ import (
 	"strings"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/script"
 )
 
-var Mesh data.MeshType
+var Mesh mesh.Mesh
 
 func init() {
 	// Mesh = data.MeshType{Nx: 0, Ny: 0, Nz: 0, Dx: 0, Dy: 0, Dz: 0, Tx: 0, Ty: 0, Tz: 0, PBCx: 0, PBCy: 0, PBCz: 0, AutoMeshx: false, AutoMeshy: false, AutoMeshz: false}
 }
-func GetMesh() *data.MeshType {
+func GetMesh() *mesh.Mesh {
 	return &Mesh
 }
 

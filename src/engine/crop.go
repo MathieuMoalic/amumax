@@ -8,6 +8,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 type cropped struct {
@@ -117,9 +118,9 @@ func (q *cropped) Name() string           { return q.name }
 func (q *cropped) Unit() string           { return unitOf(q.parent) }
 func (q *cropped) EvalTo(dst *data.Slice) { evalTo(q, dst) }
 
-func (q *cropped) Mesh() *data.MeshType {
+func (q *cropped) Mesh() *mesh.Mesh {
 	c := MeshOf(q.parent) // currentMesh
-	return data.NewMesh(q.x2-q.x1, q.y2-q.y1, q.z2-q.z1, c.Dx, c.Dy, c.Dz, c.PBCx, c.PBCy, c.PBCz)
+	return mesh.NewMesh(q.x2-q.x1, q.y2-q.y1, q.z2-q.z1, c.Dx, c.Dy, c.Dz, c.PBCx, c.PBCy, c.PBCz)
 }
 
 func (q *cropped) average() []float64 { return qAverageUniverse(q) } // needed for table

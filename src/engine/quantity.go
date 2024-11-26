@@ -5,6 +5,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 var Quantities = make(map[string]Quantity)
@@ -29,7 +30,7 @@ func meshSize() [3]int {
 func sizeOf(q Quantity) [3]int {
 	// quantity defines its own, custom, implementation:
 	if s, ok := q.(interface {
-		Mesh() *data.MeshType
+		Mesh() *mesh.Mesh
 	}); ok {
 		return s.Mesh().Size()
 	}
@@ -70,10 +71,10 @@ func unitOf(q Quantity) string {
 	return "?"
 }
 
-func MeshOf(q Quantity) *data.MeshType {
+func MeshOf(q Quantity) *mesh.Mesh {
 	// quantity defines its own, custom, implementation:
 	if s, ok := q.(interface {
-		Mesh() *data.MeshType
+		Mesh() *mesh.Mesh
 	}); ok {
 		return s.Mesh()
 	}

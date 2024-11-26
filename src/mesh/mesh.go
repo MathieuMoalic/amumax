@@ -1,4 +1,4 @@
-package data
+package mesh
 
 import (
 	"math"
@@ -6,8 +6,8 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-// MeshType stores info of a finite-difference mesh.
-type MeshType struct {
+// Mesh stores info of a finite-difference mesh.
+type Mesh struct {
 	Nx, Ny, Nz       int
 	Dx, Dy, Dz       float64
 	Tx, Ty, Tz       float64
@@ -16,14 +16,13 @@ type MeshType struct {
 }
 
 // NewMesh creates an empty new mesh.
-func NewMesh(nx, ny, nz int, dx, dy, dz float64, pbcx, pbcy, pbcz int) *MeshType {
-	return &MeshType{nx, ny, nz, dx, dy, dz, 0, 0, 0, pbcx, pbcy, pbcz, false}
+func NewMesh(nx, ny, nz int, dx, dy, dz float64, pbcx, pbcy, pbcz int) *Mesh {
+	return &Mesh{nx, ny, nz, dx, dy, dz, 0, 0, 0, pbcx, pbcy, pbcz, false}
 }
 
-func (m MeshType) prettyPrint() {
+func (m Mesh) prettyPrint() {
 	log.Log.Info("+----------------+------------+------------+------------+")
-	log.Log.Info("|                |     X      |     Y      |     Z      |")
-	// log.Log.Info("+----------------+------------+------------+------------+")
+	log.Log.Info("| Axis           |     X      |     Y      |     Z      |")
 	log.Log.Info("| Gridsize       | %10d | %10d | %10d |", m.Nx, m.Ny, m.Nz)
 	log.Log.Info("| CellSize       | %10.3e | %10.3e | %10.3e |", m.Dx, m.Dy, m.Dz)
 	log.Log.Info("| TotalSize      | %10.3e | %10.3e | %10.3e |", m.Tx, m.Ty, m.Tz)
@@ -31,32 +30,32 @@ func (m MeshType) prettyPrint() {
 	log.Log.Info("+----------------+------------+------------+------------+")
 }
 
-func (m *MeshType) Size() [3]int {
+func (m *Mesh) Size() [3]int {
 	return [3]int{m.Nx, m.Ny, m.Nz}
 }
 
-func (m *MeshType) CellSize() [3]float64 {
+func (m *Mesh) CellSize() [3]float64 {
 	return [3]float64{m.Dx, m.Dy, m.Dz}
 }
 
 // Returns pbc (periodic boundary conditions), as passed to constructor.
-func (m *MeshType) PBC() [3]int {
+func (m *Mesh) PBC() [3]int {
 	return [3]int{m.PBCx, m.PBCy, m.PBCz}
 }
 
 // Total number of cells, not taking into account PBCs.
-func (m *MeshType) NCell() int {
+func (m *Mesh) NCell() int {
 	return m.Nx * m.Ny * m.Nz
 }
 
 // WorldSize equals (grid)Size x CellSize.
-func (m *MeshType) WorldSize() [3]float64 {
+func (m *Mesh) WorldSize() [3]float64 {
 	return [3]float64{m.Tx, m.Ty, m.Tz}
 }
 
 // 3 bools, packed in one byte, indicating whether there are periodic boundary conditions in
 // X (LSB), Y(LSB<<1), Z(LSB<<2)
-func (m *MeshType) PBC_code() byte {
+func (m *Mesh) PBC_code() byte {
 	var code byte
 	if m.PBCx != 0 {
 		code = 1
@@ -70,7 +69,7 @@ func (m *MeshType) PBC_code() byte {
 	return code
 }
 
-func (m *MeshType) largestPrimeFactor(n int) int {
+func (m *Mesh) largestPrimeFactor(n int) int {
 	maxPrime := -1
 	for n%2 == 0 {
 		maxPrime = 2
@@ -87,14 +86,14 @@ func (m *MeshType) largestPrimeFactor(n int) int {
 	return int(maxPrime)
 }
 
-func (m *MeshType) closestSevenSmooth(n int) int {
+func (m *Mesh) closestSevenSmooth(n int) int {
 	for m.largestPrimeFactor(n) > 7 {
 		n -= 1
 	}
 	return n
 }
 
-func (m *MeshType) SmoothMesh(smoothx, smoothy, smoothz bool) {
+func (m *Mesh) SmoothMesh(smoothx, smoothy, smoothz bool) {
 	if m.Nx*m.Ny*m.Nz < 10000 && m.Nx < 128 && m.Ny < 128 && m.Nz < 128 {
 		log.Log.Info("No optimization to be made for small meshes")
 		return
@@ -124,37 +123,37 @@ func (m *MeshType) SmoothMesh(smoothx, smoothy, smoothz bool) {
 	m.prettyPrint()
 }
 
-func (m *MeshType) SetGridSize(Nx, Ny, Nz int) {
+func (m *Mesh) SetGridSize(Nx, Ny, Nz int) {
 	m.Nx = Nx
 	m.Ny = Ny
 	m.Nz = Nz
 }
 
-func (m *MeshType) SetCellSize(Dx, Dy, Dz float64) {
+func (m *Mesh) SetCellSize(Dx, Dy, Dz float64) {
 	m.Dx = Dx
 	m.Dy = Dy
 	m.Dz = Dz
 }
 
-func (m *MeshType) SetTotalSize(Tx, Ty, Tz float64) {
+func (m *Mesh) SetTotalSize(Tx, Ty, Tz float64) {
 	m.Tx = Tx
 	m.Ty = Ty
 	m.Tz = Tz
 }
 
-func (m *MeshType) SetPBC(PBCx, PBCy, PBCz int) {
+func (m *Mesh) SetPBC(PBCx, PBCy, PBCz int) {
 	m.PBCx = PBCx
 	m.PBCy = PBCy
 	m.PBCz = PBCz
 }
 
-func (m *MeshType) SetMesh(Nx, Ny, Nz int, Dx, Dy, Dz float64, PBCx, PBCy, PBCz int) {
+func (m *Mesh) SetMesh(Nx, Ny, Nz int, Dx, Dy, Dz float64, PBCx, PBCy, PBCz int) {
 	m.SetGridSize(Nx, Ny, Nz)
 	m.SetCellSize(Dx, Dy, Dz)
 	m.SetPBC(PBCx, PBCy, PBCz)
 }
 
-func (m *MeshType) validateGridSize() {
+func (m *Mesh) validateGridSize() {
 	max_threshold := 1000000
 	Ni_list := []string{"m.Nx", "m.Ny", "m.Nz"}
 	for i, N := range []int{m.Nx, m.Ny, m.Nz} {
@@ -170,7 +169,7 @@ func (m *MeshType) validateGridSize() {
 	}
 }
 
-func (m *MeshType) checkLargestPrimeFactor(N int, axisName string) {
+func (m *Mesh) checkLargestPrimeFactor(N int, axisName string) {
 	if m.largestPrimeFactor(N) > 127 {
 		log.Log.Warn("%s (%d) has a prime factor larger than 127 so the mesh cannot", axisName, N)
 		log.Log.Warn("be calculated. Use `AutoMesh(bool,bool,bool)` or change the value")
@@ -178,7 +177,7 @@ func (m *MeshType) checkLargestPrimeFactor(N int, axisName string) {
 	}
 }
 
-func (m *MeshType) validateCellSize() {
+func (m *Mesh) validateCellSize() {
 	min_threshold := 0.25e-9
 	max_threshold := 500e-9
 	names := []string{"dx", "dy", "dz"}
@@ -196,7 +195,7 @@ func (m *MeshType) validateCellSize() {
 	m.checkLargestPrimeFactor(m.Nz, "m.Nz")
 }
 
-func (m *MeshType) isAxisReadyToCreate(Ti, di float64, Ni int) bool {
+func (m *Mesh) isAxisReadyToCreate(Ti, di float64, Ni int) bool {
 	// if 2 of the 3 values are set, we return true
 	if (Ti != 0.0 && di != 0.0) || (Ti != 0.0 && Ni != 0) || (di != 0.0 && Ni != 0) {
 		return true
@@ -204,7 +203,7 @@ func (m *MeshType) isAxisReadyToCreate(Ti, di float64, Ni int) bool {
 	return false
 }
 
-func (m *MeshType) ReadyToCreate() bool {
+func (m *Mesh) ReadyToCreate() bool {
 	if m.created {
 		return false
 	} else if m.isAxisReadyToCreate(m.Tx, m.Dx, m.Nx) && m.isAxisReadyToCreate(m.Ty, m.Dy, m.Ny) && m.isAxisReadyToCreate(m.Tz, m.Dz, m.Nz) {
@@ -213,7 +212,7 @@ func (m *MeshType) ReadyToCreate() bool {
 	return false
 }
 
-func (m *MeshType) setTiDiNi(Ti, di *float64, Ni *int, comp string) {
+func (m *Mesh) setTiDiNi(Ti, di *float64, Ni *int, comp string) {
 	if (*Ti != 0.0) && (*di != 0.0) && (*Ni != 0) {
 		log.Log.ErrAndExit("Error: Only 2 of [N%s,d%s,T%s] are needed to define the mesh, you can't define all 3 of them.", comp, comp, comp)
 	} else if (*Ti != 0.0) && (*di != 0.0) {
@@ -226,7 +225,7 @@ func (m *MeshType) setTiDiNi(Ti, di *float64, Ni *int, comp string) {
 }
 
 // check if mesh is set, otherwise, it creates it
-func (m *MeshType) Create() {
+func (m *Mesh) Create() {
 	if !m.created {
 		m.setTiDiNi(&m.Tx, &m.Dx, &m.Nx, "x")
 		m.setTiDiNi(&m.Ty, &m.Dy, &m.Ny, "y")
@@ -238,7 +237,7 @@ func (m *MeshType) Create() {
 	}
 }
 
-func (m *MeshType) ReCreate(Nx, Ny, Nz int, dx, dy, dz float64, PBCx, PBCy, PBCz int) {
+func (m *Mesh) ReCreate(Nx, Ny, Nz int, dx, dy, dz float64, PBCx, PBCy, PBCz int) {
 	m.SetGridSize(Nx, Ny, Nz)
 	m.SetCellSize(dx, dy, dz)
 	m.SetPBC(PBCx, PBCy, PBCz)

@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 type Metadata struct {
@@ -84,7 +84,7 @@ func (m *Metadata) Save() {
 	}
 }
 
-func (m *Metadata) AddMesh(mesh *data.MeshType) {
+func (m *Metadata) AddMesh(mesh *mesh.Mesh) {
 	m.Add("dx", mesh.Dx)
 	m.Add("dy", mesh.Dy)
 	m.Add("dz", mesh.Dz)

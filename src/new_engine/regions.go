@@ -7,6 +7,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 // var Regions = RegionsState{info: info{1, "regions", ""}, Indices: make(map[int]bool)} // global regions map
@@ -311,7 +312,7 @@ func reshapeBytes(array []byte, size [3]int) [][][]byte {
 // 	}
 // }
 
-func (r *Regions) Mesh() *data.MeshType { return r.EngineState.Mesh }
+func (r *Regions) Mesh() *mesh.Mesh { return r.EngineState.Mesh }
 
 func prod(s [3]int) int {
 	return s[0] * s[1] * s[2]

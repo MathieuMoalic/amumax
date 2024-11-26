@@ -6,6 +6,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 
 	"math"
 )
@@ -126,7 +127,7 @@ func thermSeed(seed int) {
 	}
 }
 
-func (b *thermField) Mesh() *data.MeshType   { return GetMesh() }
+func (b *thermField) Mesh() *mesh.Mesh       { return GetMesh() }
 func (b *thermField) NComp() int             { return 3 }
 func (b *thermField) Name() string           { return "Thermal field" }
 func (b *thermField) Unit() string           { return "T" }

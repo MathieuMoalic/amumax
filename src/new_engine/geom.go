@@ -266,4 +266,4 @@ func (g *Geometry) cellVolume(ix, iy, iz int) float32 {
 // 	return
 // }
 
-// func (g *geom) Mesh() *data.MeshType { return GetMesh() }
+// func (g *geom) Mesh() *mesh.Mesh { return GetMesh() }
