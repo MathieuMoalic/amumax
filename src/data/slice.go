@@ -269,6 +269,23 @@ func (f *Slice) Tensors() [][][][]float32 {
 	return tensors
 }
 
+func reshape(array []float32, size [3]int) [][][]float32 {
+	Nx, Ny, Nz := size[0], size[1], size[2]
+	if Nx*Ny*Nz != len(array) {
+		panic(fmt.Errorf("reshape: size mismatch: %v*%v*%v != %v", Nx, Ny, Nz, len(array)))
+	}
+	sliced := make([][][]float32, Nz)
+	for i := range sliced {
+		sliced[i] = make([][]float32, Ny)
+	}
+	for i := range sliced {
+		for j := range sliced[i] {
+			sliced[i][j] = array[(i*Ny+j)*Nx+0 : (i*Ny+j)*Nx+Nx]
+		}
+	}
+	return sliced
+}
+
 // IsNil returns true if either s is nil or s.pointer[0] == nil
 func (s *Slice) IsNil() bool {
 	if s == nil {

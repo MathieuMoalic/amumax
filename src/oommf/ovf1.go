@@ -11,7 +11,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-func WriteOVF1(out io.Writer, q *data.Slice, meta data.Meta, dataformat string) {
+func WriteOVF1(out io.Writer, q *data.Slice, meta Meta, dataformat string) {
 	if q.NComp() != 3 {
 		log.Log.ErrAndExit("Cannot save the quantity: the OVF1 format only supports 3D-vector fields.")
 	}
@@ -38,7 +38,7 @@ func writeOVF1Data(out io.Writer, q *data.Slice, dataformat string) {
 }
 
 // Writes the OMF header
-func writeOVF1Header(out io.Writer, q *data.Slice, meta data.Meta) {
+func writeOVF1Header(out io.Writer, q *data.Slice, meta Meta) {
 	gridsize := q.Size()
 	cellsize := meta.CellSize
 

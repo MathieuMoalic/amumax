@@ -60,7 +60,7 @@ func saveAsOVF(q Quantity, fname string) {
 	}
 	buffer := ValueOf(q) // TODO: check and optimize for Buffer()
 	defer cuda.Recycle(buffer)
-	info := data.Meta{Time: Time, Name: nameOf(q), Unit: unitOf(q), CellSize: MeshOf(q).CellSize()}
+	info := oommf.Meta{Time: Time, Name: nameOf(q), Unit: unitOf(q), CellSize: MeshOf(q).CellSize()}
 	data := buffer.HostCopy() // must be copy (async io)
 	queOutput(func() { saveAs_sync(fname, data, info, outputFormat) })
 }
@@ -103,7 +103,7 @@ func snapshot_sync(fname string, output *data.Slice) {
 }
 
 // synchronous save
-func saveAs_sync(fname string, s *data.Slice, info data.Meta, format outputFormatType) {
+func saveAs_sync(fname string, s *data.Slice, info oommf.Meta, format outputFormatType) {
 	f, err := fsutil.Create(fname)
 	log.Log.PanicIfError(err)
 	defer f.Close()
