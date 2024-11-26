@@ -1,4 +1,4 @@
-package zarr
+package progressbar
 
 import (
 	"fmt"

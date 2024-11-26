@@ -10,7 +10,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag"
-	"github.com/MathieuMoalic/amumax/src/zarr"
+	"github.com/MathieuMoalic/amumax/src/progressbar"
 )
 
 // Solver globals
@@ -30,7 +30,7 @@ var (
 	FixDt                   float64                              // fixed time step?
 	stepper                 stepperInterface                     // generic step, can be EulerStep, HeunStep, etc
 	Solvertype              int
-	ProgressBar             zarr.ProgressBar
+	ProgressBar             progressbar.ProgressBar
 	exchangeLenghtWarned    bool
 )
 
@@ -164,7 +164,7 @@ func run(seconds float64) {
 	stepper.Free() // start from a clean state
 
 	saveIfNeeded() // allow t=0 output
-	ProgressBar := zarr.NewProgressBar(start, stop, "🧲", HideProgresBar)
+	ProgressBar := progressbar.NewProgressBar(start, stop, "🧲", HideProgresBar)
 
 	for (Time < stop) && !Pause {
 		select {
