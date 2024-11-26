@@ -1,10 +1,4 @@
-<<<<<<<< HEAD:src/queue/queue.go
 package queue
-|||||||| 0a71a01:queue.go
-package main
-========
-package entrypoint
->>>>>>>> main:src/entrypoint/queue.go
 
 // File que for distributing multiple input files over GPUs.
 
@@ -18,18 +12,11 @@ import (
 	"sync"
 	"sync/atomic"
 
-<<<<<<<< HEAD:src/queue/queue.go
+	"github.com/MathieuMoalic/amumax/src/api"
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/log"
-|||||||| 0a71a01:queue.go
-	"github.com/MathieuMoalic/amumax/cuda/cu"
-	"github.com/MathieuMoalic/amumax/engine"
-========
-	"github.com/MathieuMoalic/amumax/src/api"
-	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/log"
->>>>>>>> main:src/entrypoint/queue.go
+	"github.com/MathieuMoalic/amumax/src/url"
 )
 
 var (
@@ -37,23 +24,9 @@ var (
 	numOK, numFailed atom = 0, 0
 )
 
-<<<<<<<< HEAD:src/queue/queue.go
 func RunQueue(files []string, flags *flags.FlagsType) {
-|||||||| 0a71a01:queue.go
-func RunQueue(files []string) {
-========
-func RunQueue(files []string, flags *flagsType) {
->>>>>>>> main:src/entrypoint/queue.go
 	s := NewStateTab(files)
-<<<<<<<< HEAD:src/queue/queue.go
-	s.PrintTo(os.Stdout)
-	addr := fmt.Sprint(flags.WebUIQueueHost, ":", flags.WebUIQueuePort)
-	go s.ListenAndServe(addr)
-|||||||| 0a71a01:queue.go
-	s.PrintTo(os.Stdout)
-	go s.ListenAndServe(*engine.Flag_webui_queue_addr)
-========
-	host, port, path, err := parseAddrPath(flags.webUIQueueAddress)
+	host, port, path, err := url.ParseAddrPath(flags.WebUIQueueAddress)
 	log.Log.PanicIfError(err)
 	if path != "" {
 		log.Log.ErrAndExit("Path not supported for queue web UI")
@@ -63,7 +36,6 @@ func RunQueue(files []string, flags *flagsType) {
 	log.Log.Info("Queue web UI at %v", addr)
 	s.printJobList()
 	go s.ListenAndServe(addr)
->>>>>>>> main:src/entrypoint/queue.go
 	s.Run()
 	log.Log.Command(fmt.Sprintf("%d OK; %d Failed", numOK.get(), numFailed.get()))
 	os.Exit(int(exitStatus))
@@ -145,54 +117,16 @@ type atom int32
 func (a *atom) get() int { return int(atomic.LoadInt32((*int32)(a))) }
 func (a *atom) inc()     { atomic.AddInt32((*int32)(a), 1) }
 
-<<<<<<<< HEAD:src/queue/queue.go
-func run(inFile string, gpu int) {
-	fmt.Println("Running", inFile, "on GPU", gpu)
-	err := exec.Command(os.Args[0], "-g", fmt.Sprint(gpu), inFile).Run()
-|||||||| 0a71a01:queue.go
-func run(inFile string, gpu int, webAddr string) {
-	// overridden flags
-	gpuFlag := fmt.Sprint(`-gpu=`, gpu)
-	httpFlag := fmt.Sprint(`-http=`, webAddr)
-
-	// pass through flags
-	flags := []string{gpuFlag, httpFlag}
-	flag.Visit(func(f *flag.Flag) {
-		if f.Name != "gpu" && f.Name != "http" && f.Name != "failfast" {
-			flags = append(flags, fmt.Sprintf("-%v=%v", f.Name, f.Value))
-		}
-	})
-	flags = append(flags, inFile)
-
-	cmd := exec.Command(os.Args[0], flags...)
-	log.Println(os.Args[0], flags)
-	output, err := cmd.CombinedOutput()
-========
 func run(inFile string, gpu int) {
 	log.Log.Command(fmt.Sprintf("Running %s on GPU %d", inFile, gpu))
 	err := exec.Command(os.Args[0], "-g", fmt.Sprint(gpu), inFile).Run()
->>>>>>>> main:src/entrypoint/queue.go
 	if err != nil {
-<<<<<<<< HEAD:src/queue/queue.go
-		fmt.Println("failed", inFile, "on GPU", gpu, ":", err)
-		exitStatus = 1
-|||||||| 0a71a01:queue.go
-		log.Println(inFile, err)
-		log.Printf("%s\n", output)
-		exitStatus.set(1)
-========
 		log.Log.Command(fmt.Sprintf("FAILED %s on GPU %d: %v", inFile, gpu, err))
 		exitStatus = 1
->>>>>>>> main:src/entrypoint/queue.go
 		numFailed.inc()
 		return
 	}
-<<<<<<<< HEAD:src/queue/queue.go
-|||||||| 0a71a01:queue.go
-	} else {
-========
 	log.Log.Command(fmt.Sprintf("DONE %s on GPU %d", inFile, gpu))
->>>>>>>> main:src/entrypoint/queue.go
 	numOK.inc()
 }
 

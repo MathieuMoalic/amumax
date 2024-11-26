@@ -22,10 +22,6 @@ func saveIfNeeded() {
 	savedQuantities.SaveIfNeeded()
 	if Table.NeedSave() {
 		tableSave()
-		}
-	}
-	if Table.NeedSave() {
-		tableSave()
 	}
 	if EngineState.Metadata.NeedSave() {
 		EngineState.Metadata.Save()
@@ -34,8 +30,8 @@ func saveIfNeeded() {
 
 // Register quant to be auto-saved every period.
 // period == 0 stops autosaving.
-func autoSave(q Quantity, period float64) {
-	autoSaveInner(q, period, save)
+func autoSaveOVF(q Quantity, period float64) {
+	autoSaveInner(q, period, saveOVF)
 }
 
 // Register quant to be auto-saved as image, every period.
