@@ -29,7 +29,7 @@ func runInteractive(flags *flags.FlagsType) {
 	now := time.Now()
 	outdir := fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
 
-	engine.InitIO(outdir, outdir, flags.CacheDir, flags.SkipExists, flags.ForceClean, flags.Progress, flags.SelfTest, flags.Sync)
+	engine.InitIO(outdir, outdir, flags.CacheDir, flags.SkipExists, flags.ForceClean, flags.HideProgressBar, flags.SelfTest, flags.Sync)
 	log.Log.Info("Input file: %s", "none")
 	log.Log.Info("Output directory: %s", engine.OD())
 	log.Log.Init(engine.OD())
@@ -46,7 +46,7 @@ Msat = 1e6
 Aex = 10e-12
 alpha = 1
 m = RandomMag()`)
-	if flags.WebUIEnabled {
+	if !flags.WebUIDisabled {
 		host, port, path, err := url.ParseAddrPath(flags.WebUIAddress)
 		log.Log.PanicIfError(err)
 		go api.Start(host, port, path, flags.Tunnel, flags.Debug)
@@ -63,7 +63,7 @@ func runFileAndServe(mx3Path string, flags *flags.FlagsType) {
 	if flags.OutputDir != "" {
 		outputdir = flags.OutputDir
 	}
-	engine.InitIO(mx3Path, outputdir, flags.CacheDir, flags.SkipExists, flags.ForceClean, flags.Progress, flags.SelfTest, flags.Sync)
+	engine.InitIO(mx3Path, outputdir, flags.CacheDir, flags.SkipExists, flags.ForceClean, flags.HideProgressBar, flags.SelfTest, flags.Sync)
 	log.Log.Info("Input file: %s", mx3Path)
 	log.Log.Info("Output directory: %s", engine.OD())
 
@@ -83,7 +83,7 @@ func runFileAndServe(mx3Path string, flags *flags.FlagsType) {
 		log.Log.PanicIfError(err2)
 	}
 	// now the parser is not used anymore so it can handle web requests
-	if flags.WebUIEnabled {
+	if !flags.WebUIDisabled {
 		host, port, path, err := url.ParseAddrPath(flags.WebUIAddress)
 		log.Log.PanicIfError(err)
 		go api.Start(host, port, path, flags.Tunnel, flags.Debug)
