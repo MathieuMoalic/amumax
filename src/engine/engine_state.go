@@ -1,6 +1,8 @@
 package engine
 
-import "github.com/MathieuMoalic/amumax/src/zarr"
+import (
+	"github.com/MathieuMoalic/amumax/src/zarr"
+)
 
 type EngineStateStruct struct {
 	Metadata zarr.Metadata

@@ -14,7 +14,7 @@ var (
 )
 
 func setTopologicalChargeDensityLattice(dst *data.Slice) {
-	cuda.SetTopologicalChargeLattice(dst, normMag.Buffer(), normMag.Mesh())
+	cuda.SetTopologicalChargeLattice(dst, NormMag.Buffer(), NormMag.Mesh())
 }
 
 func getTopologicalChargeLattice() float64 {

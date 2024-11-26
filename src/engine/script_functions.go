@@ -2,7 +2,7 @@ package engine
 
 func init() {
 	DeclFunc("Flush", drainOutput, "Flush all pending output to disk.")
-	DeclFunc("AutoSaveOvf", autoSaveOvf, "Auto save space-dependent quantity every period (s).")
+	DeclFunc("AutoSaveOvf", autoSaveOVF, "Auto save space-dependent quantity every period (s).")
 	DeclFunc("AutoSnapshot", autoSnapshot, "Auto save image of quantity every period (s).")
 	DeclFunc("Chunk", mx3chunks, "")
 	DeclFunc("Uniform", uniform, "Uniform magnetization in given direction")
@@ -75,8 +75,8 @@ func init() {
 	DeclFunc("Exit", Exit, "Exit from the program")
 	DeclFunc("RunShell", runShell, "Run a shell command")
 
-	DeclFunc("SaveOvf", saveovf, "Save space-dependent quantity once, with auto filename")
-	DeclFunc("SaveOvfAs", saveOvfAs, "Save space-dependent quantity with custom filename")
+	DeclFunc("SaveOvf", saveOVF, "Save space-dependent quantity once, with auto filename")
+	DeclFunc("SaveOvfAs", saveAsOVF, "Save space-dependent quantity with custom filename")
 	DeclFunc("Snapshot", snapshot, "Save image of quantity")
 	DeclFunc("SnapshotAs", snapshotAs, "Save image of quantity with custom filename")
 

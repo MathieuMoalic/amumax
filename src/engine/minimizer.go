@@ -54,7 +54,7 @@ type Minimizer struct {
 }
 
 func (mini *Minimizer) Step() {
-	m := normMag.Buffer()
+	m := NormMag.Buffer()
 	size := m.Size()
 
 	if mini.k == nil {
@@ -108,7 +108,7 @@ func (mini *Minimizer) Step() {
 		mini.h = 1e-4
 	}
 
-	normMag.normalize()
+	NormMag.normalize()
 
 	// as a convention, time does not advance during relax
 	NSteps++

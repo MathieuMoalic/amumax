@@ -64,7 +64,7 @@ func addMagnetoelasticField(dst *data.Slice) {
 	ms := Msat.MSlice()
 	defer ms.Recycle()
 
-	cuda.AddMagnetoelasticField(dst, normMag.Buffer(),
+	cuda.AddMagnetoelasticField(dst, NormMag.Buffer(),
 		Exx, Eyy, Ezz,
 		Exy, Exz, Eyz,
 		b1, b2, ms)
@@ -84,8 +84,8 @@ func getMagnetoelasticForceDensity(dst *data.Slice) {
 	b2 := B2.MSlice()
 	defer b2.Recycle()
 
-	cuda.GetMagnetoelasticForceDensity(dst, normMag.Buffer(),
-		b1, b2, normMag.Mesh())
+	cuda.GetMagnetoelasticForceDensity(dst, NormMag.Buffer(),
+		b1, b2, NormMag.Mesh())
 }
 
 func addMagnetoelasticEnergyDensity(dst *data.Slice) {
@@ -133,7 +133,7 @@ func addMagnetoelasticEnergyDensity(dst *data.Slice) {
 
 	// 1st
 	cuda.Zero(buf)
-	cuda.AddMagnetoelasticField(buf, normMag.Buffer(),
+	cuda.AddMagnetoelasticField(buf, NormMag.Buffer(),
 		Exx, Eyy, Ezz,
 		Exy, Exz, Eyz,
 		b1, zeromel, ms)
@@ -141,7 +141,7 @@ func addMagnetoelasticEnergyDensity(dst *data.Slice) {
 
 	// 1nd
 	cuda.Zero(buf)
-	cuda.AddMagnetoelasticField(buf, normMag.Buffer(),
+	cuda.AddMagnetoelasticField(buf, NormMag.Buffer(),
 		Exx, Eyy, Ezz,
 		Exy, Exz, Eyz,
 		zeromel, b2, ms)

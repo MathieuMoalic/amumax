@@ -1,4 +1,4 @@
-package entrypoint
+package url
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 func TestValidHostPort(t *testing.T) {
 	input := "host:8080"
 	expectedHost, expectedPort, expectedPath := "host", 8080, ""
-	host, port, path, err := parseAddrPath(input)
+	host, port, path, err := ParseAddrPath(input)
 	if err != nil {
 		t.Errorf("Unexpected error for input %q: %v", input, err)
 	}
@@ -25,7 +25,7 @@ func TestValidHostPort(t *testing.T) {
 func TestValidHostOnly(t *testing.T) {
 	input := "host"
 	expectedHost, expectedPort, expectedPath := "host", 35367, ""
-	host, port, path, err := parseAddrPath(input)
+	host, port, path, err := ParseAddrPath(input)
 	if err != nil {
 		t.Errorf("Unexpected error for input %q: %v", input, err)
 	}
@@ -43,7 +43,7 @@ func TestValidHostOnly(t *testing.T) {
 func TestValidHostPortPath(t *testing.T) {
 	input := "host:8080/path"
 	expectedHost, expectedPort, expectedPath := "host", 8080, "/path"
-	host, port, path, err := parseAddrPath(input)
+	host, port, path, err := ParseAddrPath(input)
 	if err != nil {
 		t.Errorf("Unexpected error for input %q: %v", input, err)
 	}
@@ -61,7 +61,7 @@ func TestValidHostPortPath(t *testing.T) {
 func TestValidHostPath(t *testing.T) {
 	input := "host/path"
 	expectedHost, expectedPort, expectedPath := "host", 35367, "/path"
-	host, port, path, err := parseAddrPath(input)
+	host, port, path, err := ParseAddrPath(input)
 	if err != nil {
 		t.Errorf("Unexpected error for input %q: %v", input, err)
 	}
@@ -79,7 +79,7 @@ func TestValidHostPath(t *testing.T) {
 func TestValidPortOnly(t *testing.T) {
 	input := ":8080"
 	expectedHost, expectedPort, expectedPath := "localhost", 8080, ""
-	host, port, path, err := parseAddrPath(input)
+	host, port, path, err := ParseAddrPath(input)
 	if err != nil {
 		t.Errorf("Unexpected error for input %q: %v", input, err)
 	}
@@ -97,7 +97,7 @@ func TestValidPortOnly(t *testing.T) {
 func TestValidPortPath(t *testing.T) {
 	input := ":8080/path"
 	expectedHost, expectedPort, expectedPath := "localhost", 8080, "/path"
-	host, port, path, err := parseAddrPath(input)
+	host, port, path, err := ParseAddrPath(input)
 	if err != nil {
 		t.Errorf("Unexpected error for input %q: %v", input, err)
 	}
@@ -114,7 +114,7 @@ func TestValidPortPath(t *testing.T) {
 
 func TestInvalidMissingHostPort(t *testing.T) {
 	input := "/path"
-	_, _, _, err := parseAddrPath(input)
+	_, _, _, err := ParseAddrPath(input)
 	if err == nil {
 		t.Errorf("Expected error for input %q, but got none", input)
 	}
@@ -122,7 +122,7 @@ func TestInvalidMissingHostPort(t *testing.T) {
 
 func TestInvalidQuery(t *testing.T) {
 	input := "host:8080/path?query=1"
-	_, _, _, err := parseAddrPath(input)
+	_, _, _, err := ParseAddrPath(input)
 	if err == nil {
 		t.Errorf("Expected error for input %q, but got none", input)
 	}
@@ -130,7 +130,7 @@ func TestInvalidQuery(t *testing.T) {
 
 func TestInvalidFragment(t *testing.T) {
 	input := "host:8080/path#fragment"
-	_, _, _, err := parseAddrPath(input)
+	_, _, _, err := ParseAddrPath(input)
 	if err == nil {
 		t.Errorf("Expected error for input %q, but got none", input)
 	}
@@ -139,7 +139,7 @@ func TestInvalidFragment(t *testing.T) {
 func TestValidHostWithEmptyPort(t *testing.T) {
 	input := "host:/path"
 	expectedHost, expectedPort, expectedPath := "host", 35367, "/path"
-	host, port, path, err := parseAddrPath(input)
+	host, port, path, err := ParseAddrPath(input)
 	if err != nil {
 		t.Errorf("Unexpected error for input %q: %v", input, err)
 	}
@@ -157,7 +157,7 @@ func TestValidHostWithEmptyPort(t *testing.T) {
 func TestValidEmptyHostWithEmptyHostAndPort(t *testing.T) {
 	input := ":/path"
 	expectedHost, expectedPort, expectedPath := "localhost", 35367, "/path"
-	host, port, path, err := parseAddrPath(input)
+	host, port, path, err := ParseAddrPath(input)
 	if err != nil {
 		t.Errorf("Unexpected error for input %q: %v", input, err)
 	}
@@ -174,7 +174,7 @@ func TestValidEmptyHostWithEmptyHostAndPort(t *testing.T) {
 
 func TestEmptyInput(t *testing.T) {
 	input := ""
-	_, _, _, err := parseAddrPath(input)
+	_, _, _, err := ParseAddrPath(input)
 	if err == nil {
 		t.Errorf("Expected error for input %q, but got none", input)
 	}

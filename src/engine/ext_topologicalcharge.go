@@ -14,7 +14,7 @@ var (
 )
 
 func setTopologicalChargeDensity(dst *data.Slice) {
-	cuda.SetTopologicalCharge(dst, normMag.Buffer(), normMag.Mesh())
+	cuda.SetTopologicalCharge(dst, NormMag.Buffer(), NormMag.Mesh())
 }
 
 func getTopologicalCharge() float64 {

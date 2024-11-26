@@ -30,8 +30,8 @@ func saveIfNeeded() {
 
 // Register quant to be auto-saved every period.
 // period == 0 stops autosaving.
-func autoSaveOvf(q Quantity, period float64) {
-	autoSaveInner(q, period, saveovf)
+func autoSaveOVF(q Quantity, period float64) {
+	autoSaveInner(q, period, saveOVF)
 }
 
 // Register quant to be auto-saved as image, every period.

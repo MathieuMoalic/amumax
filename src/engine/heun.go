@@ -12,7 +12,7 @@ type heun struct{}
 
 // Adaptive Heun method, can be used as solver.Step
 func (*heun) Step() {
-	y := normMag.Buffer()
+	y := NormMag.Buffer()
 	dy0 := cuda.Buffer(VECTOR, y.Size())
 	defer cuda.Recycle(dy0)
 
@@ -39,7 +39,7 @@ func (*heun) Step() {
 	if err < MaxErr || Dt_si <= MinDt || FixDt != 0 { // mindt check to avoid infinite loop
 		// step OK
 		cuda.Madd3(y, y, dy, dy0, 1, 0.5*dt, -0.5*dt)
-		normMag.normalize()
+		NormMag.normalize()
 		NSteps++
 		adaptDt(math.Pow(MaxErr/err, 1./2.))
 		setLastErr(err)

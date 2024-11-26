@@ -12,7 +12,7 @@ var (
 )
 
 func bubblePos() []float64 {
-	m := normMag.Buffer()
+	m := NormMag.Buffer()
 	n := GetMesh().Size()
 	c := GetMesh().CellSize()
 	mz := m.Comp(Z).HostCopy().Scalars()[0]

@@ -23,7 +23,7 @@ type rk23 struct {
 }
 
 func (rk *rk23) Step() {
-	m := normMag.Buffer()
+	m := NormMag.Buffer()
 	size := m.Size()
 
 	if FixDt != 0 {
@@ -64,18 +64,18 @@ func (rk *rk23) Step() {
 	// stage 2
 	Time = t0 + (1./2.)*Dt_si
 	cuda.Madd2(m, m, rk.k1, 1, (1./2.)*h) // m = m*1 + k1*h/2
-	normMag.normalize()
+	NormMag.normalize()
 	torqueFn(k2)
 
 	// stage 3
 	Time = t0 + (3./4.)*Dt_si
 	cuda.Madd2(m, m0, k2, 1, (3./4.)*h) // m = m0*1 + k2*3/4
-	normMag.normalize()
+	NormMag.normalize()
 	torqueFn(k3)
 
 	// 3rd order solution
 	cuda.Madd4(m, m0, rk.k1, k2, k3, 1, (2./9.)*h, (1./3.)*h, (4./9.)*h)
-	normMag.normalize()
+	NormMag.normalize()
 
 	// error estimate
 	Time = t0 + Dt_si
