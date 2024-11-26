@@ -29,6 +29,7 @@ type ScriptParser struct {
 	EngineState *EngineStateStruct
 	statements  []Statement
 	fset        *token.FileSet
+	lineOffset  int // this is used to adjust line numbers for printing because the wrappedScript adds 3 lines
 }
 
 // NewScriptParser initializes and returns a new ScriptParser instance.
@@ -36,6 +37,7 @@ func NewScriptParser(es *EngineStateStruct) *ScriptParser {
 	return &ScriptParser{
 		EngineState: es,
 		fset:        token.NewFileSet(),
+		lineOffset:  -3,
 	}
 }
 
@@ -86,7 +88,7 @@ func (p *ScriptParser) processNode(node ast.Node) {
 // processAssignment handles variable assignments and declarations.
 func (p *ScriptParser) processAssignment(assign *ast.AssignStmt) {
 	stmt := Statement{
-		LineNum:  p.fset.Position(assign.Pos()).Line - 2,
+		LineNum:  p.fset.Position(assign.Pos()).Line,
 		Original: assign,
 	}
 	if assign.Tok == token.DEFINE {
@@ -109,7 +111,7 @@ func (p *ScriptParser) processFunctionCall(call *ast.CallExpr) {
 	stmt := Statement{
 		Type:     "function_call",
 		Name:     p.formatExpr(call.Fun),
-		LineNum:  p.fset.Position(call.Pos()).Line - 2,
+		LineNum:  p.fset.Position(call.Pos()).Line,
 		ArgExprs: call.Args, // Store argument expressions
 	}
 	// Keep Args field for backward compatibility if needed
@@ -125,7 +127,7 @@ func (p *ScriptParser) processIncDec(incDec *ast.IncDecStmt) {
 		Type:     "assignment",
 		Name:     p.formatExpr(incDec.X),
 		Value:    fmt.Sprintf("%s%s", p.formatExpr(incDec.X), incDec.Tok.String()),
-		LineNum:  p.fset.Position(incDec.Pos()).Line - 2,
+		LineNum:  p.fset.Position(incDec.Pos()).Line,
 		Original: incDec,
 	}
 	p.statements = append(p.statements, stmt)
@@ -136,7 +138,7 @@ func (p *ScriptParser) processIfStmt(ifStmt *ast.IfStmt) {
 	stmt := Statement{
 		Type:    "if_statement",
 		Cond:    p.formatExpr(ifStmt.Cond),
-		LineNum: p.fset.Position(ifStmt.Pos()).Line - 2,
+		LineNum: p.fset.Position(ifStmt.Pos()).Line,
 	}
 	if ifStmt.Body != nil {
 		bodyParser := NewScriptParser(p.EngineState)
@@ -153,7 +155,7 @@ func (p *ScriptParser) processIfStmt(ifStmt *ast.IfStmt) {
 func (p *ScriptParser) processForLoop(loop *ast.ForStmt) {
 	stmt := Statement{
 		Type:    "for_loop",
-		LineNum: p.fset.Position(loop.Pos()).Line - 2,
+		LineNum: p.fset.Position(loop.Pos()).Line,
 	}
 	if loop.Init != nil {
 		stmt.Init = p.formatStmt(loop.Init)
@@ -181,7 +183,7 @@ func (p *ScriptParser) processForLoop(loop *ast.ForStmt) {
 func (p *ScriptParser) processRangeLoop(loop *ast.RangeStmt) {
 	stmt := Statement{
 		Type:    "range_loop",
-		LineNum: p.fset.Position(loop.Pos()).Line - 2,
+		LineNum: p.fset.Position(loop.Pos()).Line,
 	}
 	if loop.Key != nil {
 		stmt.Name = p.formatExpr(loop.Key)
