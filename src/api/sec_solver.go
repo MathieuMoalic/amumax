@@ -41,6 +41,7 @@ func initSolverAPI(e *echo.Group, ws *WebSocketManager) *SolverState {
 	e.POST("/api/solver/type", solverState.postSolverType)
 	e.POST("/api/solver/run", solverState.postSolverRun)
 	e.POST("/api/solver/steps", solverState.postSolverSteps)
+	e.POST("/api/solver/minimize", solverState.postSolverMinimize)
 	e.POST("/api/solver/relax", solverState.postSolverRelax)
 	e.POST("/api/solver/break", solverState.postSolverBreak)
 	e.POST("/api/solver/fixdt", solverState.postSolverFixDt)
@@ -133,6 +134,13 @@ func (s SolverState) postSolverSteps(c echo.Context) error {
 func (s SolverState) postSolverRelax(c echo.Context) error {
 	engine.Break()
 	engine.InjectAndWait(func() { engine.EvalTryRecover("Relax()") })
+	s.ws.broadcastEngineState()
+	return c.JSON(http.StatusOK, "")
+}
+
+func (s SolverState) postSolverMinimize(c echo.Context) error {
+	engine.Break()
+	engine.InjectAndWait(func() { engine.EvalTryRecover("Minimize()") })
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, "")
 }
