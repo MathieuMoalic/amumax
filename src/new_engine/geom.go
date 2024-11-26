@@ -138,7 +138,7 @@ func (g *Geometry) setGeom(s shape) {
 	// M inside geom but previously outside needs to be re-inited
 	needupload := false
 	geomlist := CpuSlice.Host()[0]
-	mhost := g.EngineState.NormMag.Buffer().HostCopy()
+	mhost := g.EngineState.Magnetization.slice.HostCopy()
 	m := mhost.Host()
 	rng := rand.New(rand.NewSource(0))
 	for i := range m[0] {
@@ -152,10 +152,10 @@ func (g *Geometry) setGeom(s shape) {
 		}
 	}
 	if needupload {
-		data.Copy(g.EngineState.NormMag.Buffer(), mhost)
+		data.Copy(g.EngineState.Magnetization.slice, mhost)
 	}
 
-	g.EngineState.NormMag.normalize() // removes m outside vol
+	g.EngineState.Magnetization.normalize() // removes m outside vol
 }
 
 // Sample edgeSmooth^3 points inside the cell to estimate its volume.

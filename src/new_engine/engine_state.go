@@ -8,7 +8,6 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/engine"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
@@ -18,20 +17,22 @@ import (
 )
 
 type EngineStateStruct struct {
-	ZarrPath   string
-	Script     string
-	ScriptPath string
-	Flags      *flags.FlagsType
-	Metadata   *zarr.Metadata
-	World      *World
-	Log        *log.Logs
-	Table      *TableStruct
-	Solver     *Solver
-	Mesh       *data.MeshType
-	NormMag    *Magnetization
-	Geometry   *Geometry
-	Regions    *Regions
-	Utils      *Utils
+	ZarrPath        string
+	Script          string
+	ScriptPath      string
+	Flags           *flags.FlagsType
+	Metadata        *zarr.Metadata
+	World           *World
+	Log             *log.Logs
+	Table           *TableStruct
+	Solver          *Solver
+	Mesh            *data.MeshType
+	Magnetization   *Magnetization
+	Geometry        *Geometry
+	Regions         *Regions
+	Quantities      *Quantities
+	SavedQuantities *savedQuantitiesType
+	Utils           *Utils
 }
 
 func NewEngineState(givenFlags *flags.FlagsType) *EngineStateStruct {
@@ -75,10 +76,12 @@ func (s *EngineStateStruct) run() {
 	s.initMetadata()
 	s.initTable()
 	s.Mesh = &data.MeshType{}
+	s.Solver = NewSolver(s)
 	s.World = NewWorld(s)
-	s.NormMag = NewMagnetization(s)
+	s.Magnetization = NewMagnetization(s)
 	s.Regions = NewRegions(s)
 	s.Geometry = NewGeom(s)
+	s.SavedQuantities = NewSavedQuantities(s)
 	s.Utils = NewUtils(s)
 	scriptParser := NewScriptParser(s)
 	err := scriptParser.Parse(s.Script)
@@ -90,7 +93,6 @@ func (s *EngineStateStruct) run() {
 	if err != nil {
 		s.Log.ErrAndExit("Error executing script: %v", err)
 	}
-	s.Log.Debug("%v", s.Mesh)
 }
 
 func (s *EngineStateStruct) makeZarrPath() {
@@ -139,7 +141,7 @@ func (s *EngineStateStruct) initLog() {
 
 func (s *EngineStateStruct) initTable() {
 	s.Table = &TableStruct{
-		engineState:    s,
+		EngineState:    s,
 		Data:           make(map[string][]float64),
 		Step:           -1,
 		AutoSavePeriod: 0.0,
@@ -150,7 +152,7 @@ func (s *EngineStateStruct) initTable() {
 	zarr.InitZgroup("table", s.ZarrPath)
 	s.Table.AddColumn("step", "")
 	s.Table.AddColumn("t", "s")
-	s.Table.tableAdd(&engine.NormMag)
+	// s.Table.tableAdd(s.Magnetization)
 	go s.Table.tablesAutoFlush()
 }
 
@@ -160,8 +162,8 @@ func (s *EngineStateStruct) initMetadata() {
 }
 
 func (s *EngineStateStruct) CleanExit() {
-	// drainOutput()
-	// Table.Flush()
+	drainOutput()
+	s.Table.Flush()
 	if s.Flags.Sync {
 		timer.Print(os.Stdout)
 	}

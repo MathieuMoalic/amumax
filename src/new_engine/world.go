@@ -18,11 +18,34 @@ func NewWorld(engineState *EngineStateStruct) *World {
 		Functions:   make(map[string]interface{}),
 		Variables:   make(map[string]interface{}),
 	}
-	w.RegisterFunction("TableAutoSave", w.EngineState.Table.TableAutoSave)
 
+	w.registerQuantities()
+	w.registerTableFunctions()
+	w.registerSaveFunctions()
 	w.registerMeshVariables()
 	w.registerShapeFunctions()
 	return w
+}
+
+func (w *World) registerQuantities() {
+	w.RegisterVariable("geom", w.EngineState.Geometry)
+}
+
+func (w *World) registerTableFunctions() {
+	w.RegisterFunction("TableAutoSave", w.EngineState.Table.TableAutoSave)
+	w.RegisterFunction("TableAdd", w.EngineState.Table.tableAdd)
+	w.RegisterFunction("TableAddAs", w.EngineState.Table.tableAddAs)
+	w.RegisterFunction("TableSave", w.EngineState.Table.tableSave)
+}
+
+func (w *World) registerSaveFunctions() {
+	w.RegisterFunction("save", w.EngineState.SavedQuantities.save)
+	w.RegisterFunction("saveAs", w.EngineState.SavedQuantities.saveAs)
+	w.RegisterFunction("SaveAsChunks", w.EngineState.SavedQuantities.saveAsChunk)
+	w.RegisterFunction("AutoSave", w.EngineState.SavedQuantities.autoSave)
+	w.RegisterFunction("AutoSaveAs", w.EngineState.SavedQuantities.autoSaveAs)
+	w.RegisterFunction("AutoSaveAsChunk", w.EngineState.SavedQuantities.autoSaveAsChunk)
+	w.RegisterFunction("Chunks", mx3chunks)
 }
 
 func (w *World) registerShapeFunctions() {
@@ -65,6 +88,9 @@ func (w *World) RegisterFunction(name string, function interface{}) {
 
 // RegisterVariable registers a pre-defined variable in the world.
 func (w *World) RegisterVariable(name string, value interface{}) {
+	if value == nil {
+		w.EngineState.Log.ErrAndExit("Value is nil for variable: %s", name)
+	}
 	w.Variables[name] = value
 }
 
@@ -93,8 +119,8 @@ func (w *World) RegisterUserVariable(name string, value interface{}) {
 	if w.isMeshExpression(name) {
 		if w.EngineState.Mesh.ReadyToCreate() {
 			w.EngineState.Mesh.Create()
-			w.EngineState.NormMag.alloc()
-			w.EngineState.Regions.Alloc()
+			w.EngineState.Magnetization.InitializeBuffer()
+			w.EngineState.Regions.InitializeBuffer()
 			w.EngineState.Metadata.AddMesh(w.EngineState.Mesh)
 		}
 	}
@@ -131,9 +157,12 @@ func (w *World) WrapFunction(fn interface{}, name string) func([]interface{}) (i
 
 			argValue := reflect.ValueOf(arg)
 
-			// Attempt to convert the argument to the expected type
+			// Check if the argument is assignable to the expected type
 			if !argValue.Type().AssignableTo(expectedType) {
-				if argValue.Type().ConvertibleTo(expectedType) {
+				if expectedType.Kind() == reflect.Interface && argValue.Type().Implements(expectedType) {
+					// The argument implements the expected interface; proceed without conversion
+					// No action needed here
+				} else if argValue.Type().ConvertibleTo(expectedType) {
 					argValue = argValue.Convert(expectedType)
 				} else {
 					w.EngineState.Log.Err("%s is not assignable to %s", argValue.Type(), expectedType)
