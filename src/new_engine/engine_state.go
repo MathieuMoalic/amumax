@@ -35,6 +35,7 @@ type EngineStateStruct struct {
 	Utils           *Utils
 	Saver           *Saver
 	WindowShift     *WindowShift
+	Shape           *ShapeStruct
 }
 
 func NewEngineState(givenFlags *flags.FlagsType) *EngineStateStruct {
@@ -76,17 +77,19 @@ func (s *EngineStateStruct) run() {
 	s.initIO()
 	s.initLog()
 	s.initMetadata()
+	s.World = NewWorld(s)
 	s.Saver = NewSaver(100)
-	s.WindowShift = &WindowShift{}
+	s.WindowShift = NewWindowShift(s)
+	s.Shape = NewShape(s)
 	s.initTable()
 	s.Mesh = &mesh.Mesh{}
 	s.Solver = NewSolver(s)
-	s.World = NewWorld(s)
 	s.Magnetization = NewMagnetization(s)
 	s.Regions = NewRegions(s)
 	s.Geometry = NewGeom(s)
 	s.SavedQuantities = NewSavedQuantities(s)
 	s.Utils = NewUtils(s)
+	s.World.register()
 	scriptParser := NewScriptParser(s)
 	err := scriptParser.Parse(s.Script)
 	if err != nil {

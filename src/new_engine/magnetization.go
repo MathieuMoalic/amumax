@@ -132,7 +132,7 @@ const (
 // Sets the magnetization inside the shape
 func (m *Magnetization) SetInShape(region shape, conf config) {
 	if region == nil {
-		region = universeInner
+		region = m.EngineState.Shape.universeInner
 	}
 	host := m.slice.HostCopy()
 	h := host.Vectors()

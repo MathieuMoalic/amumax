@@ -61,7 +61,7 @@ func (r *Regions) ShapeFromRegion(id int) shape {
 
 func (r *Regions) InitializeBuffer() {
 	r.gpuBuffer = cuda.NewBytes(r.Mesh().NCell())
-	r.DefRegion(0, universeInner)
+	r.DefRegion(0, r.EngineState.Shape.universeInner)
 }
 
 // Define a region with id (0-255) to be inside the Shape.

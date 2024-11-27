@@ -18,13 +18,13 @@ func NewWorld(engineState *EngineStateStruct) *World {
 		Functions:   make(map[string]interface{}),
 		Variables:   make(map[string]interface{}),
 	}
-
+	return w
+}
+func (w *World) register() {
 	w.registerQuantities()
 	w.registerTableFunctions()
 	w.registerSaveFunctions()
 	w.registerMeshVariables()
-	w.registerShapeFunctions()
-	return w
 }
 
 func (w *World) registerQuantities() {
@@ -46,27 +46,6 @@ func (w *World) registerSaveFunctions() {
 	w.RegisterFunction("AutoSaveAs", w.EngineState.SavedQuantities.autoSaveAs)
 	w.RegisterFunction("AutoSaveAsChunk", w.EngineState.SavedQuantities.autoSaveAsChunk)
 	w.RegisterFunction("Chunks", mx3chunks)
-}
-
-func (w *World) registerShapeFunctions() {
-	w.RegisterFunction("wave", wave)
-	w.RegisterFunction("ellipsoid", ellipsoid)
-	w.RegisterFunction("ellipse", ellipse)
-	w.RegisterFunction("cone", cone)
-	w.RegisterFunction("circle", circle)
-	w.RegisterFunction("cylinder", cylinder)
-	w.RegisterFunction("cuboid", cuboid)
-	w.RegisterFunction("rect", rect)
-	w.RegisterFunction("triangle", triangle)
-	w.RegisterFunction("rTriangle", rTriangle)
-	w.RegisterFunction("hexagon", hexagon)
-	w.RegisterFunction("diamond", diamond)
-	w.RegisterFunction("squircle", squircle)
-	w.RegisterFunction("square", square)
-	w.RegisterFunction("xRange", xRange)
-	w.RegisterFunction("yRange", yRange)
-	w.RegisterFunction("zRange", zRange)
-	w.RegisterFunction("universe", universe)
 }
 
 func (w *World) registerMeshVariables() {
