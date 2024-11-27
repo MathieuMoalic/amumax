@@ -18,56 +18,41 @@ type Geometry struct {
 func NewGeom(engineState *EngineStateStruct) *Geometry {
 	g := &Geometry{EngineState: engineState}
 	g.EngineState.World.RegisterFunction("SetGeom", g.setGeom)
+	g.EngineState.World.RegisterVariable("geom", g)
 	return g
 }
 
-// type info struct {
-// 	nComp int
-// 	name  string
-// 	unit  string
-// }
-
-// func (g *geom) init() {
-// 	g.GpuSlice = nil
-// 	g.info = info{1, "geom", ""}
-// 	declROnly("geom", g, "Cell fill fraction (0..1)")
-// }
-
-func (g *Geometry) Gpu() *data.Slice {
+func (g *Geometry) getOrCreateGpuSlice() *data.Slice {
 	if g.GpuSlice == nil {
 		g.GpuSlice = data.NilSlice(1, g.EngineState.Mesh.Size())
 	}
 	return g.GpuSlice
 }
 
-// func (g *geom) Slice() (*data.Slice, bool) {
-// 	s := g.Gpu()
-// 	if s.IsNil() {
-// 		buffer := cuda.Buffer(g.NComp(), g.EngineState.Mesh.Size())
-// 		cuda.Memset(buffer, 1)
-// 		return buffer, true
-// 	} else {
-// 		return s, false
-// 	}
-// }
+func (g *Geometry) Slice() (*data.Slice, bool) {
+	s := g.getOrCreateGpuSlice()
+	if s.IsNil() {
+		buffer := cuda.Buffer(1, g.EngineState.Mesh.Size())
+		cuda.Memset(buffer, 1)
+		return buffer, true
+	} else {
+		return s, false
+	}
+}
+func (g *Geometry) NComp() int             { return 1 }
+func (g *Geometry) Size() [3]int           { return g.GpuSlice.Size() }
+func (g *Geometry) Name() string           { return "geom" }
+func (g *Geometry) Unit() string           { return "" }
+func (g *Geometry) EvalTo(dst *data.Slice) { data.Copy(dst, g.GpuSlice) }
+func (g *Geometry) Value() *data.Slice     { return g.GpuSlice }
 
-// func (q *geom) EvalTo(dst *data.Slice) { evalTo(q, dst) }
-
-// var _ Quantity = &Geometry
-
-// func (g *geom) average() []float64 {
-// 	s, r := g.Slice()
-// 	if r {
-// 		defer cuda.Recycle(s)
-// 	}
-// 	return sAverageUniverse(s)
-// }
-
-// func (g *geom) Average() float64 { return g.average()[0] }
-
-// func setGeom(s shape) {
-// 	Geometry.setGeom(s)
-// }
+func (g *Geometry) Average() []float64 {
+	s, r := g.Slice()
+	if r {
+		defer cuda.Recycle(s)
+	}
+	return sAverageUniverse(s)
+}
 
 func (g *Geometry) setGeom(s shape) {
 
@@ -77,11 +62,11 @@ func (g *Geometry) setGeom(s shape) {
 	}
 
 	g.shape = s
-	if g.Gpu().IsNil() {
+	if g.getOrCreateGpuSlice().IsNil() {
 		g.GpuSlice = cuda.NewSlice(1, g.EngineState.Mesh.Size())
 	}
 
-	CpuSlice := data.NewSlice(1, g.Gpu().Size())
+	CpuSlice := data.NewSlice(1, g.getOrCreateGpuSlice().Size())
 	array := CpuSlice.Scalars()
 	mesh := g.EngineState.Mesh
 
@@ -187,9 +172,9 @@ func (g *Geometry) cellVolume(ix, iy, iz int) float32 {
 	return vol / float32(N*N*N)
 }
 
-// func (g *geom) GetCell(ix, iy, iz int) float64 {
-// 	return float64(cuda.GetCell(g.Gpu(), 0, ix, iy, iz))
-// }
+func (g *Geometry) GetCell(ix, iy, iz int) float64 {
+	return float64(cuda.GetCell(g.getOrCreateGpuSlice(), 0, ix, iy, iz))
+}
 
 func (g *Geometry) shift(dx int) {
 	// empty mask, nothing to do
@@ -265,5 +250,3 @@ func (g *Geometry) shiftDirtyRange(dx int) (x1, x2 int) {
 	}
 	return
 }
-
-// func (g *geom) Mesh() *mesh.Mesh { return g.EngineState.Mesh }

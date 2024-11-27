@@ -25,6 +25,7 @@ func (w *World) register() {
 	w.registerTableFunctions()
 	w.registerSaveFunctions()
 	w.registerMeshVariables()
+
 }
 
 func (w *World) registerQuantities() {
@@ -118,51 +119,120 @@ func (w *World) WrapFunction(fn interface{}, name string) func([]interface{}) (i
 			return nil, fmt.Errorf("provided argument is not a function")
 		}
 
-		// Check if the number of arguments matches
-		if len(args) != fnType.NumIn() {
-			return nil, fmt.Errorf(
-				"%s expects %d arguments (%s), got %d",
-				name,
-				fnType.NumIn(),
-				w.formatFunctionSignature(fnType, name),
-				len(args),
-			)
+		numIn := fnType.NumIn()
+		isVariadic := fnType.IsVariadic()
+		numFixedArgs := numIn
+		if isVariadic {
+			numFixedArgs-- // The last parameter is variadic
+		}
+
+		// Check if the number of arguments is sufficient
+		if (!isVariadic && len(args) != numIn) || (isVariadic && len(args) < numFixedArgs) {
+			expectedArgs := numIn
+			if isVariadic {
+				expectedArgs = numFixedArgs
+				return nil, fmt.Errorf(
+					"%s expects at least %d arguments (%s), got %d",
+					name,
+					expectedArgs,
+					w.formatFunctionSignature(fnType, name),
+					len(args),
+				)
+			} else {
+				return nil, fmt.Errorf(
+					"%s expects %d arguments (%s), got %d",
+					name,
+					expectedArgs,
+					w.formatFunctionSignature(fnType, name),
+					len(args),
+				)
+			}
 		}
 
 		// Prepare arguments for the function call
-		in := make([]reflect.Value, len(args))
-		for i, arg := range args {
-			expectedType := fnType.In(i)
+		in := make([]reflect.Value, numFixedArgs)
 
-			argValue := reflect.ValueOf(arg)
+		// Handle fixed arguments
+		for i := 0; i < numFixedArgs; i++ {
+			expectedType := fnType.In(i)
+			if len(args) <= i {
+				return nil, fmt.Errorf(
+					"%s: missing argument for parameter %d\nExpected function signature: %s",
+					name,
+					i+1,
+					w.formatFunctionSignature(fnType, name),
+				)
+			}
+			arg := args[i]
+			argVal := reflect.ValueOf(arg)
 
 			// Check if the argument is assignable to the expected type
-			if !argValue.Type().AssignableTo(expectedType) {
-				if expectedType.Kind() == reflect.Interface && argValue.Type().Implements(expectedType) {
+			if !argVal.Type().AssignableTo(expectedType) {
+				if expectedType.Kind() == reflect.Interface && argVal.Type().Implements(expectedType) {
 					// The argument implements the expected interface; proceed without conversion
-					// No action needed here
-				} else if argValue.Type().ConvertibleTo(expectedType) {
-					argValue = argValue.Convert(expectedType)
+				} else if argVal.Type().ConvertibleTo(expectedType) {
+					argVal = argVal.Convert(expectedType)
 				} else {
-					w.EngineState.Log.Err("%s is not assignable to %s", argValue.Type(), expectedType)
-					w.EngineState.Log.Err("Expected function signature: %s", w.formatFunctionSignature(fnType, name))
-					return nil, fmt.Errorf("wrong argument type")
+					return nil, fmt.Errorf(
+						"%s: argument %d (%v) is not assignable to %s\nExpected function signature: %s",
+						name,
+						i+1,
+						argVal.Type(),
+						expectedType,
+						w.formatFunctionSignature(fnType, name),
+					)
 				}
 			}
 
-			in[i] = argValue
+			in[i] = argVal
 		}
 
+		// Handle variadic arguments
+		if isVariadic {
+			variadicType := fnType.In(numIn - 1).Elem() // Element type of variadic parameter
+			numVariadicArgs := len(args) - numFixedArgs
+			variadicSlice := reflect.MakeSlice(reflect.SliceOf(variadicType), numVariadicArgs, numVariadicArgs)
+			for i := 0; i < numVariadicArgs; i++ {
+				arg := args[numFixedArgs+i]
+				argVal := reflect.ValueOf(arg)
+
+				// Check if the argument is assignable to the variadic type
+				if !argVal.Type().AssignableTo(variadicType) {
+					if variadicType.Kind() == reflect.Interface && argVal.Type().Implements(variadicType) {
+						// The argument implements the expected interface; proceed without conversion
+					} else if argVal.Type().ConvertibleTo(variadicType) {
+						argVal = argVal.Convert(variadicType)
+					} else {
+						return nil, fmt.Errorf(
+							"%s: argument %d (%v) is not assignable to %s\nExpected function signature: %s",
+							name,
+							numFixedArgs+i+1,
+							argVal.Type(),
+							variadicType,
+							w.formatFunctionSignature(fnType, name),
+						)
+					}
+				}
+
+				variadicSlice.Index(i).Set(argVal)
+			}
+			// Append the variadic slice to the arguments
+			in = append(in, variadicSlice)
+		}
+
+		var out []reflect.Value
 		// Call the function using reflection
-		out := fnValue.Call(in)
+		if isVariadic {
+			out = fnValue.CallSlice(in)
+		} else {
+			out = fnValue.Call(in)
+		}
 
 		// Handle the function's return values
 		switch len(out) {
 		case 0:
-			// Function does not return any values
 			return nil, nil
 		case 1:
-			// Function returns a single value
 			if fnType.Out(0).Name() == "error" {
 				if !out[0].IsNil() {
 					return nil, out[0].Interface().(error)
@@ -171,7 +241,6 @@ func (w *World) WrapFunction(fn interface{}, name string) func([]interface{}) (i
 			}
 			return out[0].Interface(), nil
 		case 2:
-			// Function returns (interface{}, error)
 			var err error
 			if !out[1].IsNil() {
 				err = out[1].Interface().(error)
@@ -188,12 +257,19 @@ func (w *World) formatFunctionSignature(fnType reflect.Type, name string) string
 	var sb strings.Builder
 	sb.WriteString(name)
 	sb.WriteString("(")
-	for i := 0; i < fnType.NumIn(); i++ {
+	numIn := fnType.NumIn()
+	isVariadic := fnType.IsVariadic()
+	for i := 0; i < numIn; i++ {
 		if i > 0 {
 			sb.WriteString(", ")
 		}
 		inType := fnType.In(i)
-		sb.WriteString(inType.String())
+		if isVariadic && i == numIn-1 {
+			sb.WriteString("...")
+			sb.WriteString(inType.Elem().String())
+		} else {
+			sb.WriteString(inType.String())
+		}
 	}
 	sb.WriteString(")")
 	if fnType.NumOut() > 0 {

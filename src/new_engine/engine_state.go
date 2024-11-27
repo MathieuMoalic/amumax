@@ -36,6 +36,7 @@ type EngineStateStruct struct {
 	Saver           *Saver
 	WindowShift     *WindowShift
 	Shape           *ShapeStruct
+	Grains          *Grains
 }
 
 func NewEngineState(givenFlags *flags.FlagsType) *EngineStateStruct {
@@ -89,6 +90,7 @@ func (s *EngineStateStruct) run() {
 	s.Geometry = NewGeom(s)
 	s.SavedQuantities = NewSavedQuantities(s)
 	s.Utils = NewUtils(s)
+	s.Grains = NewGrains(s)
 	s.World.register()
 	scriptParser := NewScriptParser(s)
 	err := scriptParser.Parse(s.Script)

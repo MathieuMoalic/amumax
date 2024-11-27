@@ -15,8 +15,6 @@ type Magnetization struct {
 	slice       *data.Slice
 }
 
-// These methods are defined for the Quantity interface
-
 func NewMagnetization(es *EngineStateStruct) *Magnetization {
 	m := &Magnetization{
 		EngineState: es,
@@ -24,35 +22,27 @@ func NewMagnetization(es *EngineStateStruct) *Magnetization {
 	m.EngineState.World.RegisterVariable("m", m)
 	return m
 }
-func (m *Magnetization) Size() [3]int {
-	return m.slice.Size()
-}
 
-// Value() *data.Slice
-func (m *Magnetization) EvalTo(dst *data.Slice) {
-	data.Copy(dst, m.slice)
-}
-func (m *Magnetization) NComp() int { return 3 }
+// These methods are defined for the Quantity interface
+
+func (m *Magnetization) Size() [3]int           { return m.slice.Size() }
+func (m *Magnetization) EvalTo(dst *data.Slice) { data.Copy(dst, m.slice) }
+func (m *Magnetization) NComp() int             { return 3 }
+func (m *Magnetization) Name() string           { return "m" }
+func (m *Magnetization) Unit() string           { return "" }
+func (m *Magnetization) Value() *data.Slice     { return m.slice }
+
 func (m *Magnetization) Average() []float64 {
 	s := m.slice
-	geom := m.EngineState.Geometry.Gpu()
-	if geom.IsNil() {
-		return sAverageUniverse(s)
-	} else {
-		avg := make([]float64, s.NComp())
-		for i := range avg {
-			avg[i] = float64(cuda.Dot(s.Comp(i), geom)) / float64(cuda.Sum(geom))
-			if math.IsNaN(avg[i]) {
-				panic("NaN")
-			}
+	geom := m.EngineState.Geometry.getOrCreateGpuSlice()
+	avg := make([]float64, s.NComp())
+	for i := range avg {
+		avg[i] = float64(cuda.Dot(s.Comp(i), geom)) / float64(cuda.Sum(geom))
+		if math.IsNaN(avg[i]) {
+			panic("NaN")
 		}
-		return avg
 	}
-}
-func (m *Magnetization) Name() string { return "m" }
-func (m *Magnetization) Unit() string { return "" }
-func (m *Magnetization) Value() *data.Slice {
-	return m.slice
+	return avg
 }
 
 // These are the other methods
@@ -69,7 +59,9 @@ func (m *Magnetization) Type() reflect.Type      { return reflect.TypeOf(new(Mag
 func (m *Magnetization) Eval() interface{}       { return m }
 
 // func (m *Magnetization) Average() data.Vector    { return unslice(m.average()) }
-func (m *Magnetization) normalize() { cuda.Normalize(m.slice, m.EngineState.Geometry.Gpu()) }
+func (m *Magnetization) normalize() {
+	cuda.Normalize(m.slice, m.EngineState.Geometry.getOrCreateGpuSlice())
+}
 
 // allocate storage (not done by init, as mesh size may not yet be known then)
 func (m *Magnetization) InitializeBuffer() {

@@ -15,29 +15,29 @@ type ShapeStruct struct {
 func NewShape(engineState *EngineStateStruct) *ShapeStruct {
 	s := &ShapeStruct{EngineState: engineState}
 
-	s.EngineState.World.RegisterFunction("wave", s.wave)
-	s.EngineState.World.RegisterFunction("ellipsoid", s.ellipsoid)
-	s.EngineState.World.RegisterFunction("ellipse", s.ellipse)
-	s.EngineState.World.RegisterFunction("cone", s.cone)
-	s.EngineState.World.RegisterFunction("circle", s.circle)
-	s.EngineState.World.RegisterFunction("cylinder", s.cylinder)
-	s.EngineState.World.RegisterFunction("cuboid", s.cuboid)
-	s.EngineState.World.RegisterFunction("rect", s.rect)
-	s.EngineState.World.RegisterFunction("triangle", s.triangle)
-	s.EngineState.World.RegisterFunction("rTriangle", s.rTriangle)
-	s.EngineState.World.RegisterFunction("hexagon", s.hexagon)
-	s.EngineState.World.RegisterFunction("diamond", s.diamond)
-	s.EngineState.World.RegisterFunction("squircle", s.squircle)
-	s.EngineState.World.RegisterFunction("square", s.square)
-	s.EngineState.World.RegisterFunction("xRange", s.xRange)
-	s.EngineState.World.RegisterFunction("yRange", s.yRange)
-	s.EngineState.World.RegisterFunction("zRange", s.zRange)
-	s.EngineState.World.RegisterFunction("universe", s.universe)
-	s.EngineState.World.RegisterFunction("imageShape", s.imageShape)
-	// s.EngineState.World.RegisterFunction("grainRoughness", s.grainRoughness)
-	s.EngineState.World.RegisterFunction("layers", s.layers)
-	s.EngineState.World.RegisterFunction("layer", s.layer)
-	s.EngineState.World.RegisterFunction("cell", s.cell)
+	s.EngineState.World.RegisterFunction("Wave", s.wave)
+	s.EngineState.World.RegisterFunction("Ellipsoid", s.ellipsoid)
+	s.EngineState.World.RegisterFunction("Ellipse", s.ellipse)
+	s.EngineState.World.RegisterFunction("Cone", s.cone)
+	s.EngineState.World.RegisterFunction("Circle", s.circle)
+	s.EngineState.World.RegisterFunction("Cylinder", s.cylinder)
+	s.EngineState.World.RegisterFunction("Cuboid", s.cuboid)
+	s.EngineState.World.RegisterFunction("Rect", s.rect)
+	s.EngineState.World.RegisterFunction("Triangle", s.triangle)
+	s.EngineState.World.RegisterFunction("RTriangle", s.rTriangle)
+	s.EngineState.World.RegisterFunction("Hexagon", s.hexagon)
+	s.EngineState.World.RegisterFunction("Diamond", s.diamond)
+	s.EngineState.World.RegisterFunction("Squircle", s.squircle)
+	s.EngineState.World.RegisterFunction("Square", s.square)
+	s.EngineState.World.RegisterFunction("XRange", s.xRange)
+	s.EngineState.World.RegisterFunction("YRange", s.yRange)
+	s.EngineState.World.RegisterFunction("ZRange", s.zRange)
+	s.EngineState.World.RegisterFunction("Universe", s.universe)
+	s.EngineState.World.RegisterFunction("ImageShape", s.imageShape)
+	s.EngineState.World.RegisterFunction("GrainRoughness", s.grainRoughness)
+	s.EngineState.World.RegisterFunction("Layers", s.layers)
+	s.EngineState.World.RegisterFunction("Layer", s.layer)
+	s.EngineState.World.RegisterFunction("Cell", s.cell)
 
 	return s
 }
@@ -273,19 +273,19 @@ func (s *ShapeStruct) imageShape(fname string) shape {
 	}
 }
 
-// func (s *ShapeStruct) grainRoughness(grainsize, zmin, zmax float64, seed int) shape {
-// 	t := newTesselation(grainsize, 0, 256, int64(seed))
-// 	return func(x, y, z float64) bool {
-// 		if z <= zmin {
-// 			return true
-// 		}
-// 		if z >= zmax {
-// 			return false
-// 		}
-// 		r := t.RegionOf(x, y, z)
-// 		return (z-zmin)/(zmax-zmin) < (float64(r) / 256)
-// 	}
-// }
+func (s *ShapeStruct) grainRoughness(grainsize, zmin, zmax float64, seed int) shape {
+	s.EngineState.Grains.voronoi(grainsize, 0, 256, seed)
+	return func(x, y, z float64) bool {
+		if z <= zmin {
+			return true
+		}
+		if z >= zmax {
+			return false
+		}
+		r := s.EngineState.Grains.RegionOf(x, y, z)
+		return (z-zmin)/(zmax-zmin) < (float64(r) / 256)
+	}
+}
 
 // Transl returns a translated copy of the shape.
 func (s shape) Transl(dx, dy, dz float64) shape {

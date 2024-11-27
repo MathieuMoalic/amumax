@@ -26,6 +26,18 @@ type savedQuantity struct {
 	nextTime    float64 // Next time when autosave should trigger
 }
 
+func newSavedQuantity(engineState *EngineStateStruct, q Quantity, name string, rchunks requestedChunking, period float64) *savedQuantity {
+	return &savedQuantity{
+		engineState: engineState,
+		name:        name,
+		q:           q,
+		period:      period,
+		times:       []float64{},
+		chunks:      newChunks(q, rchunks),
+		rchunks:     rchunks,
+	}
+}
+
 // needSave returns true when it's time to save based on the period.
 func (sq *savedQuantity) needSave() bool {
 	if sq.period == 0 {
@@ -66,7 +78,7 @@ func (sq *savedQuantity) Save() {
 }
 
 // syncSave writes the data slice into chunked, compressed files compatible with the Zarr format.
-func (sq *savedQuantity) syncSave(array *data.Slice, qname string, steps int, chunks chunks) error {
+func (sq *savedQuantity) syncSave(array *data.Slice, qname string, step int, chunks chunks) error {
 	data := array.Tensors()
 	size := array.Size()
 	ncomp := array.NComp()
@@ -76,7 +88,7 @@ func (sq *savedQuantity) syncSave(array *data.Slice, qname string, steps int, ch
 		fmt.Sprintf(sq.engineState.ZarrPath+"%s/.zarray", qname),
 		size,
 		ncomp,
-		steps+1,
+		step,
 		chunks.z.len, chunks.y.len, chunks.x.len, chunks.c.len,
 	)
 
@@ -107,7 +119,7 @@ func (sq *savedQuantity) syncSave(array *data.Slice, qname string, steps int, ch
 					if err != nil {
 						return err
 					}
-					filename := fmt.Sprintf(sq.engineState.ZarrPath+"%s/%d.%d.%d.%d.%d", qname, steps+1, icz, icy, icx, icc)
+					filename := fmt.Sprintf(sq.engineState.ZarrPath+"%s/%d.%d.%d.%d.%d", qname, step+1, icz, icy, icx, icc)
 					err = fsutil.Put(filename, compressedData)
 					if err != nil {
 						return err
@@ -125,7 +137,15 @@ type savedQuantitiesType struct {
 }
 
 func NewSavedQuantities(engineState *EngineStateStruct) *savedQuantitiesType {
-	return &savedQuantitiesType{EngineState: engineState}
+	sqs := &savedQuantitiesType{EngineState: engineState}
+	engineState.World.RegisterFunction("Save", sqs.save)
+	engineState.World.RegisterFunction("SaveAs", sqs.saveAs)
+	engineState.World.RegisterFunction("SaveAsChunks", sqs.saveAsChunk)
+	engineState.World.RegisterFunction("AutoSave", sqs.autoSave)
+	engineState.World.RegisterFunction("AutoSaveAs", sqs.autoSaveAs)
+	engineState.World.RegisterFunction("AutoSaveAsChunk", sqs.autoSaveAsChunk)
+	engineState.World.RegisterFunction("Chunks", mx3chunks)
+	return sqs
 }
 
 // saveZarrArrays is called periodically to save arrays when needed.
@@ -154,16 +174,9 @@ func (sqs *savedQuantitiesType) createSavedQuantity(q Quantity, name string, rch
 	}
 	err := fsutil.Mkdir(sqs.EngineState.ZarrPath + name)
 	log.Log.PanicIfError(err)
-	newZArray := &savedQuantity{
-		name:    name,
-		q:       q,
-		period:  period,
-		times:   []float64{},
-		chunks:  newChunks(q, rchunks),
-		rchunks: rchunks,
-	}
-	sqs.Quantities = append(sqs.Quantities, *newZArray)
-	return newZArray
+	sq := newSavedQuantity(sqs.EngineState, q, name, rchunks, period)
+	sqs.Quantities = append(sqs.Quantities, *sq)
+	return sq
 
 }
 
