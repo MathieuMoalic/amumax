@@ -1,6 +1,8 @@
 package new_engine
 
 import (
+	"fmt"
+
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
@@ -10,6 +12,7 @@ type Utils struct {
 
 func NewUtils(engineState *EngineStateStruct) *Utils {
 	u := &Utils{EngineState: engineState}
+	u.EngineState.World.RegisterFunction("Print", u.customPrint)
 	return u
 }
 
@@ -32,6 +35,29 @@ func (u *Utils) shiftDirtyRange(dx int) (x1, x2 int) {
 	} else {
 		x1 = 0
 		x2 = dx
+	}
+	return
+}
+
+// print with special formatting for some known types
+func (u *Utils) customPrint(msg ...interface{}) {
+	u.EngineState.Log.Info("%v", u.customFmt(msg))
+}
+
+// mumax specific formatting (Slice -> average, etc).
+func (u *Utils) customFmt(msg []interface{}) (fmtMsg string) {
+	for _, m := range msg {
+		if e, ok := m.(Quantity); ok {
+			str := fmt.Sprint(e.Average())
+			str = str[1 : len(str)-1] // remove [ ]
+			fmtMsg += fmt.Sprintf("%v, ", str)
+		} else {
+			fmtMsg += fmt.Sprintf("%v, ", m)
+		}
+	}
+	// remove trailing ", "
+	if len(fmtMsg) > 2 {
+		fmtMsg = fmtMsg[:len(fmtMsg)-2]
 	}
 	return
 }
