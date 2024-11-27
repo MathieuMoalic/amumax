@@ -33,6 +33,8 @@ type EngineStateStruct struct {
 	Quantities      *Quantities
 	SavedQuantities *savedQuantitiesType
 	Utils           *Utils
+	Saver           *Saver
+	WindowShift     *WindowShift
 }
 
 func NewEngineState(givenFlags *flags.FlagsType) *EngineStateStruct {
@@ -74,6 +76,8 @@ func (s *EngineStateStruct) run() {
 	s.initIO()
 	s.initLog()
 	s.initMetadata()
+	s.Saver = NewSaver(100)
+	s.WindowShift = &WindowShift{}
 	s.initTable()
 	s.Mesh = &mesh.Mesh{}
 	s.Solver = NewSolver(s)
@@ -162,7 +166,7 @@ func (s *EngineStateStruct) initMetadata() {
 }
 
 func (s *EngineStateStruct) CleanExit() {
-	drainOutput()
+	s.Saver.Drain()
 	s.Table.Flush()
 	if s.Flags.Sync {
 		timer.Print(os.Stdout)
