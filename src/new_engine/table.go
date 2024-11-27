@@ -1,11 +1,12 @@
 package new_engine
 
 import (
+	"bufio"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/MathieuMoalic/amumax/src/new_fsutil"
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
@@ -25,37 +26,44 @@ type Table struct {
 type column struct {
 	Name   string
 	Unit   string
-	buffer []byte
-	io     new_fsutil.WriteCloseFlusher
+	writer *bufio.Writer
+	file   *os.File
 }
 
 func (ts *Table) WriteToBuffer() {
 	buf := []float64{}
 	buf = append(buf, float64(ts.Step))
-	// always save the current time
 	buf = append(buf, ts.EngineState.solver.Time)
-	// for each quantity we append each component to the buffer
 	for _, q := range ts.quantities {
 		buf = append(buf, q.Average()...)
 	}
-	// size of buf should be same as size of []Ztable
-	ts.Mu.Lock() // Lock the mutex before modifying the map
+
+	ts.Mu.Lock() // Lock before modifying shared data
 	defer ts.Mu.Unlock()
+
 	for i, b := range buf {
-		ts.Columns[i].buffer = append(ts.Columns[i].buffer, zarr.Float64ToBytes(b)...)
+		// Convert float64 to bytes
+		data := zarr.Float64ToBytes(b)
+
+		// Write directly to the buffered writer
+		_, err := ts.Columns[i].writer.Write(data)
+		if err != nil {
+			log.Log.PanicIfError(err)
+		}
+
+		// Update in-memory data
 		ts.Data[ts.Columns[i].Name] = append(ts.Data[ts.Columns[i].Name], b)
 	}
 }
 
 func (ts *Table) Flush() {
 	for i := range ts.Columns {
-		_, err := ts.Columns[i].io.Write(ts.Columns[i].buffer)
-		log.Log.PanicIfError(err)
-		ts.Columns[i].buffer = []byte{}
-		// saving .zarray before the data might help resolve some unsync
-		// errors when the simulation is running and the user loads data
+		// Update zarray if necessary
 		zarr.SaveFileTableZarray(ts.EngineState.zarrPath+"table/"+ts.Columns[i].Name, ts.Step)
-		ts.Columns[i].io.Flush()
+		err := ts.Columns[i].writer.Flush()
+		if err != nil {
+			log.Log.PanicIfError(err)
+		}
 	}
 }
 
@@ -84,9 +92,9 @@ func (ts *Table) Exists(q Quantity, name string) bool {
 func (ts *Table) AddColumn(name, unit string) {
 	err := ts.EngineState.fs.Mkdir("table/" + name)
 	log.Log.PanicIfError(err)
-	f, err := ts.EngineState.fs.Create("table/" + name + "/0")
+	writer, file, err := ts.EngineState.fs.Create("table/" + name + "/0")
 	log.Log.PanicIfError(err)
-	ts.Columns = append(ts.Columns, column{Name: name, Unit: unit, buffer: []byte{}, io: f})
+	ts.Columns = append(ts.Columns, column{Name: name, Unit: unit, writer: writer, file: file})
 }
 
 func (ts *Table) tablesAutoFlush() {
