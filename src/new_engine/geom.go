@@ -73,7 +73,7 @@ func (g *Geometry) setGeom(s shape) {
 
 	if s == nil {
 		// TODO: would be nice not to save volume if entirely filled
-		s = universeInner
+		s = g.EngineState.Shape.universeInner
 	}
 
 	g.shape = s

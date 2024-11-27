@@ -1,10 +1,46 @@
 package new_engine
 
 import (
-	_ "image/jpeg"
-	_ "image/png"
+	"image"
 	"math"
+
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 )
+
+type ShapeStruct struct {
+	EngineState *EngineStateStruct
+	// shape       func(x, y, z float64) bool
+}
+
+func NewShape(engineState *EngineStateStruct) *ShapeStruct {
+	s := &ShapeStruct{EngineState: engineState}
+
+	s.EngineState.World.RegisterFunction("wave", s.wave)
+	s.EngineState.World.RegisterFunction("ellipsoid", s.ellipsoid)
+	s.EngineState.World.RegisterFunction("ellipse", s.ellipse)
+	s.EngineState.World.RegisterFunction("cone", s.cone)
+	s.EngineState.World.RegisterFunction("circle", s.circle)
+	s.EngineState.World.RegisterFunction("cylinder", s.cylinder)
+	s.EngineState.World.RegisterFunction("cuboid", s.cuboid)
+	s.EngineState.World.RegisterFunction("rect", s.rect)
+	s.EngineState.World.RegisterFunction("triangle", s.triangle)
+	s.EngineState.World.RegisterFunction("rTriangle", s.rTriangle)
+	s.EngineState.World.RegisterFunction("hexagon", s.hexagon)
+	s.EngineState.World.RegisterFunction("diamond", s.diamond)
+	s.EngineState.World.RegisterFunction("squircle", s.squircle)
+	s.EngineState.World.RegisterFunction("square", s.square)
+	s.EngineState.World.RegisterFunction("xRange", s.xRange)
+	s.EngineState.World.RegisterFunction("yRange", s.yRange)
+	s.EngineState.World.RegisterFunction("zRange", s.zRange)
+	s.EngineState.World.RegisterFunction("universe", s.universe)
+	s.EngineState.World.RegisterFunction("imageShape", s.imageShape)
+	// s.EngineState.World.RegisterFunction("grainRoughness", s.grainRoughness)
+	s.EngineState.World.RegisterFunction("layers", s.layers)
+	s.EngineState.World.RegisterFunction("layer", s.layer)
+	s.EngineState.World.RegisterFunction("cell", s.cell)
+
+	return s
+}
 
 // geometrical shape for setting sample geometry
 type shape func(x, y, z float64) bool
@@ -21,7 +57,7 @@ func sign(x float64) float64 {
 }
 
 // wave with given diameters
-func wave(period, amin, amax float64) shape {
+func (s *ShapeStruct) wave(period, amin, amax float64) shape {
 	return func(x, y, z float64) bool {
 		wavex := (math.Cos(x/period*2*math.Pi)/2 - 0.5) * (amax - amin) / 2
 		return y > wavex-amin/2 && y < -wavex+amin/2
@@ -29,29 +65,29 @@ func wave(period, amin, amax float64) shape {
 }
 
 // ellipsoid with given diameters
-func ellipsoid(diamx, diamy, diamz float64) shape {
+func (s *ShapeStruct) ellipsoid(diamx, diamy, diamz float64) shape {
 	return func(x, y, z float64) bool {
 		return sqr64(x/diamx)+sqr64(y/diamy)+sqr64(z/diamz) <= 0.25
 	}
 }
 
-func ellipse(diamx, diamy float64) shape {
-	return ellipsoid(diamx, diamy, math.Inf(1))
+func (s *ShapeStruct) ellipse(diamx, diamy float64) shape {
+	return s.ellipsoid(diamx, diamy, math.Inf(1))
 }
 
 // 3D cone with base at z=0 and vertex at z=height.
-func cone(diam, height float64) shape {
+func (s *ShapeStruct) cone(diam, height float64) shape {
 	return func(x, y, z float64) bool {
 		return (height-z)*z >= 0 && sqr64(x/diam)+sqr64(y/diam) <= 0.25*sqr64(1-z/height)
 	}
 }
 
-func circle(diam float64) shape {
-	return cylinder(diam, math.Inf(1))
+func (s *ShapeStruct) circle(diam float64) shape {
+	return s.cylinder(diam, math.Inf(1))
 }
 
 // cylinder along z.
-func cylinder(diam, height float64) shape {
+func (s *ShapeStruct) cylinder(diam, height float64) shape {
 	return func(x, y, z float64) bool {
 		return z <= height/2 && z >= -height/2 &&
 			sqr64(x/diam)+sqr64(y/diam) <= 0.25
@@ -59,7 +95,7 @@ func cylinder(diam, height float64) shape {
 }
 
 // 3D Rectangular slab with given sides.
-func cuboid(sidex, sidey, sidez float64) shape {
+func (s *ShapeStruct) cuboid(sidex, sidey, sidez float64) shape {
 	return func(x, y, z float64) bool {
 		rx, ry, rz := sidex/2, sidey/2, sidez/2
 		return x < rx && x > -rx && y < ry && y > -ry && z < rz && z > -rz
@@ -67,7 +103,7 @@ func cuboid(sidex, sidey, sidez float64) shape {
 }
 
 // 2D Rectangle with given sides.
-func rect(sidex, sidey float64) shape {
+func (s *ShapeStruct) rect(sidex, sidey float64) shape {
 	return func(x, y, z float64) bool {
 		rx, ry := sidex/2, sidey/2
 		return x < rx && x > -rx && y < ry && y > -ry
@@ -75,7 +111,7 @@ func rect(sidex, sidey float64) shape {
 }
 
 // Equilateral triangle with given sides.
-func triangle(side float64) shape {
+func (s *ShapeStruct) triangle(side float64) shape {
 	return func(x, y, z float64) bool {
 		c := math.Sqrt(3)
 		return y > -side/(2*c) && y < x*c+side/c && y < -x*c+side/c
@@ -83,7 +119,7 @@ func triangle(side float64) shape {
 }
 
 // Rounded Equilateral triangle with given sides.
-func rTriangle(side, diam float64) shape {
+func (s *ShapeStruct) rTriangle(side, diam float64) shape {
 	return func(x, y, z float64) bool {
 		c := math.Sqrt(3)
 		return y > -side/(2*c) && y < x*c+side/c && y < -x*c+side/c && math.Sqrt(sqr64(x)+sqr64(y)) < diam/2
@@ -91,7 +127,7 @@ func rTriangle(side, diam float64) shape {
 }
 
 // hexagon with given sides.
-func hexagon(side float64) shape {
+func (s *ShapeStruct) hexagon(side float64) shape {
 	return func(x, y, z float64) bool {
 		a, b := math.Sqrt(3), math.Sqrt(3)*side
 		return y < b/2 && y < -a*x+b && y > a*x-b && y > -b/2 && y > -a*x-b && y < a*x+b
@@ -99,7 +135,7 @@ func hexagon(side float64) shape {
 }
 
 // diamond with given sides.
-func diamond(sidex, sidey float64) shape {
+func (s *ShapeStruct) diamond(sidex, sidey float64) shape {
 	return func(x, y, z float64) bool {
 		a, b := sidey/sidex, sidey/2
 		return y < a*x+b && y < -a*x+b && y > a*x-b && y > -a*x-b
@@ -107,7 +143,7 @@ func diamond(sidex, sidey float64) shape {
 }
 
 // squircle creates a 3D rounded rectangle (a generalized squircle) with specified side lengths and thickness.
-func squircle(sidex, sidey, sidez, a float64) shape {
+func (s *ShapeStruct) squircle(sidex, sidey, sidez, a float64) shape {
 	// r := math.Min(sidex, sidey) / 2
 	return func(x, y, z float64) bool {
 		normX := x / (sidex / 2)
@@ -127,115 +163,117 @@ func squircle(sidex, sidey, sidez, a float64) shape {
 }
 
 // 2D square with given side.
-func square(side float64) shape {
-	return rect(side, side)
+func (s *ShapeStruct) square(side float64) shape {
+	return s.rect(side, side)
 }
 
 // All cells with x-coordinate between a and b
-func xRange(a, b float64) shape {
+func (s *ShapeStruct) xRange(a, b float64) shape {
 	return func(x, y, z float64) bool {
 		return x >= a && x < b
 	}
 }
 
 // All cells with y-coordinate between a and b
-func yRange(a, b float64) shape {
+func (s *ShapeStruct) yRange(a, b float64) shape {
 	return func(x, y, z float64) bool {
 		return y >= a && y < b
 	}
 }
 
 // All cells with z-coordinate between a and b
-func zRange(a, b float64) shape {
+func (s *ShapeStruct) zRange(a, b float64) shape {
 	return func(x, y, z float64) bool {
 		return z >= a && z < b
 	}
 }
 
-// // Cell layers #a (inclusive) up to #b (exclusive).
-// func layers(a, b int) shape {
-// 	Nzi := GetMesh().Size()[Z]
-// 	if a < 0 || a > Nzi || b < 0 || b < a {
-// 		log.Log.ErrAndExit("layers %d:%d out of bounds (0 - %d)", a, b, Nzi)
-// 	}
-// 	c := GetMesh().CellSize()[Z]
-// 	z1 := index2Coord(0, 0, a)[Z] - c/2
-// 	z2 := index2Coord(0, 0, b)[Z] - c/2
-// 	return zRange(z1, z2)
-// }
+// Cell layers #a (inclusive) up to #b (exclusive).
+func (s *ShapeStruct) layers(a, b int) shape {
+	Nz := s.EngineState.Mesh.Nz
+	if a < 0 || a > Nz || b < 0 || b < a {
+		s.EngineState.Log.ErrAndExit("layers %d:%d out of bounds (0 - %d)", a, b, Nz)
+	}
+	dz := s.EngineState.Mesh.Dz
+	z1 := s.EngineState.Utils.Index2Coord(0, 0, a)[Z] - dz/2
+	z2 := s.EngineState.Utils.Index2Coord(0, 0, b)[Z] - dz/2
+	return s.zRange(z1, z2)
+}
 
-// func layer(index int) shape {
-// 	return layers(index, index+1)
-// }
+func (s *ShapeStruct) layer(index int) shape {
+	return s.layers(index, index+1)
+}
 
-// // Single cell with given index
-// func cell(ix, iy, iz int) shape {
-// 	c := GetMesh().CellSize()
-// 	pos := index2Coord(ix, iy, iz)
-// 	x1 := pos[X] - c[X]/2
-// 	y1 := pos[Y] - c[Y]/2
-// 	z1 := pos[Z] - c[Z]/2
-// 	x2 := pos[X] + c[X]/2
-// 	y2 := pos[Y] + c[Y]/2
-// 	z2 := pos[Z] + c[Z]/2
-// 	return func(x, y, z float64) bool {
-// 		return x > x1 && x < x2 &&
-// 			y > y1 && y < y2 &&
-// 			z > z1 && z < z2
-// 	}
-// }
+// Single cell with given index
+func (s *ShapeStruct) cell(ix, iy, iz int) shape {
+	dx, dy, dz := s.EngineState.Mesh.GetD()
+	pos := s.EngineState.Utils.Index2Coord(ix, iy, iz)
+	x1 := pos[X] - dx/2
+	y1 := pos[Y] - dy/2
+	z1 := pos[Z] - dz/2
+	x2 := pos[X] + dx/2
+	y2 := pos[Y] + dy/2
+	z2 := pos[Z] + dz/2
+	return func(x, y, z float64) bool {
+		return x > x1 && x < x2 &&
+			y > y1 && y < y2 &&
+			z > z1 && z < z2
+	}
+}
 
-func universe() shape {
-	return universeInner
+func (s *ShapeStruct) universe() shape {
+	return s.universeInner
 }
 
 // The entire space.
-func universeInner(x, y, z float64) bool {
+func (s *ShapeStruct) universeInner(x, y, z float64) bool {
 	return true
 }
 
-// func imageShape(fname string) shape {
-// 	r, err1 := fsutil.Open(fname)
-// 	checkRecoverable(err1)
-// 	defer r.Close()
-// 	img, _, err2 := image.Decode(r)
-// 	checkRecoverable(err2)
+func (s *ShapeStruct) imageShape(fname string) shape {
+	r, err1 := fsutil.Open(fname)
+	if err1 != nil {
+		s.EngineState.Log.ErrAndExit("Error opening image file: %s: %s", fname, err1)
+	}
+	defer r.Close()
+	img, _, err2 := image.Decode(r)
+	if err2 != nil {
+		s.EngineState.Log.ErrAndExit("Error decoding image file: %s: %s", fname, err2)
+	}
 
-// 	width := img.Bounds().Max.X
-// 	height := img.Bounds().Max.Y
+	width := img.Bounds().Max.X
+	height := img.Bounds().Max.Y
 
-// 	// decode image into bool matrix for fast pixel lookup
-// 	inside := make([][]bool, height)
-// 	for iy := range inside {
-// 		inside[iy] = make([]bool, width)
-// 	}
-// 	for iy := 0; iy < height; iy++ {
-// 		for ix := 0; ix < width; ix++ {
-// 			r, g, b, a := img.At(ix, height-1-iy).RGBA()
-// 			if a > 128 && r+g+b < (0xFFFF*3)/2 {
-// 				inside[iy][ix] = true
-// 			}
-// 		}
-// 	}
+	// decode image into bool matrix for fast pixel lookup
+	inside := make([][]bool, height)
+	for iy := range inside {
+		inside[iy] = make([]bool, width)
+	}
+	for iy := 0; iy < height; iy++ {
+		for ix := 0; ix < width; ix++ {
+			r, g, b, a := img.At(ix, height-1-iy).RGBA()
+			if a > 128 && r+g+b < (0xFFFF*3)/2 {
+				inside[iy][ix] = true
+			}
+		}
+	}
 
-// 	// stretch the image onto the gridsize
-// 	c := GetMesh().CellSize()
-// 	cx, cy := c[X], c[Y]
-// 	N := GetMesh().Size()
-// 	nx, ny := float64(N[X]), float64(N[Y])
-// 	w, h := float64(width), float64(height)
-// 	return func(x, y, z float64) bool {
-// 		ix := int((w/nx)*(x/cx) + 0.5*w)
-// 		iy := int((h/ny)*(y/cy) + 0.5*h)
-// 		if ix < 0 || ix >= width || iy < 0 || iy >= height {
-// 			return false
-// 		} else {
-// 			return inside[iy][ix]
-// 		}
-// 	}
-// }
+	// stretch the image onto the gridsize
+	dx, dy, _ := s.EngineState.Mesh.GetD()
+	Nx, Ny, _ := s.EngineState.Mesh.GetN()
+	w, h := float64(width), float64(height)
+	return func(x, y, z float64) bool {
+		ix := int((w/float64(Nx))*(x/dx) + 0.5*w)
+		iy := int((h/float64(Ny))*(y/dy) + 0.5*h)
+		if ix < 0 || ix >= width || iy < 0 || iy >= height {
+			return false
+		} else {
+			return inside[iy][ix]
+		}
+	}
+}
 
-// func grainRoughness(grainsize, zmin, zmax float64, seed int) shape {
+// func (s *ShapeStruct) grainRoughness(grainsize, zmin, zmax float64, seed int) shape {
 // 	t := newTesselation(grainsize, 0, 256, int64(seed))
 // 	return func(x, y, z float64) bool {
 // 		if z <= zmin {

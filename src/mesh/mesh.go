@@ -33,9 +33,15 @@ func (m Mesh) prettyPrint() {
 func (m *Mesh) Size() [3]int {
 	return [3]int{m.Nx, m.Ny, m.Nz}
 }
+func (m *Mesh) GetN() (int, int, int) {
+	return m.Nx, m.Ny, m.Nz
+}
 
 func (m *Mesh) CellSize() [3]float64 {
 	return [3]float64{m.Dx, m.Dy, m.Dz}
+}
+func (m *Mesh) GetD() (float64, float64, float64) {
+	return m.Dx, m.Dy, m.Dz
 }
 
 // Returns pbc (periodic boundary conditions), as passed to constructor.
