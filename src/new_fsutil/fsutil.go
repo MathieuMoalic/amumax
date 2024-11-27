@@ -2,18 +2,38 @@ package new_fsutil
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 // FileSystem represents a file system with a working directory.
+// It includes functionality for asynchronous file operations.
 type FileSystem struct {
-	wd       string // Working directory
-	bufSize  int    // Buffer size for buffered writer
-	filePerm os.FileMode
-	dirPerm  os.FileMode
+	wd       string      // Working directory
+	bufSize  int         // Buffer size for buffered writer
+	filePerm os.FileMode // File permissions
+	dirPerm  os.FileMode // Directory permissions
+
+	// Fields for asynchronous operations
+	saveQue chan func() // Channel for queued functions
+	queLen  atom        // Number of tasks in the queue (atomic)
+}
+
+// atom is an atomic int32 used for counting queued tasks.
+type atom int32
+
+func (a *atom) Add(v int32) {
+	atomic.AddInt32((*int32)(a), v)
+}
+
+func (a *atom) Load() int32 {
+	return atomic.LoadInt32((*int32)(a))
 }
 
 // NewFileSystem creates a new FileSystem with the specified working directory.
@@ -26,11 +46,43 @@ func NewFileSystem(wd string) *FileSystem {
 	if !filepath.IsAbs(absWd) {
 		panic("working directory must be an absolute path")
 	}
-	return &FileSystem{
+	fs := &FileSystem{
 		wd:       absWd,
 		bufSize:  16 * 1024, // Default buffer size for buffered writer (16 KB)
 		filePerm: 0644,      // Default file permissions
 		dirPerm:  0755,      // Default directory permissions
+
+		// Initialize fields for asynchronous operations
+		saveQue: make(chan func(), 100), // Queue capacity of 100
+	}
+	go fs.run()
+	return fs
+}
+
+// run continuously executes tasks from the saveQue channel.
+func (fs *FileSystem) run() {
+	for f := range fs.saveQue {
+		f()
+		fs.queLen.Add(-1)
+	}
+}
+
+// QueueOutput queues a function for asynchronous execution.
+func (fs *FileSystem) QueueOutput(f func()) {
+	fs.queLen.Add(1)
+	fs.saveQue <- f
+}
+
+// Drain waits until all queued asynchronous operations are completed.
+func (fs *FileSystem) Drain() {
+	for fs.queLen.Load() > 0 {
+		select {
+		default:
+			time.Sleep(1 * time.Millisecond)
+		case f := <-fs.saveQue:
+			f()
+			fs.queLen.Add(-1)
+		}
 	}
 }
 
@@ -98,6 +150,10 @@ func (fs *FileSystem) IsDir(p string) bool {
 // Append appends data to the file, creating it if it does not exist.
 func (fs *FileSystem) Append(p string, data []byte) error {
 	p = fs.addWorkDir(p)
+	err := os.MkdirAll(filepath.Dir(p), fs.dirPerm)
+	if err != nil {
+		return err
+	}
 	f, err := os.OpenFile(p, os.O_APPEND|os.O_WRONLY|os.O_CREATE, fs.filePerm)
 	if err != nil {
 		return err
@@ -105,6 +161,24 @@ func (fs *FileSystem) Append(p string, data []byte) error {
 	defer f.Close()
 	_, err = f.Write(data)
 	return err
+}
+
+// AsyncAppend queues a file append operation to append data to the specified path asynchronously.
+func (fs *FileSystem) AsyncAppend(p string, data []byte) error {
+	p = fs.addWorkDir(p)
+	err := os.MkdirAll(filepath.Dir(p), fs.dirPerm)
+	if err != nil {
+		return err
+	}
+	fs.QueueOutput(func() {
+		f, err := os.OpenFile(p, os.O_APPEND|os.O_WRONLY|os.O_CREATE, fs.filePerm)
+		if err != nil {
+			return
+		}
+		defer f.Close()
+		_, _ = f.Write(data)
+	})
+	return nil
 }
 
 // Put creates a file at the path and writes data to it, overwriting if it exists.
@@ -115,6 +189,21 @@ func (fs *FileSystem) Put(p string, data []byte) error {
 		return err
 	}
 	return os.WriteFile(p, data, fs.filePerm)
+}
+
+// AsyncPut queues a file write operation to write data to the specified path asynchronously.
+func (fs *FileSystem) AsyncPut(path string, data []byte) error {
+	path = fs.addWorkDir(path)
+	err := os.MkdirAll(filepath.Dir(path), fs.dirPerm)
+	if err != nil {
+		return err
+	}
+	fs.QueueOutput(func() {
+		if err := os.WriteFile(path, data, fs.filePerm); err != nil {
+			color.Red(fmt.Sprintf("// Error writing file `%s`: %v", path, err))
+		}
+	})
+	return nil
 }
 
 // Create opens a file for writing, truncating it if it exists.

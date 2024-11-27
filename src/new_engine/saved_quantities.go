@@ -42,7 +42,7 @@ func (sq *savedQuantity) needSave() bool {
 	if sq.period == 0 {
 		return false
 	}
-	return sq.engineState.Solver.Time >= sq.nextTime
+	return sq.engineState.solver.Time >= sq.nextTime
 }
 
 // SaveAttrs updates the .zattrs file with the times data.
@@ -64,13 +64,13 @@ func ValueOf(q Quantity) *data.Slice {
 
 // Save writes the data to disk and updates the times.
 func (sq *savedQuantity) Save() {
-	sq.times = append(sq.times, sq.engineState.Solver.Time)
+	sq.times = append(sq.times, sq.engineState.solver.Time)
 	sq.SaveAttrs()
 	buffer := cuda.Buffer(sq.q.NComp(), sq.q.Size())
 	sq.q.EvalTo(buffer)
 	defer cuda.Recycle(buffer)
 	dataSlice := buffer.HostCopy()
-	sq.engineState.Saver.QueueOutput(func() {
+	sq.engineState.fs.QueueOutput(func() {
 		err := sq.syncSave(dataSlice, sq.name, len(sq.times), sq.chunks)
 		log.Log.PanicIfError(err)
 	})
@@ -84,7 +84,7 @@ func (sq *savedQuantity) syncSave(array *data.Slice, qname string, step int, chu
 
 	// Save .zarray metadata
 	zarr.SaveFileZarray(
-		fmt.Sprintf(sq.engineState.ZarrPath+"%s/.zarray", qname),
+		fmt.Sprintf(sq.engineState.zarrPath+"%s/.zarray", qname),
 		size,
 		ncomp,
 		step,
@@ -130,25 +130,25 @@ func (sq *savedQuantity) syncSave(array *data.Slice, qname string, step int, chu
 	return nil
 }
 
-type savedQuantitiesType struct {
+type savedQuantities struct {
 	EngineState *EngineStateStruct
 	Quantities  []savedQuantity
 }
 
-func NewSavedQuantities(engineState *EngineStateStruct) *savedQuantitiesType {
-	sqs := &savedQuantitiesType{EngineState: engineState}
-	engineState.World.RegisterFunction("Save", sqs.save)
-	engineState.World.RegisterFunction("SaveAs", sqs.saveAs)
-	engineState.World.RegisterFunction("SaveAsChunks", sqs.saveAsChunk)
-	engineState.World.RegisterFunction("AutoSave", sqs.autoSave)
-	engineState.World.RegisterFunction("AutoSaveAs", sqs.autoSaveAs)
-	engineState.World.RegisterFunction("AutoSaveAsChunk", sqs.autoSaveAsChunk)
-	engineState.World.RegisterFunction("Chunks", mx3chunks)
+func NewSavedQuantities(engineState *EngineStateStruct) *savedQuantities {
+	sqs := &savedQuantities{EngineState: engineState}
+	engineState.world.RegisterFunction("Save", sqs.save)
+	engineState.world.RegisterFunction("SaveAs", sqs.saveAs)
+	engineState.world.RegisterFunction("SaveAsChunks", sqs.saveAsChunk)
+	engineState.world.RegisterFunction("AutoSave", sqs.autoSave)
+	engineState.world.RegisterFunction("AutoSaveAs", sqs.autoSaveAs)
+	engineState.world.RegisterFunction("AutoSaveAsChunk", sqs.autoSaveAsChunk)
+	engineState.world.RegisterFunction("Chunks", mx3chunks)
 	return sqs
 }
 
 // saveZarrArrays is called periodically to save arrays when needed.
-func (sqs *savedQuantitiesType) SaveIfNeeded() {
+func (sqs *savedQuantities) SaveIfNeeded() {
 	for i := range sqs.Quantities {
 		if sqs.Quantities[i].needSave() {
 			sqs.Quantities[i].Save()
@@ -157,7 +157,7 @@ func (sqs *savedQuantitiesType) SaveIfNeeded() {
 	}
 }
 
-func (sqs *savedQuantitiesType) savedQuandtityExists(name string) bool {
+func (sqs *savedQuantities) savedQuandtityExists(name string) bool {
 	for _, z := range sqs.Quantities {
 		if z.name == name {
 			return true
@@ -166,7 +166,7 @@ func (sqs *savedQuantitiesType) savedQuandtityExists(name string) bool {
 	return false
 }
 
-func (sqs *savedQuantitiesType) createSavedQuantity(q Quantity, name string, rchunks requestedChunking, period float64) *savedQuantity {
+func (sqs *savedQuantities) createSavedQuantity(q Quantity, name string, rchunks requestedChunking, period float64) *savedQuantity {
 	if sqs.EngineState.fs.Exists(name) {
 		err := sqs.EngineState.fs.Remove(name)
 		log.Log.PanicIfError(err)
@@ -179,7 +179,7 @@ func (sqs *savedQuantitiesType) createSavedQuantity(q Quantity, name string, rch
 
 }
 
-func (sqs *savedQuantitiesType) updateSavedQuantity(q Quantity, name string, rchunks requestedChunking, period float64) {
+func (sqs *savedQuantities) updateSavedQuantity(q Quantity, name string, rchunks requestedChunking, period float64) {
 	sq := sqs.getSavedQuantity(name)
 	if sq.rchunks != rchunks {
 		log.Log.ErrAndExit("Error: The dataset %v has already been initialized with different chunks.", name)
@@ -189,7 +189,7 @@ func (sqs *savedQuantitiesType) updateSavedQuantity(q Quantity, name string, rch
 		if sq.period == 0 && period != 0 {
 			// enable autosave
 			sq.period = period
-			sq.nextTime = sqs.EngineState.Solver.Time + period
+			sq.nextTime = sqs.EngineState.solver.Time + period
 		} else if sq.period != 0 && period == 0 {
 			// disable autosave
 			sq.period = period
@@ -197,7 +197,7 @@ func (sqs *savedQuantitiesType) updateSavedQuantity(q Quantity, name string, rch
 	}
 }
 
-func (sqs *savedQuantitiesType) getSavedQuantity(name string) *savedQuantity {
+func (sqs *savedQuantities) getSavedQuantity(name string) *savedQuantity {
 	for i := range sqs.Quantities {
 		z := &sqs.Quantities[i]
 		if z.name == name {
@@ -209,7 +209,7 @@ func (sqs *savedQuantitiesType) getSavedQuantity(name string) *savedQuantity {
 }
 
 // createOrUpdateSavedQuantity is the unified function for saving quantities.
-func (sqs *savedQuantitiesType) createOrUpdateSavedQuantity(q Quantity, name string, period float64, rchunks requestedChunking) {
+func (sqs *savedQuantities) createOrUpdateSavedQuantity(q Quantity, name string, period float64, rchunks requestedChunking) {
 	if !sqs.savedQuandtityExists(name) {
 		sqs.createSavedQuantity(q, name, rchunks, period)
 	} else {
@@ -221,7 +221,7 @@ func (sqs *savedQuantitiesType) createOrUpdateSavedQuantity(q Quantity, name str
 	}
 }
 
-func (sqs *savedQuantitiesType) autoSaveInner(q Quantity, name string, period float64, rchunks requestedChunking) {
+func (sqs *savedQuantities) autoSaveInner(q Quantity, name string, period float64, rchunks requestedChunking) {
 	if period == 0 {
 		sq := sqs.getSavedQuantity(name)
 		sq.period = 0
@@ -231,32 +231,32 @@ func (sqs *savedQuantitiesType) autoSaveInner(q Quantity, name string, period fl
 }
 
 // User-facing save functions (function signatures cannot change)
-func (sqs *savedQuantitiesType) autoSave(q Quantity, period float64) {
+func (sqs *savedQuantities) autoSave(q Quantity, period float64) {
 	sqs.autoSaveInner(q, q.Name(), period, requestedChunking{1, 1, 1, 1})
 }
 
-func (sqs *savedQuantitiesType) autoSaveAs(q Quantity, name string, period float64) {
+func (sqs *savedQuantities) autoSaveAs(q Quantity, name string, period float64) {
 	sqs.autoSaveInner(q, name, period, requestedChunking{1, 1, 1, 1})
 }
 
-func (sqs *savedQuantitiesType) autoSaveAsChunk(q Quantity, name string, period float64, rchunks requestedChunking) {
+func (sqs *savedQuantities) autoSaveAsChunk(q Quantity, name string, period float64, rchunks requestedChunking) {
 	sqs.autoSaveInner(q, name, period, rchunks)
 }
 
-func (sqs *savedQuantitiesType) saveAsInner(q Quantity, name string, rchunks requestedChunking) {
+func (sqs *savedQuantities) saveAsInner(q Quantity, name string, rchunks requestedChunking) {
 	if !sqs.savedQuandtityExists(name) {
 		sqs.createSavedQuantity(q, name, rchunks, 0)
 	}
 	sqs.getSavedQuantity(name).Save()
 }
-func (sqs *savedQuantitiesType) saveAs(q Quantity, name string) {
+func (sqs *savedQuantities) saveAs(q Quantity, name string) {
 	sqs.saveAsInner(q, name, requestedChunking{1, 1, 1, 1})
 }
 
-func (sqs *savedQuantitiesType) save(q Quantity) {
+func (sqs *savedQuantities) save(q Quantity) {
 	sqs.saveAsInner(q, q.Name(), requestedChunking{1, 1, 1, 1})
 }
 
-func (sqs *savedQuantitiesType) saveAsChunk(q Quantity, name string, rchunks requestedChunking) {
+func (sqs *savedQuantities) saveAsChunk(q Quantity, name string, rchunks requestedChunking) {
 	sqs.saveAsInner(q, name, rchunks)
 }

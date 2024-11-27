@@ -29,36 +29,36 @@ func (w *World) register() {
 }
 
 func (w *World) registerQuantities() {
-	w.RegisterVariable("geom", w.EngineState.Geometry)
+	w.RegisterVariable("geom", w.EngineState.geometry)
 }
 
 func (w *World) registerTableFunctions() {
-	w.RegisterFunction("TableAutoSave", w.EngineState.Table.TableAutoSave)
-	w.RegisterFunction("TableAdd", w.EngineState.Table.tableAdd)
-	w.RegisterFunction("TableAddAs", w.EngineState.Table.tableAddAs)
-	w.RegisterFunction("TableSave", w.EngineState.Table.tableSave)
+	w.RegisterFunction("TableAutoSave", w.EngineState.table.TableAutoSave)
+	w.RegisterFunction("TableAdd", w.EngineState.table.tableAdd)
+	w.RegisterFunction("TableAddAs", w.EngineState.table.tableAddAs)
+	w.RegisterFunction("TableSave", w.EngineState.table.tableSave)
 }
 
 func (w *World) registerSaveFunctions() {
-	w.RegisterFunction("save", w.EngineState.SavedQuantities.save)
-	w.RegisterFunction("saveAs", w.EngineState.SavedQuantities.saveAs)
-	w.RegisterFunction("SaveAsChunks", w.EngineState.SavedQuantities.saveAsChunk)
-	w.RegisterFunction("AutoSave", w.EngineState.SavedQuantities.autoSave)
-	w.RegisterFunction("AutoSaveAs", w.EngineState.SavedQuantities.autoSaveAs)
-	w.RegisterFunction("AutoSaveAsChunk", w.EngineState.SavedQuantities.autoSaveAsChunk)
+	w.RegisterFunction("save", w.EngineState.savedQuantities.save)
+	w.RegisterFunction("saveAs", w.EngineState.savedQuantities.saveAs)
+	w.RegisterFunction("SaveAsChunks", w.EngineState.savedQuantities.saveAsChunk)
+	w.RegisterFunction("AutoSave", w.EngineState.savedQuantities.autoSave)
+	w.RegisterFunction("AutoSaveAs", w.EngineState.savedQuantities.autoSaveAs)
+	w.RegisterFunction("AutoSaveAsChunk", w.EngineState.savedQuantities.autoSaveAsChunk)
 	w.RegisterFunction("Chunks", mx3chunks)
 }
 
 func (w *World) registerMeshVariables() {
-	w.RegisterVariable("Nx", &w.EngineState.Mesh.Nx)
-	w.RegisterVariable("Ny", &w.EngineState.Mesh.Ny)
-	w.RegisterVariable("Nz", &w.EngineState.Mesh.Nz)
-	w.RegisterVariable("dx", &w.EngineState.Mesh.Dx)
-	w.RegisterVariable("dy", &w.EngineState.Mesh.Dy)
-	w.RegisterVariable("dz", &w.EngineState.Mesh.Dz)
-	w.RegisterVariable("Tx", &w.EngineState.Mesh.Tx)
-	w.RegisterVariable("Ty", &w.EngineState.Mesh.Ty)
-	w.RegisterVariable("Tz", &w.EngineState.Mesh.Tz)
+	w.RegisterVariable("Nx", &w.EngineState.mesh.Nx)
+	w.RegisterVariable("Ny", &w.EngineState.mesh.Ny)
+	w.RegisterVariable("Nz", &w.EngineState.mesh.Nz)
+	w.RegisterVariable("dx", &w.EngineState.mesh.Dx)
+	w.RegisterVariable("dy", &w.EngineState.mesh.Dy)
+	w.RegisterVariable("dz", &w.EngineState.mesh.Dz)
+	w.RegisterVariable("Tx", &w.EngineState.mesh.Tx)
+	w.RegisterVariable("Ty", &w.EngineState.mesh.Ty)
+	w.RegisterVariable("Tz", &w.EngineState.mesh.Tz)
 }
 
 // RegisterFunction registers a pre-defined function in the world.
@@ -69,7 +69,7 @@ func (w *World) RegisterFunction(name string, function interface{}) {
 // RegisterVariable registers a pre-defined variable in the world.
 func (w *World) RegisterVariable(name string, value interface{}) {
 	if value == nil {
-		w.EngineState.Log.ErrAndExit("Value is nil for variable: %s", name)
+		w.EngineState.log.ErrAndExit("Value is nil for variable: %s", name)
 	}
 	w.Variables[name] = value
 }
@@ -91,20 +91,20 @@ func (w *World) RegisterUserVariable(name string, value interface{}) {
 				*ptr = v
 			}
 		default:
-			w.EngineState.Log.Warn("Unsupported type: %T", ptr)
+			w.EngineState.log.Warn("Unsupported type: %T", ptr)
 		}
 	} else {
 		w.Variables[name] = value
 	}
 	if w.isMeshExpression(name) {
-		if w.EngineState.Mesh.ReadyToCreate() {
-			w.EngineState.Mesh.Create()
-			w.EngineState.Magnetization.InitializeBuffer()
-			w.EngineState.Regions.InitializeBuffer()
-			w.EngineState.Metadata.AddMesh(w.EngineState.Mesh)
+		if w.EngineState.mesh.ReadyToCreate() {
+			w.EngineState.mesh.Create()
+			w.EngineState.magnetization.InitializeBuffer()
+			w.EngineState.regions.InitializeBuffer()
+			w.EngineState.metadata.AddMesh(w.EngineState.mesh)
 		}
 	}
-	w.EngineState.Metadata.Add(name, value)
+	w.EngineState.metadata.Add(name, value)
 	w.Variables[name] = value
 }
 

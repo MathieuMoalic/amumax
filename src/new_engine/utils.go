@@ -12,23 +12,23 @@ type Utils struct {
 
 func NewUtils(engineState *EngineStateStruct) *Utils {
 	u := &Utils{EngineState: engineState}
-	u.EngineState.World.RegisterFunction("Print", u.customPrint)
+	u.EngineState.world.RegisterFunction("Print", u.customPrint)
 	return u
 }
 
 func (u *Utils) Index2Coord(ix, iy, iz int) data.Vector {
-	n := u.EngineState.Mesh.Size()
-	c := u.EngineState.Mesh.CellSize()
-	x := c[X]*(float64(ix)-0.5*float64(n[X]-1)) - u.EngineState.WindowShift.TotalXShift
-	y := c[Y]*(float64(iy)-0.5*float64(n[Y]-1)) - u.EngineState.WindowShift.TotalYShift
+	n := u.EngineState.mesh.Size()
+	c := u.EngineState.mesh.CellSize()
+	x := c[X]*(float64(ix)-0.5*float64(n[X]-1)) - u.EngineState.windowShift.TotalXShift
+	y := c[Y]*(float64(iy)-0.5*float64(n[Y]-1)) - u.EngineState.windowShift.TotalYShift
 	z := c[Z] * (float64(iz) - 0.5*float64(n[Z]-1))
 	return data.Vector{x, y, z}
 }
 
 // x range that needs to be refreshed after shift over dx
 func (u *Utils) shiftDirtyRange(dx int) (x1, x2 int) {
-	Nx := u.EngineState.Mesh.Nx
-	u.EngineState.Log.AssertMsg(dx != 0, "Invalid shift: dx must not be zero in shiftDirtyRange")
+	Nx := u.EngineState.mesh.Nx
+	u.EngineState.log.AssertMsg(dx != 0, "Invalid shift: dx must not be zero in shiftDirtyRange")
 	if dx < 0 {
 		x1 = Nx + dx
 		x2 = Nx
@@ -41,7 +41,7 @@ func (u *Utils) shiftDirtyRange(dx int) (x1, x2 int) {
 
 // print with special formatting for some known types
 func (u *Utils) customPrint(msg ...interface{}) {
-	u.EngineState.Log.Info("%v", u.customFmt(msg))
+	u.EngineState.log.Info("%v", u.customFmt(msg))
 }
 
 // mumax specific formatting (Slice -> average, etc).

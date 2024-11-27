@@ -10,7 +10,7 @@ import (
 )
 
 // the Table is kept in RAM and used for the API
-type TableStruct struct {
+type Table struct {
 	EngineState    *EngineStateStruct
 	quantities     []Quantity
 	Columns        []column
@@ -29,11 +29,11 @@ type column struct {
 	io     new_fsutil.WriteCloseFlusher
 }
 
-func (ts *TableStruct) WriteToBuffer() {
+func (ts *Table) WriteToBuffer() {
 	buf := []float64{}
 	buf = append(buf, float64(ts.Step))
 	// always save the current time
-	buf = append(buf, ts.EngineState.Solver.Time)
+	buf = append(buf, ts.EngineState.solver.Time)
 	// for each quantity we append each component to the buffer
 	for _, q := range ts.quantities {
 		buf = append(buf, q.Average()...)
@@ -47,23 +47,23 @@ func (ts *TableStruct) WriteToBuffer() {
 	}
 }
 
-func (ts *TableStruct) Flush() {
+func (ts *Table) Flush() {
 	for i := range ts.Columns {
 		_, err := ts.Columns[i].io.Write(ts.Columns[i].buffer)
 		log.Log.PanicIfError(err)
 		ts.Columns[i].buffer = []byte{}
 		// saving .zarray before the data might help resolve some unsync
 		// errors when the simulation is running and the user loads data
-		zarr.SaveFileTableZarray(ts.EngineState.ZarrPath+"table/"+ts.Columns[i].Name, ts.Step)
+		zarr.SaveFileTableZarray(ts.EngineState.zarrPath+"table/"+ts.Columns[i].Name, ts.Step)
 		ts.Columns[i].io.Flush()
 	}
 }
 
-func (ts *TableStruct) NeedSave() bool {
-	return ts.AutoSavePeriod != 0 && (ts.EngineState.Solver.Time-ts.AutoSaveStart)-float64(ts.Step)*ts.AutoSavePeriod >= ts.AutoSavePeriod
+func (ts *Table) NeedSave() bool {
+	return ts.AutoSavePeriod != 0 && (ts.EngineState.solver.Time-ts.AutoSaveStart)-float64(ts.Step)*ts.AutoSavePeriod >= ts.AutoSavePeriod
 }
 
-func (ts *TableStruct) Exists(q Quantity, name string) bool {
+func (ts *Table) Exists(q Quantity, name string) bool {
 	suffixes := []string{"x", "y", "z"}
 	for _, col := range ts.Columns {
 		if q.NComp() == 1 {
@@ -81,7 +81,7 @@ func (ts *TableStruct) Exists(q Quantity, name string) bool {
 	return false
 }
 
-func (ts *TableStruct) AddColumn(name, unit string) {
+func (ts *Table) AddColumn(name, unit string) {
 	err := ts.EngineState.fs.Mkdir("table/" + name)
 	log.Log.PanicIfError(err)
 	f, err := ts.EngineState.fs.Create("table/" + name + "/0")
@@ -89,32 +89,32 @@ func (ts *TableStruct) AddColumn(name, unit string) {
 	ts.Columns = append(ts.Columns, column{Name: name, Unit: unit, buffer: []byte{}, io: f})
 }
 
-func (ts *TableStruct) tablesAutoFlush() {
+func (ts *Table) tablesAutoFlush() {
 	for {
 		ts.Flush()
 		time.Sleep(ts.FlushInterval)
 	}
 }
 
-func (ts *TableStruct) tableSave() {
+func (ts *Table) tableSave() {
 	if len(ts.Columns) == 0 {
-		ts.EngineState.Log.Warn("No columns in table, not saving.")
+		ts.EngineState.log.Warn("No columns in table, not saving.")
 	}
 	ts.Step += 1
 	ts.WriteToBuffer()
 }
 
-func (ts *TableStruct) tableAdd(q Quantity) {
+func (ts *Table) tableAdd(q Quantity) {
 	ts.tableAddAs(q, q.Name())
 }
 
-func (ts *TableStruct) tableAddAs(q Quantity, name string) {
+func (ts *Table) tableAddAs(q Quantity, name string) {
 	suffixes := []string{"x", "y", "z"}
 	if ts.Step != -1 {
 		log.Log.Warn("You cannot add a new quantity to the table after the simulation has started. Ignoring.")
 	}
 	if len(ts.Columns) == 0 {
-		ts.EngineState.Log.Warn("No columns in table, not saving.")
+		ts.EngineState.log.Warn("No columns in table, not saving.")
 	}
 
 	if ts.Exists(q, name) {
@@ -131,8 +131,8 @@ func (ts *TableStruct) tableAddAs(q Quantity, name string) {
 	}
 }
 
-func (ts *TableStruct) TableAutoSave(period float64) {
-	ts.AutoSaveStart = ts.EngineState.Solver.Time
+func (ts *Table) TableAutoSave(period float64) {
+	ts.AutoSaveStart = ts.EngineState.solver.Time
 	ts.AutoSavePeriod = period
 }
 

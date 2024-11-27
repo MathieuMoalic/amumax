@@ -37,7 +37,7 @@ func (r *Regions) GetExistingIndices() []int {
 
 func (r *Regions) redefine(startId, endId int) {
 	// Loop through all cells, if their region ID matches startId, change it to endId
-	n := r.EngineState.Mesh.Size()
+	n := r.EngineState.mesh.Size()
 	l := r.RegionListCPU() // need to start from previous state
 	arr := reshapeBytes(l, r.Mesh().Size())
 
@@ -61,7 +61,7 @@ func (r *Regions) ShapeFromRegion(id int) shape {
 
 func (r *Regions) InitializeBuffer() {
 	r.gpuBuffer = cuda.NewBytes(r.Mesh().NCell())
-	r.DefRegion(0, r.EngineState.Shape.universeInner)
+	r.DefRegion(0, r.EngineState.shape.universeInner)
 }
 
 // Define a region with id (0-255) to be inside the Shape.
@@ -109,14 +109,14 @@ func (r *Regions) RedefRegion(startId, endId int) {
 // renders (rasterizes) shape, filling it with region number #id, between x1 and x2
 // TODO: a tidbit expensive
 func (r *Regions) render(f func(x, y, z float64) int) {
-	mesh := r.EngineState.Mesh
+	mesh := r.EngineState.mesh
 	regionArray1D := r.RegionListCPU() // need to start from previous state
 	regionArray3D := reshapeBytes(regionArray1D, mesh.Size())
 
 	for iz := 0; iz < mesh.Nz; iz++ {
 		for iy := 0; iy < mesh.Ny; iy++ {
 			for ix := 0; ix < mesh.Nx; ix++ {
-				r := r.EngineState.Utils.Index2Coord(ix, iy, iz)
+				r := r.EngineState.utils.Index2Coord(ix, iy, iz)
 				region := f(r[X], r[Y], r[Z])
 				if region >= 0 {
 					regionArray3D[iz][iy][ix] = byte(region)
@@ -152,7 +152,7 @@ func (r *Regions) RegionListCPU() []byte {
 
 func (r *Regions) DefRegionCell(id int, x, y, z int) {
 	r.defRegionId(id)
-	index := data.Index(r.EngineState.Mesh.Size(), x, y, z)
+	index := data.Index(r.EngineState.mesh.Size(), x, y, z)
 	r.gpuBuffer.Set(index, byte(id))
 }
 
@@ -181,14 +181,14 @@ func (r *Regions) Average() float64 { return r.average()[0] }
 
 // Set the region of one cell
 func (r *Regions) SetCell(ix, iy, iz int, region int) {
-	size := r.EngineState.Mesh.Size()
+	size := r.EngineState.mesh.Size()
 	i := data.Index(size, ix, iy, iz)
 	r.gpuBuffer.Set(i, byte(region))
 	r.AddIndex(region)
 }
 
 func (r *Regions) GetCell(ix, iy, iz int) int {
-	size := r.EngineState.Mesh.Size()
+	size := r.EngineState.mesh.Size()
 	i := data.Index(size, ix, iy, iz)
 	return int(r.gpuBuffer.Get(i))
 }
@@ -267,13 +267,13 @@ func (r *Regions) shift(dx int) {
 	cuda.ShiftBytes(r2, r1, r.Mesh(), dx, newreg)
 	r1.Copy(r2)
 
-	n := r.EngineState.Mesh.Size()
-	x1, x2 := r.EngineState.Utils.shiftDirtyRange(dx)
+	n := r.EngineState.mesh.Size()
+	x1, x2 := r.EngineState.utils.shiftDirtyRange(dx)
 
 	for iz := 0; iz < n[Z]; iz++ {
 		for iy := 0; iy < n[Y]; iy++ {
 			for ix := x1; ix < x2; ix++ {
-				i := r.EngineState.Utils.Index2Coord(ix, iy, iz) // includes shift
+				i := r.EngineState.utils.Index2Coord(ix, iy, iz) // includes shift
 				reg := r.get(i)
 				if reg != 0 {
 					r.SetCell(ix, iy, iz, reg) // a bit slowish, but hardly reached
@@ -292,13 +292,13 @@ func (r *Regions) shiftY(dy int) {
 	cuda.ShiftBytesY(r2, r1, r.Mesh(), dy, newreg)
 	r1.Copy(r2)
 
-	n := r.EngineState.Mesh.Size()
-	y1, y2 := r.EngineState.Utils.shiftDirtyRange(dy)
+	n := r.EngineState.mesh.Size()
+	y1, y2 := r.EngineState.utils.shiftDirtyRange(dy)
 
 	for iz := 0; iz < n[Z]; iz++ {
 		for ix := 0; ix < n[X]; ix++ {
 			for iy := y1; iy < y2; iy++ {
-				i := r.EngineState.Utils.Index2Coord(ix, iy, iz) // includes shift
+				i := r.EngineState.utils.Index2Coord(ix, iy, iz) // includes shift
 				reg := r.get(i)
 				if reg != 0 {
 					r.SetCell(ix, iy, iz, reg) // a bit slowish, but hardly reached
@@ -308,7 +308,7 @@ func (r *Regions) shiftY(dy int) {
 	}
 }
 
-func (r *Regions) Mesh() *mesh.Mesh { return r.EngineState.Mesh }
+func (r *Regions) Mesh() *mesh.Mesh { return r.EngineState.mesh }
 
 func prod(s [3]int) int {
 	return s[0] * s[1] * s[2]

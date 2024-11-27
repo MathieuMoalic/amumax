@@ -16,8 +16,8 @@ type WindowShift struct {
 func NewWindowShift(es *EngineStateStruct) *WindowShift {
 	w := new(WindowShift)
 	w.EngineState = es
-	es.World.RegisterFunction("shift", w.shiftX)
-	es.World.RegisterFunction("yshift", w.ShiftY)
+	es.world.RegisterFunction("shift", w.shiftX)
+	es.world.RegisterFunction("yshift", w.ShiftY)
 	return w
 }
 
@@ -25,17 +25,17 @@ func NewWindowShift(es *EngineStateStruct) *WindowShift {
 // func (w *WindowShift) getShiftXPos() float64 { return -w.TotalXShift }
 // func (w *WindowShift) getShiftYPos() float64 { return -w.TotalYShift }
 func (w *WindowShift) shiftX(dx int) {
-	w.TotalXShift += float64(dx) * w.EngineState.Mesh.Dx
+	w.TotalXShift += float64(dx) * w.EngineState.mesh.Dx
 	if w.ShiftM {
-		w.shiftMagX(w.EngineState.Magnetization.slice, dx)
+		w.shiftMagX(w.EngineState.magnetization.slice, dx)
 	}
 	if w.ShiftRegions {
-		w.EngineState.Regions.shift(dx)
+		w.EngineState.regions.shift(dx)
 	}
 	if w.ShiftGeom {
-		w.EngineState.Geometry.shift(dx)
+		w.EngineState.geometry.shift(dx)
 	}
-	w.EngineState.Magnetization.normalize()
+	w.EngineState.magnetization.normalize()
 }
 
 func (w *WindowShift) shiftMagX(m *data.Slice, dx int) {
@@ -54,17 +54,17 @@ func (w *WindowShift) shiftMagX(m *data.Slice, dx int) {
 
 // shift the simulation window over dy cells in Y direction
 func (w *WindowShift) ShiftY(dy int) {
-	w.TotalYShift += float64(dy) * w.EngineState.Mesh.Dy // needed to re-init geom, regions
+	w.TotalYShift += float64(dy) * w.EngineState.mesh.Dy // needed to re-init geom, regions
 	if w.ShiftM {
-		w.shiftMagY(w.EngineState.Magnetization.slice, dy)
+		w.shiftMagY(w.EngineState.magnetization.slice, dy)
 	}
 	if w.ShiftRegions {
-		w.EngineState.Regions.shiftY(dy)
+		w.EngineState.regions.shiftY(dy)
 	}
 	if w.ShiftGeom {
-		w.EngineState.Geometry.shiftY(dy)
+		w.EngineState.geometry.shiftY(dy)
 	}
-	w.EngineState.Magnetization.normalize()
+	w.EngineState.magnetization.normalize()
 }
 
 func (w *WindowShift) shiftMagY(m *data.Slice, dy int) {

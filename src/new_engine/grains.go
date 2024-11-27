@@ -28,7 +28,7 @@ func NewGrains(EngineState *EngineStateStruct) *Grains {
 		rnd:            rand.New(rand.NewSource(0)),
 		poisson_lambda: float64(TILE * TILE),
 	}
-	EngineState.World.RegisterFunction("ext_makegrains", g.voronoi)
+	EngineState.world.RegisterFunction("ext_makegrains", g.voronoi)
 	// w.RegisterFunction("ext_make3dgrains", voronoi3d)
 
 	return g
@@ -40,11 +40,11 @@ func (g *Grains) voronoi(grainsize float64, minRegion, maxRegion, seed int) {
 	g.maxRegion = maxRegion
 	g.seed = int64(seed)
 	g.tilesize = grainsize * float64(g.tile) // expect 4 grains/block, 36 per 3x3 blocks = safe, relatively round number
-	g.EngineState.Regions.hist = append(g.EngineState.Regions.hist, g.RegionOf)
+	g.EngineState.regions.hist = append(g.EngineState.regions.hist, g.RegionOf)
 	for i := minRegion; i < maxRegion; i++ {
-		g.EngineState.Regions.AddIndex(i)
+		g.EngineState.regions.AddIndex(i)
 	}
-	g.EngineState.Regions.render(g.RegionOf)
+	g.EngineState.regions.render(g.RegionOf)
 }
 
 // integer tile coordinate
