@@ -19,7 +19,7 @@ func NewMagnetization(es *EngineStateStruct) *Magnetization {
 	m := &Magnetization{
 		EngineState: es,
 	}
-	m.EngineState.World.RegisterVariable("m", m)
+	m.EngineState.world.RegisterVariable("m", m)
 	return m
 }
 
@@ -34,7 +34,7 @@ func (m *Magnetization) Value() *data.Slice     { return m.slice }
 
 func (m *Magnetization) Average() []float64 {
 	s := m.slice
-	geom := m.EngineState.Geometry.getOrCreateGpuSlice()
+	geom := m.EngineState.geometry.getOrCreateGpuSlice()
 	avg := make([]float64, s.NComp())
 	for i := range avg {
 		avg[i] = float64(cuda.Dot(s.Comp(i), geom)) / float64(cuda.Sum(geom))
@@ -60,18 +60,18 @@ func (m *Magnetization) Eval() interface{}       { return m }
 
 // func (m *Magnetization) Average() data.Vector    { return unslice(m.average()) }
 func (m *Magnetization) normalize() {
-	cuda.Normalize(m.slice, m.EngineState.Geometry.getOrCreateGpuSlice())
+	cuda.Normalize(m.slice, m.EngineState.geometry.getOrCreateGpuSlice())
 }
 
 // allocate storage (not done by init, as mesh size may not yet be known then)
 func (m *Magnetization) InitializeBuffer() {
-	m.slice = cuda.NewSlice(3, m.EngineState.Mesh.Size())
+	m.slice = cuda.NewSlice(3, m.EngineState.mesh.Size())
 	m.Set(randomMag()) // sane starting config
 }
 
 func (m *Magnetization) SetArray(src *data.Slice) {
-	if src.Size() != m.EngineState.Mesh.Size() {
-		src = data.Resample(src, m.EngineState.Mesh.Size())
+	if src.Size() != m.EngineState.mesh.Size() {
+		src = data.Resample(src, m.EngineState.mesh.Size())
 	}
 	data.Copy(m.slice, src)
 	m.normalize()
@@ -124,16 +124,16 @@ const (
 // Sets the magnetization inside the shape
 func (m *Magnetization) SetInShape(region shape, conf config) {
 	if region == nil {
-		region = m.EngineState.Shape.universeInner
+		region = m.EngineState.shape.universeInner
 	}
 	host := m.slice.HostCopy()
 	h := host.Vectors()
-	n := m.EngineState.Mesh.Size()
+	n := m.EngineState.mesh.Size()
 
 	for iz := 0; iz < n[Z]; iz++ {
 		for iy := 0; iy < n[Y]; iy++ {
 			for ix := 0; ix < n[X]; ix++ {
-				r := m.EngineState.Utils.Index2Coord(ix, iy, iz)
+				r := m.EngineState.utils.Index2Coord(ix, iy, iz)
 				x, y, z := r[X], r[Y], r[Z]
 				if region(x, y, z) { // inside
 					m := conf(x, y, z)

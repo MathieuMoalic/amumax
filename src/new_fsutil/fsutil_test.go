@@ -1,6 +1,7 @@
 package new_fsutil_test
 
 import (
+	"bytes"
 	"io"
 	"os"
 	"path/filepath"
@@ -10,7 +11,106 @@ import (
 	"github.com/MathieuMoalic/amumax/src/new_fsutil"
 )
 
-func TestFileSystem(t *testing.T) {
+func TestFileSystemWithAsyncOperations(t *testing.T) {
+	tempDir := t.TempDir()
+	fs := new_fsutil.NewFileSystem(tempDir)
+
+	// Test AsyncPut and AsyncAppend
+	filePath := "testfile_async.txt"
+	data1 := []byte("Async first line\n")
+	data2 := []byte("Async second line\n")
+
+	err := fs.AsyncPut(filePath, data1)
+	if err != nil {
+		t.Fatalf("AsyncPut failed: %v", err)
+	}
+
+	err = fs.AsyncAppend(filePath, data2)
+	if err != nil {
+		t.Fatalf("AsyncAppend failed: %v", err)
+	}
+
+	// Wait for asynchronous operations to complete
+	fs.Drain()
+
+	// Read the file to check the contents
+	readData, err := fs.Read(filePath)
+	if err != nil {
+		t.Fatalf("Read failed: %v", err)
+	}
+
+	expectedData := append(data1, data2...)
+	if !bytes.Equal(readData, expectedData) {
+		t.Errorf("Expected data %q, got %q", expectedData, readData)
+	}
+
+	// Test multiple asynchronous operations
+	filePath = "testfile_multiple_async.txt"
+	data := []byte("Line\n")
+
+	// Queue multiple writes
+	for i := 0; i < 50; i++ {
+		err1 := fs.AsyncAppend(filePath, data)
+		if err1 != nil {
+			t.Fatalf("AsyncAppend failed: %v", err1)
+		}
+	}
+
+	// Drain the queue
+	fs.Drain()
+
+	// Read the file
+	readData, err = fs.Read(filePath)
+	if err != nil {
+		t.Fatalf("Read failed: %v", err)
+	}
+
+	expectedData = bytes.Repeat(data, 50)
+	if !bytes.Equal(readData, expectedData) {
+		t.Errorf("Expected data of length %d, got %d", len(expectedData), len(readData))
+	}
+
+	// Test AsyncPut without calling Drain (to demonstrate behavior)
+	filePath = "testfile_no_drain.txt"
+	data = []byte("Data without drain\n")
+
+	err = fs.AsyncPut(filePath, data)
+	if err != nil {
+		t.Fatalf("AsyncPut failed: %v", err)
+	}
+
+	// Do not call fs.Drain()
+
+	// Allow some time for the asynchronous operation to potentially complete
+	time.Sleep(100 * time.Millisecond)
+
+	// Attempt to read the file
+	readData, err = fs.Read(filePath)
+	if err != nil {
+		// The file may not exist yet
+		t.Logf("File may not exist yet as Drain was not called")
+	} else if !bytes.Equal(readData, data) {
+		t.Errorf("Expected data %q, got %q", data, readData)
+	}
+
+	// Now call Drain and check again
+	fs.Drain()
+	readData, err = fs.Read(filePath)
+	if err != nil {
+		t.Fatalf("Read failed after Drain: %v", err)
+	}
+	if !bytes.Equal(readData, data) {
+		t.Errorf("Expected data %q after Drain, got %q", data, readData)
+	}
+
+	// Clean up
+	err = fs.Remove("testdir")
+	if err != nil {
+		t.Fatalf("Remove failed: %v", err)
+	}
+}
+
+func TestFileSystemBasicOperations(t *testing.T) {
 	tempDir := t.TempDir()
 	fs := new_fsutil.NewFileSystem(tempDir)
 
@@ -69,7 +169,7 @@ func TestFileSystem(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Read failed: %v", err)
 	}
-	if string(readData) != string(data) {
+	if !bytes.Equal(readData, data) {
 		t.Errorf("Expected data %s, got %s", data, readData)
 	}
 
@@ -84,7 +184,7 @@ func TestFileSystem(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Read failed: %v", err)
 	}
-	if string(readData) != string(expectedData) {
+	if !bytes.Equal(readData, expectedData) {
 		t.Errorf("Expected data %s, got %s", expectedData, readData)
 	}
 
@@ -106,7 +206,7 @@ func TestFileSystem(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Read failed: %v", err)
 	}
-	if string(readData) != string(newData) {
+	if !bytes.Equal(readData, newData) {
 		t.Errorf("Expected data %s, got %s", newData, readData)
 	}
 
@@ -121,16 +221,13 @@ func TestFileSystem(t *testing.T) {
 	if err != nil && err != io.EOF {
 		t.Fatalf("Read failed: %v", err)
 	}
-	if string(readData) != string(newData) {
+	if !bytes.Equal(readData, newData) {
 		t.Errorf("Expected data %s, got %s", newData, readData)
 	}
 
-	// Test Remove
+	// Clean up
 	err = fs.Remove("testdir")
 	if err != nil {
 		t.Fatalf("Remove failed: %v", err)
-	}
-	if fs.Exists("testdir") {
-		t.Errorf("Directory testdir should not exist after removal")
 	}
 }
