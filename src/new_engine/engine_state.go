@@ -8,9 +8,9 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/flags"
-	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/new_fsutil"
 	"github.com/MathieuMoalic/amumax/src/timer"
 	"github.com/MathieuMoalic/amumax/src/zarr"
 	"github.com/fatih/color"
@@ -37,6 +37,7 @@ type EngineStateStruct struct {
 	WindowShift     *WindowShift
 	Shape           *ShapeStruct
 	Grains          *Grains
+	fs              *new_fsutil.FileSystem
 }
 
 func NewEngineState(givenFlags *flags.FlagsType) *EngineStateStruct {
@@ -122,7 +123,8 @@ func (s *EngineStateStruct) makeZarrPath() {
 
 func (s *EngineStateStruct) initIO() {
 	s.makeZarrPath()
-	if fsutil.IsDir(s.ZarrPath) {
+	s.fs = new_fsutil.NewFileSystem(s.ZarrPath)
+	if s.fs.IsDir("") {
 		// if directory exists and --skip-exist flag is set, skip the directory
 		if s.Flags.SkipExists {
 			log.Log.Warn("Directory `%s` exists, skipping `%s` because of --skip-exist flag.", s.ZarrPath, s.ScriptPath)
@@ -130,11 +132,11 @@ func (s *EngineStateStruct) initIO() {
 			// if directory exists and --force-clean flag is set, remove the directory
 		} else if s.Flags.ForceClean {
 			log.Log.Warn("Cleaning `%s`", s.ZarrPath)
-			log.Log.PanicIfError(fsutil.Remove(s.ZarrPath))
-			log.Log.PanicIfError(fsutil.Mkdir(s.ZarrPath))
+			log.Log.PanicIfError(s.fs.Remove(""))
+			log.Log.PanicIfError(s.fs.Mkdir(""))
 		}
 	} else {
-		log.Log.PanicIfError(fsutil.Mkdir(s.ZarrPath))
+		log.Log.PanicIfError(s.fs.Mkdir(""))
 	}
 	zarr.InitZgroup("", s.ZarrPath)
 }
@@ -156,7 +158,7 @@ func (s *EngineStateStruct) initTable() {
 		AutoSavePeriod: 0.0,
 		FlushInterval:  5 * time.Second,
 	}
-	err := fsutil.Remove(s.ZarrPath + "table")
+	err := s.fs.Remove("table")
 	log.Log.PanicIfError(err)
 	zarr.InitZgroup("table", s.ZarrPath)
 	s.Table.AddColumn("step", "")
