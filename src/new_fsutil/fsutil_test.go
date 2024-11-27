@@ -189,7 +189,7 @@ func TestFileSystemBasicOperations(t *testing.T) {
 	}
 
 	// Test Create
-	writer, err := fs.Create(filePath)
+	writer, file, err := fs.Create(filePath)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -198,7 +198,7 @@ func TestFileSystemBasicOperations(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Write failed: %v", err)
 	}
-	err = writer.Close()
+	err = file.Close()
 	if err != nil {
 		t.Fatalf("Close failed: %v", err)
 	}

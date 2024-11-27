@@ -207,56 +207,24 @@ func (fs *FileSystem) AsyncPut(path string, data []byte) error {
 }
 
 // Create opens a file for writing, truncating it if it exists.
-func (fs *FileSystem) Create(p string) (WriteCloseFlusher, error) {
+func (fs *FileSystem) Create(p string) (*bufio.Writer, *os.File, error) {
 	p = fs.addWorkDir(p)
 	err := os.MkdirAll(filepath.Dir(p), fs.dirPerm)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	f, err := os.OpenFile(p, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, fs.filePerm)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	writer := &bufWriter{
-		buf:  bufio.NewWriterSize(f, fs.bufSize),
-		file: f,
-	}
-	return writer, nil
+	writer := bufio.NewWriterSize(f, fs.bufSize)
+	return writer, f, nil
 }
 
 // Open opens a file for reading.
 func (fs *FileSystem) Open(p string) (io.ReadCloser, error) {
 	p = fs.addWorkDir(p)
 	return os.Open(p)
-}
-
-// WriteCloseFlusher represents a writer that can be flushed and closed.
-// It is not safe for concurrent use by multiple goroutines.
-type WriteCloseFlusher interface {
-	io.WriteCloser
-	Flush() error
-}
-
-type bufWriter struct {
-	buf  *bufio.Writer
-	file *os.File
-}
-
-func (w *bufWriter) Write(p []byte) (int, error) {
-	return w.buf.Write(p)
-}
-
-func (w *bufWriter) Flush() error {
-	return w.buf.Flush()
-}
-
-func (w *bufWriter) Close() error {
-	err := w.Flush()
-	if err != nil {
-		w.file.Close()
-		return err
-	}
-	return w.file.Close()
 }
 
 // addWorkDir adds the working directory to the path if it's relative.
