@@ -119,6 +119,13 @@ func (l *Logs) ErrAndExit(msg string, args ...interface{}) {
 }
 
 // Panics with msg if test is false
+func (l *Logs) AssertMsg(test bool, msg interface{}) {
+	if !test {
+		l.ErrAndExit("%v", msg)
+	}
+}
+
+// Panics with msg if test is false
 func AssertMsg(test bool, msg interface{}) {
 	if !test {
 		Log.ErrAndExit("%v", msg)

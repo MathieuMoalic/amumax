@@ -10,10 +10,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
-// var Regions = RegionsState{info: info{1, "regions", ""}, Indices: make(map[int]bool)} // global regions map
-
-// const NREGION = 256 // maximum number of regions, limited by size of byte.
-
 // stores the region index for each cell
 type Regions struct {
 	EngineState *EngineStateStruct
@@ -262,55 +258,55 @@ func reshapeBytes(array []byte, size [3]int) [][][]byte {
 	return sliced
 }
 
-// func (b *Regions) shift(dx int) {
-// 	// TODO: return if no regions defined
-// 	r1 := b.Gpu()
-// 	r2 := cuda.NewBytes(b.Mesh().NCell()) // TODO: somehow recycle
-// 	defer r2.Free()
-// 	newreg := byte(0) // new region at edge
-// 	cuda.ShiftBytes(r2, r1, b.Mesh(), dx, newreg)
-// 	r1.Copy(r2)
+func (r *Regions) shift(dx int) {
+	// TODO: return if no regions defined
+	r1 := r.Gpu()
+	r2 := cuda.NewBytes(r.Mesh().NCell()) // TODO: somehow recycle
+	defer r2.Free()
+	newreg := byte(0) // new region at edge
+	cuda.ShiftBytes(r2, r1, r.Mesh(), dx, newreg)
+	r1.Copy(r2)
 
-// 	n := r.EngineState.Mesh.Size()
-// 	x1, x2 := shiftDirtyRange(dx)
+	n := r.EngineState.Mesh.Size()
+	x1, x2 := r.EngineState.Utils.shiftDirtyRange(dx)
 
-// 	for iz := 0; iz < n[Z]; iz++ {
-// 		for iy := 0; iy < n[Y]; iy++ {
-// 			for ix := x1; ix < x2; ix++ {
-// 				r := index2Coord(ix, iy, iz) // includes shift
-// 				reg := b.get(r)
-// 				if reg != 0 {
-// 					b.SetCell(ix, iy, iz, reg) // a bit slowish, but hardly reached
-// 				}
-// 			}
-// 		}
-// 	}
-// }
+	for iz := 0; iz < n[Z]; iz++ {
+		for iy := 0; iy < n[Y]; iy++ {
+			for ix := x1; ix < x2; ix++ {
+				i := r.EngineState.Utils.Index2Coord(ix, iy, iz) // includes shift
+				reg := r.get(i)
+				if reg != 0 {
+					r.SetCell(ix, iy, iz, reg) // a bit slowish, but hardly reached
+				}
+			}
+		}
+	}
+}
 
-// func (b *Regions) shiftY(dy int) {
-// 	// TODO: return if no regions defined
-// 	r1 := b.Gpu()
-// 	r2 := cuda.NewBytes(b.Mesh().NCell()) // TODO: somehow recycle
-// 	defer r2.Free()
-// 	newreg := byte(0) // new region at edge
-// 	cuda.ShiftBytesY(r2, r1, b.Mesh(), dy, newreg)
-// 	r1.Copy(r2)
+func (r *Regions) shiftY(dy int) {
+	// TODO: return if no regions defined
+	r1 := r.Gpu()
+	r2 := cuda.NewBytes(r.Mesh().NCell()) // TODO: somehow recycle
+	defer r2.Free()
+	newreg := byte(0) // new region at edge
+	cuda.ShiftBytesY(r2, r1, r.Mesh(), dy, newreg)
+	r1.Copy(r2)
 
-// 	n := r.EngineState.Mesh.Size()
-// 	y1, y2 := shiftDirtyRange(dy)
+	n := r.EngineState.Mesh.Size()
+	y1, y2 := r.EngineState.Utils.shiftDirtyRange(dy)
 
-// 	for iz := 0; iz < n[Z]; iz++ {
-// 		for ix := 0; ix < n[X]; ix++ {
-// 			for iy := y1; iy < y2; iy++ {
-// 				r := index2Coord(ix, iy, iz) // includes shift
-// 				reg := b.get(r)
-// 				if reg != 0 {
-// 					b.SetCell(ix, iy, iz, reg) // a bit slowish, but hardly reached
-// 				}
-// 			}
-// 		}
-// 	}
-// }
+	for iz := 0; iz < n[Z]; iz++ {
+		for ix := 0; ix < n[X]; ix++ {
+			for iy := y1; iy < y2; iy++ {
+				i := r.EngineState.Utils.Index2Coord(ix, iy, iz) // includes shift
+				reg := r.get(i)
+				if reg != 0 {
+					r.SetCell(ix, iy, iz, reg) // a bit slowish, but hardly reached
+				}
+			}
+		}
+	}
+}
 
 func (r *Regions) Mesh() *mesh.Mesh { return r.EngineState.Mesh }
 

@@ -59,7 +59,7 @@ func (sq *savedQuantity) Save() {
 	sq.q.EvalTo(buffer)
 	defer cuda.Recycle(buffer)
 	dataSlice := buffer.HostCopy()
-	queOutput(func() {
+	sq.engineState.Saver.QueueOutput(func() {
 		err := sq.syncSave(dataSlice, sq.name, len(sq.times), sq.chunks)
 		log.Log.PanicIfError(err)
 	})

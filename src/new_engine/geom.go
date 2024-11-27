@@ -28,7 +28,7 @@ func NewGeom(engineState *EngineStateStruct) *Geometry {
 // }
 
 // func (g *geom) init() {
-// 	g.Buffer = nil
+// 	g.GpuSlice = nil
 // 	g.info = info{1, "geom", ""}
 // 	declROnly("geom", g, "Cell fill fraction (0..1)")
 // }
@@ -191,79 +191,79 @@ func (g *Geometry) cellVolume(ix, iy, iz int) float32 {
 // 	return float64(cuda.GetCell(g.Gpu(), 0, ix, iy, iz))
 // }
 
-// func (g *geom) shift(dx int) {
-// 	// empty mask, nothing to do
-// 	if g == nil || g.Buffer.IsNil() {
-// 		return
-// 	}
+func (g *Geometry) shift(dx int) {
+	// empty mask, nothing to do
+	if g == nil || g.GpuSlice.IsNil() {
+		return
+	}
 
-// 	// allocated mask: shift
-// 	s := g.Buffer
-// 	s2 := cuda.Buffer(1, g.EngineState.Mesh.Size())
-// 	defer cuda.Recycle(s2)
-// 	newv := float32(1) // initially fill edges with 1's
-// 	cuda.ShiftX(s2, s, dx, newv, newv)
-// 	data.Copy(s, s2)
+	// allocated mask: shift
+	s := g.GpuSlice
+	s2 := cuda.Buffer(1, g.EngineState.Mesh.Size())
+	defer cuda.Recycle(s2)
+	newv := float32(1) // initially fill edges with 1's
+	cuda.ShiftX(s2, s, dx, newv, newv)
+	data.Copy(s, s2)
 
-// 	n := GetMesh().Size()
-// 	x1, x2 := shiftDirtyRange(dx)
+	n := g.EngineState.Mesh.Size()
+	x1, x2 := g.shiftDirtyRange(dx)
 
-// 	for iz := 0; iz < n[Z]; iz++ {
-// 		for iy := 0; iy < n[Y]; iy++ {
-// 			for ix := x1; ix < x2; ix++ {
-// 				r := index2Coord(ix, iy, iz) // includes shift
-// 				if !g.shape(r[X], r[Y], r[Z]) {
-// 					cuda.SetCell(g.Buffer, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
-// 				}
-// 			}
-// 		}
-// 	}
+	for iz := 0; iz < n[Z]; iz++ {
+		for iy := 0; iy < n[Y]; iy++ {
+			for ix := x1; ix < x2; ix++ {
+				r := g.EngineState.Utils.Index2Coord(ix, iy, iz) // includes shift
+				if !g.shape(r[X], r[Y], r[Z]) {
+					cuda.SetCell(g.GpuSlice, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
+				}
+			}
+		}
+	}
 
-// }
+}
 
-// func (g *geom) shiftY(dy int) {
-// 	// empty mask, nothing to do
-// 	if g == nil || g.Buffer.IsNil() {
-// 		return
-// 	}
+func (g *Geometry) shiftY(dy int) {
+	// empty mask, nothing to do
+	if g == nil || g.GpuSlice.IsNil() {
+		return
+	}
 
-// 	// allocated mask: shift
-// 	s := g.Buffer
-// 	s2 := cuda.Buffer(1, g.EngineState.Mesh.Size())
-// 	defer cuda.Recycle(s2)
-// 	newv := float32(1) // initially fill edges with 1's
-// 	cuda.ShiftY(s2, s, dy, newv, newv)
-// 	data.Copy(s, s2)
+	// allocated mask: shift
+	s := g.GpuSlice
+	s2 := cuda.Buffer(1, g.EngineState.Mesh.Size())
+	defer cuda.Recycle(s2)
+	newv := float32(1) // initially fill edges with 1's
+	cuda.ShiftY(s2, s, dy, newv, newv)
+	data.Copy(s, s2)
 
-// 	n := GetMesh().Size()
-// 	y1, y2 := shiftDirtyRange(dy)
+	n := g.EngineState.Mesh.Size()
+	y1, y2 := g.shiftDirtyRange(dy)
 
-// 	for iz := 0; iz < n[Z]; iz++ {
-// 		for ix := 0; ix < n[X]; ix++ {
-// 			for iy := y1; iy < y2; iy++ {
-// 				r := index2Coord(ix, iy, iz) // includes shift
-// 				if !g.shape(r[X], r[Y], r[Z]) {
-// 					cuda.SetCell(g.Buffer, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
-// 				}
-// 			}
-// 		}
-// 	}
+	for iz := 0; iz < n[Z]; iz++ {
+		for ix := 0; ix < n[X]; ix++ {
+			for iy := y1; iy < y2; iy++ {
+				r := g.EngineState.Utils.Index2Coord(ix, iy, iz) // includes shift
+				if !g.shape(r[X], r[Y], r[Z]) {
+					cuda.SetCell(g.GpuSlice, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
+				}
+			}
+		}
+	}
 
-// }
+}
 
-// // x range that needs to be refreshed after shift over dx
-// func shiftDirtyRange(dx int) (x1, x2 int) {
-// 	nx := GetMesh().Size()[X]
-// 	log.AssertMsg(dx != 0, "Invalid shift: dx must not be zero in shiftDirtyRange")
+// x range that needs to be refreshed after shift over dx
+func (g *Geometry) shiftDirtyRange(dx int) (x1, x2 int) {
+	nx := g.EngineState.Mesh.Size()[X]
+	log.AssertMsg(dx != 0, "Invalid shift: dx must not be zero in shiftDirtyRange")
 
-// 	if dx < 0 {
-// 		x1 = nx + dx
-// 		x2 = nx
-// 	} else {
-// 		x1 = 0
-// 		x2 = dx
-// 	}
-// 	return
-// }
+	if dx < 0 {
+		x1 = nx + dx
+		x2 = nx
+	} else {
+		x1 = 0
+		x2 = dx
+	}
+	return
+}
 
-// func (g *geom) Mesh() *mesh.Mesh { return GetMesh() }
+// func (g *geom) Mesh() *mesh.Mesh { return g.EngineState.Mesh }
