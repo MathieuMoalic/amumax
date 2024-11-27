@@ -10,7 +10,6 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
@@ -50,9 +49,9 @@ func (sq *savedQuantity) needSave() bool {
 func (sq *savedQuantity) SaveAttrs() {
 	u, err := json.Marshal(zarr.Zattrs{Buffer: sq.times})
 	log.Log.PanicIfError(err)
-	err = fsutil.Remove(sq.engineState.ZarrPath + sq.name + "/.zattrs")
+	err = sq.engineState.fs.Remove(sq.name + "/.zattrs")
 	log.Log.PanicIfError(err)
-	err = fsutil.Put(sq.engineState.ZarrPath+sq.name+"/.zattrs", u)
+	err = sq.engineState.fs.Put(sq.name+"/.zattrs", u)
 	log.Log.PanicIfError(err)
 }
 
@@ -119,8 +118,8 @@ func (sq *savedQuantity) syncSave(array *data.Slice, qname string, step int, chu
 					if err != nil {
 						return err
 					}
-					filename := fmt.Sprintf(sq.engineState.ZarrPath+"%s/%d.%d.%d.%d.%d", qname, step+1, icz, icy, icx, icc)
-					err = fsutil.Put(filename, compressedData)
+					filename := fmt.Sprintf("%s/%d.%d.%d.%d.%d", qname, step+1, icz, icy, icx, icc)
+					err = sq.engineState.fs.Put(filename, compressedData)
 					if err != nil {
 						return err
 					}
@@ -168,11 +167,11 @@ func (sqs *savedQuantitiesType) savedQuandtityExists(name string) bool {
 }
 
 func (sqs *savedQuantitiesType) createSavedQuantity(q Quantity, name string, rchunks requestedChunking, period float64) *savedQuantity {
-	if fsutil.Exists(sqs.EngineState.ZarrPath + name) {
-		err := fsutil.Remove(sqs.EngineState.ZarrPath + name)
+	if sqs.EngineState.fs.Exists(name) {
+		err := sqs.EngineState.fs.Remove(name)
 		log.Log.PanicIfError(err)
 	}
-	err := fsutil.Mkdir(sqs.EngineState.ZarrPath + name)
+	err := sqs.EngineState.fs.Mkdir(name)
 	log.Log.PanicIfError(err)
 	sq := newSavedQuantity(sqs.EngineState, q, name, rchunks, period)
 	sqs.Quantities = append(sqs.Quantities, *sq)

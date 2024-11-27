@@ -3,8 +3,6 @@ package new_engine
 import (
 	"image"
 	"math"
-
-	"github.com/MathieuMoalic/amumax/src/fsutil"
 )
 
 type ShapeStruct struct {
@@ -231,7 +229,7 @@ func (s *ShapeStruct) universeInner(x, y, z float64) bool {
 }
 
 func (s *ShapeStruct) imageShape(fname string) shape {
-	r, err1 := fsutil.Open(fname)
+	r, err1 := s.EngineState.fs.Open(fname)
 	if err1 != nil {
 		s.EngineState.Log.ErrAndExit("Error opening image file: %s: %s", fname, err1)
 	}

@@ -4,8 +4,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/new_fsutil"
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
@@ -26,7 +26,7 @@ type column struct {
 	Name   string
 	Unit   string
 	buffer []byte
-	io     fsutil.WriteCloseFlusher
+	io     new_fsutil.WriteCloseFlusher
 }
 
 func (ts *TableStruct) WriteToBuffer() {
@@ -82,9 +82,9 @@ func (ts *TableStruct) Exists(q Quantity, name string) bool {
 }
 
 func (ts *TableStruct) AddColumn(name, unit string) {
-	err := fsutil.Mkdir(ts.EngineState.ZarrPath + "table/" + name)
+	err := ts.EngineState.fs.Mkdir("table/" + name)
 	log.Log.PanicIfError(err)
-	f, err := fsutil.Create(ts.EngineState.ZarrPath + "table/" + name + "/0")
+	f, err := ts.EngineState.fs.Create("table/" + name + "/0")
 	log.Log.PanicIfError(err)
 	ts.Columns = append(ts.Columns, column{Name: name, Unit: unit, buffer: []byte{}, io: f})
 }
