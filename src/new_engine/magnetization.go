@@ -2,39 +2,38 @@ package new_engine
 
 import (
 	"math"
-	"reflect"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
-// Special buffered quantity to store Magnetization
+// Special buffered quantity to store magnetization
 // makes sure it's normalized etc.
-type Magnetization struct {
-	EngineState *EngineStateStruct
-	slice       *data.Slice
+type magnetization struct {
+	e     *engineState
+	slice *data.Slice
 }
 
-func NewMagnetization(es *EngineStateStruct) *Magnetization {
-	m := &Magnetization{
-		EngineState: es,
+func newMagnetization(es *engineState) *magnetization {
+	m := &magnetization{
+		e: es,
 	}
-	m.EngineState.world.RegisterVariable("m", m)
+	m.e.world.registerVariable("m", m)
 	return m
 }
 
 // These methods are defined for the Quantity interface
 
-func (m *Magnetization) Size() [3]int           { return m.slice.Size() }
-func (m *Magnetization) EvalTo(dst *data.Slice) { data.Copy(dst, m.slice) }
-func (m *Magnetization) NComp() int             { return 3 }
-func (m *Magnetization) Name() string           { return "m" }
-func (m *Magnetization) Unit() string           { return "" }
-func (m *Magnetization) Value() *data.Slice     { return m.slice }
+func (m *magnetization) Size() [3]int           { return m.slice.Size() }
+func (m *magnetization) EvalTo(dst *data.Slice) { data.Copy(dst, m.slice) }
+func (m *magnetization) NComp() int             { return 3 }
+func (m *magnetization) Name() string           { return "m" }
+func (m *magnetization) Unit() string           { return "" }
+func (m *magnetization) Value() *data.Slice     { return m.slice }
 
-func (m *Magnetization) Average() []float64 {
+func (m *magnetization) Average() []float64 {
 	s := m.slice
-	geom := m.EngineState.geometry.getOrCreateGpuSlice()
+	geom := m.e.geometry.getOrCreateGpuSlice()
 	avg := make([]float64, s.NComp())
 	for i := range avg {
 		avg[i] = float64(cuda.Dot(s.Comp(i), geom)) / float64(cuda.Sum(geom))
@@ -53,32 +52,32 @@ func (m *Magnetization) Average() []float64 {
 // }
 
 // func (m *Magnetization) Comp(c int) ScalarField  { return comp(m, c) }
-func (m *Magnetization) SetValue(v interface{})  { m.SetInShape(nil, v.(config)) }
-func (m *Magnetization) InputType() reflect.Type { return reflect.TypeOf(config(nil)) }
-func (m *Magnetization) Type() reflect.Type      { return reflect.TypeOf(new(Magnetization)) }
-func (m *Magnetization) Eval() interface{}       { return m }
+// func (m *magnetization) setValue(v interface{})  { m.SetInShape(nil, v.(config)) }
+// func (m *magnetization) inputType() reflect.Type { return reflect.TypeOf(config(nil)) }
+// func (m *magnetization) getType() reflect.Type   { return reflect.TypeOf(new(magnetization)) }
+// func (m *magnetization) eval() interface{}       { return m }
 
 // func (m *Magnetization) Average() data.Vector    { return unslice(m.average()) }
-func (m *Magnetization) normalize() {
-	cuda.Normalize(m.slice, m.EngineState.geometry.getOrCreateGpuSlice())
+func (m *magnetization) normalize() {
+	cuda.Normalize(m.slice, m.e.geometry.getOrCreateGpuSlice())
 }
 
 // allocate storage (not done by init, as mesh size may not yet be known then)
-func (m *Magnetization) InitializeBuffer() {
-	m.slice = cuda.NewSlice(3, m.EngineState.mesh.Size())
-	m.Set(randomMag()) // sane starting config
+func (m *magnetization) initializeBuffer() {
+	m.slice = cuda.NewSlice(3, m.e.mesh.Size())
+	m.set(randomMag()) // sane starting config
 }
 
-func (m *Magnetization) SetArray(src *data.Slice) {
-	if src.Size() != m.EngineState.mesh.Size() {
-		src = data.Resample(src, m.EngineState.mesh.Size())
+func (m *magnetization) setArray(src *data.Slice) {
+	if src.Size() != m.e.mesh.Size() {
+		src = data.Resample(src, m.e.mesh.Size())
 	}
 	data.Copy(m.slice, src)
 	m.normalize()
 }
 
-func (m *Magnetization) Set(c config) {
-	m.SetInShape(nil, c)
+func (m *magnetization) set(c config) {
+	m.setInShape(nil, c)
 }
 
 // func (m *Magnetization) LoadFile(fname string) {
@@ -87,10 +86,6 @@ func (m *Magnetization) Set(c config) {
 // func (m *Magnetization) LoadOvfFile(fname string) {
 // 	m.SetArray(loadOvfFile(fname))
 // }
-
-func (m *Magnetization) Slice() (s *data.Slice, recycle bool) {
-	return m.slice, false
-}
 
 // func (m *Magnetization) Region(r int) *vOneReg { return vOneRegion(m, r) }
 
@@ -122,29 +117,29 @@ const (
 )
 
 // Sets the magnetization inside the shape
-func (m *Magnetization) SetInShape(region shape, conf config) {
+func (m *magnetization) setInShape(region shape, conf config) {
 	if region == nil {
-		region = m.EngineState.shape.universeInner
+		region = m.e.shape.universeInner
 	}
-	host := m.slice.HostCopy()
-	h := host.Vectors()
-	n := m.EngineState.mesh.Size()
+	cpuSlice := m.slice.HostCopy()
+	vectors := cpuSlice.Vectors()
+	Nx, Ny, Nz := m.e.mesh.GetN()
 
-	for iz := 0; iz < n[Z]; iz++ {
-		for iy := 0; iy < n[Y]; iy++ {
-			for ix := 0; ix < n[X]; ix++ {
-				r := m.EngineState.utils.Index2Coord(ix, iy, iz)
+	for iz := 0; iz < Nz; iz++ {
+		for iy := 0; iy < Ny; iy++ {
+			for ix := 0; ix < Nx; ix++ {
+				r := m.e.utils.Index2Coord(ix, iy, iz)
 				x, y, z := r[X], r[Y], r[Z]
 				if region(x, y, z) { // inside
 					m := conf(x, y, z)
-					h[X][iz][iy][ix] = float32(m[X])
-					h[Y][iz][iy][ix] = float32(m[Y])
-					h[Z][iz][iy][ix] = float32(m[Z])
+					vectors[X][iz][iy][ix] = float32(m[X])
+					vectors[Y][iz][iy][ix] = float32(m[Y])
+					vectors[Z][iz][iy][ix] = float32(m[Z])
 				}
 			}
 		}
 	}
-	m.SetArray(host)
+	m.setArray(cpuSlice)
 }
 
 // // set m to config in region

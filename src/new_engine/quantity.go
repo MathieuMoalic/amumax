@@ -4,19 +4,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
-type Quantities struct {
-	list map[string]Quantity
-}
-
-func NewQuantities() *Quantities {
-	return &Quantities{list: make(map[string]Quantity)}
-}
-
-func (qs *Quantities) Add(q Quantity) {
-	qs.list[q.Name()] = q
-}
-
-type Quantity interface {
+type quantity interface {
 	EvalTo(*data.Slice)
 	NComp() int
 	Size() [3]int
@@ -25,6 +13,18 @@ type Quantity interface {
 	Unit() string
 	Value() *data.Slice
 }
+
+// type quantities struct {
+// 	list map[string]quantity
+// }
+
+// func newQuantities() *quantities {
+// 	return &quantities{list: make(map[string]quantity)}
+// }
+
+// func (qs *quantities) Add(q quantity) {
+// 	qs.list[q.Name()] = q
+// }
 
 // type Quantity struct {
 // 	engineState *EngineStateStruct

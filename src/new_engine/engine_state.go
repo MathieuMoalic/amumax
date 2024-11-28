@@ -16,33 +16,33 @@ import (
 	"github.com/fatih/color"
 )
 
-type EngineStateStruct struct {
+type engineState struct {
 	zarrPath        string
 	script          string
 	scriptPath      string
 	flags           *flags.FlagsType
 	metadata        *zarr.Metadata
-	world           *World
+	world           *world
 	log             *log.Logs
-	table           *Table
-	solver          *Solver
+	table           *table
+	solver          *solver
 	mesh            *mesh.Mesh
-	magnetization   *Magnetization
-	geometry        *Geometry
-	regions         *Regions
+	magnetization   *magnetization
+	geometry        *geometry
+	regions         *regions
 	savedQuantities *savedQuantities
-	utils           *Utils
-	windowShift     *WindowShift
-	shape           *Shape
-	grains          *Grains
+	utils           *utils
+	windowShift     *windowShift
+	shape           *shapeList
+	grains          *grains
 	fs              *new_fsutil.FileSystem
 }
 
-func NewEngineState(givenFlags *flags.FlagsType) *EngineStateStruct {
-	return &EngineStateStruct{flags: givenFlags, metadata: &zarr.Metadata{}}
+func newEngineState(givenFlags *flags.FlagsType) *engineState {
+	return &engineState{flags: givenFlags, metadata: &zarr.Metadata{}}
 }
 
-func (s *EngineStateStruct) Start(mx3path string) {
+func (s *engineState) start(mx3path string) {
 	scriptBytes, err := os.ReadFile(mx3path)
 	if err != nil {
 		color.Red("Error reading script: %v", err)
@@ -53,7 +53,7 @@ func (s *EngineStateStruct) Start(mx3path string) {
 	s.run()
 }
 
-func (s *EngineStateStruct) StartInteractive() {
+func (s *engineState) startInteractive() {
 	log.Log.Info("No input files: starting interactive session")
 	s.script = `
 	Nx = 128
@@ -72,37 +72,37 @@ func (s *EngineStateStruct) StartInteractive() {
 	s.zarrPath = fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
 }
 
-func (s *EngineStateStruct) run() {
-	defer s.CleanExit()
+func (s *engineState) run() {
+	defer s.cleanExit()
 	s.initIO()
 	s.initLog()
 	s.initMetadata()
-	s.world = NewWorld(s)
-	s.windowShift = NewWindowShift(s)
-	s.shape = NewShape(s)
+	s.world = newWorld(s)
+	s.windowShift = newWindowShift(s)
+	s.shape = newShape(s)
 	s.initTable()
 	s.mesh = &mesh.Mesh{}
-	s.solver = NewSolver(s)
-	s.magnetization = NewMagnetization(s)
-	s.regions = NewRegions(s)
-	s.geometry = NewGeom(s)
-	s.savedQuantities = NewSavedQuantities(s)
-	s.utils = NewUtils(s)
-	s.grains = NewGrains(s)
+	s.solver = newSolver(s)
+	s.magnetization = newMagnetization(s)
+	s.regions = newRegions(s)
+	s.geometry = newGeom(s)
+	s.savedQuantities = newSavedQuantities(s)
+	s.utils = newUtils(s)
+	s.grains = newGrains(s)
 	s.world.register()
-	scriptParser := NewScriptParser(s)
+	scriptParser := newScriptParser(s)
 	err := scriptParser.Parse(s.script)
 	if err != nil {
 		s.log.ErrAndExit("Error parsing script: %v", err)
 	}
 
-	err = scriptParser.Execute()
+	err = scriptParser.execute()
 	if err != nil {
 		s.log.ErrAndExit("Error executing script: %v", err)
 	}
 }
 
-func (s *EngineStateStruct) makeZarrPath() {
+func (s *engineState) makeZarrPath() {
 	if s.flags.OutputDir != "" {
 		s.zarrPath = s.flags.OutputDir
 	} else {
@@ -118,7 +118,7 @@ func (s *EngineStateStruct) makeZarrPath() {
 	}
 }
 
-func (s *EngineStateStruct) initIO() {
+func (s *engineState) initIO() {
 	s.makeZarrPath()
 	s.fs = new_fsutil.NewFileSystem(s.zarrPath)
 	if s.fs.IsDir("") {
@@ -138,7 +138,7 @@ func (s *EngineStateStruct) initIO() {
 	zarr.InitZgroup("", s.zarrPath)
 }
 
-func (s *EngineStateStruct) initLog() {
+func (s *engineState) initLog() {
 	s.log = &log.Logs{}
 	s.log.Info("Input file: %s", s.scriptPath)
 	s.log.Info("Output directory: %s", s.zarrPath)
@@ -147,9 +147,9 @@ func (s *EngineStateStruct) initLog() {
 	go s.log.AutoFlushToFile()
 }
 
-func (s *EngineStateStruct) initTable() {
-	s.table = &Table{
-		EngineState:    s,
+func (s *engineState) initTable() {
+	s.table = &table{
+		e:              s,
 		Data:           make(map[string][]float64),
 		Step:           -1,
 		AutoSavePeriod: 0.0,
@@ -158,20 +158,20 @@ func (s *EngineStateStruct) initTable() {
 	err := s.fs.Remove("table")
 	log.Log.PanicIfError(err)
 	zarr.InitZgroup("table", s.zarrPath)
-	s.table.AddColumn("step", "")
-	s.table.AddColumn("t", "s")
+	s.table.addColumn("step", "")
+	s.table.addColumn("t", "s")
 	// s.Table.tableAdd(s.Magnetization)
 	go s.table.tablesAutoFlush()
 }
 
-func (s *EngineStateStruct) initMetadata() {
+func (s *engineState) initMetadata() {
 	s.metadata = &zarr.Metadata{}
 	s.metadata.Init(s.zarrPath, time.Now(), cuda.GPUInfo)
 }
 
-func (s *EngineStateStruct) CleanExit() {
+func (s *engineState) cleanExit() {
 	s.fs.Drain()
-	s.table.Flush()
+	s.table.flush()
 	if s.flags.Sync {
 		timer.Print(os.Stdout)
 	}

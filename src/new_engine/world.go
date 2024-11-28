@@ -6,77 +6,69 @@ import (
 	"strings"
 )
 
-type World struct {
-	EngineState *EngineStateStruct
-	Functions   map[string]interface{}
-	Variables   map[string]interface{}
+type world struct {
+	e         *engineState
+	functions map[string]interface{}
+	variables map[string]interface{}
 }
 
-func NewWorld(engineState *EngineStateStruct) *World {
-	w := &World{
-		EngineState: engineState,
-		Functions:   make(map[string]interface{}),
-		Variables:   make(map[string]interface{}),
+func newWorld(engineState *engineState) *world {
+	w := &world{
+		e:         engineState,
+		functions: make(map[string]interface{}),
+		variables: make(map[string]interface{}),
 	}
 	return w
 }
-func (w *World) register() {
+
+func (w *world) register() {
 	w.registerQuantities()
 	w.registerTableFunctions()
-	w.registerSaveFunctions()
-	w.registerMeshVariables()
+	w.registerMesh()
+}
+
+func (w *world) registerQuantities() {
+	w.registerVariable("geom", w.e.geometry)
+}
+
+func (w *world) registerTableFunctions() {
+	w.registerFunction("TableAutoSave", w.e.table.tableAutoSave)
+	w.registerFunction("TableAdd", w.e.table.tableAdd)
+	w.registerFunction("TableAddAs", w.e.table.tableAddAs)
+	w.registerFunction("TableSave", w.e.table.tableSave)
+}
+
+func (w *world) registerMesh() {
+	w.registerVariable("Nx", &w.e.mesh.Nx)
+	w.registerVariable("Ny", &w.e.mesh.Ny)
+	w.registerVariable("Nz", &w.e.mesh.Nz)
+	w.registerVariable("dx", &w.e.mesh.Dx)
+	w.registerVariable("dy", &w.e.mesh.Dy)
+	w.registerVariable("dz", &w.e.mesh.Dz)
+	w.registerVariable("Tx", &w.e.mesh.Tx)
+	w.registerVariable("Ty", &w.e.mesh.Ty)
+	w.registerVariable("Tz", &w.e.mesh.Tz)
+	w.registerFunction("SetGridSize", w.e.mesh.SetGridSize)
+	w.registerFunction("SetCellSize", w.e.mesh.SetCellSize)
 
 }
 
-func (w *World) registerQuantities() {
-	w.RegisterVariable("geom", w.EngineState.geometry)
+// registerFunction registers a pre-defined function in the world.
+func (w *world) registerFunction(name string, function interface{}) {
+	w.functions[strings.ToLower(name)] = w.wrapFunction(function, strings.ToLower(name))
 }
 
-func (w *World) registerTableFunctions() {
-	w.RegisterFunction("TableAutoSave", w.EngineState.table.TableAutoSave)
-	w.RegisterFunction("TableAdd", w.EngineState.table.tableAdd)
-	w.RegisterFunction("TableAddAs", w.EngineState.table.tableAddAs)
-	w.RegisterFunction("TableSave", w.EngineState.table.tableSave)
-}
-
-func (w *World) registerSaveFunctions() {
-	w.RegisterFunction("save", w.EngineState.savedQuantities.save)
-	w.RegisterFunction("saveAs", w.EngineState.savedQuantities.saveAs)
-	w.RegisterFunction("SaveAsChunks", w.EngineState.savedQuantities.saveAsChunk)
-	w.RegisterFunction("AutoSave", w.EngineState.savedQuantities.autoSave)
-	w.RegisterFunction("AutoSaveAs", w.EngineState.savedQuantities.autoSaveAs)
-	w.RegisterFunction("AutoSaveAsChunk", w.EngineState.savedQuantities.autoSaveAsChunk)
-	w.RegisterFunction("Chunks", mx3chunks)
-}
-
-func (w *World) registerMeshVariables() {
-	w.RegisterVariable("Nx", &w.EngineState.mesh.Nx)
-	w.RegisterVariable("Ny", &w.EngineState.mesh.Ny)
-	w.RegisterVariable("Nz", &w.EngineState.mesh.Nz)
-	w.RegisterVariable("dx", &w.EngineState.mesh.Dx)
-	w.RegisterVariable("dy", &w.EngineState.mesh.Dy)
-	w.RegisterVariable("dz", &w.EngineState.mesh.Dz)
-	w.RegisterVariable("Tx", &w.EngineState.mesh.Tx)
-	w.RegisterVariable("Ty", &w.EngineState.mesh.Ty)
-	w.RegisterVariable("Tz", &w.EngineState.mesh.Tz)
-}
-
-// RegisterFunction registers a pre-defined function in the world.
-func (w *World) RegisterFunction(name string, function interface{}) {
-	w.Functions[name] = w.WrapFunction(function, name)
-}
-
-// RegisterVariable registers a pre-defined variable in the world.
-func (w *World) RegisterVariable(name string, value interface{}) {
+// registerVariable registers a pre-defined variable in the world.
+func (w *world) registerVariable(name string, value interface{}) {
 	if value == nil {
-		w.EngineState.log.ErrAndExit("Value is nil for variable: %s", name)
+		w.e.log.ErrAndExit("Value is nil for variable: %s", name)
 	}
-	w.Variables[name] = value
+	w.variables[strings.ToLower(name)] = value
 }
 
-// RegisterUserVariable registers a user-defined variable in the world.
-func (w *World) RegisterUserVariable(name string, value interface{}) {
-	if existingValue, ok := w.Variables[name]; ok {
+// registerUserVariable registers a user-defined variable in the world.
+func (w *world) registerUserVariable(name string, value interface{}) {
+	if existingValue, ok := w.variables[name]; ok {
 		switch ptr := existingValue.(type) {
 		case *int:
 			if v, ok := value.(int); ok {
@@ -91,25 +83,25 @@ func (w *World) RegisterUserVariable(name string, value interface{}) {
 				*ptr = v
 			}
 		default:
-			w.EngineState.log.Warn("Unsupported type: %T", ptr)
+			w.e.log.Warn("Unsupported type: %T", ptr)
 		}
 	} else {
-		w.Variables[name] = value
+		w.variables[strings.ToLower(name)] = value
 	}
 	if w.isMeshExpression(name) {
-		if w.EngineState.mesh.ReadyToCreate() {
-			w.EngineState.mesh.Create()
-			w.EngineState.magnetization.InitializeBuffer()
-			w.EngineState.regions.InitializeBuffer()
-			w.EngineState.metadata.AddMesh(w.EngineState.mesh)
+		if w.e.mesh.ReadyToCreate() {
+			w.e.mesh.Create()
+			w.e.magnetization.initializeBuffer()
+			w.e.regions.initializeBuffer()
+			w.e.metadata.AddMesh(w.e.mesh)
 		}
 	}
-	w.EngineState.metadata.Add(name, value)
-	w.Variables[name] = value
+	w.e.metadata.Add(name, value)
+	w.variables[name] = value
 }
 
-// WrapFunction creates a universal wrapper for any function.
-func (w *World) WrapFunction(fn interface{}, name string) func([]interface{}) (interface{}, error) {
+// wrapFunction creates a universal wrapper for any function.
+func (w *world) wrapFunction(fn interface{}, name string) func([]interface{}) (interface{}, error) {
 	return func(args []interface{}) (interface{}, error) {
 		fnValue := reflect.ValueOf(fn)
 		fnType := fnValue.Type()
@@ -253,7 +245,7 @@ func (w *World) WrapFunction(fn interface{}, name string) func([]interface{}) (i
 }
 
 // formatFunctionSignature returns a string representation of the function's signature.
-func (w *World) formatFunctionSignature(fnType reflect.Type, name string) string {
+func (w *world) formatFunctionSignature(fnType reflect.Type, name string) string {
 	var sb strings.Builder
 	sb.WriteString(name)
 	sb.WriteString("(")
@@ -286,7 +278,7 @@ func (w *World) formatFunctionSignature(fnType reflect.Type, name string) string
 	return sb.String()
 }
 
-func (w *World) isMeshExpression(name string) bool {
+func (w *world) isMeshExpression(name string) bool {
 	namesToCheck := []string{"Nx", "Ny", "Nz", "Dx", "Dy", "Dz", "Tx", "Ty", "Tz"}
 	for _, v := range namesToCheck {
 		if strings.EqualFold(v, name) {
@@ -294,4 +286,14 @@ func (w *World) isMeshExpression(name string) bool {
 		}
 	}
 	return false
+}
+
+func (w *world) getVariable(name string) (interface{}, bool) {
+	value, ok := w.variables[strings.ToLower(name)]
+	return value, ok
+}
+
+func (w *world) getFunction(name string) (interface{}, bool) {
+	value, ok := w.functions[strings.ToLower(name)]
+	return value, ok
 }

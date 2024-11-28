@@ -25,11 +25,11 @@ type requestedChunking struct {
 	c int
 }
 
-func mx3chunks(x, y, z, c int) requestedChunking {
+func createRequestedChunk(x, y, z, c int) requestedChunking {
 	return requestedChunking{x, y, z, c}
 }
 
-func newChunks(q Quantity, c requestedChunking) chunks {
+func newChunks(q quantity, c requestedChunking) chunks {
 	return chunks{
 		newChunk(q.Size()[0], c.x, 0),
 		newChunk(q.Size()[1], c.y, 1),

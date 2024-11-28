@@ -1,11 +1,11 @@
 package new_engine
 
-type Solver struct {
-	EngineState *EngineStateStruct
-	Time        float64
+type solver struct {
+	e    *engineState
+	time float64
 }
 
-func NewSolver(EngineState *EngineStateStruct) *Solver {
-	s := &Solver{EngineState: EngineState, Time: 0}
+func newSolver(EngineState *engineState) *solver {
+	s := &solver{e: EngineState, time: 0}
 	return s
 }
