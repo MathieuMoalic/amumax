@@ -22,13 +22,8 @@ func newWorld(engineState *engineState) *world {
 }
 
 func (w *world) register() {
-	w.registerQuantities()
 	w.registerTableFunctions()
 	w.registerMesh()
-}
-
-func (w *world) registerQuantities() {
-	w.registerVariable("geom", w.e.geometry)
 }
 
 func (w *world) registerTableFunctions() {
@@ -50,7 +45,6 @@ func (w *world) registerMesh() {
 	w.registerVariable("Tz", &w.e.mesh.Tz)
 	w.registerFunction("SetGridSize", w.e.mesh.SetGridSize)
 	w.registerFunction("SetCellSize", w.e.mesh.SetCellSize)
-
 }
 
 // registerFunction registers a pre-defined function in the world.

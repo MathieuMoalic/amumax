@@ -65,7 +65,7 @@ func (m *magnetization) normalize() {
 // allocate storage (not done by init, as mesh size may not yet be known then)
 func (m *magnetization) initializeBuffer() {
 	m.slice = cuda.NewSlice(3, m.e.mesh.Size())
-	m.set(randomMag()) // sane starting config
+	m.set(m.e.config.randomMag()) // sane starting config
 }
 
 func (m *magnetization) setArray(src *data.Slice) {
@@ -123,7 +123,7 @@ func (m *magnetization) setInShape(region shape, conf config) {
 	}
 	cpuSlice := m.slice.HostCopy()
 	vectors := cpuSlice.Vectors()
-	Nx, Ny, Nz := m.e.mesh.GetN()
+	Nx, Ny, Nz := m.e.mesh.GetNi()
 
 	for iz := 0; iz < Nz; iz++ {
 		for iy := 0; iy < Ny; iy++ {

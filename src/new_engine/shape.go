@@ -192,7 +192,7 @@ func (s *shapeList) layer(index int) shape {
 
 // Single cell with given index
 func (s *shapeList) cell(ix, iy, iz int) shape {
-	dx, dy, dz := s.e.mesh.GetD()
+	dx, dy, dz := s.e.mesh.GetDi()
 	pos := s.e.utils.Index2Coord(ix, iy, iz)
 	x1 := pos[X] - dx/2
 	y1 := pos[Y] - dy/2
@@ -245,8 +245,8 @@ func (s *shapeList) imageShape(fname string) shape {
 	}
 
 	// stretch the image onto the gridsize
-	dx, dy, _ := s.e.mesh.GetD()
-	Nx, Ny, _ := s.e.mesh.GetN()
+	dx, dy, _ := s.e.mesh.GetDi()
+	Nx, Ny, _ := s.e.mesh.GetNi()
 	w, h := float64(width), float64(height)
 	return func(x, y, z float64) bool {
 		ix := int((w/float64(Nx))*(x/dx) + 0.5*w)
