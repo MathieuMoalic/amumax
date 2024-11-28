@@ -9,7 +9,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/mesh"
-	"github.com/MathieuMoalic/amumax/src/script"
+	"github.com/MathieuMoalic/amumax/src/script_old"
 )
 
 // An excitation, typically field or current,
@@ -81,7 +81,7 @@ func (e *excitation) RemoveExtraTerms() {
 }
 
 // Add an extra mask*multiplier term to the excitation.
-func (e *excitation) Add(mask *data.Slice, f script.ScalarFunction) {
+func (e *excitation) Add(mask *data.Slice, f script_old.ScalarFunction) {
 	var mul func() float64
 	if f != nil {
 		if isConst(f) {
@@ -108,9 +108,11 @@ func (e *excitation) AddGo(mask *data.Slice, mul func() float64) {
 	e.extraTerms = append(e.extraTerms, mulmask{mul, mask})
 }
 
-func (e *excitation) SetRegion(region int, f script.VectorFunction) { e.perRegion.SetRegion(region, f) }
-func (e *excitation) SetValue(v interface{})                        { e.perRegion.SetValue(v) }
-func (e *excitation) Set(v data.Vector)                             { e.perRegion.setRegions(0, NREGION, slice(v)) }
+func (e *excitation) SetRegion(region int, f script_old.VectorFunction) {
+	e.perRegion.SetRegion(region, f)
+}
+func (e *excitation) SetValue(v interface{}) { e.perRegion.SetValue(v) }
+func (e *excitation) Set(v data.Vector)      { e.perRegion.setRegions(0, NREGION, slice(v)) }
 
 func (e *excitation) SetRegionFn(region int, f func() [3]float64) {
 	e.perRegion.setFunc(region, region+1, func() []float64 {
@@ -129,7 +131,7 @@ func (e *excitation) Region(r int) *vOneReg   { return vOneRegion(e, r) }
 func (e *excitation) Comp(c int) ScalarField  { return comp(e, c) }
 func (e *excitation) Eval() interface{}       { return e }
 func (e *excitation) Type() reflect.Type      { return reflect.TypeOf(new(excitation)) }
-func (e *excitation) InputType() reflect.Type { return script.VectorFunction_t }
+func (e *excitation) InputType() reflect.Type { return script_old.VectorFunction_t }
 func (e *excitation) EvalTo(dst *data.Slice)  { evalTo(e, dst) }
 
 func (e *excitation) GetRegionToString(region int) string {

@@ -15,7 +15,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/mesh"
-	"github.com/MathieuMoalic/amumax/src/script"
+	"github.com/MathieuMoalic/amumax/src/script_old"
 )
 
 func init() {
@@ -216,7 +216,7 @@ func newScalarParam(name, unit, desc string, children ...derived) *regionwiseSca
 	return p
 }
 
-func (p *regionwiseScalar) SetRegion(region int, f script.ScalarFunction) {
+func (p *regionwiseScalar) SetRegion(region int, f script_old.ScalarFunction) {
 	if region == -1 {
 		p.setRegionsFunc(0, NREGION, f) // uniform
 	} else {
@@ -225,7 +225,7 @@ func (p *regionwiseScalar) SetRegion(region int, f script.ScalarFunction) {
 }
 
 func (p *regionwiseScalar) SetValue(v interface{}) {
-	f := v.(script.ScalarFunction)
+	f := v.(script_old.ScalarFunction)
 	p.setRegionsFunc(0, NREGION, f)
 }
 
@@ -233,13 +233,13 @@ func (p *regionwiseScalar) Set(v float64) {
 	p.setRegions(0, NREGION, []float64{v})
 }
 
-func (p *regionwiseScalar) setRegionsFunc(r1, r2 int, f script.ScalarFunction) {
+func (p *regionwiseScalar) setRegionsFunc(r1, r2 int, f script_old.ScalarFunction) {
 	if isConst(f) {
 		p.setRegions(r1, r2, []float64{f.Float()})
 	} else {
 		f := f.Fix() // fix values of all variables except t
 		p.setFunc(r1, r2, func() []float64 {
-			return []float64{f.Eval().(script.ScalarFunction).Float()}
+			return []float64{f.Eval().(script_old.ScalarFunction).Float()}
 		})
 	}
 }
@@ -254,14 +254,14 @@ func (p *regionwiseScalar) GetRegionToString(region int) string {
 
 func (p *regionwiseScalar) Eval() interface{}       { return p }
 func (p *regionwiseScalar) Type() reflect.Type      { return reflect.TypeOf(new(regionwiseScalar)) }
-func (p *regionwiseScalar) InputType() reflect.Type { return script.ScalarFunction_t }
+func (p *regionwiseScalar) InputType() reflect.Type { return script_old.ScalarFunction_t }
 func (p *regionwiseScalar) Average() float64        { return qAverageUniverse(p)[0] }
 func (p *regionwiseScalar) Region(r int) *sOneReg   { return sOneRegion(p, r) }
 
 // checks if a script expression contains t (time)
-func isConst(e script.Expr) bool {
+func isConst(e script_old.Expr) bool {
 	t := World.Resolve("t")
-	return !script.Contains(e, t)
+	return !script_old.Contains(e, t)
 }
 
 func cat(desc, unit string) string {
@@ -308,7 +308,7 @@ func newVectorParam(name, unit, desc string) *regionwiseVector {
 	return p
 }
 
-func (p *regionwiseVector) SetRegion(region int, f script.VectorFunction) {
+func (p *regionwiseVector) SetRegion(region int, f script_old.VectorFunction) {
 	if region == -1 {
 		p.setRegionsFunc(0, NREGION, f) //uniform
 	} else {
@@ -317,17 +317,17 @@ func (p *regionwiseVector) SetRegion(region int, f script.VectorFunction) {
 }
 
 func (p *regionwiseVector) SetValue(v interface{}) {
-	f := v.(script.VectorFunction)
+	f := v.(script_old.VectorFunction)
 	p.setRegionsFunc(0, NREGION, f)
 }
 
-func (p *regionwiseVector) setRegionsFunc(r1, r2 int, f script.VectorFunction) {
+func (p *regionwiseVector) setRegionsFunc(r1, r2 int, f script_old.VectorFunction) {
 	if isConst(f) {
 		p.setRegions(r1, r2, slice(f.Float3()))
 	} else {
 		f := f.Fix() // fix values of all variables except t
 		p.setFunc(r1, r2, func() []float64 {
-			return slice(f.Eval().(script.VectorFunction).Float3())
+			return slice(f.Eval().(script_old.VectorFunction).Float3())
 		})
 	}
 }
@@ -348,7 +348,7 @@ func (p *regionwiseVector) GetRegionToString(region int) string {
 }
 func (p *regionwiseVector) Eval() interface{}       { return p }
 func (p *regionwiseVector) Type() reflect.Type      { return reflect.TypeOf(new(regionwiseVector)) }
-func (p *regionwiseVector) InputType() reflect.Type { return script.VectorFunction_t }
+func (p *regionwiseVector) InputType() reflect.Type { return script_old.VectorFunction_t }
 func (p *regionwiseVector) Region(r int) *vOneReg   { return vOneRegion(p, r) }
 func (p *regionwiseVector) Average() data.Vector    { return unslice(qAverageUniverse(p)) }
 func (p *regionwiseVector) Comp(c int) ScalarField  { return comp(p, c) }

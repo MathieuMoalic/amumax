@@ -1,4 +1,4 @@
-package script
+package script_old
 
 import (
 	"fmt"

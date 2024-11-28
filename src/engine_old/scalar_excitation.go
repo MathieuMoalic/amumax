@@ -8,7 +8,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/mesh"
-	"github.com/MathieuMoalic/amumax/src/script"
+	"github.com/MathieuMoalic/amumax/src/script_old"
 )
 
 // An excitation, typically field or current,
@@ -73,7 +73,7 @@ func (e *scalarExcitation) RemoveExtraTerms() {
 }
 
 // Add an extra mask*multiplier term to the excitation.
-func (e *scalarExcitation) Add(mask *data.Slice, f script.ScalarFunction) {
+func (e *scalarExcitation) Add(mask *data.Slice, f script_old.ScalarFunction) {
 	var mul func() float64
 	if f != nil {
 		if isConst(f) {
@@ -100,7 +100,7 @@ func (e *scalarExcitation) AddGo(mask *data.Slice, mul func() float64) {
 	e.extraTerms = append(e.extraTerms, mulmask{mul, mask})
 }
 
-func (e *scalarExcitation) SetRegion(region int, f script.ScalarFunction) {
+func (e *scalarExcitation) SetRegion(region int, f script_old.ScalarFunction) {
 	e.perRegion.SetRegion(region, f)
 }
 func (e *scalarExcitation) SetValue(v interface{}) { e.perRegion.SetValue(v) }
@@ -123,5 +123,5 @@ func (e *scalarExcitation) Region(r int) *vOneReg   { return vOneRegion(e, r) }
 func (e *scalarExcitation) Comp(c int) ScalarField  { return comp(e, c) }
 func (e *scalarExcitation) Eval() interface{}       { return e }
 func (e *scalarExcitation) Type() reflect.Type      { return reflect.TypeOf(new(scalarExcitation)) }
-func (e *scalarExcitation) InputType() reflect.Type { return script.ScalarFunction_t }
+func (e *scalarExcitation) InputType() reflect.Type { return script_old.ScalarFunction_t }
 func (e *scalarExcitation) EvalTo(dst *data.Slice)  { evalTo(e, dst) }

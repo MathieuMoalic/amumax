@@ -15,7 +15,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/engine_old"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/script"
+	"github.com/MathieuMoalic/amumax/src/script_old"
 	"github.com/MathieuMoalic/amumax/src/url"
 )
 
@@ -72,7 +72,7 @@ func runFileAndServe(mx3Path string, flags *flags.FlagsType) {
 
 	mx3Path = engine_old.InputFile
 
-	var code *script.BlockStmt
+	var code *script_old.BlockStmt
 	var err2 error
 	if mx3Path != "" {
 		// first we compile the entire file into an executable tree
