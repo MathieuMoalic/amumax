@@ -11,6 +11,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/new_fsutil"
+	"github.com/MathieuMoalic/amumax/src/new_log"
 	"github.com/MathieuMoalic/amumax/src/timer"
 	"github.com/MathieuMoalic/amumax/src/zarr"
 	"github.com/fatih/color"
@@ -23,7 +24,7 @@ type engineState struct {
 	flags           *flags.FlagsType
 	metadata        *zarr.Metadata
 	world           *world
-	log             *log.Logs
+	log             *new_log.Logs
 	table           *table
 	solver          *solver
 	mesh            *mesh.Mesh
@@ -75,7 +76,7 @@ func (s *engineState) startInteractive() {
 func (s *engineState) run() {
 	defer s.cleanExit()
 	s.initIO()
-	s.initLog()
+	s.log = new_log.NewLogs(s.zarrPath, s.fs, s.flags.Debug)
 	s.initMetadata()
 	s.world = newWorld(s)
 	s.windowShift = newWindowShift(s)
@@ -136,15 +137,6 @@ func (s *engineState) initIO() {
 		log.Log.PanicIfError(s.fs.Mkdir(""))
 	}
 	zarr.InitZgroup("", s.zarrPath)
-}
-
-func (s *engineState) initLog() {
-	s.log = &log.Logs{}
-	s.log.Info("Input file: %s", s.scriptPath)
-	s.log.Info("Output directory: %s", s.zarrPath)
-	s.log.Init(s.zarrPath)
-	s.log.SetDebug(s.flags.Debug)
-	go s.log.AutoFlushToFile()
 }
 
 func (s *engineState) initTable() {
