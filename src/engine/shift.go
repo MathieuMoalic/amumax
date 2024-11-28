@@ -17,8 +17,8 @@ type windowShift struct {
 func newWindowShift(es *engineState) *windowShift {
 	w := new(windowShift)
 	w.e = es
-	es.world.registerFunction("shift", w.shiftX)
-	es.world.registerFunction("yshift", w.shiftY)
+	es.script.RegisterFunction("shift", w.shiftX)
+	es.script.RegisterFunction("yshift", w.shiftY)
 	return w
 }
 

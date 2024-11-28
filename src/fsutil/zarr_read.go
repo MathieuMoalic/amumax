@@ -1,4 +1,4 @@
-package zarr
+package fsutil
 
 import (
 	"encoding/binary"
@@ -16,7 +16,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
-func Read(binaryPath string, od string) (*data.Slice, error) {
+func (fs *FileSystem) ReadZarr(binaryPath string, od string) (*data.Slice, error) {
 	// Resolve the binary path to an absolute path
 	binaryPath = resolvePath(binaryPath, od)
 

@@ -6,9 +6,12 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"time"
 
+	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/zarr_old"
 	"github.com/fatih/color"
 )
 
@@ -38,20 +41,35 @@ func (a *atom) Load() int32 {
 
 // NewFileSystem creates a new FileSystem with the specified working directory.
 // The working directory should be an absolute path.
-func NewFileSystem(wd string) *FileSystem {
-	absWd, err := filepath.Abs(wd)
-	if err != nil {
-		absWd = wd // Use provided wd if Abs fails
+func NewFileSystem(scriptPath, outputDir string, skipExists, forceClean bool) *FileSystem {
+	zarrPath := ""
+	if outputDir != "" {
+		zarrPath = outputDir
+	} else {
+		if scriptPath == "" {
+			now := time.Now()
+			zarrPath = fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
+		} else {
+			zarrPath = strings.TrimSuffix(scriptPath, ".mx3") + ".zarr"
+		}
 	}
-	if !filepath.IsAbs(absWd) {
+	if !strings.HasSuffix(zarrPath, "/") {
+		zarrPath += "/"
+	}
+
+	absZarrPath, err := filepath.Abs(zarrPath)
+	if err != nil {
+		absZarrPath = zarrPath // Use provided zarrPath if Abs fails
+	}
+	if !filepath.IsAbs(absZarrPath) {
 		panic("working directory must be an absolute path")
 	}
 	// add trailing slash to wd
-	if absWd[len(absWd)-1] != filepath.Separator {
-		absWd += string(filepath.Separator)
+	if absZarrPath[len(absZarrPath)-1] != filepath.Separator {
+		absZarrPath += string(filepath.Separator)
 	}
 	fs := &FileSystem{
-		wd:       absWd,
+		wd:       absZarrPath,
 		bufSize:  16 * 1024, // Default buffer size for buffered writer (16 KB)
 		filePerm: 0644,      // Default file permissions
 		dirPerm:  0755,      // Default directory permissions
@@ -59,6 +77,21 @@ func NewFileSystem(wd string) *FileSystem {
 		// Initialize fields for asynchronous operations
 		saveQue: make(chan func(), 100), // Queue capacity of 100
 	}
+	if fs.IsDir("") {
+		// if directory exists and --skip-exist flag is set, skip the directory
+		if skipExists {
+			log_old.Log.Warn("Directory `%s` exists, skipping `%s` because of --skip-exist flag.", zarrPath, scriptPath)
+			os.Exit(0)
+			// if directory exists and --force-clean flag is set, remove the directory
+		} else if forceClean {
+			log_old.Log.Warn("Cleaning `%s`", zarrPath)
+			log_old.Log.PanicIfError(fs.Remove(""))
+			log_old.Log.PanicIfError(fs.Mkdir(""))
+		}
+	} else {
+		log_old.Log.PanicIfError(fs.Mkdir(""))
+	}
+	zarr_old.InitZgroup("", zarrPath)
 	go fs.run()
 	return fs
 }

@@ -1,68 +1,43 @@
-package engine
+package script
 
 import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
-type world struct {
-	e         *engineState
-	functions map[string]interface{}
-	variables map[string]interface{}
+func (p *ScriptParser) RegisterMesh(mesh *mesh.Mesh) {
+	p.RegisterVariable("Nx", mesh.Nx)
+	p.RegisterVariable("Ny", mesh.Ny)
+	p.RegisterVariable("Nz", mesh.Nz)
+	p.RegisterVariable("dx", mesh.Dx)
+	p.RegisterVariable("dy", mesh.Dy)
+	p.RegisterVariable("dz", mesh.Dz)
+	p.RegisterVariable("Tx", mesh.Tx)
+	p.RegisterVariable("Ty", mesh.Ty)
+	p.RegisterVariable("Tz", mesh.Tz)
+	p.RegisterFunction("SetGridSize", mesh.SetGridSize)
+	p.RegisterFunction("SetCellSize", mesh.SetCellSize)
 }
 
-func newWorld(engineState *engineState) *world {
-	w := &world{
-		e:         engineState,
-		functions: make(map[string]interface{}),
-		variables: make(map[string]interface{}),
-	}
-	return w
+// RegisterFunction registers a pre-defined function in the world.
+func (p *ScriptParser) RegisterFunction(name string, function interface{}) {
+	p.functionsScope[strings.ToLower(name)] = p.wrapFunction(function, strings.ToLower(name))
 }
 
-func (w *world) register() {
-	w.registerTableFunctions()
-	w.registerMesh()
-}
-
-func (w *world) registerTableFunctions() {
-	w.registerFunction("TableAutoSave", w.e.table.tableAutoSave)
-	w.registerFunction("TableAdd", w.e.table.tableAdd)
-	w.registerFunction("TableAddAs", w.e.table.tableAddAs)
-	w.registerFunction("TableSave", w.e.table.tableSave)
-}
-
-func (w *world) registerMesh() {
-	w.registerVariable("Nx", &w.e.mesh.Nx)
-	w.registerVariable("Ny", &w.e.mesh.Ny)
-	w.registerVariable("Nz", &w.e.mesh.Nz)
-	w.registerVariable("dx", &w.e.mesh.Dx)
-	w.registerVariable("dy", &w.e.mesh.Dy)
-	w.registerVariable("dz", &w.e.mesh.Dz)
-	w.registerVariable("Tx", &w.e.mesh.Tx)
-	w.registerVariable("Ty", &w.e.mesh.Ty)
-	w.registerVariable("Tz", &w.e.mesh.Tz)
-	w.registerFunction("SetGridSize", w.e.mesh.SetGridSize)
-	w.registerFunction("SetCellSize", w.e.mesh.SetCellSize)
-}
-
-// registerFunction registers a pre-defined function in the world.
-func (w *world) registerFunction(name string, function interface{}) {
-	w.functions[strings.ToLower(name)] = w.wrapFunction(function, strings.ToLower(name))
-}
-
-// registerVariable registers a pre-defined variable in the world.
-func (w *world) registerVariable(name string, value interface{}) {
+// RegisterVariable registers a pre-defined variable in the world.
+func (p *ScriptParser) RegisterVariable(name string, value interface{}) {
 	if value == nil {
-		w.e.log.ErrAndExit("Value is nil for variable: %s", name)
+		p.log.ErrAndExit("Value is nil for variable: %s", name)
 	}
-	w.variables[strings.ToLower(name)] = value
+	p.variablesScope[strings.ToLower(name)] = value
 }
 
 // registerUserVariable registers a user-defined variable in the world.
-func (w *world) registerUserVariable(name string, value interface{}) {
-	if existingValue, ok := w.variables[name]; ok {
+func (p *ScriptParser) registerUserVariable(name string, value interface{}) {
+	if existingValue, ok := p.variablesScope[name]; ok {
 		switch ptr := existingValue.(type) {
 		case *int:
 			if v, ok := value.(int); ok {
@@ -77,25 +52,20 @@ func (w *world) registerUserVariable(name string, value interface{}) {
 				*ptr = v
 			}
 		default:
-			w.e.log.Warn("Unsupported type: %T", ptr)
+			p.log.Warn("Unsupported type: %T", ptr)
 		}
 	} else {
-		w.variables[strings.ToLower(name)] = value
+		p.variablesScope[strings.ToLower(name)] = value
 	}
-	if w.isMeshExpression(name) {
-		if w.e.mesh.ReadyToCreate() {
-			w.e.mesh.Create()
-			w.e.magnetization.initializeBuffer()
-			w.e.regions.initializeBuffer()
-			w.e.metadata.AddMesh(w.e.mesh)
-		}
+	if p.isMeshExpression(name) {
+		p.log.Info("Mesh expression: %s", name)
+		p.initializeMeshIfReady()
 	}
-	w.e.metadata.Add(name, value)
-	w.variables[name] = value
+	p.variablesScope[name] = value
 }
 
 // wrapFunction creates a universal wrapper for any function.
-func (w *world) wrapFunction(fn interface{}, name string) func([]interface{}) (interface{}, error) {
+func (p *ScriptParser) wrapFunction(fn interface{}, name string) func([]interface{}) (interface{}, error) {
 	return func(args []interface{}) (interface{}, error) {
 		fnValue := reflect.ValueOf(fn)
 		fnType := fnValue.Type()
@@ -121,7 +91,7 @@ func (w *world) wrapFunction(fn interface{}, name string) func([]interface{}) (i
 					"%s expects at least %d arguments (%s), got %d",
 					name,
 					expectedArgs,
-					w.formatFunctionSignature(fnType, name),
+					p.formatFunctionSignature(fnType, name),
 					len(args),
 				)
 			} else {
@@ -129,7 +99,7 @@ func (w *world) wrapFunction(fn interface{}, name string) func([]interface{}) (i
 					"%s expects %d arguments (%s), got %d",
 					name,
 					expectedArgs,
-					w.formatFunctionSignature(fnType, name),
+					p.formatFunctionSignature(fnType, name),
 					len(args),
 				)
 			}
@@ -146,7 +116,7 @@ func (w *world) wrapFunction(fn interface{}, name string) func([]interface{}) (i
 					"%s: missing argument for parameter %d\nExpected function signature: %s",
 					name,
 					i+1,
-					w.formatFunctionSignature(fnType, name),
+					p.formatFunctionSignature(fnType, name),
 				)
 			}
 			arg := args[i]
@@ -165,7 +135,7 @@ func (w *world) wrapFunction(fn interface{}, name string) func([]interface{}) (i
 						i+1,
 						argVal.Type(),
 						expectedType,
-						w.formatFunctionSignature(fnType, name),
+						p.formatFunctionSignature(fnType, name),
 					)
 				}
 			}
@@ -195,7 +165,7 @@ func (w *world) wrapFunction(fn interface{}, name string) func([]interface{}) (i
 							numFixedArgs+i+1,
 							argVal.Type(),
 							variadicType,
-							w.formatFunctionSignature(fnType, name),
+							p.formatFunctionSignature(fnType, name),
 						)
 					}
 				}
@@ -239,7 +209,7 @@ func (w *world) wrapFunction(fn interface{}, name string) func([]interface{}) (i
 }
 
 // formatFunctionSignature returns a string representation of the function's signature.
-func (w *world) formatFunctionSignature(fnType reflect.Type, name string) string {
+func (p *ScriptParser) formatFunctionSignature(fnType reflect.Type, name string) string {
 	var sb strings.Builder
 	sb.WriteString(name)
 	sb.WriteString("(")
@@ -272,7 +242,7 @@ func (w *world) formatFunctionSignature(fnType reflect.Type, name string) string
 	return sb.String()
 }
 
-func (w *world) isMeshExpression(name string) bool {
+func (p *ScriptParser) isMeshExpression(name string) bool {
 	namesToCheck := []string{"Nx", "Ny", "Nz", "Dx", "Dy", "Dz", "Tx", "Ty", "Tz"}
 	for _, v := range namesToCheck {
 		if strings.EqualFold(v, name) {
@@ -282,12 +252,12 @@ func (w *world) isMeshExpression(name string) bool {
 	return false
 }
 
-func (w *world) getVariable(name string) (interface{}, bool) {
-	value, ok := w.variables[strings.ToLower(name)]
+func (p *ScriptParser) getVariable(name string) (interface{}, bool) {
+	value, ok := p.variablesScope[strings.ToLower(name)]
 	return value, ok
 }
 
-func (w *world) getFunction(name string) (interface{}, bool) {
-	value, ok := w.functions[strings.ToLower(name)]
+func (p *ScriptParser) getFunction(name string) (interface{}, bool) {
+	value, ok := p.functionsScope[strings.ToLower(name)]
 	return value, ok
 }

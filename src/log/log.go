@@ -20,9 +20,9 @@ type Logs struct {
 	file   *os.File
 }
 
-func NewLogs(zarrPath string, fs *fsutil.FileSystem, debug bool) *Logs {
+func NewLogs(fs *fsutil.FileSystem, debug bool) *Logs {
 	l := &Logs{}
-	writer, file, err := fs.Create(zarrPath + "/log.txt")
+	writer, file, err := fs.Create("log.txt")
 	if err != nil {
 		color.Red(fmt.Sprintf("Error creating the log file: %v", err))
 	}

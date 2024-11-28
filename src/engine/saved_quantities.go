@@ -11,7 +11,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/zarr"
+	"github.com/MathieuMoalic/amumax/src/zarr_old"
 )
 
 type savedQuantity struct {
@@ -47,7 +47,7 @@ func newSavedQuantity(engineState *engineState, q quantity, name string, rchunks
 
 // saveAttrs updates the .zattrs file with the times data.
 func (sq *savedQuantity) saveAttrs() {
-	u, err := json.Marshal(zarr.Zattrs{Buffer: sq.times})
+	u, err := json.Marshal(zarr_old.Zattrs{Buffer: sq.times})
 	log_old.Log.PanicIfError(err)
 	err = sq.e.fs.Remove(sq.name + "/.zattrs")
 	log_old.Log.PanicIfError(err)
@@ -83,13 +83,16 @@ func (sq *savedQuantity) syncSave(array *data.Slice, qname string, step int, chu
 	ncomp := array.NComp()
 
 	// Save .zarray metadata
-	zarr.SaveFileZarray(
-		fmt.Sprintf(sq.e.zarrPath+"%s/.zarray", qname),
+	err := sq.e.fs.SaveFileZarray(
+		fmt.Sprintf("%s/.zarray", qname),
 		size,
 		ncomp,
 		step,
 		chunks.z.len, chunks.y.len, chunks.x.len, chunks.c.len,
 	)
+	if err != nil {
+		return err
+	}
 
 	// Iterate over chunks and save data
 	for icx := 0; icx < chunks.x.nb; icx++ {
@@ -137,13 +140,13 @@ type savedQuantities struct {
 
 func newSavedQuantities(engineState *engineState) *savedQuantities {
 	sqs := &savedQuantities{EngineState: engineState}
-	engineState.world.registerFunction("Save", sqs.save)
-	engineState.world.registerFunction("SaveAs", sqs.saveAs)
-	engineState.world.registerFunction("SaveAsChunks", sqs.saveAsChunk)
-	engineState.world.registerFunction("AutoSave", sqs.autoSave)
-	engineState.world.registerFunction("AutoSaveAs", sqs.autoSaveAs)
-	engineState.world.registerFunction("AutoSaveAsChunk", sqs.autoSaveAsChunk)
-	engineState.world.registerFunction("Chunks", createRequestedChunk)
+	engineState.script.RegisterFunction("Save", sqs.save)
+	engineState.script.RegisterFunction("SaveAs", sqs.saveAs)
+	engineState.script.RegisterFunction("SaveAsChunks", sqs.saveAsChunk)
+	engineState.script.RegisterFunction("AutoSave", sqs.autoSave)
+	engineState.script.RegisterFunction("AutoSaveAs", sqs.autoSaveAs)
+	engineState.script.RegisterFunction("AutoSaveAsChunk", sqs.autoSaveAsChunk)
+	engineState.script.RegisterFunction("Chunks", createRequestedChunk)
 	return sqs
 }
 

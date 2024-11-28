@@ -5,9 +5,6 @@ import (
 	"os"
 	"sync"
 	"time"
-
-	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
 // the table is kept in RAM and used for the API
@@ -39,14 +36,15 @@ func newTable(e *engineState) *table {
 		columns:    []column{},
 	}
 	err := e.fs.Remove("table")
-	log_old.Log.PanicIfError(err)
-	zarr.InitZgroup("table", e.zarrPath)
+	e.log.PanicIfError(err)
+	err = e.fs.CreateZarrGroup("table")
+	e.log.PanicIfError(err)
 	t.addColumn("step", "")
 	t.addColumn("t", "s")
-	e.world.registerFunction("TableAutoSave", t.tableAutoSave)
-	e.world.registerFunction("TableAdd", t.tableAdd)
-	e.world.registerFunction("TableAddAs", t.tableAddAs)
-	e.world.registerFunction("TableSave", t.tableSave)
+	e.script.RegisterFunction("TableAutoSave", t.tableAutoSave)
+	e.script.RegisterFunction("TableAdd", t.tableAdd)
+	e.script.RegisterFunction("TableAddAs", t.tableAddAs)
+	e.script.RegisterFunction("TableSave", t.tableSave)
 	return t
 }
 
@@ -63,12 +61,12 @@ func (ts *table) writeToBuffer() {
 
 	for i, b := range buf {
 		// Convert float64 to bytes
-		data := zarr.Float64ToBytes(b)
+		data := float64ToBytes(b)
 
 		// Write directly to the buffered writer
 		_, err := ts.columns[i].writer.Write(data)
 		if err != nil {
-			log_old.Log.PanicIfError(err)
+			ts.e.log.PanicIfError(err)
 		}
 
 		// Update in-memory data
@@ -78,11 +76,14 @@ func (ts *table) writeToBuffer() {
 
 func (ts *table) flush() {
 	for i := range ts.columns {
-		// Update zarray if necessary
-		zarr.SaveFileTableZarray(ts.e.zarrPath+"table/"+ts.columns[i].name, ts.Step)
-		err := ts.columns[i].writer.Flush()
+		// Update zarray if necessary, it is not buffered at the moment
+		err := ts.e.fs.SaveFileTableZarray("table/"+ts.columns[i].name, ts.Step)
 		if err != nil {
-			log_old.Log.PanicIfError(err)
+			ts.e.log.PanicIfError(err)
+		}
+		err = ts.columns[i].writer.Flush()
+		if err != nil {
+			ts.e.log.PanicIfError(err)
 		}
 	}
 }
@@ -111,9 +112,9 @@ func (ts *table) exists(q quantity, name string) bool {
 
 func (ts *table) addColumn(name, unit string) {
 	err := ts.e.fs.Mkdir("table/" + name)
-	log_old.Log.PanicIfError(err)
+	ts.e.log.PanicIfError(err)
 	writer, file, err := ts.e.fs.Create("table/" + name + "/0")
-	log_old.Log.PanicIfError(err)
+	ts.e.log.PanicIfError(err)
 	ts.columns = append(ts.columns, column{name: name, unit: unit, writer: writer, file: file})
 }
 
@@ -139,14 +140,14 @@ func (ts *table) tableAdd(q quantity) {
 func (ts *table) tableAddAs(q quantity, name string) {
 	suffixes := []string{"x", "y", "z"}
 	if ts.Step != -1 {
-		log_old.Log.Warn("You cannot add a new quantity to the table after the simulation has started. Ignoring.")
+		ts.e.log.Warn("You cannot add a new quantity to the table after the simulation has started. Ignoring.")
 	}
 	if len(ts.columns) == 0 {
 		ts.e.log.Warn("No columns in table, not saving.")
 	}
 
 	if ts.exists(q, name) {
-		log_old.Log.Warn("%s is already in the table. Ignoring.", name)
+		ts.e.log.Warn("%s is already in the table. Ignoring.", name)
 		return
 	}
 	ts.quantities = append(ts.quantities, q)
