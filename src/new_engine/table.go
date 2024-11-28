@@ -30,6 +30,26 @@ type column struct {
 	file   *os.File
 }
 
+func newTable(e *engineState) *table {
+	t := &table{
+		e:          e,
+		Data:       make(map[string][]float64),
+		Step:       -1,
+		quantities: []quantity{},
+		columns:    []column{},
+	}
+	err := e.fs.Remove("table")
+	log.Log.PanicIfError(err)
+	zarr.InitZgroup("table", e.zarrPath)
+	t.addColumn("step", "")
+	t.addColumn("t", "s")
+	e.world.registerFunction("TableAutoSave", t.tableAutoSave)
+	e.world.registerFunction("TableAdd", t.tableAdd)
+	e.world.registerFunction("TableAddAs", t.tableAddAs)
+	e.world.registerFunction("TableSave", t.tableSave)
+	return t
+}
+
 func (ts *table) writeToBuffer() {
 	buf := []float64{}
 	buf = append(buf, float64(ts.Step))
@@ -97,12 +117,12 @@ func (ts *table) addColumn(name, unit string) {
 	ts.columns = append(ts.columns, column{name: name, unit: unit, writer: writer, file: file})
 }
 
-func (ts *table) tablesAutoFlush() {
-	for {
-		ts.flush()
-		time.Sleep(ts.FlushInterval)
-	}
-}
+// func (ts *table) tablesAutoFlush() {
+// 	for {
+// 		ts.flush()
+// 		time.Sleep(ts.FlushInterval)
+// 	}
+// }
 
 func (ts *table) tableSave() {
 	if len(ts.columns) == 0 {

@@ -46,6 +46,10 @@ func NewFileSystem(wd string) *FileSystem {
 	if !filepath.IsAbs(absWd) {
 		panic("working directory must be an absolute path")
 	}
+	// add trailing slash to wd
+	if absWd[len(absWd)-1] != filepath.Separator {
+		absWd += string(filepath.Separator)
+	}
 	fs := &FileSystem{
 		wd:       absWd,
 		bufSize:  16 * 1024, // Default buffer size for buffered writer (16 KB)

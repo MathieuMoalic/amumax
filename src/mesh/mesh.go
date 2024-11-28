@@ -31,37 +31,61 @@ func (m Mesh) prettyPrint() {
 }
 
 func (m *Mesh) Size() [3]int {
+	if !m.created {
+		panic("Mesh not created yet")
+	}
 	return [3]int{m.Nx, m.Ny, m.Nz}
 }
-func (m *Mesh) GetN() (int, int, int) {
+func (m *Mesh) GetNi() (int, int, int) {
+	if !m.created {
+		panic("Mesh not created yet")
+	}
 	return m.Nx, m.Ny, m.Nz
 }
 
 func (m *Mesh) CellSize() [3]float64 {
+	if !m.created {
+		panic("Mesh not created yet")
+	}
 	return [3]float64{m.Dx, m.Dy, m.Dz}
 }
-func (m *Mesh) GetD() (float64, float64, float64) {
+func (m *Mesh) GetDi() (float64, float64, float64) {
+	if !m.created {
+		panic("Mesh not created yet")
+	}
 	return m.Dx, m.Dy, m.Dz
 }
 
 // Returns pbc (periodic boundary conditions), as passed to constructor.
 func (m *Mesh) PBC() [3]int {
+	if !m.created {
+		panic("Mesh not created yet")
+	}
 	return [3]int{m.PBCx, m.PBCy, m.PBCz}
 }
 
 // Total number of cells, not taking into account PBCs.
 func (m *Mesh) NCell() int {
+	if !m.created {
+		panic("Mesh not created yet")
+	}
 	return m.Nx * m.Ny * m.Nz
 }
 
 // WorldSize equals (grid)Size x CellSize.
 func (m *Mesh) WorldSize() [3]float64 {
+	if !m.created {
+		panic("Mesh not created yet")
+	}
 	return [3]float64{m.Tx, m.Ty, m.Tz}
 }
 
 // 3 bools, packed in one byte, indicating whether there are periodic boundary conditions in
 // X (LSB), Y(LSB<<1), Z(LSB<<2)
 func (m *Mesh) PBC_code() byte {
+	if !m.created {
+		panic("Mesh not created yet")
+	}
 	var code byte
 	if m.PBCx != 0 {
 		code = 1
@@ -100,6 +124,9 @@ func (m *Mesh) closestSevenSmooth(n int) int {
 }
 
 func (m *Mesh) SmoothMesh(smoothx, smoothy, smoothz bool) {
+	if !m.created {
+		panic("Mesh not created yet")
+	}
 	if m.Nx*m.Ny*m.Nz < 10000 && m.Nx < 128 && m.Ny < 128 && m.Nz < 128 {
 		log.Log.Info("No optimization to be made for small meshes")
 		return
@@ -160,6 +187,9 @@ func (m *Mesh) SetMesh(Nx, Ny, Nz int, Dx, Dy, Dz float64, PBCx, PBCy, PBCz int)
 }
 
 func (m *Mesh) validateGridSize() {
+	if !m.created {
+		panic("Mesh not created yet")
+	}
 	max_threshold := 1000000
 	Ni_list := []string{"m.Nx", "m.Ny", "m.Nz"}
 	for i, N := range []int{m.Nx, m.Ny, m.Nz} {
@@ -184,6 +214,9 @@ func (m *Mesh) checkLargestPrimeFactor(N int, axisName string) {
 }
 
 func (m *Mesh) validateCellSize() {
+	if !m.created {
+		panic("Mesh not created yet")
+	}
 	min_threshold := 0.25e-9
 	max_threshold := 500e-9
 	names := []string{"dx", "dy", "dz"}

@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/metadata"
 	"github.com/MathieuMoalic/amumax/src/new_fsutil"
 	"github.com/MathieuMoalic/amumax/src/new_log"
 	"github.com/MathieuMoalic/amumax/src/timer"
@@ -22,7 +22,7 @@ type engineState struct {
 	script          string
 	scriptPath      string
 	flags           *flags.FlagsType
-	metadata        *zarr.Metadata
+	metadata        *metadata.Metadata
 	world           *world
 	log             *new_log.Logs
 	table           *table
@@ -37,10 +37,11 @@ type engineState struct {
 	shape           *shapeList
 	grains          *grains
 	fs              *new_fsutil.FileSystem
+	config          *configList
 }
 
 func newEngineState(givenFlags *flags.FlagsType) *engineState {
-	return &engineState{flags: givenFlags, metadata: &zarr.Metadata{}}
+	return &engineState{flags: givenFlags}
 }
 
 func (s *engineState) start(mx3path string) {
@@ -77,11 +78,11 @@ func (s *engineState) run() {
 	defer s.cleanExit()
 	s.initIO()
 	s.log = new_log.NewLogs(s.zarrPath, s.fs, s.flags.Debug)
-	s.initMetadata()
+	s.metadata = metadata.NewMetadata(s.fs, s.log)
 	s.world = newWorld(s)
 	s.windowShift = newWindowShift(s)
 	s.shape = newShape(s)
-	s.initTable()
+	s.table = newTable(s)
 	s.mesh = &mesh.Mesh{}
 	s.solver = newSolver(s)
 	s.magnetization = newMagnetization(s)
@@ -90,6 +91,7 @@ func (s *engineState) run() {
 	s.savedQuantities = newSavedQuantities(s)
 	s.utils = newUtils(s)
 	s.grains = newGrains(s)
+	s.config = newConfigList(s.mesh, s.world)
 	s.world.register()
 	scriptParser := newScriptParser(s)
 	err := scriptParser.Parse(s.script)
@@ -139,35 +141,13 @@ func (s *engineState) initIO() {
 	zarr.InitZgroup("", s.zarrPath)
 }
 
-func (s *engineState) initTable() {
-	s.table = &table{
-		e:              s,
-		Data:           make(map[string][]float64),
-		Step:           -1,
-		AutoSavePeriod: 0.0,
-		FlushInterval:  5 * time.Second,
-	}
-	err := s.fs.Remove("table")
-	log.Log.PanicIfError(err)
-	zarr.InitZgroup("table", s.zarrPath)
-	s.table.addColumn("step", "")
-	s.table.addColumn("t", "s")
-	// s.Table.tableAdd(s.Magnetization)
-	go s.table.tablesAutoFlush()
-}
-
-func (s *engineState) initMetadata() {
-	s.metadata = &zarr.Metadata{}
-	s.metadata.Init(s.zarrPath, time.Now(), cuda.GPUInfo)
-}
-
 func (s *engineState) cleanExit() {
-	s.fs.Drain()
-	s.table.flush()
+	s.fs.Drain()    // wait for the save queue to finish
+	s.table.flush() // flush table to disk
 	if s.flags.Sync {
 		timer.Print(os.Stdout)
 	}
-	// s.Metadata.Add("steps", NSteps)
+	// s.metadata.Add("steps", NSteps)
 	s.metadata.End()
 	s.log.Info("**************** Simulation Ended ****************** //")
 	s.log.FlushToFile()
