@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 // Renders an image of slice. fmin, fmax = "auto" or a number to set the min/max color scale.
@@ -21,7 +21,7 @@ func on(img *image.RGBA, f *data.Slice, fmin, fmax string, arrowSize int, colorm
 	dim := f.NComp()
 	switch dim {
 	default:
-		log.Log.ErrAndExit("unsupported number of components: %v", dim)
+		log_old.Log.ErrAndExit("unsupported number of components: %v", dim)
 	case 3:
 		if colormap == nil {
 			drawVectors(img, f.Vectors(), arrowSize)
@@ -53,14 +53,14 @@ func parseMinMax(f *data.Slice, fmin, fmax string) (min, max float32) {
 	if fmin != "auto" {
 		m, err := strconv.ParseFloat(fmin, 32)
 		if err != nil {
-			log.Log.ErrAndExit("draw: scale: %v", err)
+			log_old.Log.ErrAndExit("draw: scale: %v", err)
 		}
 		min = float32(m)
 	}
 	if fmax != "auto" {
 		m, err := strconv.ParseFloat(fmax, 32)
 		if err != nil {
-			log.Log.ErrAndExit("draw: scale: %v", err)
+			log_old.Log.ErrAndExit("draw: scale: %v", err)
 		}
 		max = float32(m)
 	}

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/engine_old"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 // Parse D:HH:MM:SS, HH:MM:SS, or MM:SS format into time.Duration
@@ -76,7 +76,7 @@ func SetEndTimerIfSlurm() {
 		getSlurmMetadata()
 		endTime, err := getSlurmEndTime()
 		if err != nil {
-			log.Log.Warn("Error getting SLURM end time: %v", err)
+			log_old.Log.Warn("Error getting SLURM end time: %v", err)
 			return
 		}
 
@@ -85,9 +85,9 @@ func SetEndTimerIfSlurm() {
 			remaining := time.Until(endTime)
 			if remaining <= 30*time.Second && remaining > 0 {
 				// If 30 seconds or less are remaining, print the message
-				log.Log.Warn("30 seconds remaining until the job ends!")
-				log.Log.Warn("Cleanly exiting the simulation early...")
-				engine.Exit()
+				log_old.Log.Warn("30 seconds remaining until the job ends!")
+				log_old.Log.Warn("Cleanly exiting the simulation early...")
+				engine_old.Exit()
 			}
 			// Sleep for a short while before checking again
 			time.Sleep(15 * time.Second)
@@ -96,8 +96,8 @@ func SetEndTimerIfSlurm() {
 }
 
 func getSlurmMetadata() {
-	engine.EngineState.Metadata.Add("slurm_user", os.Getenv("SLURM_JOB_USER"))
-	engine.EngineState.Metadata.Add("slurm_partition", os.Getenv("SLURM_JOB_PARTITION"))
-	engine.EngineState.Metadata.Add("slurm_job_id", os.Getenv("SLURM_JOB_ID"))
-	engine.EngineState.Metadata.Add("slurm_node", os.Getenv("SLURM_JOB_NODELIST"))
+	engine_old.EngineState.Metadata.Add("slurm_user", os.Getenv("SLURM_JOB_USER"))
+	engine_old.EngineState.Metadata.Add("slurm_partition", os.Getenv("SLURM_JOB_PARTITION"))
+	engine_old.EngineState.Metadata.Add("slurm_job_id", os.Getenv("SLURM_JOB_ID"))
+	engine_old.EngineState.Metadata.Add("slurm_node", os.Getenv("SLURM_JOB_NODELIST"))
 }

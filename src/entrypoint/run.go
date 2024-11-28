@@ -12,9 +12,9 @@ import (
 	"github.com/MathieuMoalic/amumax/src/api"
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/engine_old"
 	"github.com/MathieuMoalic/amumax/src/flags"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/script"
 	"github.com/MathieuMoalic/amumax/src/url"
 )
@@ -24,18 +24,18 @@ type Release struct {
 }
 
 func runInteractive(flags *flags.FlagsType) {
-	log.Log.Info("No input files: starting interactive session")
+	log_old.Log.Info("No input files: starting interactive session")
 	// setup outut dir
 	now := time.Now()
 	outdir := fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
 
-	engine.InitIO(outdir, outdir, flags.CacheDir, flags.SkipExists, flags.ForceClean, flags.HideProgressBar, flags.SelfTest, flags.Sync)
-	log.Log.Info("Input file: %s", "none")
-	log.Log.Info("Output directory: %s", engine.OD())
-	log.Log.Init(engine.OD())
+	engine_old.InitIO(outdir, outdir, flags.CacheDir, flags.SkipExists, flags.ForceClean, flags.HideProgressBar, flags.SelfTest, flags.Sync)
+	log_old.Log.Info("Input file: %s", "none")
+	log_old.Log.Info("Output directory: %s", engine_old.OD())
+	log_old.Log.Init(engine_old.OD())
 
 	// set up some sensible start configuration
-	engine.Eval(`
+	engine_old.Eval(`
 Nx = 128
 Ny = 64
 Nz = 1
@@ -48,59 +48,59 @@ alpha = 1
 m = RandomMag()`)
 	if !flags.WebUIDisabled {
 		host, port, path, err := url.ParseAddrPath(flags.WebUIAddress)
-		log.Log.PanicIfError(err)
+		log_old.Log.PanicIfError(err)
 		go api.Start(host, port, path, flags.Tunnel, flags.Debug)
 	}
-	engine.RunInteractive()
+	engine_old.RunInteractive()
 }
 
 func runFileAndServe(mx3Path string, flags *flags.FlagsType) {
 	if _, err := os.Stat(mx3Path); errors.Is(err, os.ErrNotExist) {
-		log.Log.ErrAndExit("Error: File `%s` does not exist", mx3Path)
+		log_old.Log.ErrAndExit("Error: File `%s` does not exist", mx3Path)
 	}
 	outputdir := strings.TrimSuffix(mx3Path, ".mx3") + ".zarr"
 
 	if flags.OutputDir != "" {
 		outputdir = flags.OutputDir
 	}
-	engine.InitIO(mx3Path, outputdir, flags.CacheDir, flags.SkipExists, flags.ForceClean, flags.HideProgressBar, flags.SelfTest, flags.Sync)
-	log.Log.Info("Input file: %s", mx3Path)
-	log.Log.Info("Output directory: %s", engine.OD())
+	engine_old.InitIO(mx3Path, outputdir, flags.CacheDir, flags.SkipExists, flags.ForceClean, flags.HideProgressBar, flags.SelfTest, flags.Sync)
+	log_old.Log.Info("Input file: %s", mx3Path)
+	log_old.Log.Info("Output directory: %s", engine_old.OD())
 
-	log.Log.Init(engine.OD())
-	go log.Log.AutoFlushToFile()
+	log_old.Log.Init(engine_old.OD())
+	go log_old.Log.AutoFlushToFile()
 
-	mx3Path = engine.InputFile
+	mx3Path = engine_old.InputFile
 
 	var code *script.BlockStmt
 	var err2 error
 	if mx3Path != "" {
 		// first we compile the entire file into an executable tree
-		code, err2 = engine.CompileFile(mx3Path)
+		code, err2 = engine_old.CompileFile(mx3Path)
 		if err2 != nil {
-			log.Log.ErrAndExit("Error while parsing `%s`: %v", mx3Path, err2)
+			log_old.Log.ErrAndExit("Error while parsing `%s`: %v", mx3Path, err2)
 		}
-		log.Log.PanicIfError(err2)
+		log_old.Log.PanicIfError(err2)
 	}
 	// now the parser is not used anymore so it can handle web requests
 	if !flags.WebUIDisabled {
 		host, port, path, err := url.ParseAddrPath(flags.WebUIAddress)
-		log.Log.PanicIfError(err)
+		log_old.Log.PanicIfError(err)
 		go api.Start(host, port, path, flags.Tunnel, flags.Debug)
 	}
 	// start executing the tree, possibly injecting commands from web gui
-	engine.EvalFile(code)
+	engine_old.EvalFile(code)
 
 	if flags.Interactive {
-		engine.RunInteractive()
+		engine_old.RunInteractive()
 	}
 }
 
 // print version to stdout
 func printVersion() {
-	log.Log.Info("Version:         %s", engine.VERSION)
-	log.Log.Info("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
-	log.Log.Info("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
-	log.Log.Info("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda.UseCC)
-	log.Log.Info("GPU Information: %s", cuda.GPUInfo)
+	log_old.Log.Info("Version:         %s", engine_old.VERSION)
+	log_old.Log.Info("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
+	log_old.Log.Info("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
+	log_old.Log.Info("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda.UseCC)
+	log_old.Log.Info("GPU Information: %s", cuda.GPUInfo)
 }

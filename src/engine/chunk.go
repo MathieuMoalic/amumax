@@ -3,7 +3,7 @@ package engine
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 type chunk struct {
@@ -25,16 +25,15 @@ type requestedChunking struct {
 	c int
 }
 
-func mx3chunks(x, y, z, c int) requestedChunking {
+func createRequestedChunk(x, y, z, c int) requestedChunking {
 	return requestedChunking{x, y, z, c}
 }
 
-func newChunks(q Quantity, c requestedChunking) chunks {
-	size := sizeOf(q)
+func newChunks(q quantity, c requestedChunking) chunks {
 	return chunks{
-		newChunk(size[0], c.x, 0),
-		newChunk(size[1], c.y, 1),
-		newChunk(size[2], c.z, 2),
+		newChunk(q.Size()[0], c.x, 0),
+		newChunk(q.Size()[1], c.y, 1),
+		newChunk(q.Size()[2], c.z, 2),
 		newChunk(q.NComp(), c.c, 3),
 	}
 }
@@ -42,11 +41,11 @@ func newChunks(q Quantity, c requestedChunking) chunks {
 func newChunk(length, nb_of_chunks, N_index int) chunk {
 	name := []string{"Nx", "Ny", "Nz", "comp"}[N_index]
 	if nb_of_chunks < 1 || (nb_of_chunks > length) {
-		log.Log.ErrAndExit("Error: The number of chunks must be between 1 and %v", name)
+		log_old.Log.ErrAndExit("Error: The number of chunks must be between 1 and %v", name)
 	}
 	new_nb_of_chunks := closestDivisor(length, nb_of_chunks)
 	if new_nb_of_chunks != nb_of_chunks {
-		log.Log.Info("Warning: The number of chunks for %v has been automatically resized from %v to %v", name, nb_of_chunks, new_nb_of_chunks)
+		log_old.Log.Info("Warning: The number of chunks for %v has been automatically resized from %v to %v", name, nb_of_chunks, new_nb_of_chunks)
 	}
 	nb_of_chunks = new_nb_of_chunks
 	return chunk{length / nb_of_chunks, nb_of_chunks}

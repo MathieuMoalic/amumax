@@ -3,8 +3,8 @@ package zarr
 import (
 	"encoding/json"
 
-	"github.com/MathieuMoalic/amumax/src/fsutil"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/fsutil_old"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 var IsSaving bool
@@ -40,12 +40,12 @@ func SaveFileZarray(path string, size [3]int, ncomp int, step int, cz int, cy in
 	z.Chunks = [5]int{1, cz, cy, cx, cc}
 	z.Shape = [5]int{step + 1, size[2], size[1], size[0], ncomp}
 
-	f, err := fsutil.Create(path)
-	log.Log.PanicIfError(err)
+	f, err := fsutil_old.Create(path)
+	log_old.Log.PanicIfError(err)
 	defer f.Close()
 	enc := json.NewEncoder(f)
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "\t")
-	log.Log.PanicIfError(enc.Encode(z))
+	log_old.Log.PanicIfError(enc.Encode(z))
 	f.Flush()
 }

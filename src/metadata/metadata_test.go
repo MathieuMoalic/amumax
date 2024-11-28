@@ -7,29 +7,29 @@ import (
 	"testing"
 	"time"
 
+	"github.com/MathieuMoalic/amumax/src/fsutil"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mesh"
-	"github.com/MathieuMoalic/amumax/src/new_fsutil"
-	"github.com/MathieuMoalic/amumax/src/new_log"
 )
 
-func createTestFileSystem(t *testing.T) *new_fsutil.FileSystem {
+func createTestFileSystem(t *testing.T) *fsutil.FileSystem {
 	tempDir, err := os.MkdirTemp("", "metadata_test")
 	if err != nil {
 		t.Fatalf("Failed to create temporary directory: %v", err)
 	}
-	return new_fsutil.NewFileSystem(tempDir)
+	return fsutil.NewFileSystem(tempDir)
 }
 
-func createTestLogger(t *testing.T) *new_log.Logs {
+func createTestLogger(t *testing.T) *log.Logs {
 	tempDir, err := os.MkdirTemp("", "log_test")
 	if err != nil {
 		t.Fatalf("Failed to create temporary directory for logs: %v", err)
 	}
-	fs := new_fsutil.NewFileSystem(tempDir)
-	return new_log.NewLogs(tempDir, fs, true)
+	fs := fsutil.NewFileSystem(tempDir)
+	return log.NewLogs(tempDir, fs, true)
 }
 
-func cleanupTestFileSystem(_ *testing.T, fs *new_fsutil.FileSystem) {
+func cleanupTestFileSystem(_ *testing.T, fs *fsutil.FileSystem) {
 	os.RemoveAll(fs.GetWD())
 }
 

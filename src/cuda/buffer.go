@@ -12,7 +12,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 var (
@@ -42,7 +42,7 @@ func Buffer(nComp int, size [3]int) *data.Slice {
 	// allocate as much new memory as needed
 	for i := nFromPool; i < nComp; i++ {
 		if len(buf_check) >= buf_max {
-			log.Log.PanicIfError(fmt.Errorf("too many buffers in use, possible memory leak"))
+			log_old.Log.PanicIfError(fmt.Errorf("too many buffers in use, possible memory leak"))
 		}
 		ptrs[i] = MemAlloc(int64(cu.SIZEOF_FLOAT32 * N))
 		buf_check[ptrs[i]] = struct{}{} // mark this pointer as mine
@@ -66,7 +66,7 @@ func Recycle(s *data.Slice) {
 			continue
 		}
 		if _, ok := buf_check[ptr]; !ok {
-			log.Log.PanicIfError(fmt.Errorf("recyle: was not obtained with getbuffer"))
+			log_old.Log.PanicIfError(fmt.Errorf("recyle: was not obtained with getbuffer"))
 
 		}
 		pool = append(pool, ptr)

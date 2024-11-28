@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 func TestEval(t *testing.T) {
@@ -67,7 +67,7 @@ func TestTypes(t *testing.T) {
 	w.Var("x", &x)
 	w.MustExec("x=7")
 
-	w.Func("printInt", func(x int) { log.Log.Info("%v", x) })
+	w.Func("printInt", func(x int) { log_old.Log.Info("%v", x) })
 	w.MustExec("printInt(7)")
 }
 
@@ -210,7 +210,7 @@ func TestFail(test *testing.T) {
 		if err == nil {
 			test.Error(t, "should not compile")
 		} else {
-			log.Log.Info(t, ":", err, ":OK")
+			log_old.Log.Info(t, ":", err, ":OK")
 		}
 	}
 }

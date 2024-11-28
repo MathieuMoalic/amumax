@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 // block statement is a list of statements.
@@ -50,7 +50,7 @@ func (b *BlockStmt) Child() []Expr {
 func Format(n ast.Node) string {
 	var buf bytes.Buffer
 	fset := token.NewFileSet()
-	log.Log.PanicIfError(format.Node(&buf, fset, n))
+	log_old.Log.PanicIfError(format.Node(&buf, fset, n))
 	str := buf.String()
 	str = strings.TrimSuffix(str, "\n")
 	return str
@@ -60,7 +60,7 @@ func (b *BlockStmt) Format() string {
 	var buf bytes.Buffer
 	fset := token.NewFileSet()
 	for i := range b.Children {
-		log.Log.PanicIfError(format.Node(&buf, fset, b.Node[i]))
+		log_old.Log.PanicIfError(format.Node(&buf, fset, b.Node[i]))
 		fmt.Fprintln(&buf)
 	}
 	return buf.String()

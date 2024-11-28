@@ -3,6 +3,7 @@ package log
 // Logging and error reporting utility functions
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"runtime"
@@ -12,15 +13,29 @@ import (
 	"github.com/fatih/color"
 )
 
-var Log Logs
-
 type Logs struct {
-	Hist    string                   // console history for GUI
-	logfile fsutil.WriteCloseFlusher // saves history of input commands +  output
-	debug   bool
-	path    string
+	Hist   string // console history for GUI
+	debug  bool
+	writer *bufio.Writer
+	file   *os.File
 }
 
+func NewLogs(zarrPath string, fs *fsutil.FileSystem, debug bool) *Logs {
+	l := &Logs{}
+	writer, file, err := fs.Create(zarrPath + "/log.txt")
+	if err != nil {
+		color.Red(fmt.Sprintf("Error creating the log file: %v", err))
+	}
+	l.writer = writer
+	l.file = file
+	l.debug = debug
+	return l
+}
+
+func (l *Logs) Close() {
+	l.FlushToFile()
+	l.file.Close()
+}
 func (l *Logs) AutoFlushToFile() {
 	for {
 		l.FlushToFile()
@@ -29,43 +44,16 @@ func (l *Logs) AutoFlushToFile() {
 }
 
 func (l *Logs) FlushToFile() {
-	if l.logfile != nil {
-		l.logfile.Flush()
-
-	}
-}
-
-func (l *Logs) SetDebug(debug bool) {
-	l.debug = debug
-}
-
-func (l *Logs) Init(zarrPath string) {
-	l.path = zarrPath + "/log.txt"
-	l.createLogFile()
-	l.writeToFile(l.Hist)
-}
-
-func (l *Logs) createLogFile() {
-	var err error
-	l.logfile, err = fsutil.Create(l.path)
-	if err != nil {
-		color.Red(fmt.Sprintf("Error creating the log file: %v", err))
-	}
+	l.writer.Flush()
 }
 
 func (l *Logs) writeToFile(msg string) {
-	if l.logfile == nil {
-		return
-	}
-	_, err := l.logfile.Write([]byte(msg))
+	n, err := l.writer.WriteString(msg)
 	if err != nil {
-		if err.Error() == "short write" {
-			color.Yellow("Error writing to log file, trying to recreate it...")
-			l.createLogFile()
-			_, _ = l.logfile.Write([]byte(msg))
-		} else {
-			color.Red(fmt.Sprintf("Error writing to log file: %v", err))
-		}
+		color.Red(fmt.Sprintf("Error writing to the log file: %v", err))
+	}
+	if n != len(msg) {
+		color.Red(fmt.Sprintf("Error writing to the log file: %v", err))
 	}
 }
 
@@ -122,12 +110,5 @@ func (l *Logs) ErrAndExit(msg string, args ...interface{}) {
 func (l *Logs) AssertMsg(test bool, msg interface{}) {
 	if !test {
 		l.ErrAndExit("%v", msg)
-	}
-}
-
-// Panics with msg if test is false
-func AssertMsg(test bool, msg interface{}) {
-	if !test {
-		Log.ErrAndExit("%v", msg)
 	}
 }

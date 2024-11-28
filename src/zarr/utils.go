@@ -3,8 +3,8 @@ package zarr
 import (
 	"strings"
 
-	"github.com/MathieuMoalic/amumax/src/fsutil"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/fsutil_old"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 type Zattrs struct {
@@ -12,9 +12,9 @@ type Zattrs struct {
 }
 
 func InitZgroup(name string, od string) {
-	err := fsutil.Mkdir(od + name)
+	err := fsutil_old.Mkdir(od + name)
 	if err != nil && !strings.Contains(err.Error(), "file exists") {
-		log.Log.PanicIfError(err)
+		log_old.Log.PanicIfError(err)
 	}
 	path := ""
 	if name == "" {
@@ -22,9 +22,9 @@ func InitZgroup(name string, od string) {
 	} else {
 		path = od + name + "/.zgroup"
 	}
-	zgroup, err := fsutil.Create(path)
-	log.Log.PanicIfError(err)
+	zgroup, err := fsutil_old.Create(path)
+	log_old.Log.PanicIfError(err)
 	defer zgroup.Close()
 	_, err = zgroup.Write([]byte("{\"zarr_format\": 2}"))
-	log.Log.PanicIfError(err)
+	log_old.Log.PanicIfError(err)
 }

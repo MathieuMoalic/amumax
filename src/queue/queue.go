@@ -15,7 +15,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/api"
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/flags"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/url"
 )
 
@@ -27,17 +27,17 @@ var (
 func RunQueue(files []string, flags *flags.FlagsType) {
 	s := NewStateTab(files)
 	host, port, path, err := url.ParseAddrPath(flags.WebUIQueueAddress)
-	log.Log.PanicIfError(err)
+	log_old.Log.PanicIfError(err)
 	if path != "" {
-		log.Log.ErrAndExit("Path not supported for queue web UI")
+		log_old.Log.ErrAndExit("Path not supported for queue web UI")
 	}
 	addr, _, err := api.FindAvailablePort(host, port)
-	log.Log.PanicIfError(err)
-	log.Log.Info("Queue web UI at %v", addr)
+	log_old.Log.PanicIfError(err)
+	log_old.Log.Info("Queue web UI at %v", addr)
 	s.printJobList()
 	go s.ListenAndServe(addr)
 	s.Run(flags)
-	log.Log.Command(fmt.Sprintf("%d OK; %d Failed", numOK.get(), numFailed.get()))
+	log_old.Log.Command(fmt.Sprintf("%d OK; %d Failed", numOK.get(), numFailed.get()))
 	os.Exit(int(exitStatus))
 }
 
@@ -172,21 +172,21 @@ func run(inFile string, gpu int, flags *flags.FlagsType) {
 	for _, c := range cmd {
 		cmdString += c + " "
 	}
-	log.Log.Command(fmt.Sprintf("Running %s", cmdString))
+	log_old.Log.Command(fmt.Sprintf("Running %s", cmdString))
 	err := exec.Command(cmd[0], cmd[1:]...).Run()
 	if err != nil {
-		log.Log.Command(fmt.Sprintf("FAILED %s on GPU %d: %v", inFile, gpu, err))
+		log_old.Log.Command(fmt.Sprintf("FAILED %s on GPU %d: %v", inFile, gpu, err))
 		exitStatus = 1
 		numFailed.inc()
 		return
 	}
-	log.Log.Command(fmt.Sprintf("DONE %s on GPU %d", inFile, gpu))
+	log_old.Log.Command(fmt.Sprintf("DONE %s on GPU %d", inFile, gpu))
 	numOK.inc()
 }
 
 func initGPUs(nGpu int) chan int {
 	if nGpu == 0 {
-		log.Log.ErrAndExit("no GPUs available")
+		log_old.Log.ErrAndExit("no GPUs available")
 	}
 	idle := make(chan int, nGpu)
 	for i := 0; i < nGpu; i++ {
@@ -198,11 +198,11 @@ func initGPUs(nGpu int) chan int {
 func (s *stateTab) printJobList() {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	log.Log.Command("Job list:")
+	log_old.Log.Command("Job list:")
 	for i, j := range s.jobs {
-		log.Log.Command(fmt.Sprintf("%3d %v %v", i, j.inFile, j.webAddr))
+		log_old.Log.Command(fmt.Sprintf("%3d %v %v", i, j.inFile, j.webAddr))
 	}
-	log.Log.Command("Starting ...")
+	log_old.Log.Command("Starting ...")
 }
 
 func GetLocalIP() string {
@@ -270,7 +270,7 @@ func (s *stateTab) RenderHTML(w io.Writer) {
 func (s *stateTab) ListenAndServe(addr string) {
 	http.Handle("/", s)
 	go func() {
-		log.Log.PanicIfError(http.ListenAndServe(addr, nil))
+		log_old.Log.PanicIfError(http.ListenAndServe(addr, nil))
 	}()
 }
 

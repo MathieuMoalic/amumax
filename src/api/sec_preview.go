@@ -7,8 +7,8 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/engine_old"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/labstack/echo/v4"
 )
 
@@ -54,8 +54,8 @@ func initPreviewAPI(e *echo.Group, ws *WebSocketManager) *PreviewState {
 		DataPointsCount:      0,
 		XPossibleSizes:       nil,
 		YPossibleSizes:       nil,
-		XChosenSize:          engine.Mesh.Nx,
-		YChosenSize:          engine.Mesh.Ny,
+		XChosenSize:          engine_old.Mesh.Nx,
+		YChosenSize:          engine_old.Mesh.Ny,
 		ws:                   ws,
 		globalQuantities:     []string{"B_demag", "B_ext", "B_eff", "Edens_demag", "Edens_ext", "Edens_eff", "geom"},
 	}
@@ -71,10 +71,10 @@ func initPreviewAPI(e *echo.Group, ws *WebSocketManager) *PreviewState {
 	return previewState
 }
 
-func (s *PreviewState) getQuantity() engine.Quantity {
-	quantity, exists := engine.Quantities[s.Quantity]
+func (s *PreviewState) getQuantity() engine_old.Quantity {
+	quantity, exists := engine_old.Quantities[s.Quantity]
 	if !exists {
-		log.Log.Err("Quantity not found: %v", s.Quantity)
+		log_old.Log.Err("Quantity not found: %v", s.Quantity)
 	}
 	return quantity
 }
@@ -84,13 +84,13 @@ func (s *PreviewState) getComponent() int {
 }
 
 func (s *PreviewState) Update() {
-	engine.InjectAndWait(s.UpdateQuantityBuffer)
+	engine_old.InjectAndWait(s.UpdateQuantityBuffer)
 }
 
 func (s *PreviewState) UpdateQuantityBuffer() {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Log.Warn("Recovered from panic in UpdateQuantityBuffer: %v", r)
+			log_old.Log.Warn("Recovered from panic in UpdateQuantityBuffer: %v", r)
 			s.ScalarField = nil
 			s.VectorFieldPositions = nil
 			s.VectorFieldValues = nil
@@ -100,14 +100,14 @@ func (s *PreviewState) UpdateQuantityBuffer() {
 		s.updateMask()
 	}
 	if s.XChosenSize == 0 || s.YChosenSize == 0 {
-		log.Log.Debug("XChosenSize or YChosenSize is 0")
+		log_old.Log.Debug("XChosenSize or YChosenSize is 0")
 		return
 	}
 	componentCount := 1
 	if s.Type == "3D" {
 		componentCount = 3
 	}
-	GPU_in := engine.ValueOf(s.getQuantity())
+	GPU_in := engine_old.ValueOf(s.getQuantity())
 	defer cuda.Recycle(GPU_in)
 
 	CPU_out := data.NewSlice(componentCount, [3]int{s.XChosenSize, s.YChosenSize, 1})
@@ -227,7 +227,7 @@ func (s *PreviewState) UpdateScalarField(scalarField [][][]float32) {
 		}
 	}
 	if len(valArray) == 0 {
-		log.Log.Warn("No data in scalar field")
+		log_old.Log.Warn("No data in scalar field")
 	}
 
 	s.Min = min
@@ -242,17 +242,17 @@ func (s *PreviewState) updateMask() {
 	defer func() {
 		if r := recover(); r != nil {
 			// Handle the panic, possibly log the error
-			log.Log.Warn("Recovered from panic in updateMask: %v", r)
+			log_old.Log.Warn("Recovered from panic in updateMask: %v", r)
 			// Optionally, reset s.layerMask or handle it appropriately
 			s.layerMask = nil
 		}
 	}()
 	if s.XChosenSize == 0 || s.YChosenSize == 0 {
-		log.Log.Debug("XChosenSize or YChosenSize is 0")
+		log_old.Log.Debug("XChosenSize or YChosenSize is 0")
 		return
 	}
 	// cuda full size geom
-	geom := engine.Geometry
+	geom := engine_old.Geometry
 	GPU_fullsize := cuda.Buffer(geom.NComp(), geom.Buffer.Size())
 	geom.EvalTo(GPU_fullsize)
 	defer cuda.Recycle(GPU_fullsize)
@@ -308,40 +308,40 @@ func compStringToIndex(comp string) int {
 	case "None":
 		return 0
 	}
-	log.Log.ErrAndExit("Invalid component string")
+	log_old.Log.ErrAndExit("Invalid component string")
 	return -2
 }
 
 // A valid destination size is a positive integer less than or equal to srcsize that evenly divides srcsize.
 func (s *PreviewState) addPossibleDownscaleSizes() {
 	// retry until engine.Mesh.Nx and engine.Mesh.Ny are not 0
-	for engine.Mesh.Nx == 0 || engine.Mesh.Ny == 0 {
+	for engine_old.Mesh.Nx == 0 || engine_old.Mesh.Ny == 0 {
 		time.Sleep(1 * time.Second)
 	}
-	if engine.Mesh.Nx == 0 || engine.Mesh.Ny == 0 {
-		log.Log.Err("Nx or Ny is 0")
+	if engine_old.Mesh.Nx == 0 || engine_old.Mesh.Ny == 0 {
+		log_old.Log.Err("Nx or Ny is 0")
 	}
 	// iterate over engine.Mesh.Nx and engine.Mesh.Ny
-	for dstsize := 1; dstsize <= engine.Mesh.Nx; dstsize++ {
-		if engine.Mesh.Nx%dstsize == 0 {
+	for dstsize := 1; dstsize <= engine_old.Mesh.Nx; dstsize++ {
+		if engine_old.Mesh.Nx%dstsize == 0 {
 			s.XPossibleSizes = append(s.XPossibleSizes, dstsize)
 		}
 	}
-	for dstsize := 1; dstsize <= engine.Mesh.Ny; dstsize++ {
-		if engine.Mesh.Ny%dstsize == 0 {
+	for dstsize := 1; dstsize <= engine_old.Mesh.Ny; dstsize++ {
+		if engine_old.Mesh.Ny%dstsize == 0 {
 			s.YPossibleSizes = append(s.YPossibleSizes, dstsize)
 		}
 	}
 	if len(s.YPossibleSizes) == 0 || len(s.XPossibleSizes) == 0 {
-		log.Log.Err("No possible sizes found")
+		log_old.Log.Err("No possible sizes found")
 	}
-	if engine.PreviewXDataPoints != 0 {
-		s.XChosenSize = closestInArray(s.XPossibleSizes, engine.PreviewXDataPoints)
+	if engine_old.PreviewXDataPoints != 0 {
+		s.XChosenSize = closestInArray(s.XPossibleSizes, engine_old.PreviewXDataPoints)
 	} else {
 		s.XChosenSize = closestInArray(s.XPossibleSizes, 100)
 	}
-	if engine.PreviewYDataPoints != 0 {
-		s.YChosenSize = closestInArray(s.YPossibleSizes, engine.PreviewYDataPoints)
+	if engine_old.PreviewYDataPoints != 0 {
+		s.YChosenSize = closestInArray(s.YPossibleSizes, engine_old.PreviewYDataPoints)
 	} else {
 		s.YChosenSize = closestInArray(s.YPossibleSizes, 100)
 	}
@@ -371,7 +371,7 @@ func (s *PreviewState) validateComponent() {
 			s.Component = "3D"
 		}
 	default:
-		log.Log.Err("Invalid number of components")
+		log_old.Log.Err("Invalid number of components")
 		// reset to default
 		s.Quantity = "m"
 		s.Component = "3D"
@@ -384,7 +384,7 @@ func (s *PreviewState) postPreviewComponent(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		log.Log.Err("%v", err)
+		log_old.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	s.Component = req.Component
@@ -401,10 +401,10 @@ func (s *PreviewState) postPreviewQuantity(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		log.Log.Err("%v", err)
+		log_old.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	_, exists := engine.Quantities[req.Quantity]
+	_, exists := engine_old.Quantities[req.Quantity]
 	if !exists {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Quantity not found"})
 	}
@@ -422,13 +422,13 @@ func (s *PreviewState) postPreviewLayer(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		log.Log.Err("%v", err)
+		log_old.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 
 	s.Layer = req.Layer
 	s.Refresh = true
-	engine.InjectAndWait(s.updateMask)
+	engine_old.InjectAndWait(s.updateMask)
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
@@ -439,7 +439,7 @@ func (s *PreviewState) postPreviewMaxPoints(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		log.Log.Err("%v", err)
+		log_old.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	if req.MaxPoints < 8 {
@@ -447,7 +447,7 @@ func (s *PreviewState) postPreviewMaxPoints(c echo.Context) error {
 	}
 	s.MaxPoints = req.MaxPoints
 	s.Refresh = true
-	engine.InjectAndWait(s.updateMask)
+	engine_old.InjectAndWait(s.updateMask)
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
@@ -472,7 +472,7 @@ func (s *PreviewState) postXChosenSize(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		log.Log.Err("%v", err)
+		log_old.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	if !containsInt(s.XPossibleSizes, req.XChosenSize) {
@@ -480,7 +480,7 @@ func (s *PreviewState) postXChosenSize(c echo.Context) error {
 	}
 	s.XChosenSize = req.XChosenSize
 	s.Refresh = true
-	engine.InjectAndWait(s.updateMask)
+	engine_old.InjectAndWait(s.updateMask)
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
@@ -491,7 +491,7 @@ func (s *PreviewState) postYChosenSize(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		log.Log.Err("%v", err)
+		log_old.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	if !containsInt(s.YPossibleSizes, req.YChosenSize) {
@@ -499,7 +499,7 @@ func (s *PreviewState) postYChosenSize(c echo.Context) error {
 	}
 	s.YChosenSize = req.YChosenSize
 	s.Refresh = true
-	engine.InjectAndWait(s.updateMask)
+	engine_old.InjectAndWait(s.updateMask)
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }

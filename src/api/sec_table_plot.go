@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/engine_old"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/labstack/echo/v4"
 )
 
@@ -28,7 +28,7 @@ type TablePlotState struct {
 func initTablePlotAPI(e *echo.Group, ws *WebSocketManager) *TablePlotState {
 	t := TablePlotState{
 		ws:               ws,
-		AutoSaveInterval: &engine.Table.AutoSavePeriod,
+		AutoSaveInterval: &engine_old.Table.AutoSavePeriod,
 		XColumn:          "t",
 		YColumn:          "mx",
 		MaxPoints:        10000,
@@ -100,9 +100,9 @@ func (t *TablePlotState) GetMinMaxXY() {
 }
 
 func (t *TablePlotState) GetColumnData(column string) []float64 {
-	engine.Table.Mu.Lock() // Lock the mutex before reading the map
-	defer engine.Table.Mu.Unlock()
-	originalData := engine.Table.Data[column]
+	engine_old.Table.Mu.Lock() // Lock the mutex before reading the map
+	defer engine_old.Table.Mu.Unlock()
+	originalData := engine_old.Table.Data[column]
 	originalLen := len(originalData)
 	newLen := (originalLen + 1) / t.Step
 	result := make([]float64, 0, newLen)
@@ -113,7 +113,7 @@ func (t *TablePlotState) GetColumnData(column string) []float64 {
 }
 
 func (t *TablePlotState) GetUnit(name string) string {
-	for _, i := range engine.Table.Columns {
+	for _, i := range engine_old.Table.Columns {
 		if i.Name == name {
 			return i.Unit
 		}
@@ -122,7 +122,7 @@ func (t *TablePlotState) GetUnit(name string) string {
 }
 
 func (t *TablePlotState) ColumnExists(name string) bool {
-	for _, i := range engine.Table.Columns {
+	for _, i := range engine_old.Table.Columns {
 		if i.Name == name {
 			return true
 		}
@@ -132,7 +132,7 @@ func (t *TablePlotState) ColumnExists(name string) bool {
 
 func (t *TablePlotState) GetTableNames() []string {
 	names := []string{}
-	for _, column := range engine.Table.Columns {
+	for _, column := range engine_old.Table.Columns {
 		names = append(names, column.Name)
 	}
 	return names
@@ -146,7 +146,7 @@ func (t *TablePlotState) postTablePlotAutoSaveInterval(c echo.Context) error {
 	if err := c.Bind(req); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	engine.InjectAndWait(func() { engine.EvalTryRecover("TableAutoSave(" + req.AutoSaveInterval + ")") })
+	engine_old.InjectAndWait(func() { engine_old.EvalTryRecover("TableAutoSave(" + req.AutoSaveInterval + ")") })
 	t.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, nil)
 }
@@ -189,7 +189,7 @@ func (t *TablePlotState) postTablePlotMaxPoints(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		log.Log.Err("%v", err)
+		log_old.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	t.MaxPoints = req.MaxPoints
@@ -204,7 +204,7 @@ func (t *TablePlotState) postTablePlotStep(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		log.Log.Err("%v", err)
+		log_old.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 	if req.Step < 1 {

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/engine_old"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 // check all input files for errors, don't run.
@@ -14,10 +14,10 @@ func vet() {
 	status := 0
 	for _, f := range flag.Args() {
 		src, ioerr := os.ReadFile(f)
-		log.Log.PanicIfError(ioerr)
-		engine.World.EnterScope() // avoid name collisions between separate files
-		_, err := engine.World.Compile(string(src))
-		engine.World.ExitScope()
+		log_old.Log.PanicIfError(ioerr)
+		engine_old.World.EnterScope() // avoid name collisions between separate files
+		_, err := engine_old.World.Compile(string(src))
+		engine_old.World.ExitScope()
 		if err != nil {
 			fmt.Println(f, ":", err)
 			status = 1

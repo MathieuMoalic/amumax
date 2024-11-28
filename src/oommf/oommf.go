@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 type Meta struct {
@@ -60,7 +60,7 @@ func ReadFile(fname string) (*data.Slice, Meta, error) {
 
 func MustReadFile(fname string) (*data.Slice, Meta) {
 	s, t, err := ReadFile(fname)
-	log.Log.PanicIfError(err)
+	log_old.Log.PanicIfError(err)
 	return s, t
 }
 
@@ -240,9 +240,9 @@ func writeOVFText(out io.Writer, tens *data.Slice) (err error) {
 // # Key: Value
 func hdr(out io.Writer, key string, value ...interface{}) {
 	_, err := fmt.Fprint(out, "# ", key, ": ")
-	log.Log.PanicIfError(err)
+	log_old.Log.PanicIfError(err)
 	_, err = fmt.Fprintln(out, value...)
-	log.Log.PanicIfError(err)
+	log_old.Log.PanicIfError(err)
 }
 
 func dsc(out io.Writer, k, v interface{}) {

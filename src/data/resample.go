@@ -1,7 +1,7 @@
 package data
 
 import (
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 // Resample returns a slice of new size N,
@@ -54,7 +54,7 @@ func Downsample(In [][][][]float32, N [3]int) [][][][]float32 {
 	scalex := Sx / Dx
 	scaley := Sy / Dy
 	scalez := Sz / Dz
-	log.AssertMsg(scalex > 0 && scaley > 0, "Scaling factors must be positive in Downsample")
+	log_old.AssertMsg(scalex > 0 && scaley > 0, "Scaling factors must be positive in Downsample")
 
 	for c := range Out {
 
