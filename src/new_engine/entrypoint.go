@@ -36,12 +36,12 @@ func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.FlagsType) 
 		return
 	}
 	if len(args) == 0 && givenFlags.Interactive {
-		engineState := NewEngineState(givenFlags)
-		engineState.StartInteractive()
+		engineState := newEngineState(givenFlags)
+		engineState.startInteractive()
 
 	} else if len(args) == 1 {
-		engineState := NewEngineState(givenFlags)
-		engineState.Start(args[0])
+		engineState := newEngineState(givenFlags)
+		engineState.start(args[0])
 	} else if len(args) > 1 {
 		queue.RunQueue(args, givenFlags)
 	} else {

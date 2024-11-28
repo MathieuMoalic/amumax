@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-func (p *ScriptParser) Execute() error {
-	scriptLines := strings.Split(p.EngineState.script, "\n")
+func (p *ScriptParser) execute() error {
+	scriptLines := strings.Split(p.e.script, "\n")
 	var executeStatements func([]Statement, int) error
 	executeStatements = func(statements []Statement, indentLevel int) error {
 		indent := strings.Repeat("    ", indentLevel) // Indentation for nested blocks
@@ -18,7 +18,7 @@ func (p *ScriptParser) Execute() error {
 			// Log the line or block of code being executed
 			if stmt.LineNum >= 0 && stmt.LineNum < len(scriptLines) {
 				line := scriptLines[stmt.LineNum-3]
-				p.EngineState.log.Command(fmt.Sprintf("%s%s", indent, line))
+				p.e.log.Command(fmt.Sprintf("%s%s", indent, line))
 			}
 
 			// Execute the statement
@@ -28,9 +28,9 @@ func (p *ScriptParser) Execute() error {
 				if err != nil {
 					return fmt.Errorf("error evaluating expression: %v", err)
 				}
-				p.EngineState.world.RegisterUserVariable(stmt.Name, value)
+				p.e.world.registerUserVariable(stmt.Name, value)
 			case "function_call":
-				fn, ok := p.EngineState.world.Functions[stmt.Name]
+				fn, ok := p.e.world.getFunction(stmt.Name)
 				if !ok {
 					return fmt.Errorf("unsupported function: %s", stmt.Name)
 				}
@@ -51,12 +51,12 @@ func (p *ScriptParser) Execute() error {
 					return fmt.Errorf("error executing function %s: %v", stmt.Name, err)
 				}
 			case "for_loop":
-				p.EngineState.log.Command(indent)                  // Open the loop block
+				p.e.log.Command(indent)                            // Open the loop block
 				err := executeStatements(stmt.Body, indentLevel+1) // Process loop body with increased indent
 				if err != nil {
 					return err
 				}
-				p.EngineState.log.Command(fmt.Sprintf("%s}", indent)) // Close the loop block
+				p.e.log.Command(fmt.Sprintf("%s}", indent)) // Close the loop block
 			}
 		}
 		return nil
@@ -70,7 +70,8 @@ func (p *ScriptParser) evaluateExpression(expr ast.Expr) (interface{}, error) {
 	case *ast.BasicLit:
 		return parseValue(e.Value)
 	case *ast.Ident:
-		if val, ok := p.EngineState.world.Variables[e.Name]; ok {
+		val, ok := p.e.world.getVariable(e.Name)
+		if ok {
 			return val, nil
 		}
 		return nil, fmt.Errorf("undefined variable: %s", e.Name)
@@ -84,7 +85,7 @@ func (p *ScriptParser) evaluateExpression(expr ast.Expr) (interface{}, error) {
 			}
 			args = append(args, argValue)
 		}
-		fn, ok := p.EngineState.world.Functions[funcName]
+		fn, ok := p.e.world.getFunction(funcName)
 		if !ok {
 			return nil, fmt.Errorf("unsupported function: %s", funcName)
 		}
