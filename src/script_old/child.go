@@ -1,4 +1,4 @@
-package script
+package script_old
 
 func Contains(tree, search Expr) bool {
 	if tree == search {

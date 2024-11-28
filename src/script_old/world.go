@@ -1,5 +1,5 @@
 // package script provides a script interpreter for input files and GUI commands.
-package script
+package script_old
 
 import (
 	"fmt"

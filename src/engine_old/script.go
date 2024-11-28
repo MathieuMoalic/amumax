@@ -10,7 +10,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/mesh"
-	"github.com/MathieuMoalic/amumax/src/script"
+	"github.com/MathieuMoalic/amumax/src/script_old"
 )
 
 var Mesh mesh.Mesh
@@ -22,7 +22,7 @@ func GetMesh() *mesh.Mesh {
 	return &Mesh
 }
 
-func CompileFile(fname string) (*script.BlockStmt, error) {
+func CompileFile(fname string) (*script_old.BlockStmt, error) {
 	bytes, err := fsutil_old.Read(fname)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func Eval(code string) {
 }
 
 // holds the script state (variables etc)
-var World = script.NewWorld()
+var World = script_old.NewWorld()
 
 func export(q interface {
 	Name() string
@@ -72,9 +72,9 @@ type lValue interface {
 }
 
 // evaluate code, exit on error (behavior for input files)
-func EvalFile(code *script.BlockStmt) {
+func EvalFile(code *script_old.BlockStmt) {
 	for i := range code.Children {
-		formatted := rmln(script.Format(code.Node[i]))
+		formatted := rmln(script_old.Format(code.Node[i]))
 		log_old.Log.Command(formatted)
 		exp := code.Children[i]
 		exp.Eval()
@@ -92,7 +92,7 @@ func EvalFile(code *script.BlockStmt) {
 	}
 }
 
-func isMeshExpression(exp script.Expr) bool {
+func isMeshExpression(exp script_old.Expr) bool {
 	namesToCheck := []string{"Nx", "Ny", "Nz", "Dx", "Dy", "Dz", "Tx", "Ty", "Tz"}
 	val := reflect.ValueOf(exp)
 	if val.Kind() == reflect.Ptr {
@@ -124,7 +124,7 @@ type lValueWrapper struct {
 	name string
 }
 
-func newLValueWrapper(name string, lv lValue) script.LValue {
+func newLValueWrapper(name string, lv lValue) script_old.LValue {
 	return &lValueWrapper{name: name, lValue: lv}
 }
 func (w *lValueWrapper) SetValue(val interface{}) {
@@ -132,8 +132,8 @@ func (w *lValueWrapper) SetValue(val interface{}) {
 	QuantityChanged[w.name] = true
 }
 
-func (w *lValueWrapper) Child() []script.Expr { return nil }
-func (w *lValueWrapper) Fix() script.Expr     { return script.NewConst(w) }
+func (w *lValueWrapper) Child() []script_old.Expr { return nil }
+func (w *lValueWrapper) Fix() script_old.Expr     { return script_old.NewConst(w) }
 
 func (w *lValueWrapper) InputType() reflect.Type {
 	if i, ok := w.lValue.(interface {

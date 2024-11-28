@@ -8,7 +8,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/script"
+	"github.com/MathieuMoalic/amumax/src/script_old"
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
@@ -160,12 +160,12 @@ func tableAutoSave(period float64) {
 	Table.AutoSavePeriod = period
 }
 
-func tableAddVar(customvar script.ScalarFunction, name, unit string) {
+func tableAddVar(customvar script_old.ScalarFunction, name, unit string) {
 	tableAdd(&userVar{customvar, name, unit})
 }
 
 type userVar struct {
-	value      script.ScalarFunction
+	value      script_old.ScalarFunction
 	name, unit string
 }
 

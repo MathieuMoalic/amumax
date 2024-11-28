@@ -1,4 +1,4 @@
-package script
+package script_old
 
 // Exec compiles and executes the source statements.
 func (w *World) Exec(src string) error {
