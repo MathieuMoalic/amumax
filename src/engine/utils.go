@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"encoding/binary"
 	"fmt"
 	"math"
 
@@ -14,7 +15,7 @@ type utils struct {
 
 func newUtils(engineState *engineState) *utils {
 	u := &utils{e: engineState}
-	u.e.world.registerFunction("Print", u.customPrint)
+	u.e.script.RegisterFunction("Print", u.customPrint)
 	return u
 }
 
@@ -103,3 +104,27 @@ func fmod(a, b float64) float64 {
 }
 
 func sqr64(x float64) float64 { return x * x }
+
+func float64ToBytes(f float64) []byte {
+	var buf [8]byte
+	binary.LittleEndian.PutUint64(buf[:], math.Float64bits(f))
+	return buf[:]
+}
+
+// func bytesToFloat64(bytes []byte) float64 {
+// 	bits := binary.LittleEndian.Uint64(bytes)
+// 	float := math.Float64frombits(bits)
+// 	return float
+// }
+
+// func bytesToFloat32(bytes []byte) float32 {
+// 	bits := binary.LittleEndian.Uint32(bytes)
+// 	float := math.Float32frombits(bits)
+// 	return float
+// }
+
+// func float32ToBytes(f float32) []byte {
+// 	var buf [4]byte
+// 	binary.LittleEndian.PutUint32(buf[:], math.Float32bits(f))
+// 	return buf[:]
+// }

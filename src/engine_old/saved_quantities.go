@@ -12,7 +12,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/zarr"
+	"github.com/MathieuMoalic/amumax/src/zarr_old"
 )
 
 type savedQuantity struct {
@@ -35,7 +35,7 @@ func (sq *savedQuantity) needSave() bool {
 
 // SaveAttrs updates the .zattrs file with the times data.
 func (sq *savedQuantity) SaveAttrs() {
-	u, err := json.Marshal(zarr.Zattrs{Buffer: sq.times})
+	u, err := json.Marshal(zarr_old.Zattrs{Buffer: sq.times})
 	log_old.Log.PanicIfError(err)
 	err = fsutil_old.Remove(OD() + sq.name + "/.zattrs")
 	log_old.Log.PanicIfError(err)
@@ -190,7 +190,7 @@ func syncSave(array *data.Slice, qname string, steps int, chunks chunks) error {
 	ncomp := array.NComp()
 
 	// Save .zarray metadata
-	zarr.SaveFileZarray(
+	zarr_old.SaveFileZarray(
 		fmt.Sprintf(OD()+"%s/.zarray", qname),
 		size,
 		ncomp,

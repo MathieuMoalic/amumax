@@ -8,7 +8,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/zarr"
+	"github.com/MathieuMoalic/amumax/src/zarr_old"
 )
 
 var (
@@ -65,5 +65,5 @@ func InitIO(mx3Path, od, cachedir string, skipexists, forceclean, hideprogressba
 	} else {
 		log_old.Log.PanicIfError(fsutil_old.Mkdir(od))
 	}
-	zarr.InitZgroup("", OD())
+	zarr_old.InitZgroup("", OD())
 }

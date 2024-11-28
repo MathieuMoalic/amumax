@@ -12,7 +12,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/oommf"
-	"github.com/MathieuMoalic/amumax/src/zarr"
+	"github.com/MathieuMoalic/amumax/src/zarr_old"
 )
 
 func regionFromCoordinate(x, y, z int) int {
@@ -69,7 +69,7 @@ func fprintln(filename string, msg ...interface{}) {
 
 func loadFile(fname string) *data.Slice {
 	var s *data.Slice
-	s, err := zarr.Read(fname, OD())
+	s, err := zarr_old.Read(fname, OD())
 	log_old.Log.PanicIfError(err)
 	return s
 }

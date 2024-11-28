@@ -18,7 +18,7 @@ func newMagnetization(es *engineState) *magnetization {
 	m := &magnetization{
 		e: es,
 	}
-	m.e.world.registerVariable("m", m)
+	m.e.script.RegisterVariable("m", m)
 	return m
 }
 

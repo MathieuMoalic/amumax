@@ -28,7 +28,7 @@ func newGrains(EngineState *engineState) *grains {
 		rnd:            rand.New(rand.NewSource(0)),
 		poisson_lambda: float64(TILE * TILE),
 	}
-	EngineState.world.registerFunction("ext_makegrains", g.voronoi)
+	EngineState.script.RegisterFunction("ext_makegrains", g.voronoi)
 	// w.RegisterFunction("ext_make3dgrains", voronoi3d)
 
 	return g

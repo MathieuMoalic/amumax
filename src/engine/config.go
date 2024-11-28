@@ -8,6 +8,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/script"
 )
 
 // Magnetic configuration returns m vector for position (x,y,z)
@@ -17,20 +18,20 @@ type configList struct {
 	mesh *mesh.Mesh
 }
 
-func newConfigList(mesh *mesh.Mesh, w *world) *configList {
+func newConfigList(mesh *mesh.Mesh, s *script.ScriptParser) *configList {
 	c := &configList{mesh: mesh}
-	w.registerFunction("RandomMag", c.randomMag)
-	w.registerFunction("RandomMagSeed", c.randomMagSeed)
-	w.registerFunction("Uniform", c.uniform)
-	w.registerFunction("Vortex", c.vortex)
-	w.registerFunction("NeelSkyrmion", c.neelSkyrmion)
-	w.registerFunction("BlochSkyrmion", c.blochSkyrmion)
-	w.registerFunction("AntiVortex", c.antiVortex)
-	w.registerFunction("Radial", c.radial)
-	w.registerFunction("VortexWall", c.vortexWall)
-	w.registerFunction("TwoDomain", c.twoDomain)
-	w.registerFunction("Conical", c.conical)
-	w.registerFunction("Helical", c.helical)
+	s.RegisterFunction("RandomMag", c.randomMag)
+	s.RegisterFunction("RandomMagSeed", c.randomMagSeed)
+	s.RegisterFunction("Uniform", c.uniform)
+	s.RegisterFunction("Vortex", c.vortex)
+	s.RegisterFunction("NeelSkyrmion", c.neelSkyrmion)
+	s.RegisterFunction("BlochSkyrmion", c.blochSkyrmion)
+	s.RegisterFunction("AntiVortex", c.antiVortex)
+	s.RegisterFunction("Radial", c.radial)
+	s.RegisterFunction("VortexWall", c.vortexWall)
+	s.RegisterFunction("TwoDomain", c.twoDomain)
+	s.RegisterFunction("Conical", c.conical)
+	s.RegisterFunction("Helical", c.helical)
 	return c
 }
 

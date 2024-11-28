@@ -9,7 +9,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/script_old"
-	"github.com/MathieuMoalic/amumax/src/zarr"
+	"github.com/MathieuMoalic/amumax/src/zarr_old"
 )
 
 func init() {
@@ -55,7 +55,7 @@ func (ts *tableStruct) WriteToBuffer() {
 	ts.Mu.Lock() // Lock the mutex before modifying the map
 	defer ts.Mu.Unlock()
 	for i, b := range buf {
-		ts.Columns[i].buffer = append(ts.Columns[i].buffer, zarr.Float64ToBytes(b)...)
+		ts.Columns[i].buffer = append(ts.Columns[i].buffer, zarr_old.Float64ToBytes(b)...)
 		ts.Data[ts.Columns[i].Name] = append(ts.Data[ts.Columns[i].Name], b)
 	}
 }
@@ -67,7 +67,7 @@ func (ts *tableStruct) Flush() {
 		ts.Columns[i].buffer = []byte{}
 		// saving .zarray before the data might help resolve some unsync
 		// errors when the simulation is running and the user loads data
-		zarr.SaveFileTableZarray(OD()+"table/"+ts.Columns[i].Name, ts.Step)
+		zarr_old.SaveFileTableZarray(OD()+"table/"+ts.Columns[i].Name, ts.Step)
 		ts.Columns[i].io.Flush()
 	}
 }
@@ -105,7 +105,7 @@ func (ts *tableStruct) AddColumn(name, unit string) {
 func tableInit() {
 	err := fsutil_old.Remove(OD() + "table")
 	log_old.Log.PanicIfError(err)
-	zarr.InitZgroup("table", OD())
+	zarr_old.InitZgroup("table", OD())
 	Table.AddColumn("step", "")
 	Table.AddColumn("t", "s")
 	tableAdd(&NormMag)

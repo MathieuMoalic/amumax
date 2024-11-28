@@ -12,7 +12,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/progressbar"
 	"github.com/MathieuMoalic/amumax/src/timer"
-	"github.com/MathieuMoalic/amumax/src/zarr"
+	"github.com/MathieuMoalic/amumax/src/zarr_old"
 )
 
 // Obtains the demag kernel either from cacheDir/ or by calculating (and then storing in cacheDir for next time).
@@ -108,7 +108,7 @@ func sliceToBytes(slice *data.Slice) (bytes []byte) {
 	for iz := 0; iz < size[Z]; iz++ {
 		for iy := 0; iy < size[Y]; iy++ {
 			for ix := 0; ix < size[X]; ix++ {
-				bytes = append(bytes, zarr.Float32ToBytes(data[0][iz][iy][ix])...)
+				bytes = append(bytes, zarr_old.Float32ToBytes(data[0][iz][iy][ix])...)
 			}
 		}
 	}
@@ -122,7 +122,7 @@ func bytesToSlice(kernelBytes []byte, size [3]int) (slice *data.Slice) {
 	for iz := 0; iz < size[Z]; iz++ {
 		for iy := 0; iy < size[Y]; iy++ {
 			for ix := 0; ix < size[X]; ix++ {
-				tensors[0][iz][iy][ix] = zarr.BytesToFloat32(kernelBytes[count*4 : (count+1)*4])
+				tensors[0][iz][iy][ix] = zarr_old.BytesToFloat32(kernelBytes[count*4 : (count+1)*4])
 				count++
 			}
 		}

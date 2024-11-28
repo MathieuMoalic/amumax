@@ -17,8 +17,8 @@ type geometry struct {
 
 func newGeom(engineState *engineState) *geometry {
 	g := &geometry{e: engineState}
-	g.e.world.registerFunction("SetGeom", g.setGeom)
-	g.e.world.registerVariable("geom", g)
+	g.e.script.RegisterFunction("SetGeom", g.setGeom)
+	g.e.script.RegisterVariable("geom", g)
 	return g
 }
 
