@@ -4,12 +4,12 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 // dst += LUT[region], for vectors. Used to add terms to excitation.
 func RegionAddV(dst *data.Slice, lut LUTPtrs, regions *Bytes) {
-	log.AssertMsg(dst.NComp() == 3, "Component mismatch: dst must have 3 components in RegionAddV")
+	log_old.AssertMsg(dst.NComp() == 3, "Component mismatch: dst must have 3 components in RegionAddV")
 	N := dst.Len()
 	cfg := make1DConf(N)
 	k_regionaddv_async(dst.DevPtr(X), dst.DevPtr(Y), dst.DevPtr(Z),
@@ -18,7 +18,7 @@ func RegionAddV(dst *data.Slice, lut LUTPtrs, regions *Bytes) {
 
 // dst += LUT[region], for scalar. Used to add terms to scalar excitation.
 func RegionAddS(dst *data.Slice, lut LUTPtr, regions *Bytes) {
-	log.AssertMsg(dst.NComp() == 1, "Component mismatch: dst must have 1 component in RegionAddS")
+	log_old.AssertMsg(dst.NComp() == 1, "Component mismatch: dst must have 1 component in RegionAddS")
 	N := dst.Len()
 	cfg := make1DConf(N)
 	k_regionadds_async(dst.DevPtr(0), unsafe.Pointer(lut), regions.Ptr, N, cfg)
@@ -33,7 +33,7 @@ func RegionDecode(dst *data.Slice, lut LUTPtr, regions *Bytes) {
 
 // select the part of src within the specified region, set 0's everywhere else.
 func RegionSelect(dst, src *data.Slice, regions *Bytes, region byte) {
-	log.AssertMsg(dst.NComp() == src.NComp(), "Component mismatch: dst and src must have the same number of components in RegionSelect")
+	log_old.AssertMsg(dst.NComp() == src.NComp(), "Component mismatch: dst and src must have the same number of components in RegionSelect")
 	N := dst.Len()
 	cfg := make1DConf(N)
 

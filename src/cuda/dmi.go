@@ -4,7 +4,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
@@ -14,7 +14,7 @@ import (
 func AddDMI(Beff *data.Slice, m *data.Slice, Aex_red, Dex_red SymmLUT, Msat MSlice, regions *Bytes, mesh *mesh.Mesh, OpenBC bool) {
 	cellsize := mesh.CellSize()
 	N := Beff.Size()
-	log.AssertMsg(m.Size() == N, "Size mismatch: m and Beff must have the same dimensions in AddDMI")
+	log_old.AssertMsg(m.Size() == N, "Size mismatch: m and Beff must have the same dimensions in AddDMI")
 
 	cfg := make3DConf(N)
 	var openBC byte

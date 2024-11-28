@@ -7,20 +7,20 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mesh"
-	"github.com/MathieuMoalic/amumax/src/new_fsutil"
-	"github.com/MathieuMoalic/amumax/src/new_log"
 )
 
 type Metadata struct {
 	Fields    map[string]interface{}
 	startTime time.Time
 	lastSave  time.Time
-	fs        *new_fsutil.FileSystem
-	log       *new_log.Logs
+	fs        *fsutil.FileSystem
+	log       *log.Logs
 }
 
-func NewMetadata(fs *new_fsutil.FileSystem, log *new_log.Logs) *Metadata {
+func NewMetadata(fs *fsutil.FileSystem, log *log.Logs) *Metadata {
 	m := &Metadata{}
 	m.Fields = make(map[string]interface{})
 	m.startTime = time.Now()
@@ -81,8 +81,6 @@ func (m *Metadata) Save() {
 	m.log.PanicIfError(err)
 	defer file.Close()
 	json_meta, err := json.MarshalIndent(m.Fields, "", "\t")
-	m.log.Debug("Saving metadata: %s", json_meta)
-	m.log.Debug("File: %s", file.Name())
 	m.log.PanicIfError(err)
 	_, err = writer.Write(json_meta)
 	writer.Flush()

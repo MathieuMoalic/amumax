@@ -6,7 +6,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/timer"
 )
 
@@ -67,7 +67,7 @@ func Memset(s *data.Slice, val ...float32) {
 		Sync()
 		timer.Start("memset")
 	}
-	log.AssertMsg(len(val) == s.NComp(), "Memset: wrong number of values")
+	log_old.AssertMsg(len(val) == s.NComp(), "Memset: wrong number of values")
 	for c, v := range val {
 		cu.MemsetD32Async(cu.DevicePtr(uintptr(s.DevPtr(c))), math.Float32bits(v), int64(s.Len()), stream0)
 	}

@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/engine_old"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -16,7 +16,7 @@ import (
 func Start(host string, port int, basePath string, tunnel string, debug bool) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Log.Warn("WebUI crashed: %v", r)
+			log_old.Log.Warn("WebUI crashed: %v", r)
 		}
 	}()
 	e := echo.New()
@@ -63,16 +63,16 @@ func startGuiServer(e *echo.Echo, host string, basePath string, port int, tunnel
 		// Find an available port
 		addr, port, err := FindAvailablePort(host, port)
 		if err != nil {
-			log.Log.ErrAndExit("Failed to find available port: %v", err)
+			log_old.Log.ErrAndExit("Failed to find available port: %v", err)
 		}
-		log.Log.Info("Serving the web UI at http://%s%s", addr, basePath)
+		log_old.Log.Info("Serving the web UI at http://%s%s", addr, basePath)
 
 		if tunnel != "" {
 			go startTunnel(tunnel)
 		}
 
-		engine.EngineState.Metadata.Add("webui", addr)
-		engine.EngineState.Metadata.Add("port", port)
+		engine_old.EngineState.Metadata.Add("webui", addr)
+		engine_old.EngineState.Metadata.Add("port", port)
 
 		// Attempt to start the server
 		err = e.Start(addr)
@@ -83,17 +83,17 @@ func startGuiServer(e *echo.Echo, host string, basePath string, port int, tunnel
 				continue
 			}
 			// If the error is not related to the port being busy, exit
-			log.Log.Err("Failed to start server:  %v", err)
+			log_old.Log.Err("Failed to start server:  %v", err)
 			break
 		}
 
 		// If the server started successfully, break out of the loop
-		log.Log.Info("Successfully started server at http://%s", addr)
+		log_old.Log.Info("Successfully started server at http://%s", addr)
 		return
 	}
 
 	// If the loop completes without successfully starting the server
-	log.Log.Err("Failed to start server after multiple attempts")
+	log_old.Log.Err("Failed to start server after multiple attempts")
 }
 
 func FindAvailablePort(host string, startPort int) (string, string, error) {

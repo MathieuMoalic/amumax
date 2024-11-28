@@ -1,6 +1,6 @@
 package api
 
-import "github.com/MathieuMoalic/amumax/src/engine"
+import "github.com/MathieuMoalic/amumax/src/engine_old"
 
 type HeaderState struct {
 	Path    string  `msgpack:"path"`
@@ -10,25 +10,25 @@ type HeaderState struct {
 
 func initHeaderAPI() *HeaderState {
 	status := ""
-	if engine.Pause {
+	if engine_old.Pause {
 		status = "paused"
 	} else {
 		status = "running"
 	}
 	return &HeaderState{
-		Path:    engine.OD(),
+		Path:    engine_old.OD(),
 		Status:  status,
-		Version: &engine.VERSION,
+		Version: &engine_old.VERSION,
 	}
 }
 
 func (h *HeaderState) Update() {
 	status := ""
-	if engine.Pause {
+	if engine_old.Pause {
 		status = "paused"
 	} else {
 		status = "running"
 	}
-	h.Path = engine.OD()
+	h.Path = engine_old.OD()
 	h.Status = status
 }

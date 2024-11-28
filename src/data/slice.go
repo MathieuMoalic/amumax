@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 // Slice is like a [][]float32, but may be stored in GPU or host memory.
@@ -71,7 +71,7 @@ func NilSlice(nComp int, size [3]int) *Slice {
 func SliceFromPtrs(size [3]int, memType int8, ptrs []unsafe.Pointer) *Slice {
 	length := prod(size)
 	nComp := len(ptrs)
-	log.AssertMsg(nComp > 0 && length > 0,
+	log_old.AssertMsg(nComp > 0 && length > 0,
 		"Invalid input: number of components must be greater than 0 and size product must be greater than 0 in SliceFromPtrs")
 
 	s := new(Slice)
@@ -187,7 +187,7 @@ const SIZEOF_FLOAT32 = 4
 // It should have CPUAccess() == true.
 func (s *Slice) Host() [][]float32 {
 	if !s.CPUAccess() {
-		log.Log.PanicIfError(fmt.Errorf("slice not accessible by CPU"))
+		log_old.Log.PanicIfError(fmt.Errorf("slice not accessible by CPU"))
 	}
 	list := make([][]float32, s.NComp())
 	for c := range list {

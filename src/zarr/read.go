@@ -12,8 +12,8 @@ import (
 
 	"github.com/DataDog/zstd"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/fsutil"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/fsutil_old"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 func Read(binaryPath string, od string) (*data.Slice, error) {
@@ -66,7 +66,7 @@ func waitForSave() {
 	msg_sent := false
 	for IsSaving {
 		if !msg_sent {
-			log.Log.Info("Waiting for all the files to be saved before reading...")
+			log_old.Log.Info("Waiting for all the files to be saved before reading...")
 			msg_sent = true
 		}
 		time.Sleep(100 * time.Millisecond)
@@ -76,7 +76,7 @@ func waitForSave() {
 // readZarrayFile reads and parses the .zarray file
 func readZarrayFile(binaryPath string) (*zarrayFile, error) {
 	zarrayPath := path.Join(path.Dir(binaryPath), ".zarray")
-	log.Log.Info("Reading:  %v", binaryPath)
+	log_old.Log.Info("Reading:  %v", binaryPath)
 
 	content, err := os.ReadFile(zarrayPath)
 	if err != nil {
@@ -102,10 +102,10 @@ func readAndDecompressData(binaryPath string) ([]byte, error) {
 
 	for retries := 0; retries < maxRetries; retries++ {
 		// Open the file
-		ioReader, err := fsutil.Open(binaryPath)
+		ioReader, err := fsutil_old.Open(binaryPath)
 		if err != nil {
 			lastErr = err
-			log.Log.Info("Error opening file: %v, retrying in %v...", err, retryDelay)
+			log_old.Log.Info("Error opening file: %v, retrying in %v...", err, retryDelay)
 			time.Sleep(retryDelay)
 			continue
 		}
@@ -115,7 +115,7 @@ func readAndDecompressData(binaryPath string) ([]byte, error) {
 		ioReader.Close()
 		if err != nil {
 			lastErr = err
-			log.Log.Info("Error reading file: %v, retrying in %v...", err, retryDelay)
+			log_old.Log.Info("Error reading file: %v, retrying in %v...", err, retryDelay)
 			time.Sleep(retryDelay)
 			continue
 		}
@@ -123,7 +123,7 @@ func readAndDecompressData(binaryPath string) ([]byte, error) {
 		// Check if compressedData is empty
 		if len(compressedData) == 0 {
 			lastErr = errors.New("compressed data is empty")
-			log.Log.Info("File is empty, retrying in %v...", retryDelay)
+			log_old.Log.Info("File is empty, retrying in %v...", retryDelay)
 			time.Sleep(retryDelay)
 			continue
 		}
@@ -132,7 +132,7 @@ func readAndDecompressData(binaryPath string) ([]byte, error) {
 		dataBytes, err = zstd.Decompress(nil, compressedData)
 		if err != nil {
 			lastErr = err
-			log.Log.Info("Decompression error: %v, retrying in %v...", err, retryDelay)
+			log_old.Log.Info("Decompression error: %v, retrying in %v...", err, retryDelay)
 			time.Sleep(retryDelay)
 			continue
 		}

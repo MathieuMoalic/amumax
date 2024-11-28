@@ -2,14 +2,14 @@ package cuda
 
 import (
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 func CrossProduct(dst, a, b *data.Slice) {
-	log.AssertMsg(dst.NComp() == 3 && a.NComp() == 3 && b.NComp() == 3,
+	log_old.AssertMsg(dst.NComp() == 3 && a.NComp() == 3 && b.NComp() == 3,
 		"Invalid number of components: dst, a, and b must all have 3 components for CrossProduct")
 
-	log.AssertMsg(dst.Len() == a.Len() && dst.Len() == b.Len(),
+	log_old.AssertMsg(dst.Len() == a.Len() && dst.Len() == b.Len(),
 		"Length mismatch: dst, a, and b must have the same length for CrossProduct")
 
 	N := dst.Len()

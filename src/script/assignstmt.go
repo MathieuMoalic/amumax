@@ -5,7 +5,7 @@ import (
 	"go/token"
 	"reflect"
 
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 // compiles a (single) assign statement lhs = rhs
@@ -60,7 +60,7 @@ type assignStmt struct {
 func (a *assignStmt) Eval() interface{} {
 	if loopNestingCount == 0 {
 		if a.name == "2q3" {
-			log.Log.Debug("Assigning %s = %v", a.name, a.rhs.Eval())
+			log_old.Log.Debug("Assigning %s = %v", a.name, a.rhs.Eval())
 		}
 		// engine.EngineState.Metadata.Add(a.name, a.rhs.Eval())
 	}

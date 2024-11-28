@@ -5,8 +5,8 @@ import (
 	"errors"
 	"os"
 
-	"github.com/MathieuMoalic/amumax/src/fsutil"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/fsutil_old"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 type ztableFile struct {
@@ -22,7 +22,7 @@ type ztableFile struct {
 
 func SaveFileTableZarray(path string, zTableAutoSaveStep int) {
 	if !pathExists(path) {
-		log.Log.PanicIfError(errors.New("error: `%s` does not exist"))
+		log_old.Log.PanicIfError(errors.New("error: `%s` does not exist"))
 	}
 	z := ztableFile{}
 	z.Dtype = `<f8`
@@ -32,14 +32,14 @@ func SaveFileTableZarray(path string, zTableAutoSaveStep int) {
 	z.Chunks = [1]int{zTableAutoSaveStep + 1}
 	z.Shape = [1]int{zTableAutoSaveStep + 1}
 
-	f, err := fsutil.Create(path + "/.zarray")
-	log.Log.PanicIfError(err)
+	f, err := fsutil_old.Create(path + "/.zarray")
+	log_old.Log.PanicIfError(err)
 
 	defer f.Close()
 	enc := json.NewEncoder(f)
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "\t")
-	log.Log.PanicIfError(enc.Encode(z))
+	log_old.Log.PanicIfError(enc.Encode(z))
 	f.Flush()
 }
 

@@ -6,7 +6,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 // Wrapper for cu.MemAlloc, fatal exit on out of memory.
@@ -14,7 +14,7 @@ func MemAlloc(bytes int64) unsafe.Pointer {
 	defer func() {
 		err := recover()
 		if err == cu.ERROR_OUT_OF_MEMORY {
-			log.Log.PanicIfError(fmt.Errorf("out of memory"))
+			log_old.Log.PanicIfError(fmt.Errorf("out of memory"))
 		}
 		if err != nil {
 			panic(err)

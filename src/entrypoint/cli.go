@@ -6,9 +6,9 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/engine_old"
 	"github.com/MathieuMoalic/amumax/src/flags"
-	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/MathieuMoalic/amumax/src/new_engine"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/queue"
 	"github.com/MathieuMoalic/amumax/src/slurm"
 	"github.com/MathieuMoalic/amumax/src/timer"
@@ -61,10 +61,10 @@ func Entrypoint() {
 
 func cliEntrypoint(cmd *cobra.Command, args []string) {
 	if flags.Flags.NewParser {
-		new_engine.Entrypoint(cmd, args, &flags.Flags)
+		engine.Entrypoint(cmd, args, &flags.Flags)
 		return
 	}
-	log.Log.SetDebug(flags.Flags.Debug)
+	log_old.Log.SetDebug(flags.Flags.Debug)
 	if flags.Flags.Update {
 		update.ShowUpdateMenu()
 		return
@@ -79,9 +79,9 @@ func cliEntrypoint(cmd *cobra.Command, args []string) {
 	if flags.Flags.Version {
 		return
 	}
-	engine.Insecure = flags.Flags.Insecure
+	engine_old.Insecure = flags.Flags.Insecure
 
-	defer engine.CleanExit() // flushes pending output, if any
+	defer engine_old.CleanExit() // flushes pending output, if any
 
 	if flags.Flags.Vet {
 		vet()

@@ -5,7 +5,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 // test input data
@@ -85,7 +85,7 @@ func TestReduceMaxAbs(t *testing.T) {
 func sliceFromList(arr [][]float32, size [3]int) *data.Slice {
 	ptrs := make([]unsafe.Pointer, len(arr))
 	for i := range ptrs {
-		log.AssertMsg(len(arr[i]) == prod(size),
+		log_old.AssertMsg(len(arr[i]) == prod(size),
 			"Size mismatch: length of arr must be equal to the product of the provided size in sliceFromList")
 		ptrs[i] = unsafe.Pointer(&arr[i][0])
 	}
