@@ -1,10 +1,10 @@
-package engine
+package quantity
 
 import (
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
-type quantity interface {
+type Quantity interface {
 	EvalTo(*data.Slice)
 	NComp() int
 	Size() [3]int

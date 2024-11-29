@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/quantity"
 )
 
 type chunk struct {
@@ -29,7 +30,7 @@ func createRequestedChunk(x, y, z, c int) requestedChunking {
 	return requestedChunking{x, y, z, c}
 }
 
-func newChunks(log *log.Logs, q quantity, c requestedChunking) chunks {
+func newChunks(log *log.Logs, q quantity.Quantity, c requestedChunking) chunks {
 	return chunks{
 		newChunk(log, q.Size()[0], c.x, 0),
 		newChunk(log, q.Size()[1], c.y, 1),

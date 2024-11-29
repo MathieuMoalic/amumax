@@ -128,7 +128,7 @@ func (m *magnetization) setInShape(region shape, conf config) {
 	for iz := 0; iz < Nz; iz++ {
 		for iy := 0; iy < Ny; iy++ {
 			for ix := 0; ix < Nx; ix++ {
-				r := m.e.utils.Index2Coord(ix, iy, iz)
+				r := m.e.mesh.Index2Coord(ix, iy, iz)
 				x, y, z := r[X], r[Y], r[Z]
 				if region(x, y, z) { // inside
 					m := conf(x, y, z)

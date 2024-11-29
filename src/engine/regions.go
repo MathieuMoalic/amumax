@@ -3,6 +3,7 @@ package engine
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/utils"
 )
 
 // stores the region index for each cell
@@ -112,7 +113,7 @@ func (r *regions) render(f func(x, y, z float64) int) {
 	for iz := 0; iz < mesh.Nz; iz++ {
 		for iy := 0; iy < mesh.Ny; iy++ {
 			for ix := 0; ix < mesh.Nx; ix++ {
-				r := r.e.utils.Index2Coord(ix, iy, iz)
+				r := r.e.mesh.Index2Coord(ix, iy, iz)
 				region := f(r[X], r[Y], r[Z])
 				if region >= 0 {
 					regionArray3D[iz][iy][ix] = byte(region)
@@ -157,7 +158,7 @@ func (r *regions) Average() float64 {
 	if recycle {
 		defer cuda.Recycle(s)
 	}
-	return averageSlice(s)[0]
+	return utils.AverageSlice(s)[0]
 }
 
 // Set the region of one cell
@@ -249,12 +250,12 @@ func (r *regions) shift(dx int) {
 	r1.Copy(r2)
 
 	n := r.e.mesh.Size()
-	x1, x2 := r.e.utils.shiftDirtyRange(dx)
+	x1, x2 := r.shiftDirtyRange(dx)
 
 	for iz := 0; iz < n[Z]; iz++ {
 		for iy := 0; iy < n[Y]; iy++ {
 			for ix := x1; ix < x2; ix++ {
-				i := r.e.utils.Index2Coord(ix, iy, iz) // includes shift
+				i := r.e.mesh.Index2Coord(ix, iy, iz) // includes shift
 				reg := r.get(i)
 				if reg != 0 {
 					r.setCell(ix, iy, iz, reg) // a bit slowish, but hardly reached
@@ -274,12 +275,12 @@ func (r *regions) shiftY(dy int) {
 	r1.Copy(r2)
 
 	n := r.e.mesh.Size()
-	y1, y2 := r.e.utils.shiftDirtyRange(dy)
+	y1, y2 := r.shiftDirtyRange(dy)
 
 	for iz := 0; iz < n[Z]; iz++ {
 		for ix := 0; ix < n[X]; ix++ {
 			for iy := y1; iy < y2; iy++ {
-				i := r.e.utils.Index2Coord(ix, iy, iz) // includes shift
+				i := r.e.mesh.Index2Coord(ix, iy, iz) // includes shift
 				reg := r.get(i)
 				if reg != 0 {
 					r.setCell(ix, iy, iz, reg) // a bit slowish, but hardly reached
@@ -287,4 +288,18 @@ func (r *regions) shiftY(dy int) {
 			}
 		}
 	}
+}
+
+// x range that needs to be refreshed after shift over dx
+func (r *regions) shiftDirtyRange(dx int) (x1, x2 int) {
+	Nx := r.e.mesh.Nx
+	r.e.log.AssertMsg(dx != 0, "Invalid shift: dx must not be zero in shiftDirtyRange")
+	if dx < 0 {
+		x1 = Nx + dx
+		x2 = Nx
+	} else {
+		x1 = 0
+		x2 = dx
+	}
+	return
 }

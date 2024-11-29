@@ -9,12 +9,13 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/quantity"
 )
 
 type savedQuantity struct {
 	e        *engineState
 	name     string
-	q        quantity
+	q        quantity.Quantity
 	period   float64
 	times    []float64
 	chunks   chunks
@@ -22,7 +23,7 @@ type savedQuantity struct {
 	nextTime float64 // Next time when autosave should trigger
 }
 
-func newSavedQuantity(engineState *engineState, q quantity, name string, rchunks requestedChunking, period float64) *savedQuantity {
+func newSavedQuantity(engineState *engineState, q quantity.Quantity, name string, rchunks requestedChunking, period float64) *savedQuantity {
 	return &savedQuantity{
 		e:       engineState,
 		name:    name,
@@ -48,7 +49,7 @@ func (sq *savedQuantity) saveAttrs() {
 	sq.e.log.PanicIfError(err)
 }
 
-// func valueOf(q quantity) *data.Slice {
+// func valueOf(q quantity.Quantity) *data.Slice {
 // 	// TODO: check for Buffered() implementation
 // 	buf := cuda.Buffer(q.NComp(), q.Size())
 // 	q.EvalTo(buf)
@@ -162,7 +163,7 @@ func (sqs *savedQuantities) savedQuandtityExists(name string) bool {
 	return false
 }
 
-func (sqs *savedQuantities) createSavedQuantity(q quantity, name string, rchunks requestedChunking, period float64) *savedQuantity {
+func (sqs *savedQuantities) createSavedQuantity(q quantity.Quantity, name string, rchunks requestedChunking, period float64) *savedQuantity {
 	if sqs.e.fs.Exists(name) {
 		err := sqs.e.fs.Remove(name)
 		sqs.e.log.PanicIfError(err)
@@ -175,12 +176,12 @@ func (sqs *savedQuantities) createSavedQuantity(q quantity, name string, rchunks
 
 }
 
-func (sqs *savedQuantities) updateSavedQuantity(q quantity, name string, rchunks requestedChunking, period float64) {
+func (sqs *savedQuantities) updateSavedQuantity(q quantity.Quantity, name string, rchunks requestedChunking, period float64) {
 	sq := sqs.getSavedQuantity(name)
 	if sq.rchunks != rchunks {
 		sq.e.log.ErrAndExit("Error: The dataset %v has already been initialized with different chunks.", name)
 	} else if sq.q != q {
-		sq.e.log.ErrAndExit("Error: The dataset %v has already been initialized with a different quantity.", name)
+		sq.e.log.ErrAndExit("Error: The dataset %v has already been initialized with a different quantity.Quantity.", name)
 	} else if sq.period != period {
 		if sq.period == 0 && period != 0 {
 			// enable autosave
@@ -205,7 +206,7 @@ func (sqs *savedQuantities) getSavedQuantity(name string) *savedQuantity {
 }
 
 // createOrUpdateSavedQuantity is the unified function for saving quantities.
-func (sqs *savedQuantities) createOrUpdateSavedQuantity(q quantity, name string, period float64, rchunks requestedChunking) {
+func (sqs *savedQuantities) createOrUpdateSavedQuantity(q quantity.Quantity, name string, period float64, rchunks requestedChunking) {
 	if !sqs.savedQuandtityExists(name) {
 		sqs.createSavedQuantity(q, name, rchunks, period)
 	} else {
@@ -217,7 +218,7 @@ func (sqs *savedQuantities) createOrUpdateSavedQuantity(q quantity, name string,
 	}
 }
 
-func (sqs *savedQuantities) autoSaveInner(q quantity, name string, period float64, rchunks requestedChunking) {
+func (sqs *savedQuantities) autoSaveInner(q quantity.Quantity, name string, period float64, rchunks requestedChunking) {
 	if period == 0 {
 		sq := sqs.getSavedQuantity(name)
 		sq.period = 0
@@ -227,32 +228,32 @@ func (sqs *savedQuantities) autoSaveInner(q quantity, name string, period float6
 }
 
 // User-facing save functions (function signatures cannot change)
-func (sqs *savedQuantities) autoSave(q quantity, period float64) {
+func (sqs *savedQuantities) autoSave(q quantity.Quantity, period float64) {
 	sqs.autoSaveInner(q, q.Name(), period, requestedChunking{1, 1, 1, 1})
 }
 
-func (sqs *savedQuantities) autoSaveAs(q quantity, name string, period float64) {
+func (sqs *savedQuantities) autoSaveAs(q quantity.Quantity, name string, period float64) {
 	sqs.autoSaveInner(q, name, period, requestedChunking{1, 1, 1, 1})
 }
 
-func (sqs *savedQuantities) autoSaveAsChunk(q quantity, name string, period float64, rchunks requestedChunking) {
+func (sqs *savedQuantities) autoSaveAsChunk(q quantity.Quantity, name string, period float64, rchunks requestedChunking) {
 	sqs.autoSaveInner(q, name, period, rchunks)
 }
 
-func (sqs *savedQuantities) saveAsInner(q quantity, name string, rchunks requestedChunking) {
+func (sqs *savedQuantities) saveAsInner(q quantity.Quantity, name string, rchunks requestedChunking) {
 	if !sqs.savedQuandtityExists(name) {
 		sqs.createSavedQuantity(q, name, rchunks, 0)
 	}
 	sqs.getSavedQuantity(name).save()
 }
-func (sqs *savedQuantities) saveAs(q quantity, name string) {
+func (sqs *savedQuantities) saveAs(q quantity.Quantity, name string) {
 	sqs.saveAsInner(q, name, requestedChunking{1, 1, 1, 1})
 }
 
-func (sqs *savedQuantities) save(q quantity) {
+func (sqs *savedQuantities) save(q quantity.Quantity) {
 	sqs.saveAsInner(q, q.Name(), requestedChunking{1, 1, 1, 1})
 }
 
-func (sqs *savedQuantities) saveAsChunk(q quantity, name string, rchunks requestedChunking) {
+func (sqs *savedQuantities) saveAsChunk(q quantity.Quantity, name string, rchunks requestedChunking) {
 	sqs.saveAsInner(q, name, rchunks)
 }

@@ -27,7 +27,6 @@ type engineState struct {
 	geometry        *geometry
 	regions         *regions
 	savedQuantities *savedQuantities
-	utils           *utils
 	windowShift     *windowShift
 	shape           *shapeList
 	grains          *grains
@@ -61,7 +60,6 @@ func (s *engineState) start(scriptPath string) {
 	s.regions = newRegions(s)
 	s.geometry = newGeom(s)
 	s.savedQuantities = newSavedQuantities(s)
-	s.utils = newUtils(s)
 	s.grains = newGrains(s)
 	s.config = newConfigList(s.mesh, s.script)
 	err := s.script.Parse()

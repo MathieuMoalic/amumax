@@ -7,12 +7,15 @@ import (
 	"fmt"
 	"os"
 	"sync"
+
+	"github.com/MathieuMoalic/amumax/src/quantity"
+	"github.com/MathieuMoalic/amumax/src/utils"
 )
 
 // the table is kept in RAM and used for the API
 type table struct {
 	e              *engineState
-	quantities     []quantity
+	quantities     []quantity.Quantity
 	columns        []column
 	Data           map[string][]float64 `json:"data"`
 	AutoSavePeriod float64              `json:"autoSavePeriod"`
@@ -34,7 +37,7 @@ type column struct {
 func newTable(e *engineState) *table {
 	t := &table{
 		e:              e,
-		quantities:     []quantity{},
+		quantities:     []quantity.Quantity{},
 		columns:        []column{},
 		Data:           make(map[string][]float64),
 		AutoSavePeriod: 0,
@@ -85,7 +88,7 @@ func (ts *table) writeToBuffer() {
 
 	for i, b := range buf {
 		// Convert float64 to bytes
-		data := float64ToBytes(b)
+		data := utils.Float64ToBytes(b)
 
 		// Write directly to the buffered writer
 		_, err := ts.columns[i].writer.Write(data)
@@ -123,7 +126,7 @@ func (ts *table) flushToFile() {
 	ts.lastSavedHash = currentHash
 }
 
-func (ts *table) exists(q quantity, name string) bool {
+func (ts *table) exists(q quantity.Quantity, name string) bool {
 	suffixes := []string{"x", "y", "z"}
 	for _, col := range ts.columns {
 		if q.NComp() == 1 {
@@ -160,11 +163,11 @@ func (ts *table) tableSave() {
 	ts.writeToBuffer()
 }
 
-func (ts *table) tableAdd(q quantity) {
+func (ts *table) tableAdd(q quantity.Quantity) {
 	ts.tableAddAs(q, q.Name())
 }
 
-func (ts *table) tableAddAs(q quantity, name string) {
+func (ts *table) tableAddAs(q quantity.Quantity, name string) {
 	suffixes := []string{"x", "y", "z"}
 	if ts.Step != -1 {
 		ts.e.log.Warn("You cannot add a new quantity to the table after the simulation has started. Ignoring.")

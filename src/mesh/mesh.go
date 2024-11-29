@@ -3,6 +3,7 @@ package mesh
 import (
 	"math"
 
+	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
@@ -304,5 +305,12 @@ func (m *Mesh) ReCreate(Nx, Ny, Nz int, dx, dy, dz float64, PBCx, PBCy, PBCz int
 	m.setTiDiNi(&m.Tz, &m.Dz, &m.Nz, "z")
 	m.validateGridSize()
 	m.validateCellSize()
+}
 
+func (m *Mesh) Index2Coord(ix, iy, iz int) data.Vector {
+	// TODO, add shift back
+	x := m.Dx * (float64(ix) - 0.5*float64(m.Nx-1)) //- u.e.windowShift.totalXShift
+	y := m.Dy * (float64(iy) - 0.5*float64(m.Ny-1)) //- u.e.windowShift.totalYShift
+	z := m.Dz * (float64(iz) - 0.5*float64(m.Nz-1))
+	return data.Vector{x, y, z}
 }
