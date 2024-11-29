@@ -19,9 +19,9 @@ var (
 )
 
 // Locks to an OS thread and initializes CUDA for that thread.
-func Init(gpu int) {
+func Init(gpu int) [6]string {
 	if cudaCtx != 0 {
-		return // needed for tests
+		return [6]string{"", "", "", "", "", ""} // needed for tests
 	}
 
 	runtime.LockOSThread()
@@ -46,6 +46,15 @@ func Init(gpu int) {
 
 	// test PTX load so that we can catch CUDA_ERROR_NO_BINARY_FOR_GPU early
 	fatbinLoad(madd2_map, "madd2")
+	GpuInfo := [6]string{
+		fmt.Sprintf("%d.%d", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10),
+		fmt.Sprintf("%d", UseCC),
+		DevName,
+		fmt.Sprintf("%d", TotalMem/(1024*1024)),
+		fmt.Sprintf("%d.%d", DriverVersion/1000, (DriverVersion%1000)/10),
+		fmt.Sprintf("%d.%d", M, m),
+	}
+	return GpuInfo
 }
 
 // cu.Init(), but error is fatal and does not dump stack.

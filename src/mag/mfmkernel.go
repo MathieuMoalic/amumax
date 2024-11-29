@@ -6,17 +6,18 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/mesh_old"
 )
 
-func MFMKernel(mesh MeshLike, lift, tipsize float64, cacheDir string) (kernel [3]*data.Slice) {
+func MFMKernel(mesh mesh.MeshLike, lift, tipsize float64, cacheDir string) (kernel [3]*data.Slice) {
 	return CalcMFMKernel(mesh, lift, tipsize)
 
 }
 
 // Kernel for the vertical derivative of the force on an MFM tip due to mx, my, mz.
 // This is the 2nd derivative of the energy w.r.t. z.
-func CalcMFMKernel(kernelMesh MeshLike, lift, tipsize float64) (kernel [3]*data.Slice) {
+func CalcMFMKernel(kernelMesh mesh.MeshLike, lift, tipsize float64) (kernel [3]*data.Slice) {
 
 	const TipCharge = 1 / Mu0 // tip charge
 	const Δ = 1e-9            // tip oscillation, take 2nd derivative over this distance
