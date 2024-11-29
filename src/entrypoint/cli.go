@@ -60,7 +60,7 @@ func Entrypoint() {
 }
 
 func cliEntrypoint(cmd *cobra.Command, args []string) {
-	if flags.Flags.NewParser {
+	if flags.Flags.NewEngine {
 		engine.Entrypoint(cmd, args, &flags.Flags)
 		return
 	}
