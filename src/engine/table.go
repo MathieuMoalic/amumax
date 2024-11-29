@@ -2,9 +2,11 @@ package engine
 
 import (
 	"bufio"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
 	"os"
 	"sync"
-	"time"
 )
 
 // the table is kept in RAM and used for the API
@@ -16,8 +18,9 @@ type table struct {
 	AutoSavePeriod float64              `json:"autoSavePeriod"`
 	AutoSaveStart  float64              `json:"autoSaveStart"`
 	Step           int                  `json:"step"`
-	FlushInterval  time.Duration        `json:"flushInterval"`
 	mu             sync.Mutex
+	initialized    bool
+	lastSavedHash  string // Hash of the last saved state
 }
 
 type column struct {
@@ -27,25 +30,46 @@ type column struct {
 	file   *os.File
 }
 
+// NewTable creates a new empty table, does not save it to disk
 func newTable(e *engineState) *table {
 	t := &table{
-		e:          e,
-		Data:       make(map[string][]float64),
-		Step:       -1,
-		quantities: []quantity{},
-		columns:    []column{},
+		e:              e,
+		quantities:     []quantity{},
+		columns:        []column{},
+		Data:           make(map[string][]float64),
+		AutoSavePeriod: 0,
+		AutoSaveStart:  0,
+		Step:           -1,
+		mu:             sync.Mutex{},
+		initialized:    false,
+		lastSavedHash:  "",
 	}
-	err := e.fs.Remove("table")
-	e.log.PanicIfError(err)
-	err = e.fs.CreateZarrGroup("table/")
-	e.log.PanicIfError(err)
-	t.addColumn("step", "")
-	t.addColumn("t", "s")
 	e.script.RegisterFunction("TableAutoSave", t.tableAutoSave)
 	e.script.RegisterFunction("TableAdd", t.tableAdd)
 	e.script.RegisterFunction("TableAddAs", t.tableAddAs)
 	e.script.RegisterFunction("TableSave", t.tableSave)
 	return t
+}
+
+// generateHash creates a hash based on the current Step and column names.
+func (ts *table) generateHash() string {
+	hash := sha256.New()
+	fmt.Fprint(hash, ts.Step) // Include the Step in the hash
+	for _, col := range ts.columns {
+		hash.Write([]byte(col.name)) // Include column names
+	}
+	return hex.EncodeToString(hash.Sum(nil))
+}
+
+// InitTable creates default columns and saves them to disk
+func (ts *table) initTable() {
+	err := ts.e.fs.Remove("table")
+	ts.e.log.PanicIfError(err)
+	err = ts.e.fs.CreateZarrGroup("table/")
+	ts.e.log.PanicIfError(err)
+	ts.addColumn("step", "")
+	ts.addColumn("t", "s")
+	ts.initialized = true
 }
 
 func (ts *table) writeToBuffer() {
@@ -74,7 +98,17 @@ func (ts *table) writeToBuffer() {
 	}
 }
 
-func (ts *table) flush() {
+// flushToFile writes the buffered data to disk
+func (ts *table) flushToFile() {
+	if ts.Step == -1 {
+		return
+	}
+	// Check if the table state has changed
+	currentHash := ts.generateHash()
+	if currentHash == ts.lastSavedHash {
+		ts.e.log.Debug("Table state has not changed, skipping save.")
+		return
+	}
 	for i := range ts.columns {
 		// Update zarray if necessary, it is not buffered at the moment
 		err := ts.e.fs.SaveFileTableZarray("table/"+ts.columns[i].name, ts.Step)
@@ -86,11 +120,8 @@ func (ts *table) flush() {
 			ts.e.log.PanicIfError(err)
 		}
 	}
+	ts.lastSavedHash = currentHash
 }
-
-// func (ts *table) needSave() bool {
-// 	return ts.AutoSavePeriod != 0 && (ts.e.solver.time-ts.AutoSaveStart)-float64(ts.Step)*ts.AutoSavePeriod >= ts.AutoSavePeriod
-// }
 
 func (ts *table) exists(q quantity, name string) bool {
 	suffixes := []string{"x", "y", "z"}
@@ -111,19 +142,15 @@ func (ts *table) exists(q quantity, name string) bool {
 }
 
 func (ts *table) addColumn(name, unit string) {
+	if !ts.initialized {
+		ts.initTable()
+	}
 	err := ts.e.fs.Mkdir("table/" + name)
 	ts.e.log.PanicIfError(err)
 	writer, file, err := ts.e.fs.Create("table/" + name + "/0")
 	ts.e.log.PanicIfError(err)
 	ts.columns = append(ts.columns, column{name: name, unit: unit, writer: writer, file: file})
 }
-
-// func (ts *table) tablesAutoFlush() {
-// 	for {
-// 		ts.flush()
-// 		time.Sleep(ts.FlushInterval)
-// 	}
-// }
 
 func (ts *table) tableSave() {
 	if len(ts.columns) == 0 {
@@ -165,22 +192,11 @@ func (ts *table) tableAutoSave(period float64) {
 	ts.AutoSavePeriod = period
 }
 
-// func (ts *TableStruct) tableAddVar(customvar script.ScalarFunction, name, unit string) {
-// 	ts.tableAdd(&userVar{customvar, name, unit})
-// }
-
-// type userVar struct {
-// 	value      script.ScalarFunction
-// 	name, unit string
-// }
-
-// func (x *userVar) Name() string       { return x.name }
-// func (x *userVar) NComp() int         { return 1 }
-// func (x *userVar) Unit() string       { return x.unit }
-// func (x *userVar) average() []float64 { return []float64{x.value.Float()} }
-// func (x *userVar) EvalTo(dst *data.Slice) {
-// 	avg := x.average()
-// 	for c := 0; c < x.NComp(); c++ {
-// 		cuda.Memset(dst.Comp(c), float32(avg[c]))
-// 	}
-// }
+func (ts *table) close() {
+	for _, col := range ts.columns {
+		err := col.writer.Flush()
+		ts.e.log.PanicIfError(err)
+		err = col.file.Close()
+		ts.e.log.PanicIfError(err)
+	}
+}

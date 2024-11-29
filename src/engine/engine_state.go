@@ -3,6 +3,7 @@ package engine
 import (
 	"os"
 	"strings"
+	"time"
 
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
@@ -32,13 +33,17 @@ type engineState struct {
 	grains          *grains
 	config          *configList
 	script          *script.ScriptParser
+
+	autoFlushInterval time.Duration
 }
 
 func newEngineState(givenFlags *flags.FlagsType, log *log.Logs) *engineState {
-	return &engineState{flags: givenFlags, log: log}
+	return &engineState{flags: givenFlags, log: log, autoFlushInterval: 5 * time.Second}
 }
 
 func (s *engineState) start(scriptPath string) {
+	// I commented the following line for debugging purposes
+	// add it back when the code is stable
 	// defer s.cleanExit()
 	// The order of the following lines is important
 	scriptStr := s.readScript(scriptPath)
@@ -63,7 +68,8 @@ func (s *engineState) start(scriptPath string) {
 	if err != nil {
 		s.log.ErrAndExit("Error parsing script: %v", err)
 	}
-
+	// start autosave goroutine before executing the script
+	go s.autoFlush()
 	err = s.script.Execute()
 	if err != nil {
 		s.log.ErrAndExit("Error executing script: %v", err)
@@ -121,16 +127,26 @@ func (s *engineState) initFileSystem(scriptPath string) {
 	}
 	s.log.Info("Output directory: %s", s.fs.Wd)
 }
+
+func (s *engineState) autoFlush() {
+	for {
+		s.metadata.FlushToFile()
+		s.table.flushToFile()
+		s.log.FlushToFile()
+		time.Sleep(s.autoFlushInterval)
+	}
+}
+
 func (s *engineState) cleanExit() {
-	s.fs.Drain()    // wait for the save queue to finish
-	s.table.flush() // flush table to disk
+	s.fs.Drain() // wait for the save queue to finish
+	s.table.close()
 	if s.flags.Sync {
 		timer.Print(os.Stdout)
 	}
 	s.metadata.Add("steps", s.solver.NSteps)
-	s.metadata.End()
+	s.metadata.Close()
 	s.log.Info("**************** Simulation Ended ****************** //")
-	s.log.FlushToFile()
+	s.log.Close()
 }
 
 // this is called by the script parser when the mesh is ready to be created
