@@ -1,4 +1,4 @@
-package lut
+package parameter
 
 import (
 	"unsafe"
@@ -10,13 +10,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
-// TODO  Regions.Gpu()
-var Regions RegionsInterface
-
-type RegionsInterface interface{ Gpu() *cuda.Bytes }
-
-const NREGION = 256
-
 // look-up table for region based parameters
 type lut struct {
 	log     *log.Logs
@@ -25,6 +18,10 @@ type lut struct {
 	gpu_ok  bool               // gpu cache up-to date with cpu source?
 	cpu_buf [][NREGION]float32 // table data on cpu
 	source  updater            // updates cpu data
+}
+
+func newLUT(log *log.Logs, mesh *mesh.Mesh, source updater) *lut {
+	return &lut{log: log, mesh: mesh, source: source}
 }
 
 type updater interface {
