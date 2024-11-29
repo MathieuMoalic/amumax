@@ -5,6 +5,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/mag_config"
 )
 
 // Special buffered quantity to store magnetization
@@ -65,7 +66,7 @@ func (m *magnetization) normalize() {
 // allocate storage (not done by init, as mesh size may not yet be known then)
 func (m *magnetization) initializeBuffer() {
 	m.slice = cuda.NewSlice(3, m.e.mesh.Size())
-	m.set(m.e.config.randomMag()) // sane starting config
+	m.set(m.e.config.RandomMag()) // sane starting config
 }
 
 func (m *magnetization) setArray(src *data.Slice) {
@@ -76,7 +77,7 @@ func (m *magnetization) setArray(src *data.Slice) {
 	m.normalize()
 }
 
-func (m *magnetization) set(c config) {
+func (m *magnetization) set(c mag_config.Config) {
 	m.setInShape(nil, c)
 }
 
@@ -117,7 +118,7 @@ const (
 )
 
 // Sets the magnetization inside the shape
-func (m *magnetization) setInShape(region shape, conf config) {
+func (m *magnetization) setInShape(region shape, conf mag_config.Config) {
 	if region == nil {
 		region = m.e.shape.universeInner
 	}

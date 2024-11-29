@@ -1,4 +1,4 @@
-package engine
+package mag_config
 
 // Utilities for setting magnetic configurations.
 
@@ -13,15 +13,15 @@ import (
 )
 
 // Magnetic configuration returns m vector for position (x,y,z)
-type config func(x, y, z float64) data.Vector
+type Config func(x, y, z float64) data.Vector
 
-type configList struct {
+type ConfigList struct {
 	mesh *mesh.Mesh
 }
 
-func newConfigList(mesh *mesh.Mesh, s *script.ScriptParser) *configList {
-	c := &configList{mesh: mesh}
-	s.RegisterFunction("RandomMag", c.randomMag)
+func NewConfigList(mesh *mesh.Mesh, s *script.ScriptParser) *ConfigList {
+	c := &ConfigList{mesh: mesh}
+	s.RegisterFunction("RandomMag", c.RandomMag)
 	s.RegisterFunction("RandomMagSeed", c.randomMagSeed)
 	s.RegisterFunction("Uniform", c.uniform)
 	s.RegisterFunction("Vortex", c.vortex)
@@ -37,21 +37,21 @@ func newConfigList(mesh *mesh.Mesh, s *script.ScriptParser) *configList {
 }
 
 // Random initial magnetization.
-func (c *configList) randomMag() config {
+func (c *ConfigList) RandomMag() Config {
 	return c.randomMagSeed(0)
 }
 
 // Random initial magnetization,
 // generated from random seed.
-func (c *configList) randomMagSeed(seed int) config {
+func (c *ConfigList) randomMagSeed(seed int) Config {
 	rng := rand.New(rand.NewSource(int64(seed)))
 	return func(x, y, z float64) data.Vector {
-		return c.randomDir(rng)
+		return c.RandomDir(rng)
 	}
 }
 
 // generate anisotropic random unit vector
-func (c *configList) randomDir(rng *rand.Rand) data.Vector {
+func (c *ConfigList) RandomDir(rng *rand.Rand) data.Vector {
 	theta := 2 * rng.Float64() * math.Pi
 	z := 2 * (rng.Float64() - 0.5)
 	b := math.Sqrt(1 - z*z)
@@ -62,8 +62,8 @@ func (c *configList) randomDir(rng *rand.Rand) data.Vector {
 
 // Returns a uniform magnetization state. E.g.:
 //
-//	M = uniform(1, 0, 0)) // saturated along X
-func (c *configList) uniform(mx, my, mz float64) config {
+//	M = uniform(1, 0, 0)) // saturated along 0
+func (c *ConfigList) uniform(mx, my, mz float64) Config {
 	return func(x, y, z float64) data.Vector {
 		return data.Vector{mx, my, mz}
 	}
@@ -71,8 +71,8 @@ func (c *configList) uniform(mx, my, mz float64) config {
 
 // Make a vortex magnetization with given circulation and core polarization (+1 or -1).
 // The core is smoothed over a few exchange lengths and should easily relax to its ground state.
-func (c *configList) vortex(circ, pol int) config {
-	diam2 := 2 * utils.Sqr64(c.mesh.CellSize()[X])
+func (c *ConfigList) vortex(circ, pol int) Config {
+	diam2 := 2 * utils.Sqr64(c.mesh.CellSize()[0])
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
 		r := math.Sqrt(r2)
@@ -83,8 +83,8 @@ func (c *configList) vortex(circ, pol int) config {
 	}
 }
 
-func (c *configList) neelSkyrmion(charge, pol int) config {
-	w := 8 * c.mesh.CellSize()[X]
+func (c *ConfigList) neelSkyrmion(charge, pol int) Config {
+	w := 8 * c.mesh.CellSize()[0]
 	w2 := w * w
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
@@ -96,8 +96,8 @@ func (c *configList) neelSkyrmion(charge, pol int) config {
 	}
 }
 
-func (c *configList) blochSkyrmion(charge, pol int) config {
-	w := 8 * c.mesh.CellSize()[X]
+func (c *ConfigList) blochSkyrmion(charge, pol int) Config {
+	w := 8 * c.mesh.CellSize()[0]
 	w2 := w * w
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
@@ -109,8 +109,8 @@ func (c *configList) blochSkyrmion(charge, pol int) config {
 	}
 }
 
-func (c *configList) antiVortex(circ, pol int) config {
-	diam2 := 2 * utils.Sqr64(c.mesh.CellSize()[X])
+func (c *ConfigList) antiVortex(circ, pol int) Config {
+	diam2 := 2 * utils.Sqr64(c.mesh.CellSize()[0])
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
 		r := math.Sqrt(r2)
@@ -121,7 +121,7 @@ func (c *configList) antiVortex(circ, pol int) config {
 	}
 }
 
-func (c *configList) radial(charge, pol int) config {
+func (c *ConfigList) radial(charge, pol int) Config {
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
 		r := math.Sqrt(r2)
@@ -133,8 +133,8 @@ func (c *configList) radial(charge, pol int) config {
 }
 
 // Make a vortex wall configuration.
-func (c *configList) vortexWall(mleft, mright float64, circ, pol int) config {
-	h := c.mesh.WorldSize()[Y]
+func (c *ConfigList) vortexWall(mleft, mright float64, circ, pol int) Config {
+	h := c.mesh.WorldSize()[1]
 	v := c.vortex(circ, pol)
 	return func(x, y, z float64) data.Vector {
 		if x < -h/2 {
@@ -147,8 +147,8 @@ func (c *configList) vortexWall(mleft, mright float64, circ, pol int) config {
 	}
 }
 
-func (c *configList) noNaN(v data.Vector, pol int) data.Vector {
-	if math.IsNaN(v[X]) || math.IsNaN(v[Y]) || math.IsNaN(v[Z]) {
+func (c *ConfigList) noNaN(v data.Vector, pol int) data.Vector {
+	if math.IsNaN(v[0]) || math.IsNaN(v[1]) || math.IsNaN(v[2]) {
 		return data.Vector{0, 0, float64(pol)}
 	} else {
 		return v
@@ -164,8 +164,8 @@ func (c *configList) noNaN(v data.Vector, pol int) data.Vector {
 //	twoDomain(1,0,0,  0,1,0,  -1,0,0) // head-to-head domains with transverse (Néel) wall
 //	twoDomain(1,0,0,  0,0,1,  -1,0,0) // head-to-head domains with perpendicular (Bloch) wall
 //	twoDomain(0,0,1,  1,0,0,   0,0,-1)// up-down domains with Bloch wall
-func (c *configList) twoDomain(mx1, my1, mz1, mxwall, mywall, mzwall, mx2, my2, mz2 float64) config {
-	ww := 2 * c.mesh.CellSize()[X] // wall width in cells
+func (c *ConfigList) twoDomain(mx1, my1, mz1, mxwall, mywall, mzwall, mx2, my2, mz2 float64) Config {
+	ww := 2 * c.mesh.CellSize()[0] // wall width in cells
 	return func(x, y, z float64) data.Vector {
 		var m data.Vector
 		if x < 0 {
@@ -174,9 +174,9 @@ func (c *configList) twoDomain(mx1, my1, mz1, mxwall, mywall, mzwall, mx2, my2, 
 			m = data.Vector{mx2, my2, mz2}
 		}
 		gauss := math.Exp(-utils.Sqr64(x / ww))
-		m[X] = (1-gauss)*m[X] + gauss*mxwall
-		m[Y] = (1-gauss)*m[Y] + gauss*mywall
-		m[Z] = (1-gauss)*m[Z] + gauss*mzwall
+		m[0] = (1-gauss)*m[0] + gauss*mxwall
+		m[1] = (1-gauss)*m[1] + gauss*mywall
+		m[2] = (1-gauss)*m[2] + gauss*mzwall
 		return m
 	}
 }
@@ -189,55 +189,55 @@ func (c *configList) twoDomain(mx1, my1, mz1, mxwall, mywall, mzwall, mx2, my2, 
 //	m = u*cos(coneAngle) + sin(coneAngle)*( ua*cos(q*r) + ub*sin(q*r) )
 //
 // with ua and ub unit vectors perpendicular to u (normalized coneDirection)
-func (c *configList) conical(q, coneDirection data.Vector, coneAngle float64) config {
+func (c *ConfigList) conical(q, coneDirection data.Vector, coneAngle float64) Config {
 	u := coneDirection.Div(coneDirection.Len())
 	// two unit vectors perpendicular to each other and to the cone direction u
-	p := math.Sqrt(1 - u[Z]*u[Z])
-	ua := data.Vector{u[X] * u[Z], u[Y] * u[Z], u[Z]*u[Z] - 1}.Div(p)
-	ub := data.Vector{-u[Y], u[X], 0}.Div(p)
+	p := math.Sqrt(1 - u[2]*u[2])
+	ua := data.Vector{u[0] * u[2], u[1] * u[2], u[2]*u[2] - 1}.Div(p)
+	ub := data.Vector{-u[1], u[0], 0}.Div(p)
 	// cone direction along z direction? -> oops divided by zero, let's fix this
-	if u[Z]*u[Z] == 1 {
+	if u[2]*u[2] == 1 {
 		ua = data.Vector{1, 0, 0}
 		ub = data.Vector{0, 1, 0}
 	}
 	sina, cosa := math.Sincos(coneAngle)
 	return func(x, y, z float64) data.Vector {
-		sinqr, cosqr := math.Sincos(q[X]*x + q[Y]*y + q[Z]*z)
+		sinqr, cosqr := math.Sincos(q[0]*x + q[1]*y + q[2]*z)
 		return u.Mul(cosa).MAdd(sina*cosqr, ua).MAdd(sina*sinqr, ub)
 	}
 }
 
-func (c *configList) helical(q data.Vector) config {
+func (c *ConfigList) helical(q data.Vector) Config {
 	return c.conical(q, q, math.Pi/2)
 }
 
 // Transl returns a translated copy of configuration c. E.g.:
 //
 //	M = Vortex(1, 1).Transl(100e-9, 0, 0)  // vortex with center at x=100nm
-func (c config) Transl(dx, dy, dz float64) config {
+func (c Config) Transl(dx, dy, dz float64) Config {
 	return func(x, y, z float64) data.Vector {
 		return c(x-dx, y-dy, z-dz)
 	}
 }
 
 // Scale returns a scaled copy of configuration c.
-func (c config) Scale(sx, sy, sz float64) config {
+func (c Config) Scale(sx, sy, sz float64) Config {
 	return func(x, y, z float64) data.Vector {
 		return c(x/sx, y/sy, z/sz)
 	}
 }
 
-// Rotates the configuration around the Z-axis, over θ radians.
-func (c config) RotZ(θ float64) config {
+// Rotates the configuration around the 2-axis, over θ radians.
+func (c Config) RotZ(θ float64) Config {
 	cos := math.Cos(θ)
 	sin := math.Sin(θ)
 	return func(x, y, z float64) data.Vector {
 		x_ := x*cos + y*sin
 		y_ := -x*sin + y*cos
 		m := c(x_, y_, z)
-		mx_ := m[X]*cos - m[Y]*sin
-		my_ := m[X]*sin + m[Y]*cos
-		return data.Vector{mx_, my_, m[Z]}
+		mx_ := m[0]*cos - m[1]*sin
+		my_ := m[0]*sin + m[1]*cos
+		return data.Vector{mx_, my_, m[2]}
 	}
 }
 
@@ -247,7 +247,7 @@ func (c config) RotZ(θ float64) config {
 //	Uniform(1, 0, 0).Add(0.2, RandomMag())
 //
 // for a uniform state with 20% random distortion.
-func (c config) Add(weight float64, other config) config {
+func (c Config) Add(weight float64, other Config) Config {
 	return func(x, y, z float64) data.Vector {
 		return c(x, y, z).MAdd(weight, other(x, y, z))
 	}
