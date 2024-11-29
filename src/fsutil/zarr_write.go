@@ -3,10 +3,15 @@ package fsutil
 import (
 	"encoding/json"
 	"errors"
+	"os"
 	"strings"
 )
 
 func (fs *FileSystem) CreateZarrGroup(name string) error {
+	// if name doesn't end with a slash, add it
+	if name != "" && !strings.HasSuffix(name, string(os.PathSeparator)) {
+		name += string(os.PathSeparator)
+	}
 	err := fs.Mkdir(name)
 	if err != nil && !strings.Contains(err.Error(), "file exists") {
 		return err

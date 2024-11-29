@@ -37,7 +37,7 @@ func newTable(e *engineState) *table {
 	}
 	err := e.fs.Remove("table")
 	e.log.PanicIfError(err)
-	err = e.fs.CreateZarrGroup("table")
+	err = e.fs.CreateZarrGroup("table/")
 	e.log.PanicIfError(err)
 	t.addColumn("step", "")
 	t.addColumn("t", "s")
