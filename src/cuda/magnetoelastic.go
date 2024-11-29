@@ -3,6 +3,7 @@ package cuda
 import (
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 // Add magneto-elastic coupling field to the effective field.
@@ -30,7 +31,7 @@ func AddMagnetoelasticField(Beff, m *data.Slice, exx, eyy, ezz, exy, exz, eyz, B
 
 // Calculate magneto-elastic force density
 // see magnetoelasticforce.cu
-func GetMagnetoelasticForceDensity(out, m *data.Slice, B1, B2 MSlice, mesh MeshLike) {
+func GetMagnetoelasticForceDensity(out, m *data.Slice, B1, B2 MSlice, mesh mesh.MeshLike) {
 	log_old.AssertMsg(out.Size() == m.Size(), "Size mismatch: out and m must have the same dimensions in GetMagnetoelasticForceDensity")
 
 	cellsize := mesh.CellSize()

@@ -15,15 +15,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/zarr_old"
 )
 
-// for compatibility between mesh_old and mesh
-type MeshLike interface {
-	Size() [3]int
-	PBC() [3]int
-	CellSize() [3]float64
-	PBC_code() byte
-	WorldSize() [3]float64
-}
-
 // Obtains the demag kernel either from cacheDir/ or by calculating (and then storing in cacheDir for next time).
 // Empty cacheDir disables caching.
 func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cacheDir string, hideProgressBar bool) (kernel [3][3]*data.Slice) {

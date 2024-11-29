@@ -18,7 +18,7 @@ func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.FlagsType) 
 		return
 	}
 	go slurm.SetEndTimerIfSlurm()
-	cuda.Init(givenFlags.Gpu)
+	GpuInfo := cuda.Init(givenFlags.Gpu)
 
 	cuda.Synchronous = givenFlags.Sync
 	timer.Enabled = givenFlags.Sync
@@ -26,7 +26,7 @@ func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.FlagsType) 
 	// we create the log as early as possible to catch all messages
 	log := log.NewLogs(givenFlags.Debug)
 
-	log.PrintVersion(version.VERSION)
+	log.PrintVersion(version.VERSION, GpuInfo)
 	if givenFlags.Version {
 		return
 	}

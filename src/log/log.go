@@ -9,8 +9,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/fatih/color"
 )
@@ -37,12 +35,13 @@ func (l *Logs) InitLogs(fs *fsutil.FileSystem, debug bool) {
 }
 
 // print version to stdout
-func (l *Logs) PrintVersion(version string) {
+func (l *Logs) PrintVersion(version string, cudaInfo [6]string) {
+	cudaVersion, cudaCC, GPUName, GPUMem, DriverVersion, GPUCC := cudaInfo[0], cudaInfo[1], cudaInfo[2], cudaInfo[3], cudaInfo[4], cudaInfo[5]
 	l.Info("Version:         %s", version)
 	l.Info("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
 	l.Info("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
-	l.Info("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda.UseCC)
-	l.Info("GPU Information: %s", cuda.GPUInfo)
+	l.Info("CUDA Version:    %s (CC=%s PTX)", cudaVersion, cudaCC)
+	l.Info("GPU Information: %s(%s), CUDA Driver %s, cc=%s", GPUName, GPUMem, DriverVersion, GPUCC)
 }
 func (l *Logs) Close() {
 	l.FlushToFile()
