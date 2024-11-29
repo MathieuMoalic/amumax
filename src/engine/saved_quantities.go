@@ -7,6 +7,7 @@ import (
 
 	"github.com/DataDog/zstd"
 
+	"github.com/MathieuMoalic/amumax/src/chunk"
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/quantity"
@@ -18,19 +19,19 @@ type savedQuantity struct {
 	q        quantity.Quantity
 	period   float64
 	times    []float64
-	chunks   chunks
-	rchunks  requestedChunking
+	chunks   chunk.Chunks
+	rchunks  chunk.RequestedChunking
 	nextTime float64 // Next time when autosave should trigger
 }
 
-func newSavedQuantity(engineState *engineState, q quantity.Quantity, name string, rchunks requestedChunking, period float64) *savedQuantity {
+func newSavedQuantity(engineState *engineState, q quantity.Quantity, name string, rchunks chunk.RequestedChunking, period float64) *savedQuantity {
 	return &savedQuantity{
 		e:       engineState,
 		name:    name,
 		q:       q,
 		period:  period,
 		times:   []float64{},
-		chunks:  newChunks(engineState.log, q, rchunks),
+		chunks:  chunk.NewChunks(engineState.log, q, rchunks),
 		rchunks: rchunks,
 	}
 }
@@ -71,7 +72,7 @@ func (sq *savedQuantity) save() {
 }
 
 // syncSave writes the data slice into chunked, compressed files compatible with the Zarr format.
-func (sq *savedQuantity) syncSave(array *data.Slice, qname string, step int, chunks chunks) error {
+func (sq *savedQuantity) syncSave(array *data.Slice, qname string, step int, chunks chunk.Chunks) error {
 	data := array.Tensors()
 	size := array.Size()
 	ncomp := array.NComp()
@@ -82,26 +83,26 @@ func (sq *savedQuantity) syncSave(array *data.Slice, qname string, step int, chu
 		size,
 		ncomp,
 		step,
-		chunks.z.len, chunks.y.len, chunks.x.len, chunks.c.len,
+		chunks.Z.Len, chunks.Y.Len, chunks.X.Len, chunks.C.Len,
 	)
 	if err != nil {
 		return err
 	}
 
 	// Iterate over chunks and save data
-	for icx := 0; icx < chunks.x.nb; icx++ {
-		for icy := 0; icy < chunks.y.nb; icy++ {
-			for icz := 0; icz < chunks.z.nb; icz++ {
-				for icc := 0; icc < chunks.c.nb; icc++ {
+	for icx := 0; icx < chunks.X.Count; icx++ {
+		for icy := 0; icy < chunks.Y.Count; icy++ {
+			for icz := 0; icz < chunks.Z.Count; icz++ {
+				for icc := 0; icc < chunks.C.Count; icc++ {
 					var bdata bytes.Buffer
-					for iz := 0; iz < chunks.z.len; iz++ {
-						z := icz*chunks.z.len + iz
-						for iy := 0; iy < chunks.y.len; iy++ {
-							y := icy*chunks.y.len + iy
-							for ix := 0; ix < chunks.x.len; ix++ {
-								x := icx*chunks.x.len + ix
-								for ic := 0; ic < chunks.c.len; ic++ {
-									c := icc*chunks.c.len + ic
+					for iz := 0; iz < chunks.Z.Len; iz++ {
+						z := icz*chunks.Z.Len + iz
+						for iy := 0; iy < chunks.Y.Len; iy++ {
+							y := icy*chunks.Y.Len + iy
+							for ix := 0; ix < chunks.X.Len; ix++ {
+								x := icx*chunks.X.Len + ix
+								for ic := 0; ic < chunks.C.Len; ic++ {
+									c := icc*chunks.C.Len + ic
 									value := data[c][z][y][x]
 									err := binary.Write(&bdata, binary.LittleEndian, value)
 									if err != nil {
@@ -140,7 +141,7 @@ func newSavedQuantities(engineState *engineState) *savedQuantities {
 	engineState.script.RegisterFunction("AutoSave", sqs.autoSave)
 	engineState.script.RegisterFunction("AutoSaveAs", sqs.autoSaveAs)
 	engineState.script.RegisterFunction("AutoSaveAsChunk", sqs.autoSaveAsChunk)
-	engineState.script.RegisterFunction("Chunks", createRequestedChunk)
+	engineState.script.RegisterFunction("Chunks", chunk.CreateRequestedChunk)
 	return sqs
 }
 
@@ -163,7 +164,7 @@ func (sqs *savedQuantities) savedQuandtityExists(name string) bool {
 	return false
 }
 
-func (sqs *savedQuantities) createSavedQuantity(q quantity.Quantity, name string, rchunks requestedChunking, period float64) *savedQuantity {
+func (sqs *savedQuantities) createSavedQuantity(q quantity.Quantity, name string, rchunks chunk.RequestedChunking, period float64) *savedQuantity {
 	if sqs.e.fs.Exists(name) {
 		err := sqs.e.fs.Remove(name)
 		sqs.e.log.PanicIfError(err)
@@ -176,7 +177,7 @@ func (sqs *savedQuantities) createSavedQuantity(q quantity.Quantity, name string
 
 }
 
-func (sqs *savedQuantities) updateSavedQuantity(q quantity.Quantity, name string, rchunks requestedChunking, period float64) {
+func (sqs *savedQuantities) updateSavedQuantity(q quantity.Quantity, name string, rchunks chunk.RequestedChunking, period float64) {
 	sq := sqs.getSavedQuantity(name)
 	if sq.rchunks != rchunks {
 		sq.e.log.ErrAndExit("Error: The dataset %v has already been initialized with different chunks.", name)
@@ -206,7 +207,7 @@ func (sqs *savedQuantities) getSavedQuantity(name string) *savedQuantity {
 }
 
 // createOrUpdateSavedQuantity is the unified function for saving quantities.
-func (sqs *savedQuantities) createOrUpdateSavedQuantity(q quantity.Quantity, name string, period float64, rchunks requestedChunking) {
+func (sqs *savedQuantities) createOrUpdateSavedQuantity(q quantity.Quantity, name string, period float64, rchunks chunk.RequestedChunking) {
 	if !sqs.savedQuandtityExists(name) {
 		sqs.createSavedQuantity(q, name, rchunks, period)
 	} else {
@@ -218,7 +219,7 @@ func (sqs *savedQuantities) createOrUpdateSavedQuantity(q quantity.Quantity, nam
 	}
 }
 
-func (sqs *savedQuantities) autoSaveInner(q quantity.Quantity, name string, period float64, rchunks requestedChunking) {
+func (sqs *savedQuantities) autoSaveInner(q quantity.Quantity, name string, period float64, rchunks chunk.RequestedChunking) {
 	if period == 0 {
 		sq := sqs.getSavedQuantity(name)
 		sq.period = 0
@@ -229,31 +230,31 @@ func (sqs *savedQuantities) autoSaveInner(q quantity.Quantity, name string, peri
 
 // User-facing save functions (function signatures cannot change)
 func (sqs *savedQuantities) autoSave(q quantity.Quantity, period float64) {
-	sqs.autoSaveInner(q, q.Name(), period, requestedChunking{1, 1, 1, 1})
+	sqs.autoSaveInner(q, q.Name(), period, chunk.RequestedChunking{X: 1, Y: 1, Z: 1, C: 1})
 }
 
 func (sqs *savedQuantities) autoSaveAs(q quantity.Quantity, name string, period float64) {
-	sqs.autoSaveInner(q, name, period, requestedChunking{1, 1, 1, 1})
+	sqs.autoSaveInner(q, name, period, chunk.RequestedChunking{X: 1, Y: 1, Z: 1, C: 1})
 }
 
-func (sqs *savedQuantities) autoSaveAsChunk(q quantity.Quantity, name string, period float64, rchunks requestedChunking) {
+func (sqs *savedQuantities) autoSaveAsChunk(q quantity.Quantity, name string, period float64, rchunks chunk.RequestedChunking) {
 	sqs.autoSaveInner(q, name, period, rchunks)
 }
 
-func (sqs *savedQuantities) saveAsInner(q quantity.Quantity, name string, rchunks requestedChunking) {
+func (sqs *savedQuantities) saveAsInner(q quantity.Quantity, name string, rchunks chunk.RequestedChunking) {
 	if !sqs.savedQuandtityExists(name) {
 		sqs.createSavedQuantity(q, name, rchunks, 0)
 	}
 	sqs.getSavedQuantity(name).save()
 }
 func (sqs *savedQuantities) saveAs(q quantity.Quantity, name string) {
-	sqs.saveAsInner(q, name, requestedChunking{1, 1, 1, 1})
+	sqs.saveAsInner(q, name, chunk.RequestedChunking{X: 1, Y: 1, Z: 1, C: 1})
 }
 
 func (sqs *savedQuantities) save(q quantity.Quantity) {
-	sqs.saveAsInner(q, q.Name(), requestedChunking{1, 1, 1, 1})
+	sqs.saveAsInner(q, q.Name(), chunk.RequestedChunking{X: 1, Y: 1, Z: 1, C: 1})
 }
 
-func (sqs *savedQuantities) saveAsChunk(q quantity.Quantity, name string, rchunks requestedChunking) {
+func (sqs *savedQuantities) saveAsChunk(q quantity.Quantity, name string, rchunks chunk.RequestedChunking) {
 	sqs.saveAsInner(q, name, rchunks)
 }

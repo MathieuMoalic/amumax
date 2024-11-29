@@ -1,4 +1,4 @@
-package engine
+package chunk
 
 import (
 	"math"
@@ -8,34 +8,34 @@ import (
 )
 
 type chunk struct {
-	len int
-	nb  int
+	Len   int
+	Count int
 }
 
-type chunks struct {
-	x chunk
-	y chunk
-	z chunk
-	c chunk
+type Chunks struct {
+	X chunk
+	Y chunk
+	Z chunk
+	C chunk
 }
 
-type requestedChunking struct {
-	x int
-	y int
-	z int
-	c int
+type RequestedChunking struct {
+	X int
+	Y int
+	Z int
+	C int
 }
 
-func createRequestedChunk(x, y, z, c int) requestedChunking {
-	return requestedChunking{x, y, z, c}
+func CreateRequestedChunk(x, y, z, c int) RequestedChunking {
+	return RequestedChunking{x, y, z, c}
 }
 
-func newChunks(log *log.Logs, q quantity.Quantity, c requestedChunking) chunks {
-	return chunks{
-		newChunk(log, q.Size()[0], c.x, 0),
-		newChunk(log, q.Size()[1], c.y, 1),
-		newChunk(log, q.Size()[2], c.z, 2),
-		newChunk(log, q.NComp(), c.c, 3),
+func NewChunks(log *log.Logs, q quantity.Quantity, c RequestedChunking) Chunks {
+	return Chunks{
+		newChunk(log, q.Size()[0], c.X, 0),
+		newChunk(log, q.Size()[1], c.Y, 1),
+		newChunk(log, q.Size()[2], c.Z, 2),
+		newChunk(log, q.NComp(), c.C, 3),
 	}
 }
 
