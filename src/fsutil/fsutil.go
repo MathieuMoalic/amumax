@@ -10,15 +10,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/zarr_old"
 	"github.com/fatih/color"
 )
 
 // FileSystem represents a file system with a working directory.
 // It includes functionality for asynchronous file operations.
 type FileSystem struct {
-	wd       string      // Working directory
+	Wd       string      // Working directory
 	bufSize  int         // Buffer size for buffered writer
 	filePerm os.FileMode // File permissions
 	dirPerm  os.FileMode // Directory permissions
@@ -40,8 +38,51 @@ func (a *atom) Load() int32 {
 }
 
 // NewFileSystem creates a new FileSystem with the specified working directory.
-// The working directory should be an absolute path.
-func NewFileSystem(scriptPath, outputDir string, skipExists, forceClean bool) *FileSystem {
+// If scriptPath is "", a temporary directory is created.
+// outputDir is "" by default, in which case the working directory is created folling the script path.
+// If skipExists is true, the directory is skipped if it already exists. Default to false
+// If forceClean is true, the directory is removed if it already exists. Default to false
+func NewFileSystem(scriptPath string, outputDir string, skipExists, forceClean bool) (*FileSystem, string, error) {
+	fs := &FileSystem{
+		bufSize:  16 * 1024,              // Default buffer size for buffered writer (16 KB)
+		filePerm: 0644,                   // Default file permissions
+		dirPerm:  0755,                   // Default directory permissions
+		saveQue:  make(chan func(), 100), // Initialize asynchronous operations
+	}
+	fs.Wd = fs.getWD(scriptPath, outputDir)
+
+	if fs.IsDir("") {
+		// if directory exists and --skip-exist flag is set, skip the directory
+		if skipExists {
+			warn := fmt.Sprintf("Directory `%s` exists, skipping `%s` because of --skip-exist flag.", fs.Wd, scriptPath)
+			// os.Exit(0)
+			return nil, warn, nil
+			// if directory exists and --force-clean flag is set, remove the directory
+		} else if forceClean {
+			color.Yellow(fmt.Sprintf("Cleaning `%s`", fs.Wd))
+			err := fs.Remove("")
+			if err != nil {
+				return nil, "", fmt.Errorf("error removing directory `%s`: %v", fs.Wd, err)
+			}
+			err = fs.Mkdir("")
+			if err != nil {
+				return nil, "", fmt.Errorf("error creating directory `%s`: %v", fs.Wd, err)
+			}
+		}
+	} else {
+		err := fs.Mkdir("")
+		if err != nil {
+			return nil, "", fmt.Errorf("error creating directory `%s`: %v", fs.Wd, err)
+		}
+	}
+	err := fs.CreateZarrGroup("")
+	if err != nil {
+		return nil, "", fmt.Errorf("error creating zarr group `%s`: %v", fs.Wd, err)
+	}
+	return fs, "", nil
+}
+
+func (fs *FileSystem) getWD(scriptPath, outputDir string) string {
 	zarrPath := ""
 	if outputDir != "" {
 		zarrPath = outputDir
@@ -64,45 +105,16 @@ func NewFileSystem(scriptPath, outputDir string, skipExists, forceClean bool) *F
 	if !filepath.IsAbs(absZarrPath) {
 		panic("working directory must be an absolute path")
 	}
-	// add trailing slash to wd
-	if absZarrPath[len(absZarrPath)-1] != filepath.Separator {
-		absZarrPath += string(filepath.Separator)
-	}
-	fs := &FileSystem{
-		wd:       absZarrPath,
-		bufSize:  16 * 1024, // Default buffer size for buffered writer (16 KB)
-		filePerm: 0644,      // Default file permissions
-		dirPerm:  0755,      // Default directory permissions
-
-		// Initialize fields for asynchronous operations
-		saveQue: make(chan func(), 100), // Queue capacity of 100
-	}
-	if fs.IsDir("") {
-		// if directory exists and --skip-exist flag is set, skip the directory
-		if skipExists {
-			log_old.Log.Warn("Directory `%s` exists, skipping `%s` because of --skip-exist flag.", zarrPath, scriptPath)
-			os.Exit(0)
-			// if directory exists and --force-clean flag is set, remove the directory
-		} else if forceClean {
-			log_old.Log.Warn("Cleaning `%s`", zarrPath)
-			log_old.Log.PanicIfError(fs.Remove(""))
-			log_old.Log.PanicIfError(fs.Mkdir(""))
-		}
-	} else {
-		log_old.Log.PanicIfError(fs.Mkdir(""))
-	}
-	zarr_old.InitZgroup("", zarrPath)
-	go fs.run()
-	return fs
+	return absZarrPath
 }
 
-// run continuously executes tasks from the saveQue channel.
-func (fs *FileSystem) run() {
-	for f := range fs.saveQue {
-		f()
-		fs.queLen.Add(-1)
-	}
-}
+// // run continuously executes tasks from the saveQue channel.
+// func (fs *FileSystem) run() {
+// 	for f := range fs.saveQue {
+// 		f()
+// 		fs.queLen.Add(-1)
+// 	}
+// }
 
 // QueueOutput queues a function for asynchronous execution.
 func (fs *FileSystem) QueueOutput(f func()) {
@@ -120,13 +132,6 @@ func (fs *FileSystem) Drain() {
 			f()
 			fs.queLen.Add(-1)
 		}
-	}
-}
-
-// SetBufferSize sets the buffer size for the buffered writer.
-func (fs *FileSystem) SetBufferSize(size int) {
-	if size > 0 {
-		fs.bufSize = size
 	}
 }
 
@@ -267,12 +272,12 @@ func (fs *FileSystem) Open(p string) (io.ReadCloser, error) {
 // addWorkDir adds the working directory to the path if it's relative.
 func (fs *FileSystem) addWorkDir(p string) string {
 	if !filepath.IsAbs(p) {
-		return filepath.Join(fs.wd, p)
+		return filepath.Join(fs.Wd, p)
 	}
 	return p
 }
 
 // GetWD returns the working directory.
 func (fs *FileSystem) GetWD() string {
-	return fs.wd
+	return fs.Wd
 }

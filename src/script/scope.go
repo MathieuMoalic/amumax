@@ -58,7 +58,6 @@ func (p *ScriptParser) registerUserVariable(name string, value interface{}) {
 		p.variablesScope[strings.ToLower(name)] = value
 	}
 	if p.isMeshExpression(name) {
-		p.log.Info("Mesh expression: %s", name)
 		p.initializeMeshIfReady()
 	}
 	p.variablesScope[name] = value

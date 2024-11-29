@@ -8,7 +8,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/mesh_old"
 )
 
 var (
@@ -371,14 +371,14 @@ func (q *shifted) NComp() int {
 // and will be re-evaluated after mesh change,
 // because otherwise too slow
 func maskedQuant(q Quantity, shape shape) Quantity {
-	return &masked{q, shape, nil, mesh.Mesh{}}
+	return &masked{q, shape, nil, mesh_old.Mesh{}}
 }
 
 type masked struct {
 	orig  Quantity
 	shape shape
 	mask  *data.Slice
-	mesh  mesh.Mesh
+	mesh  mesh_old.Mesh
 }
 
 func (q *masked) EvalTo(dst *data.Slice) {

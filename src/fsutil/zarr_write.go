@@ -11,7 +11,7 @@ func (fs *FileSystem) CreateZarrGroup(name string) error {
 	if err != nil && !strings.Contains(err.Error(), "file exists") {
 		return err
 	}
-	writer, file, err := fs.Create(name + "/.zgroup")
+	writer, file, err := fs.Create(name + ".zgroup")
 	if err != nil {
 		return err
 	}
@@ -106,6 +106,23 @@ func (fs *FileSystem) SaveFileZarray(path string, size [3]int, ncomp int, step i
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "\t")
 	err = enc.Encode(z)
+	if err != nil {
+		return err
+	}
+	writer.Flush()
+	return nil
+}
+
+func (fs *FileSystem) SaveZattrs(path string, data map[string]interface{}) error {
+	writer, file, err := fs.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	enc := json.NewEncoder(writer)
+	enc.SetEscapeHTML(false)
+	enc.SetIndent("", "\t")
+	err = enc.Encode(data)
 	if err != nil {
 		return err
 	}

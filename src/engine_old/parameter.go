@@ -14,7 +14,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/mesh_old"
 	"github.com/MathieuMoalic/amumax/src/script_old"
 )
 
@@ -94,9 +94,9 @@ func (p *regionwise) MSlice() cuda.MSlice {
 	}
 }
 
-func (p *regionwise) Name() string     { return p.name }
-func (p *regionwise) Unit() string     { return p.unit }
-func (p *regionwise) Mesh() *mesh.Mesh { return GetMesh() }
+func (p *regionwise) Name() string         { return p.name }
+func (p *regionwise) Unit() string         { return p.unit }
+func (p *regionwise) Mesh() *mesh_old.Mesh { return GetMesh() }
 
 func (p *regionwise) update() {
 	if p.timestamp != Time {

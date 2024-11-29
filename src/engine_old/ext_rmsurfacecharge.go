@@ -7,7 +7,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/mag"
-	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/mesh_old"
 )
 
 // For a nanowire magnetized in-plane, with mx = mxLeft on the left end and
@@ -29,7 +29,7 @@ func removeLRSurfaceCharge(region int, mxLeft, mxRight float64) {
 	B_ext.Add(compensateLRSurfaceCharges(GetMesh(), mxLeft, mxRight, bsat), nil)
 }
 
-func compensateLRSurfaceCharges(m *mesh.Mesh, mxLeft, mxRight float64, bsat float64) *data.Slice {
+func compensateLRSurfaceCharges(m *mesh_old.Mesh, mxLeft, mxRight float64, bsat float64) *data.Slice {
 	h := data.NewSlice(3, m.Size())
 	H := h.Vectors()
 	world := m.WorldSize()

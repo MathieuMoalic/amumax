@@ -6,7 +6,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/mesh_old"
 )
 
 func sOneRegion(q Quantity, r int) *sOneReg {
@@ -40,7 +40,7 @@ func inRegion(q Quantity, region int) Quantity {
 func (q *oneReg) NComp() int             { return q.parent.NComp() }
 func (q *oneReg) Name() string           { return fmt.Sprint(nameOf(q.parent), ".region", q.region) }
 func (q *oneReg) Unit() string           { return unitOf(q.parent) }
-func (q *oneReg) Mesh() *mesh.Mesh       { return MeshOf(q.parent) }
+func (q *oneReg) Mesh() *mesh_old.Mesh   { return MeshOf(q.parent) }
 func (q *oneReg) EvalTo(dst *data.Slice) { evalTo(q, dst) }
 
 // returns a new slice equal to q in the given region, 0 outside.

@@ -3,7 +3,6 @@ package engine
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 // stores the region index for each cell
@@ -108,7 +107,7 @@ func (r *regions) defRegion(id int, s shape) {
 func (r *regions) render(f func(x, y, z float64) int) {
 	mesh := r.e.mesh
 	regionArray1D := r.regionListCPU() // need to start from previous state
-	regionArray3D := reshapeBytes(regionArray1D, mesh.Size())
+	regionArray3D := r.reshapeBytes(regionArray1D, mesh.Size())
 
 	for iz := 0; iz < mesh.Nz; iz++ {
 		for iy := 0; iy < mesh.Ny; iy++ {
@@ -177,7 +176,7 @@ func (r *regions) setCell(ix, iy, iz int, region int) {
 
 func (r *regions) defRegionId(id int) {
 	if id < 0 || id > r.maxRegions {
-		log_old.Log.ErrAndExit("region id should be 0 -%d, have: %d", r.maxRegions, id)
+		r.e.log.ErrAndExit("region id should be 0 -%d, have: %d", r.maxRegions, id)
 	}
 	r.addIndex(id)
 }
@@ -223,10 +222,10 @@ func (r *regions) slice() (*data.Slice, bool) {
 // var _ Quantity = &Regions
 
 // Re-interpret a contiguous array as a multi-dimensional array of given size.
-func reshapeBytes(array []byte, size [3]int) [][][]byte {
+func (r *regions) reshapeBytes(array []byte, size [3]int) [][][]byte {
 	Nxx, Nyy, Nzz := size[X], size[Y], size[Z]
 	if Nxx*Nyy*Nzz != len(array) {
-		log_old.Log.ErrAndExit("reshapeBytes: size mismatch")
+		r.e.log.ErrAndExit("reshapeBytes: size mismatch")
 	}
 	sliced := make([][][]byte, Nzz)
 	for i := range sliced {

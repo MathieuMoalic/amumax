@@ -5,7 +5,6 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log_old"
 )
 
 type geometry struct {
@@ -70,7 +69,7 @@ func (g *geometry) setGeom(s shape) {
 	array := CpuSlice.Scalars()
 	mesh := g.e.mesh
 
-	log_old.Log.Info("Initializing geometry")
+	g.e.log.Info("Initializing geometry")
 	empty := true
 	for iz := 0; iz < mesh.Nz; iz++ {
 		for iy := 0; iy < mesh.Ny; iy++ {
@@ -116,7 +115,7 @@ func (g *geometry) setGeom(s shape) {
 	}
 
 	if empty {
-		log_old.Log.ErrAndExit("SetGeom: geometry completely empty")
+		g.e.log.ErrAndExit("SetGeom: geometry completely empty")
 	}
 
 	data.Copy(g.gpuSlice, CpuSlice)
@@ -239,7 +238,7 @@ func (g *geometry) shiftY(dy int) {
 // x range that needs to be refreshed after shift over dx
 func (g *geometry) shiftDirtyRange(dx int) (x1, x2 int) {
 	nx := g.e.mesh.Size()[X]
-	log_old.AssertMsg(dx != 0, "Invalid shift: dx must not be zero in shiftDirtyRange")
+	g.e.log.AssertMsg(dx != 0, "Invalid shift: dx must not be zero in shiftDirtyRange")
 
 	if dx < 0 {
 		x1 = nx + dx

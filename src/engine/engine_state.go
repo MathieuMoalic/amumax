@@ -1,19 +1,15 @@
 package engine
 
 import (
-	"fmt"
 	"os"
-	"time"
 
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/metadata"
 	"github.com/MathieuMoalic/amumax/src/script"
 	"github.com/MathieuMoalic/amumax/src/timer"
-	"github.com/fatih/color"
 )
 
 type engineState struct {
@@ -37,46 +33,20 @@ type engineState struct {
 	script          *script.ScriptParser
 }
 
-func newEngineState(givenFlags *flags.FlagsType) *engineState {
-	return &engineState{flags: givenFlags}
+func newEngineState(givenFlags *flags.FlagsType, log *log.Logs) *engineState {
+	return &engineState{flags: givenFlags, log: log}
 }
 
-func (s *engineState) start(mx3path string) {
-	scriptBytes, err := os.ReadFile(mx3path)
-	if err != nil {
-		color.Red("Error reading script: %v", err)
-		os.Exit(1)
-	}
-	s.run(mx3path, string(scriptBytes))
-}
-
-func (s *engineState) startInteractive() {
-	log_old.Log.Info("No input files: starting interactive session")
-	scriptStr := `
-	Nx = 128
-	Ny = 64
-	Nz = 1
-	dx = 3e-9
-	dy = 3e-9
-	dz = 3e-9
-	Msat = 1e6
-	Aex = 10e-12
-	alpha = 1
-	m = RandomMag()`
-	now := time.Now()
-	fakeMx3Path := fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
-	s.run(fakeMx3Path, scriptStr)
-}
-
-func (s *engineState) run(scriptPath, scriptStr string) {
+func (s *engineState) start(scriptPath string) {
 	// defer s.cleanExit()
 	// The order of the following lines is important
-	s.fs = fsutil.NewFileSystem(scriptPath, flags.Flags.OutputDir, flags.Flags.SkipExists, flags.Flags.ForceClean)
-	s.log = log.NewLogs(s.fs, s.flags.Debug)
+	scriptStr := s.readScript(scriptPath)
+	s.initFileSystem(scriptPath)
 	s.metadata = metadata.NewMetadata(s.fs, s.log)
-	s.mesh = &mesh.Mesh{}
+	s.mesh = mesh.NewMesh(s.log)
 	s.script = script.NewScriptParser(&scriptStr, s.log, s.metadata, s.initializeMeshIfReady)
 
+	s.script.RegisterMesh(s.mesh)
 	s.windowShift = newWindowShift(s)
 	s.shape = newShape(s)
 	s.table = newTable(s)
@@ -88,7 +58,6 @@ func (s *engineState) run(scriptPath, scriptStr string) {
 	s.utils = newUtils(s)
 	s.grains = newGrains(s)
 	s.config = newConfigList(s.mesh, s.script)
-	s.script.RegisterMesh(s.mesh)
 	err := s.script.Parse()
 	if err != nil {
 		s.log.ErrAndExit("Error parsing script: %v", err)
@@ -101,6 +70,53 @@ func (s *engineState) run(scriptPath, scriptStr string) {
 	s.cleanExit()
 }
 
+func (s *engineState) readScript(scriptPath string) string {
+	scriptStr := ""
+	if scriptPath == "" {
+		scriptStr = `
+			Nx = 128
+			Ny = 64
+			Nz = 1
+			dx = 3e-9
+			dy = 3e-9
+			dz = 3e-9
+			Msat = 1e6
+			Aex = 10e-12
+			alpha = 1
+			m = RandomMag()`
+	} else {
+		scriptBytes, err := os.ReadFile(scriptPath)
+		if err != nil {
+			s.log.ErrAndExit("Error reading script: %v", err)
+		}
+		if len(scriptBytes) == 0 {
+			s.log.ErrAndExit("Empty input file: %s", scriptPath)
+		}
+		scriptStr = string(scriptBytes)
+
+	}
+	return scriptStr
+}
+
+// fs cannot depend on log, so we need to initialize it here
+func (s *engineState) initFileSystem(scriptPath string) {
+	fs, warn, err := fsutil.NewFileSystem(scriptPath, flags.Flags.OutputDir, flags.Flags.SkipExists, flags.Flags.ForceClean)
+	if err != nil {
+		s.log.ErrAndExit("Error creating file system: %v", err)
+	}
+	if warn != "" {
+		// this is only for skipping the directory if it already exists with --skip-exist flag
+		s.log.Warn("%s", warn)
+		os.Exit(0)
+	}
+	s.fs = fs
+	if scriptPath == "" {
+		s.log.Info("No input files: starting interactive session")
+	} else {
+		s.log.Info("Input path: %s", scriptPath)
+	}
+	s.log.Info("Output directory: %s", s.fs.Wd)
+}
 func (s *engineState) cleanExit() {
 	s.fs.Drain()    // wait for the save queue to finish
 	s.table.flush() // flush table to disk
@@ -113,6 +129,7 @@ func (s *engineState) cleanExit() {
 	s.log.FlushToFile()
 }
 
+// this is called by the script parser when the mesh is ready to be created
 func (s *engineState) initializeMeshIfReady() {
 	if s.mesh.ReadyToCreate() {
 		s.mesh.Create()

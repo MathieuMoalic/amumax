@@ -13,7 +13,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/mesh_old"
 )
 
 // info provides an Info implementation intended for embedding in other types.
@@ -100,7 +100,7 @@ type fieldFunc struct {
 	f func(*data.Slice)
 }
 
-func (c *fieldFunc) Mesh() *mesh.Mesh       { return GetMesh() }
+func (c *fieldFunc) Mesh() *mesh_old.Mesh   { return GetMesh() }
 func (c *fieldFunc) average() []float64     { return qAverageUniverse(c) }
 func (c *fieldFunc) EvalTo(dst *data.Slice) { evalTo(c, dst) }
 
@@ -153,7 +153,7 @@ func (v VectorField) average() []float64       { return AverageOf(v.Quantity) }
 func (v VectorField) Average() data.Vector     { return unslice(v.average()) }
 func (v VectorField) Region(r int) VectorField { return AsVectorField(inRegion(v.Quantity, r)) }
 func (v VectorField) Comp(c int) ScalarField   { return AsScalarField(comp(v.Quantity, c)) }
-func (v VectorField) Mesh() *mesh.Mesh         { return MeshOf(v.Quantity) }
+func (v VectorField) Mesh() *mesh_old.Mesh     { return MeshOf(v.Quantity) }
 func (v VectorField) Name() string             { return nameOf(v.Quantity) }
 func (v VectorField) Unit() string             { return unitOf(v.Quantity) }
 func (v VectorField) HostCopy() *data.Slice {
