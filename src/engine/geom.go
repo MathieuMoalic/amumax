@@ -5,6 +5,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/utils"
 )
 
 type geometry struct {
@@ -50,7 +51,7 @@ func (g *geometry) Average() []float64 {
 	if r {
 		defer cuda.Recycle(s)
 	}
-	return averageSlice(s)
+	return utils.AverageSlice(s)
 }
 
 func (g *geometry) setGeom(s shape) {
@@ -75,7 +76,7 @@ func (g *geometry) setGeom(s shape) {
 		for iy := 0; iy < mesh.Ny; iy++ {
 			for ix := 0; ix < mesh.Nx; ix++ {
 
-				r := g.e.utils.Index2Coord(ix, iy, iz)
+				r := g.e.mesh.Index2Coord(ix, iy, iz)
 				x0, y0, z0 := r[X], r[Y], r[Z]
 
 				// check if center and all vertices lie inside or all outside
@@ -144,7 +145,7 @@ func (g *geometry) setGeom(s shape) {
 
 // Sample edgeSmooth^3 points inside the cell to estimate its volume.
 func (g *geometry) cellVolume(ix, iy, iz int) float32 {
-	r := g.e.utils.Index2Coord(ix, iy, iz)
+	r := g.e.mesh.Index2Coord(ix, iy, iz)
 	x0, y0, z0 := r[X], r[Y], r[Z]
 
 	c := g.e.mesh.CellSize()
@@ -195,7 +196,7 @@ func (g *geometry) shift(dx int) {
 	for iz := 0; iz < n[Z]; iz++ {
 		for iy := 0; iy < n[Y]; iy++ {
 			for ix := x1; ix < x2; ix++ {
-				r := g.e.utils.Index2Coord(ix, iy, iz) // includes shift
+				r := g.e.mesh.Index2Coord(ix, iy, iz) // includes shift
 				if !g.shape(r[X], r[Y], r[Z]) {
 					cuda.SetCell(g.gpuSlice, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
 				}
@@ -225,7 +226,7 @@ func (g *geometry) shiftY(dy int) {
 	for iz := 0; iz < n[Z]; iz++ {
 		for ix := 0; ix < n[X]; ix++ {
 			for iy := y1; iy < y2; iy++ {
-				r := g.e.utils.Index2Coord(ix, iy, iz) // includes shift
+				r := g.e.mesh.Index2Coord(ix, iy, iz) // includes shift
 				if !g.shape(r[X], r[Y], r[Z]) {
 					cuda.SetCell(g.gpuSlice, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
 				}

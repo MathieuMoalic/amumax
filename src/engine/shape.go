@@ -3,6 +3,8 @@ package engine
 import (
 	"image"
 	"math"
+
+	"github.com/MathieuMoalic/amumax/src/utils"
 )
 
 type shapeList struct {
@@ -53,7 +55,7 @@ func (s *shapeList) wave(period, amin, amax float64) shape {
 // ellipsoid with given diameters
 func (s *shapeList) ellipsoid(diamx, diamy, diamz float64) shape {
 	return func(x, y, z float64) bool {
-		return sqr64(x/diamx)+sqr64(y/diamy)+sqr64(z/diamz) <= 0.25
+		return utils.Sqr64(x/diamx)+utils.Sqr64(y/diamy)+utils.Sqr64(z/diamz) <= 0.25
 	}
 }
 
@@ -64,7 +66,7 @@ func (s *shapeList) ellipse(diamx, diamy float64) shape {
 // 3D cone with base at z=0 and vertex at z=height.
 func (s *shapeList) cone(diam, height float64) shape {
 	return func(x, y, z float64) bool {
-		return (height-z)*z >= 0 && sqr64(x/diam)+sqr64(y/diam) <= 0.25*sqr64(1-z/height)
+		return (height-z)*z >= 0 && utils.Sqr64(x/diam)+utils.Sqr64(y/diam) <= 0.25*utils.Sqr64(1-z/height)
 	}
 }
 
@@ -76,7 +78,7 @@ func (s *shapeList) circle(diam float64) shape {
 func (s *shapeList) cylinder(diam, height float64) shape {
 	return func(x, y, z float64) bool {
 		return z <= height/2 && z >= -height/2 &&
-			sqr64(x/diam)+sqr64(y/diam) <= 0.25
+			utils.Sqr64(x/diam)+utils.Sqr64(y/diam) <= 0.25
 	}
 }
 
@@ -108,7 +110,7 @@ func (s *shapeList) triangle(side float64) shape {
 func (s *shapeList) rTriangle(side, diam float64) shape {
 	return func(x, y, z float64) bool {
 		c := math.Sqrt(3)
-		return y > -side/(2*c) && y < x*c+side/c && y < -x*c+side/c && math.Sqrt(sqr64(x)+sqr64(y)) < diam/2
+		return y > -side/(2*c) && y < x*c+side/c && y < -x*c+side/c && math.Sqrt(utils.Sqr64(x)+utils.Sqr64(y)) < diam/2
 	}
 }
 
@@ -181,8 +183,8 @@ func (s *shapeList) layers(a, b int) shape {
 		s.e.log.ErrAndExit("layers %d:%d out of bounds (0 - %d)", a, b, Nz)
 	}
 	dz := s.e.mesh.Dz
-	z1 := s.e.utils.Index2Coord(0, 0, a)[Z] - dz/2
-	z2 := s.e.utils.Index2Coord(0, 0, b)[Z] - dz/2
+	z1 := s.e.mesh.Index2Coord(0, 0, a)[Z] - dz/2
+	z2 := s.e.mesh.Index2Coord(0, 0, b)[Z] - dz/2
 	return s.zRange(z1, z2)
 }
 
@@ -193,7 +195,7 @@ func (s *shapeList) layer(index int) shape {
 // Single cell with given index
 func (s *shapeList) cell(ix, iy, iz int) shape {
 	dx, dy, dz := s.e.mesh.GetDi()
-	pos := s.e.utils.Index2Coord(ix, iy, iz)
+	pos := s.e.mesh.Index2Coord(ix, iy, iz)
 	x1 := pos[X] - dx/2
 	y1 := pos[Y] - dy/2
 	z1 := pos[Z] - dz/2
@@ -284,7 +286,7 @@ func (s shape) Transl(dx, dy, dz float64) shape {
 // A period of 0 or infinity means no repetition.
 func (s shape) Repeat(periodX, periodY, periodZ float64) shape {
 	return func(x, y, z float64) bool {
-		return s(fmod(x, periodX), fmod(y, periodY), fmod(z, periodZ))
+		return s(utils.Fmod(x, periodX), utils.Fmod(y, periodY), utils.Fmod(z, periodZ))
 	}
 }
 

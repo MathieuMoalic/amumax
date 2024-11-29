@@ -9,6 +9,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/script"
+	"github.com/MathieuMoalic/amumax/src/utils"
 )
 
 // Magnetic configuration returns m vector for position (x,y,z)
@@ -71,7 +72,7 @@ func (c *configList) uniform(mx, my, mz float64) config {
 // Make a vortex magnetization with given circulation and core polarization (+1 or -1).
 // The core is smoothed over a few exchange lengths and should easily relax to its ground state.
 func (c *configList) vortex(circ, pol int) config {
-	diam2 := 2 * sqr64(c.mesh.CellSize()[X])
+	diam2 := 2 * utils.Sqr64(c.mesh.CellSize()[X])
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
 		r := math.Sqrt(r2)
@@ -109,7 +110,7 @@ func (c *configList) blochSkyrmion(charge, pol int) config {
 }
 
 func (c *configList) antiVortex(circ, pol int) config {
-	diam2 := 2 * sqr64(c.mesh.CellSize()[X])
+	diam2 := 2 * utils.Sqr64(c.mesh.CellSize()[X])
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
 		r := math.Sqrt(r2)
@@ -172,7 +173,7 @@ func (c *configList) twoDomain(mx1, my1, mz1, mxwall, mywall, mzwall, mx2, my2, 
 		} else {
 			m = data.Vector{mx2, my2, mz2}
 		}
-		gauss := math.Exp(-sqr64(x / ww))
+		gauss := math.Exp(-utils.Sqr64(x / ww))
 		m[X] = (1-gauss)*m[X] + gauss*mxwall
 		m[Y] = (1-gauss)*m[Y] + gauss*mywall
 		m[Z] = (1-gauss)*m[Z] + gauss*mzwall
