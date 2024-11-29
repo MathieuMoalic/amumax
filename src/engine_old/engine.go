@@ -9,8 +9,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/timer"
 )
 
-var VERSION = "dev"
-
 var StartTime = time.Now()
 
 var (

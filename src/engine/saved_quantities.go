@@ -3,15 +3,12 @@ package engine
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
 
 	"github.com/DataDog/zstd"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/zarr_old"
 )
 
 type savedQuantity struct {
@@ -32,7 +29,7 @@ func newSavedQuantity(engineState *engineState, q quantity, name string, rchunks
 		q:       q,
 		period:  period,
 		times:   []float64{},
-		chunks:  newChunks(q, rchunks),
+		chunks:  newChunks(engineState.log, q, rchunks),
 		rchunks: rchunks,
 	}
 }
@@ -47,12 +44,8 @@ func newSavedQuantity(engineState *engineState, q quantity, name string, rchunks
 
 // saveAttrs updates the .zattrs file with the times data.
 func (sq *savedQuantity) saveAttrs() {
-	u, err := json.Marshal(zarr_old.Zattrs{Buffer: sq.times})
-	log_old.Log.PanicIfError(err)
-	err = sq.e.fs.Remove(sq.name + "/.zattrs")
-	log_old.Log.PanicIfError(err)
-	err = sq.e.fs.Put(sq.name+"/.zattrs", u)
-	log_old.Log.PanicIfError(err)
+	err := sq.e.fs.SaveZattrs(sq.name+"/.zattrs", map[string]interface{}{"t": sq.times})
+	sq.e.log.PanicIfError(err)
 }
 
 // func valueOf(q quantity) *data.Slice {
@@ -72,7 +65,7 @@ func (sq *savedQuantity) save() {
 	dataSlice := buffer.HostCopy()
 	sq.e.fs.QueueOutput(func() {
 		err := sq.syncSave(dataSlice, sq.name, len(sq.times), sq.chunks)
-		log_old.Log.PanicIfError(err)
+		sq.e.log.PanicIfError(err)
 	})
 }
 
@@ -134,12 +127,12 @@ func (sq *savedQuantity) syncSave(array *data.Slice, qname string, step int, chu
 }
 
 type savedQuantities struct {
-	EngineState *engineState
-	Quantities  []savedQuantity
+	e          *engineState
+	Quantities []savedQuantity
 }
 
 func newSavedQuantities(engineState *engineState) *savedQuantities {
-	sqs := &savedQuantities{EngineState: engineState}
+	sqs := &savedQuantities{e: engineState}
 	engineState.script.RegisterFunction("Save", sqs.save)
 	engineState.script.RegisterFunction("SaveAs", sqs.saveAs)
 	engineState.script.RegisterFunction("SaveAsChunks", sqs.saveAsChunk)
@@ -170,13 +163,13 @@ func (sqs *savedQuantities) savedQuandtityExists(name string) bool {
 }
 
 func (sqs *savedQuantities) createSavedQuantity(q quantity, name string, rchunks requestedChunking, period float64) *savedQuantity {
-	if sqs.EngineState.fs.Exists(name) {
-		err := sqs.EngineState.fs.Remove(name)
-		log_old.Log.PanicIfError(err)
+	if sqs.e.fs.Exists(name) {
+		err := sqs.e.fs.Remove(name)
+		sqs.e.log.PanicIfError(err)
 	}
-	err := sqs.EngineState.fs.Mkdir(name)
-	log_old.Log.PanicIfError(err)
-	sq := newSavedQuantity(sqs.EngineState, q, name, rchunks, period)
+	err := sqs.e.fs.Mkdir(name)
+	sqs.e.log.PanicIfError(err)
+	sq := newSavedQuantity(sqs.e, q, name, rchunks, period)
 	sqs.Quantities = append(sqs.Quantities, *sq)
 	return sq
 
@@ -185,14 +178,14 @@ func (sqs *savedQuantities) createSavedQuantity(q quantity, name string, rchunks
 func (sqs *savedQuantities) updateSavedQuantity(q quantity, name string, rchunks requestedChunking, period float64) {
 	sq := sqs.getSavedQuantity(name)
 	if sq.rchunks != rchunks {
-		log_old.Log.ErrAndExit("Error: The dataset %v has already been initialized with different chunks.", name)
+		sq.e.log.ErrAndExit("Error: The dataset %v has already been initialized with different chunks.", name)
 	} else if sq.q != q {
-		log_old.Log.ErrAndExit("Error: The dataset %v has already been initialized with a different quantity.", name)
+		sq.e.log.ErrAndExit("Error: The dataset %v has already been initialized with a different quantity.", name)
 	} else if sq.period != period {
 		if sq.period == 0 && period != 0 {
 			// enable autosave
 			sq.period = period
-			sq.nextTime = sqs.EngineState.solver.time + period
+			sq.nextTime = sqs.e.solver.time + period
 		} else if sq.period != 0 && period == 0 {
 			// disable autosave
 			sq.period = period
@@ -207,7 +200,7 @@ func (sqs *savedQuantities) getSavedQuantity(name string) *savedQuantity {
 			return z
 		}
 	}
-	log_old.Log.ErrAndExit("Error: The dataset %v has not been initialized.", name)
+	sqs.e.log.ErrAndExit("Error: The dataset %v has not been initialized.", name)
 	return nil
 }
 

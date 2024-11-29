@@ -9,6 +9,8 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/fatih/color"
 )
@@ -20,8 +22,11 @@ type Logs struct {
 	file   *os.File
 }
 
-func NewLogs(fs *fsutil.FileSystem, debug bool) *Logs {
-	l := &Logs{}
+func NewLogs(debug bool) *Logs {
+	return &Logs{debug: debug}
+}
+
+func (l *Logs) InitLogs(fs *fsutil.FileSystem, debug bool) {
 	writer, file, err := fs.Create("log.txt")
 	if err != nil {
 		color.Red(fmt.Sprintf("Error creating the log file: %v", err))
@@ -29,9 +34,16 @@ func NewLogs(fs *fsutil.FileSystem, debug bool) *Logs {
 	l.writer = writer
 	l.file = file
 	l.debug = debug
-	return l
 }
 
+// print version to stdout
+func (l *Logs) PrintVersion(version string) {
+	l.Info("Version:         %s", version)
+	l.Info("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
+	l.Info("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
+	l.Info("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda.UseCC)
+	l.Info("GPU Information: %s", cuda.GPUInfo)
+}
 func (l *Logs) Close() {
 	l.FlushToFile()
 	l.file.Close()
@@ -59,7 +71,10 @@ func (l *Logs) writeToFile(msg string) {
 
 func (l *Logs) addAndWrite(msg string) {
 	l.Hist += msg
-	l.writeToFile(msg)
+	// We can write logs before the writer is initialized
+	if l.writer != nil {
+		l.writeToFile(msg)
+	}
 }
 
 func (l *Logs) Command(msg ...interface{}) {

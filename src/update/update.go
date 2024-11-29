@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old"
 	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/version"
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
 	"github.com/minio/selfupdate"
@@ -62,7 +62,7 @@ func ShowUpdateMenu() {
 
 	// Create the prompt
 	prompt := promptui.Select{
-		Label: fmt.Sprintf("Current version : [%s] | Select the amumax version to update to", engine_old.VERSION),
+		Label: fmt.Sprintf("Current version : [%s] | Select the amumax version to update to", version.VERSION),
 		Items: tags,
 		Size:  10,
 	}

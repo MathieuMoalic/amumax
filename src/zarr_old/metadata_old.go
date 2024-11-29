@@ -8,7 +8,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/mesh_old"
 )
 
 type Metadata struct {
@@ -84,7 +84,7 @@ func (m *Metadata) Save() {
 	}
 }
 
-func (m *Metadata) AddMesh(mesh *mesh.Mesh) {
+func (m *Metadata) AddMesh(mesh *mesh_old.Mesh) {
 	m.Add("dx", mesh.Dx)
 	m.Add("dy", mesh.Dy)
 	m.Add("dz", mesh.Dz)

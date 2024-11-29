@@ -6,7 +6,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/mesh_old"
 )
 
 var NormMag magnetization // reduced magnetization (unit length)
@@ -22,11 +22,11 @@ func (m *magnetization) GetRegionToString(region int) string {
 	return fmt.Sprintf("(%g,%g,%g)", v[0], v[1], v[2])
 }
 
-func (m *magnetization) Mesh() *mesh.Mesh    { return GetMesh() }
-func (m *magnetization) NComp() int          { return 3 }
-func (m *magnetization) Name() string        { return "m" }
-func (m *magnetization) Unit() string        { return "" }
-func (m *magnetization) Buffer() *data.Slice { return m.buffer_ } // todo: rename Gpu()?
+func (m *magnetization) Mesh() *mesh_old.Mesh { return GetMesh() }
+func (m *magnetization) NComp() int           { return 3 }
+func (m *magnetization) Name() string         { return "m" }
+func (m *magnetization) Unit() string         { return "" }
+func (m *magnetization) Buffer() *data.Slice  { return m.buffer_ } // todo: rename Gpu()?
 
 func (m *magnetization) Comp(c int) ScalarField  { return comp(m, c) }
 func (m *magnetization) SetValue(v interface{})  { m.SetInShape(nil, v.(config)) }

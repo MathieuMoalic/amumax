@@ -1,6 +1,9 @@
 package api
 
-import "github.com/MathieuMoalic/amumax/src/engine_old"
+import (
+	"github.com/MathieuMoalic/amumax/src/engine_old"
+	"github.com/MathieuMoalic/amumax/src/version"
+)
 
 type HeaderState struct {
 	Path    string  `msgpack:"path"`
@@ -18,7 +21,7 @@ func initHeaderAPI() *HeaderState {
 	return &HeaderState{
 		Path:    engine_old.OD(),
 		Status:  status,
-		Version: &engine_old.VERSION,
+		Version: &version.VERSION,
 	}
 }
 

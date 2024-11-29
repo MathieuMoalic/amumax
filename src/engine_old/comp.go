@@ -8,7 +8,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/mesh_old"
 )
 
 type component struct {
@@ -23,10 +23,10 @@ func comp(parent Quantity, c int) ScalarField {
 	return AsScalarField(&component{parent, c})
 }
 
-func (q *component) NComp() int       { return 1 }
-func (q *component) Name() string     { return fmt.Sprint(nameOf(q.parent), "_", compname[q.comp]) }
-func (q *component) Unit() string     { return unitOf(q.parent) }
-func (q *component) Mesh() *mesh.Mesh { return MeshOf(q.parent) }
+func (q *component) NComp() int           { return 1 }
+func (q *component) Name() string         { return fmt.Sprint(nameOf(q.parent), "_", compname[q.comp]) }
+func (q *component) Unit() string         { return unitOf(q.parent) }
+func (q *component) Mesh() *mesh_old.Mesh { return MeshOf(q.parent) }
 
 func (q *component) Slice() (*data.Slice, bool) {
 	p := q.parent

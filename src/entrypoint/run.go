@@ -17,6 +17,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/script_old"
 	"github.com/MathieuMoalic/amumax/src/url"
+	"github.com/MathieuMoalic/amumax/src/version"
 )
 
 type Release struct {
@@ -98,7 +99,7 @@ func runFileAndServe(mx3Path string, flags *flags.FlagsType) {
 
 // print version to stdout
 func printVersion() {
-	log_old.Log.Info("Version:         %s", engine_old.VERSION)
+	log_old.Log.Info("Version:         %s", version.VERSION)
 	log_old.Log.Info("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
 	log_old.Log.Info("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
 	log_old.Log.Info("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda.UseCC)
