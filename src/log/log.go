@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"runtime"
-	"time"
 
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/fatih/color"
@@ -46,12 +45,6 @@ func (l *Logs) PrintVersion(version string, cudaInfo [6]string) {
 func (l *Logs) Close() {
 	l.FlushToFile()
 	l.file.Close()
-}
-func (l *Logs) AutoFlushToFile() {
-	for {
-		l.FlushToFile()
-		time.Sleep(5 * time.Second)
-	}
 }
 
 func (l *Logs) FlushToFile() {
