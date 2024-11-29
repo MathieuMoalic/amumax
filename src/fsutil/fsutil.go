@@ -42,8 +42,8 @@ func (a *atom) Load() int32 {
 // outputDir is "" by default, in which case the working directory is created folling the script path.
 // If skipExists is true, the directory is skipped if it already exists. Default to false
 // If forceClean is true, the directory is removed if it already exists. Default to false
-func NewFileSystem(scriptPath string, outputDir string, skipExists, forceClean bool) (*FileSystem, string, error) {
-	fs := &FileSystem{
+func NewFileSystem(scriptPath string, outputDir string, skipExists, forceClean bool) (fs *FileSystem, warn string, err error) {
+	fs = &FileSystem{
 		bufSize:  16 * 1024,              // Default buffer size for buffered writer (16 KB)
 		filePerm: 0644,                   // Default file permissions
 		dirPerm:  0755,                   // Default directory permissions
@@ -54,32 +54,32 @@ func NewFileSystem(scriptPath string, outputDir string, skipExists, forceClean b
 	if fs.IsDir("") {
 		// if directory exists and --skip-exist flag is set, skip the directory
 		if skipExists {
-			warn := fmt.Sprintf("Directory `%s` exists, skipping `%s` because of --skip-exist flag.", fs.Wd, scriptPath)
+			warn = fmt.Sprintf("Directory `%s` exists, skipping `%s` because of --skip-exist flag.", fs.Wd, scriptPath)
 			// os.Exit(0)
 			return nil, warn, nil
 			// if directory exists and --force-clean flag is set, remove the directory
 		} else if forceClean {
-			color.Yellow(fmt.Sprintf("Cleaning `%s`", fs.Wd))
-			err := fs.Remove("")
+			warn = fmt.Sprintf("Cleaning `%s`", fs.Wd)
+			err = fs.Remove("")
 			if err != nil {
-				return nil, "", fmt.Errorf("error removing directory `%s`: %v", fs.Wd, err)
+				return nil, warn, fmt.Errorf("error removing directory `%s`: %v", fs.Wd, err)
 			}
 			err = fs.Mkdir("")
 			if err != nil {
-				return nil, "", fmt.Errorf("error creating directory `%s`: %v", fs.Wd, err)
+				return nil, warn, fmt.Errorf("error creating directory `%s`: %v", fs.Wd, err)
 			}
 		}
 	} else {
-		err := fs.Mkdir("")
+		err = fs.Mkdir("")
 		if err != nil {
-			return nil, "", fmt.Errorf("error creating directory `%s`: %v", fs.Wd, err)
+			return nil, warn, fmt.Errorf("error creating directory `%s`: %v", fs.Wd, err)
 		}
 	}
-	err := fs.CreateZarrGroup("")
+	err = fs.CreateZarrGroup("")
 	if err != nil {
-		return nil, "", fmt.Errorf("error creating zarr group `%s`: %v", fs.Wd, err)
+		return nil, warn, fmt.Errorf("error creating zarr group `%s`: %v", fs.Wd, err)
 	}
-	return fs, "", nil
+	return fs, warn, err
 }
 
 func (fs *FileSystem) getWD(scriptPath, outputDir string) string {

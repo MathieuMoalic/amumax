@@ -55,6 +55,9 @@ func (l *Logs) AutoFlushToFile() {
 }
 
 func (l *Logs) FlushToFile() {
+	if l.writer == nil {
+		return
+	}
 	l.writer.Flush()
 }
 

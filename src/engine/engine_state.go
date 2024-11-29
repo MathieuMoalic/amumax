@@ -2,6 +2,7 @@ package engine
 
 import (
 	"os"
+	"strings"
 
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
@@ -107,7 +108,10 @@ func (s *engineState) initFileSystem(scriptPath string) {
 	if warn != "" {
 		// this is only for skipping the directory if it already exists with --skip-exist flag
 		s.log.Warn("%s", warn)
-		os.Exit(0)
+		// if warn contains "skip-exist", then we must exit
+		if strings.Contains(warn, "skip-exist") {
+			os.Exit(0)
+		}
 	}
 	s.fs = fs
 	if scriptPath == "" {
