@@ -131,7 +131,7 @@ func (g *geometry) setGeom(s shape) {
 			mx, my, mz := m[X][i], m[Y][i], m[Z][i]
 			if mx == 0 && my == 0 && mz == 0 {
 				needupload = true
-				rnd := g.e.config.randomDir(rng)
+				rnd := g.e.config.RandomDir(rng)
 				m[X][i], m[Y][i], m[Z][i] = float32(rnd[X]), float32(rnd[Y]), float32(rnd[Z])
 			}
 		}

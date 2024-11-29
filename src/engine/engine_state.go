@@ -8,6 +8,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mag_config"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/metadata"
 	"github.com/MathieuMoalic/amumax/src/script"
@@ -30,7 +31,7 @@ type engineState struct {
 	windowShift     *windowShift
 	shape           *shapeList
 	grains          *grains
-	config          *configList
+	config          *mag_config.ConfigList
 	script          *script.ScriptParser
 
 	autoFlushInterval time.Duration
@@ -61,7 +62,7 @@ func (s *engineState) start(scriptPath string) {
 	s.geometry = newGeom(s)
 	s.savedQuantities = newSavedQuantities(s)
 	s.grains = newGrains(s)
-	s.config = newConfigList(s.mesh, s.script)
+	s.config = mag_config.NewConfigList(s.mesh, s.script)
 	err := s.script.Parse()
 	if err != nil {
 		s.log.ErrAndExit("Error parsing script: %v", err)
