@@ -26,7 +26,7 @@ type FlagsType struct {
 	HideProgressBar bool
 	Tunnel          string
 	Insecure        bool
-	NewParser       bool
+	NewEngine       bool
 
 	WebUIDisabled     bool
 	WebUIAddress      string
@@ -50,7 +50,7 @@ func ParseFlags(rootCmd *cobra.Command) {
 	rootCmd.Flags().BoolVar(&Flags.HideProgressBar, "hide-progress-bar", false, "Hide the progress bar")
 	rootCmd.Flags().StringVarP(&Flags.Tunnel, "tunnel", "t", "", "Tunnel the web interface through SSH using the given host from your ssh config, empty string disables tunneling")
 	rootCmd.Flags().BoolVar(&Flags.Insecure, "insecure", false, "Allows to run shell commands")
-	rootCmd.Flags().BoolVarP(&Flags.NewParser, "new-parser", "p", false, "New parser")
+	rootCmd.Flags().BoolVarP(&Flags.NewEngine, "new-engine", "n", false, "New engine, experimental")
 
 	rootCmd.Flags().BoolVar(&Flags.WebUIDisabled, "webui-disable", false, "Whether to disable the web interface")
 	rootCmd.Flags().StringVar(&Flags.WebUIAddress, "webui-addr", "localhost:35367", "Address (URI) to serve web GUI (e.g., 0.0.0.0:8080/proxy/worker1)")

@@ -153,7 +153,7 @@ func run(inFile string, gpu int, flags *flags.FlagsType) {
 	if flags.Insecure {
 		cmd = append(cmd, "--insecure")
 	}
-	if flags.NewParser {
+	if flags.NewEngine {
 		cmd = append(cmd, "--new-parser")
 	}
 	if flags.WebUIDisabled {
