@@ -147,5 +147,5 @@ func printVersion() {
 	log_old.Log.Info("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
 	log_old.Log.Info("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
 	log_old.Log.Info("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda.UseCC)
-	log_old.Log.Info("GPU Information: %s", cuda.GPUInfo)
+	log_old.Log.Info("GPU Information: %s", cuda.GPUInfo_old)
 }

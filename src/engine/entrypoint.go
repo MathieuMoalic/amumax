@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Entrypoint is the entrypoint for the new engine which is not very functional yet
+// the cuda code still relies on global variables
 func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.Flags) {
 	// we create the log as early as possible to catch all messages
 	log := log.NewLogs(givenFlags.Debug)
@@ -25,26 +27,27 @@ func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.Flags) {
 	cuda.Synchronous = givenFlags.Sync
 	timer.Enabled = givenFlags.Sync
 
-	log.PrintVersion(version.VERSION, GpuInfo)
-	if givenFlags.Version {
-		return
-	}
 	// engine.Insecure = givenFlags.Insecure
 
 	if givenFlags.Vet {
-		return
-	}
-
-	go slurm.SetEndTimerIfSlurm()
-
-	if len(args) == 0 && givenFlags.Interactive {
+		log.PrintVersion(version.VERSION, GpuInfo)
+		log.Err("vet is not implemented yet with the new engine")
+	} else if len(args) == 0 && givenFlags.Interactive {
+		go slurm.SetEndTimerIfSlurm()
+		log.PrintVersion(version.VERSION, GpuInfo)
 		engineState := newEngineState(givenFlags, log)
 		engineState.start("") // interactive
 	} else if len(args) == 1 {
+		go slurm.SetEndTimerIfSlurm()
+		log.PrintVersion(version.VERSION, GpuInfo)
 		engineState := newEngineState(givenFlags, log)
 		engineState.start(args[0])
 	} else if len(args) > 1 {
+		go slurm.SetEndTimerIfSlurm()
+		log.PrintVersion(version.VERSION, GpuInfo)
 		queue.RunQueue(args, givenFlags)
+	} else if givenFlags.Version {
+		log.PrintVersion(version.VERSION, GpuInfo)
 	} else {
 		_ = cmd.Help()
 	}

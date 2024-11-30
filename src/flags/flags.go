@@ -31,21 +31,16 @@ type Flags struct {
 	WebUIQueueAddress string
 }
 
-type TemplateFlags struct {
-	Flat bool
-	Run  bool
-}
-
 func (flags *Flags) ParseFlags(rootCmd *cobra.Command) {
 	rootCmd.Flags().BoolVarP(&flags.Debug, "debug", "d", false, "Debug mode")
 	rootCmd.Flags().BoolVarP(&flags.Version, "version", "v", false, "Print version")
 	rootCmd.Flags().BoolVar(&flags.Vet, "vet", false, "Check input files for errors, but don't run them")
-	rootCmd.Flags().BoolVar(&flags.Update, "update", false, "Update the amumax binary from the latest github release")
+	rootCmd.Flags().BoolVarP(&flags.Update, "update", "u", false, "Update the amumax binary from the latest github release")
 	rootCmd.Flags().StringVarP(&flags.CacheDir, "cache", "c", fmt.Sprintf("%v/amumax_kernels", os.TempDir()), "Kernel cache directory (empty disables caching)")
 	rootCmd.Flags().IntVarP(&flags.Gpu, "gpu", "g", 0, "Specify GPU")
 	rootCmd.Flags().BoolVarP(&flags.Interactive, "interactive", "i", false, "Open interactive browser session")
 	rootCmd.Flags().StringVarP(&flags.OutputDir, "output-dir", "o", "", "Override output directory")
-	rootCmd.Flags().BoolVar(&flags.SelfTest, "paranoid", false, "Enable convolution self-test for cuFFT sanity.")
+	rootCmd.Flags().BoolVarP(&flags.SelfTest, "paranoid", "p", false, "Enable convolution self-test for cuFFT sanity.")
 	rootCmd.Flags().BoolVarP(&flags.Silent, "silent", "s", false, "Silent mode (backwards compatibility)")
 	rootCmd.Flags().BoolVar(&flags.Sync, "sync", false, "Synchronize all CUDA calls (debug)")
 	rootCmd.Flags().BoolVarP(&flags.ForceClean, "force-clean", "f", false, "Force start, clean existing output directory")
@@ -58,6 +53,11 @@ func (flags *Flags) ParseFlags(rootCmd *cobra.Command) {
 	rootCmd.Flags().BoolVar(&flags.WebUIDisabled, "webui-disable", false, "Whether to disable the web interface")
 	rootCmd.Flags().StringVar(&flags.WebUIAddress, "webui-addr", "localhost:35367", "Address (URI) to serve web GUI (e.g., 0.0.0.0:8080/proxy/worker1)")
 	rootCmd.Flags().StringVar(&flags.WebUIQueueAddress, "webui-queue-addr", "localhost:35366", "Address (URI) to serve Queue web GUI (e.g., 0.0.0.0:8080/proxy/worker1)")
+}
+
+type TemplateFlags struct {
+	Flat bool
+	Run  bool
 }
 
 func (flags *TemplateFlags) ParseFlags(templateCmd *cobra.Command) {

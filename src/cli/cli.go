@@ -8,6 +8,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/entrypoint_old"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/template"
+	"github.com/MathieuMoalic/amumax/src/version"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
@@ -17,7 +18,7 @@ func Entrypoint() {
 	cmdflags := &flags.Flags{}
 	rootCmd := &cobra.Command{
 		Use:   "amumax [mx3 paths...]",
-		Short: "Amumax, a micromagnetic simulator",
+		Short: "Amumax (" + version.VERSION + "), a micromagnetic simulator",
 		Args:  cobra.ArbitraryArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			cliEntrypoint(cmd, args, cmdflags)
