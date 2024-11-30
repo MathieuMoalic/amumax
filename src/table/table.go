@@ -110,28 +110,29 @@ func (ts *Table) writeToBuffer() {
 }
 
 // FlushToFile writes the buffered data to disk
-func (ts *Table) FlushToFile() {
+func (ts *Table) FlushToFile() error {
 	if ts.Step == -1 {
-		return
+		return nil
 	}
 	// Check if the table state has changed
 	currentHash := ts.generateHash()
 	if currentHash == ts.lastSavedHash {
 		ts.log.Debug("Table state has not changed, skipping save.")
-		return
+		return nil
 	}
 	for i := range ts.columns {
 		// Update zarray if necessary, it is not buffered at the moment
 		err := ts.fs.SaveFileTableZarray("table/"+ts.columns[i].name, ts.Step)
 		if err != nil {
-			ts.log.PanicIfError(err)
+			return fmt.Errorf("error saving zarray: %v", err)
 		}
 		err = ts.columns[i].writer.Flush()
 		if err != nil {
-			ts.log.PanicIfError(err)
+			return fmt.Errorf("error flushing writer: %v", err)
 		}
 	}
 	ts.lastSavedHash = currentHash
+	return nil
 }
 
 func (ts *Table) exists(q quantity.Quantity, name string) bool {

@@ -9,15 +9,15 @@ import (
 )
 
 func (p *ScriptParser) RegisterMesh(mesh *mesh.Mesh) {
-	p.RegisterVariable("Nx", mesh.Nx)
-	p.RegisterVariable("Ny", mesh.Ny)
-	p.RegisterVariable("Nz", mesh.Nz)
-	p.RegisterVariable("dx", mesh.Dx)
-	p.RegisterVariable("dy", mesh.Dy)
-	p.RegisterVariable("dz", mesh.Dz)
-	p.RegisterVariable("Tx", mesh.Tx)
-	p.RegisterVariable("Ty", mesh.Ty)
-	p.RegisterVariable("Tz", mesh.Tz)
+	p.RegisterVariable("Nx", &mesh.Nx)
+	p.RegisterVariable("Ny", &mesh.Ny)
+	p.RegisterVariable("Nz", &mesh.Nz)
+	p.RegisterVariable("dx", &mesh.Dx)
+	p.RegisterVariable("dy", &mesh.Dy)
+	p.RegisterVariable("dz", &mesh.Dz)
+	p.RegisterVariable("Tx", &mesh.Tx)
+	p.RegisterVariable("Ty", &mesh.Ty)
+	p.RegisterVariable("Tz", &mesh.Tz)
 	p.RegisterFunction("SetGridSize", mesh.SetGridSize)
 	p.RegisterFunction("SetCellSize", mesh.SetCellSize)
 }
@@ -52,15 +52,14 @@ func (p *ScriptParser) registerUserVariable(name string, value interface{}) {
 				*ptr = v
 			}
 		default:
-			p.log.Warn("Unsupported type: %T", ptr)
+			p.log.PanicIfError(fmt.Errorf("unsupported type: %T", ptr))
 		}
 	} else {
-		p.variablesScope[strings.ToLower(name)] = value
+		p.variablesScope[name] = value
 	}
 	if p.isMeshExpression(name) {
 		p.initializeMeshIfReady()
 	}
-	p.variablesScope[name] = value
 }
 
 // wrapFunction creates a universal wrapper for any function.

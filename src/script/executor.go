@@ -24,7 +24,7 @@ func (p *ScriptParser) Execute() error {
 				if err != nil {
 					return fmt.Errorf("error evaluating expression: %v", err)
 				}
-				p.registerUserVariable(stmt.Name, value)
+				p.registerUserVariable(strings.ToLower(stmt.Name), value)
 				p.metadata.Add(stmt.Name, value)
 			case "function_call":
 				p.log.Command(scriptLines[stmt.LineNum+p.lineOffset]) // Log the function call

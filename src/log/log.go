@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strings"
 
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/fatih/color"
@@ -42,16 +43,24 @@ func (l *Logs) PrintVersion(version string, cudaInfo [6]string) {
 	l.Info("CUDA Version:    %s (CC=%s PTX)", cudaVersion, cudaCC)
 	l.Info("GPU Information: %s(%s), CUDA Driver %s, cc=%s", GPUName, GPUMem, DriverVersion, GPUCC)
 }
-func (l *Logs) Close() {
-	l.FlushToFile()
+func (l *Logs) Close() error {
+	err := l.FlushToFile()
+	if err != nil {
+		return fmt.Errorf("error flushing the log file: %v", err)
+	}
 	l.file.Close()
+	return nil
 }
 
-func (l *Logs) FlushToFile() {
+func (l *Logs) FlushToFile() error {
 	if l.writer == nil {
-		return
+		return nil
 	}
-	l.writer.Flush()
+	err := l.writer.Flush()
+	if err != nil {
+		return fmt.Errorf("error flushing the log file: %v", err)
+	}
+	return nil
 }
 
 func (l *Logs) writeToFile(msg string) {
@@ -72,9 +81,27 @@ func (l *Logs) addAndWrite(msg string) {
 	}
 }
 
-func (l *Logs) Command(msg ...interface{}) {
-	fmt.Println(fmt.Sprint(msg...))
-	l.addAndWrite(fmt.Sprint(msg...) + "\n")
+func (l *Logs) Command(cmd string) {
+	// Find the position of the comment marker "//"
+	commentIndex := strings.Index(cmd, "//")
+
+	if commentIndex != -1 {
+		// Split the string into command and comment parts
+		commandPart := cmd[:commentIndex]
+		commentPart := cmd[commentIndex:]
+
+		// Print the command part normally
+		fmt.Print(commandPart)
+
+		// Print the comment part in green
+		color.Green(commentPart)
+	} else {
+		// Print the whole command if no comment exists
+		fmt.Println(cmd)
+	}
+
+	// Log the full command
+	l.addAndWrite(cmd + "\n")
 }
 
 func (l *Logs) Info(msg string, args ...interface{}) {

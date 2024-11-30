@@ -133,10 +133,20 @@ func (s *engineState) initFileSystem(scriptPath string) {
 
 func (s *engineState) autoFlush() {
 	for {
-		s.metadata.FlushToFile()
-		s.table.FlushToFile()
-		s.log.FlushToFile()
+		// sleep first to avoid saving uninitialized data
 		time.Sleep(s.autoFlushInterval)
+		err := s.metadata.FlushToFile()
+		if err != nil {
+			s.log.Err("Failed to save metadata to file: %v", err)
+		}
+		err = s.table.FlushToFile()
+		if err != nil {
+			s.log.Err("Failed to save table to file: %v", err)
+		}
+		err = s.log.FlushToFile()
+		if err != nil {
+			s.log.Err("Failed to save log to file: %v", err)
+		}
 	}
 }
 
@@ -149,12 +159,16 @@ func (s *engineState) cleanExit() {
 	s.metadata.Add("steps", s.solver.NSteps)
 	s.metadata.Close()
 	s.log.Info("**************** Simulation Ended ****************** //")
-	s.log.Close()
+	err := s.log.Close()
+	if err != nil {
+		s.log.Err("Failed to close log file: %v", err)
+	}
 }
 
 // this is called by the script parser when the mesh is ready to be created
 func (s *engineState) initializeMeshIfReady() {
 	if s.mesh.ReadyToCreate() {
+		s.log.Info("Creating mesh")
 		s.mesh.Create()
 		s.magnetization.initializeBuffer()
 		s.regions.initializeBuffer()
