@@ -11,6 +11,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/queue"
 	"github.com/MathieuMoalic/amumax/src/slurm"
+	"github.com/MathieuMoalic/amumax/src/template"
 	"github.com/MathieuMoalic/amumax/src/timer"
 	"github.com/MathieuMoalic/amumax/src/update"
 	"github.com/fatih/color"
@@ -38,7 +39,7 @@ func Entrypoint() {
 
 			// Call your template logic here, using args[0] for the template path
 			templatePath := args[0]
-			err := template(templatePath, flat)
+			err := template.Template(templatePath, flat)
 			if err != nil {
 				color.Red(fmt.Sprintf("Error processing template: %v", err))
 				os.Exit(1)
