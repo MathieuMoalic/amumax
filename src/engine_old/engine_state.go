@@ -1,7 +1,7 @@
 package engine_old
 
 import (
-	"github.com/MathieuMoalic/amumax/src/zarr_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/zarr_old"
 )
 
 type EngineStateStruct struct {

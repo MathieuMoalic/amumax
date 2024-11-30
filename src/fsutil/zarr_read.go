@@ -12,8 +12,8 @@ import (
 
 	"github.com/DataDog/zstd"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/fsutil_old"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 func (fs *FileSystem) ReadZarr(binaryPath string, od string) (*data.Slice, error) {

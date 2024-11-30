@@ -6,7 +6,7 @@ import (
 	"math/rand"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Compares FFT-accelerated convolution against brute-force on sparse data.

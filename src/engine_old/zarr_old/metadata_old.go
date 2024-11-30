@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/fsutil_old"
-	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/mesh_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 )
 
 type Metadata struct {

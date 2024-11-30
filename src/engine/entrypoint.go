@@ -4,7 +4,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/MathieuMoalic/amumax/src/queue"
 	"github.com/MathieuMoalic/amumax/src/slurm"
 	"github.com/MathieuMoalic/amumax/src/timer"
 	"github.com/MathieuMoalic/amumax/src/update"
@@ -43,9 +42,7 @@ func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.Flags) {
 		engineState := newEngineState(givenFlags, log)
 		engineState.start(args[0])
 	} else if len(args) > 1 {
-		go slurm.SetEndTimerIfSlurm()
-		log.PrintVersion(version.VERSION, GpuInfo)
-		queue.RunQueue(args, givenFlags)
+		log.Err("Queue is not implemented yet with the new engine")
 	} else if givenFlags.Version {
 		log.PrintVersion(version.VERSION, GpuInfo)
 	} else {

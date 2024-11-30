@@ -5,9 +5,9 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 	"github.com/MathieuMoalic/amumax/src/mesh"
-	"github.com/MathieuMoalic/amumax/src/mesh_old"
 )
 
 func MFMKernel(mesh mesh.MeshLike, lift, tipsize float64, cacheDir string) (kernel [3]*data.Slice) {

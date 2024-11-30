@@ -6,7 +6,7 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Output size of R2C FFT with given logic size, expressed in floats.

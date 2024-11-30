@@ -1,7 +1,7 @@
 package data
 
 import (
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Resample returns a slice of new size N,

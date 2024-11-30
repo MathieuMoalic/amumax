@@ -8,7 +8,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 func WriteOVF1(out io.Writer, q *data.Slice, meta Meta, dataformat string) {

@@ -3,7 +3,7 @@ package engine_old
 import (
 	"os/exec"
 
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 func init() {

@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/kevinburke/ssh_config"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"

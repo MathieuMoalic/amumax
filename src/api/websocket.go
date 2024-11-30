@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/vmihailenco/msgpack/v5"

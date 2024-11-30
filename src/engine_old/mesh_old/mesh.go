@@ -3,7 +3,7 @@ package mesh_old
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Mesh stores info of a finite-difference mesh.

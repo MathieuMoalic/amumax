@@ -5,7 +5,7 @@ import (
 	"go/token"
 	"reflect"
 
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // compiles a (single) assign statement lhs = rhs

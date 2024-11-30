@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/MathieuMoalic/amumax/src/log_old"
 	"github.com/MathieuMoalic/amumax/src/version"
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
@@ -17,10 +16,12 @@ func doUpdate(tag string) {
 	color.Green("Downloading version %s", tag)
 	resp, err := http.Get(fmt.Sprintf("https://github.com/MathieuMoalic/amumax/releases/download/%s/amumax", tag))
 	if err != nil {
-		log_old.Log.PanicIfError(err)
+		color.Red(fmt.Sprintf("Error downloading the binary: %s", err))
+		os.Exit(1)
 	}
 	if resp.StatusCode != http.StatusOK {
-		log_old.Log.PanicIfError(fmt.Errorf("failed to download the binary, status: %s", resp.Status))
+		color.Red(fmt.Sprintf("unexpected status code: %d", resp.StatusCode))
+		os.Exit(1)
 	}
 
 	defer resp.Body.Close()
@@ -38,17 +39,20 @@ func getTags() (tags []string) {
 	}
 	resp, err := http.Get("https://api.github.com/repos/mathieumoalic/amumax/tags")
 	if err != nil {
-		log_old.Log.PanicIfError(err)
+		color.Red(fmt.Sprintf("Error fetching tags: %s", err))
+		os.Exit(1)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log_old.Log.PanicIfError(fmt.Errorf("unexpected status code: %d", resp.StatusCode))
+		color.Red(fmt.Sprintf("unexpected status code: %d", resp.StatusCode))
+		os.Exit(1)
 	}
 
 	tempTags := []Tag{}
 	if err := json.NewDecoder(resp.Body).Decode(&tempTags); err != nil {
-		log_old.Log.PanicIfError(err)
+		color.Red(fmt.Sprintf("Error decoding tags: %s", err))
+		os.Exit(1)
 	}
 
 	for _, tag := range tempTags {

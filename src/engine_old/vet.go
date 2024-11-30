@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // check all input files for errors, don't run.
