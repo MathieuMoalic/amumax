@@ -47,7 +47,7 @@ var Regions RegionsInterface
 // END OF TODO
 
 type Solver struct {
-	time                 float64     // Current time in seconds
+	Time                 float64     // Current time in seconds
 	alarm                float64     // End time for the run, dt adaptation must not cross it
 	pause                bool        // Set to true to stop running after the current step
 	postStep             []func()    // Functions to call after every full time step
@@ -58,7 +58,7 @@ type Solver struct {
 	headroom             float64     // Solver headroom, (Gustafsson, 1992)
 	lastErr, peakErr     float64     // Error of last step, highest error ever
 	lastTorque           float64     // Maximum torque of last time step
-	nSteps, nUndone      int         // Number of successful steps and undone steps
+	NSteps, nUndone      int         // Number of successful steps and undone steps
 	nEvals               int         // Number of evaluations
 	fixDt                float64     // Fixed time step (if any)
 	solverType           int         // Identifier for the solver type
@@ -70,7 +70,7 @@ type Solver struct {
 // NewSolver creates a new instance of the solver with default settings.
 func NewSolver() *Solver {
 	return &Solver{
-		time:                 0,
+		Time:                 0,
 		pause:                true,
 		postStep:             []func(){},
 		inject:               make(chan func()),
@@ -82,7 +82,7 @@ func NewSolver() *Solver {
 		lastErr:              0,
 		peakErr:              0,
 		lastTorque:           0,
-		nSteps:               0,
+		NSteps:               0,
 		nUndone:              0,
 		nEvals:               0,
 		fixDt:                0,
@@ -155,8 +155,8 @@ func (s *Solver) adaptDt(corr float64) {
 	}
 
 	// do not cross alarm time
-	if s.time < s.alarm && s.time+s.dt_si > s.alarm {
-		s.dt_si = s.alarm - s.time
+	if s.Time < s.alarm && s.Time+s.dt_si > s.alarm {
+		s.dt_si = s.alarm - s.Time
 	}
 
 	log_old.AssertMsg(s.dt_si > 0, fmt.Sprint("Time step too small: ", s.dt_si))
@@ -178,8 +178,8 @@ func (s *Solver) freeBuffer() {
 // Run the simulation for a number of seconds.
 func (s *Solver) Run(seconds float64) {
 	s.checkExchangeLenght()
-	start := s.time
-	stop := s.time + seconds
+	start := s.Time
+	stop := s.Time + seconds
 	s.alarm = stop // don't have dt adapt to go over alarm
 	s.sanityCheck()
 	s.pause = false // may be set by <-Inject
@@ -189,10 +189,10 @@ func (s *Solver) Run(seconds float64) {
 	saveIfNeeded() // allow t=0 output
 	ProgressBar := progressbar.NewProgressBar(start, stop, "🧲", true)
 
-	for (s.time < stop) && !s.pause {
+	for (s.Time < stop) && !s.pause {
 		select {
 		default:
-			ProgressBar.Update(s.time)
+			ProgressBar.Update(s.Time)
 			s.step(output)
 		// accept tasks form Inject channel
 		case f := <-s.inject:
@@ -205,8 +205,8 @@ func (s *Solver) Run(seconds float64) {
 
 // Run the simulation for a number of Steps.
 func (s *Solver) Steps(n int) {
-	stop := s.nSteps + n
-	s.RunWhile(func() bool { return s.nSteps < stop })
+	stop := s.NSteps + n
+	s.RunWhile(func() bool { return s.NSteps < stop })
 }
 
 // Runs as long as condition returns true, saves output.

@@ -10,7 +10,7 @@ import (
 func (s *Solver) backWardEulerStep() {
 	log_old.AssertMsg(s.maxErr > 0, "Backward euler solver requires s.maxErr > 0")
 
-	t0 := s.time
+	t0 := s.Time
 
 	y := NormMag.Buffer()
 
@@ -30,7 +30,7 @@ func (s *Solver) backWardEulerStep() {
 	log_old.AssertMsg(dt > 0, "Backward Euler solver requires fixed time step > 0")
 
 	// Fist guess
-	s.time = t0 + 0.5*s.dt_si // 0.5 dt makes it implicit midpoint method
+	s.Time = t0 + 0.5*s.dt_si // 0.5 dt makes it implicit midpoint method
 
 	// with temperature, previous torque cannot be used as predictor
 	if Temp.isZero() {
@@ -47,11 +47,11 @@ func (s *Solver) backWardEulerStep() {
 	cuda.Madd2(y, y0, dy1, 1, dt) // y = y0 + dt * dy1
 	NormMag.normalize()
 
-	s.time = t0 + s.dt_si
+	s.Time = t0 + s.dt_si
 
 	err := cuda.MaxVecDiff(dy0, dy1) * float64(dt)
 
-	s.nSteps++
+	s.NSteps++
 	s.setLastErr(err)
 	s.setMaxTorque(dy1)
 }

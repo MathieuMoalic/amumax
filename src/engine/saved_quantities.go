@@ -59,7 +59,7 @@ func (sq *savedQuantity) saveAttrs() {
 
 // save writes the data to disk and updates the times.
 func (sq *savedQuantity) save() {
-	sq.times = append(sq.times, sq.e.solver.time)
+	sq.times = append(sq.times, sq.e.solver.Time)
 	sq.saveAttrs()
 	buffer := cuda.Buffer(sq.q.NComp(), sq.q.Size())
 	sq.q.EvalTo(buffer)
@@ -187,7 +187,7 @@ func (sqs *savedQuantities) updateSavedQuantity(q quantity.Quantity, name string
 		if sq.period == 0 && period != 0 {
 			// enable autosave
 			sq.period = period
-			sq.nextTime = sqs.e.solver.time + period
+			sq.nextTime = sqs.e.solver.Time + period
 		} else if sq.period != 0 && period == 0 {
 			// disable autosave
 			sq.period = period

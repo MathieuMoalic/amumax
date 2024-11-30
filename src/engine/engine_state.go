@@ -13,6 +13,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/metadata"
 	"github.com/MathieuMoalic/amumax/src/script"
+	"github.com/MathieuMoalic/amumax/src/solver"
 	"github.com/MathieuMoalic/amumax/src/timer"
 )
 
@@ -23,7 +24,7 @@ type engineState struct {
 	metadata *metadata.Metadata
 
 	table           *table
-	solver          *solver
+	solver          *solver.Solver
 	mesh            *mesh.Mesh
 	magnetization   *magnetization
 	geometry        *geometry
@@ -57,7 +58,7 @@ func (s *engineState) start(scriptPath string) {
 	s.windowShift = newWindowShift(s)
 	s.shape = newShape(s)
 	s.table = newTable(s)
-	s.solver = newSolver(s)
+	s.solver = solver.NewSolver()
 	s.magnetization = newMagnetization(s)
 	s.regions = newRegions(s)
 	s.geometry = newGeom(s)

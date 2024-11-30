@@ -32,7 +32,7 @@ func (s *Solver) rk45() {
 		s.torqueFn(s.previousStepBuffer)
 	}
 
-	t0 := s.time
+	t0 := s.Time
 	// backup magnetization
 	m0 := cuda.Buffer(3, size)
 	defer cuda.Recycle(m0)
@@ -51,37 +51,37 @@ func (s *Solver) rk45() {
 	// there is no explicit stage 1: k1 from previous step
 
 	// stage 2
-	s.time = t0 + (1./5.)*s.dt_si
+	s.Time = t0 + (1./5.)*s.dt_si
 	cuda.Madd2(m, m, s.previousStepBuffer, 1, (1./5.)*h) // m = m*1 + k1*h/5
 	NormMag.normalize()
 	s.torqueFn(k2)
 
 	// stage 3
-	s.time = t0 + (3./10.)*s.dt_si
+	s.Time = t0 + (3./10.)*s.dt_si
 	cuda.Madd3(m, m0, s.previousStepBuffer, k2, 1, (3./40.)*h, (9./40.)*h)
 	NormMag.normalize()
 	s.torqueFn(k3)
 
 	// stage 4
-	s.time = t0 + (4./5.)*s.dt_si
+	s.Time = t0 + (4./5.)*s.dt_si
 	cuda.Madd4(m, m0, s.previousStepBuffer, k2, k3, 1, (44./45.)*h, (-56./15.)*h, (32./9.)*h)
 	NormMag.normalize()
 	s.torqueFn(k4)
 
 	// stage 5
-	s.time = t0 + (8./9.)*s.dt_si
+	s.Time = t0 + (8./9.)*s.dt_si
 	cuda.Madd5(m, m0, s.previousStepBuffer, k2, k3, k4, 1, (19372./6561.)*h, (-25360./2187.)*h, (64448./6561.)*h, (-212./729.)*h)
 	NormMag.normalize()
 	s.torqueFn(k5)
 
 	// stage 6
-	s.time = t0 + (1.)*s.dt_si
+	s.Time = t0 + (1.)*s.dt_si
 	cuda.Madd6(m, m0, s.previousStepBuffer, k2, k3, k4, k5, 1, (9017./3168.)*h, (-355./33.)*h, (46732./5247.)*h, (49./176.)*h, (-5103./18656.)*h)
 	NormMag.normalize()
 	s.torqueFn(k6)
 
 	// stage 7: 5th order solution
-	s.time = t0 + (1.)*s.dt_si
+	s.Time = t0 + (1.)*s.dt_si
 	// no k2
 	cuda.Madd6(m, m0, s.previousStepBuffer, k3, k4, k5, k6, 1, (35./384.)*h, (500./1113.)*h, (125./192.)*h, (-2187./6784.)*h, (11./84.)*h) // 5th
 	NormMag.normalize()
@@ -101,15 +101,15 @@ func (s *Solver) rk45() {
 		// step OK
 		s.setLastErr(err)
 		s.setMaxTorque(k7)
-		s.nSteps++
-		s.time = t0 + s.dt_si
+		s.NSteps++
+		s.Time = t0 + s.dt_si
 		s.adaptDt(math.Pow(s.maxErr/err, 1./5.))
 		data.Copy(s.previousStepBuffer, k7) // FSAL
 	} else {
 		// undo bad step
 		//log.Println("Bad step at t=", t0, ", err=", err)
 		log_old.AssertMsg(s.fixDt == 0, "Invalid step: cannot undo step when s.fixDt is set")
-		s.time = t0
+		s.Time = t0
 		data.Copy(m, m0)
 		s.nUndone++
 		s.adaptDt(math.Pow(s.maxErr/err, 1./6.))

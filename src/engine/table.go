@@ -78,7 +78,7 @@ func (ts *table) initTable() {
 func (ts *table) writeToBuffer() {
 	buf := []float64{}
 	buf = append(buf, float64(ts.Step))
-	buf = append(buf, ts.e.solver.time)
+	buf = append(buf, ts.e.solver.Time)
 	for _, q := range ts.quantities {
 		buf = append(buf, q.Average()...)
 	}
@@ -191,7 +191,7 @@ func (ts *table) tableAddAs(q quantity.Quantity, name string) {
 }
 
 func (ts *table) tableAutoSave(period float64) {
-	ts.AutoSaveStart = ts.e.solver.time
+	ts.AutoSaveStart = ts.e.solver.Time
 	ts.AutoSavePeriod = period
 }
 
