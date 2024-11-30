@@ -85,7 +85,7 @@ func EvalFile(code *script_old.BlockStmt) {
 				CreateMesh()
 				NormMag.Alloc()
 				Regions.Alloc()
-				EngineState.Metadata.Init(OD(), StartTime, cuda.GPUInfo)
+				EngineState.Metadata.Init(OD(), StartTime, cuda.GPUInfo_old)
 				EngineState.Metadata.AddMesh(&Mesh)
 			}
 		}

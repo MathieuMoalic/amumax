@@ -28,7 +28,7 @@ func NewMetadata(fs *fsutil.FileSystem, log *log.Logs) *Metadata {
 	m.fs = fs
 	m.log = log
 	m.Add("start_time", m.startTime.Format(time.UnixDate))
-	m.Add("gpu", cuda.GPUInfo)
+	m.Add("gpu", cuda.GPUInfo_old)
 	m.FlushToFile()
 	return m
 }
