@@ -27,7 +27,7 @@ func (s *Solver) heun() {
 	// stage 2
 	dy := cuda.Buffer(3, y.Size())
 	defer cuda.Recycle(dy)
-	s.time += s.dt_si
+	s.Time += s.dt_si
 	s.torqueFn(dy)
 
 	err := cuda.MaxVecDiff(dy0, dy) * float64(dt)
@@ -37,14 +37,14 @@ func (s *Solver) heun() {
 		// step OK
 		cuda.Madd3(y, y, dy, dy0, 1, 0.5*dt, -0.5*dt)
 		NormMag.normalize()
-		s.nSteps++
+		s.NSteps++
 		s.adaptDt(math.Pow(s.maxErr/err, 1./2.))
 		s.setLastErr(err)
 		s.setMaxTorque(dy)
 	} else {
 		// undo bad step
 		log_old.AssertMsg(s.fixDt == 0, "Invalid step: cannot undo step when s.fixDt is set in Heun Step")
-		s.time -= s.dt_si
+		s.Time -= s.dt_si
 		cuda.Madd2(y, y, dy0, 1, -dt)
 		s.nUndone++
 		s.adaptDt(math.Pow(s.maxErr/err, 1./3.))

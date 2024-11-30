@@ -42,7 +42,7 @@ func (s *Solver) rk23() {
 		s.torqueFn(s.previousStepBuffer)
 	}
 
-	t0 := s.time
+	t0 := s.Time
 	// backup magnetization
 	m0 := cuda.Buffer(3, size)
 	defer cuda.Recycle(m0)
@@ -58,13 +58,13 @@ func (s *Solver) rk23() {
 	// there is no explicit stage 1: k1 from previous step
 
 	// stage 2
-	s.time = t0 + (1./2.)*s.dt_si
+	s.Time = t0 + (1./2.)*s.dt_si
 	cuda.Madd2(m, m, s.previousStepBuffer, 1, (1./2.)*h) // m = m*1 + k1*h/2
 	NormMag.normalize()
 	s.torqueFn(k2)
 
 	// stage 3
-	s.time = t0 + (3./4.)*s.dt_si
+	s.Time = t0 + (3./4.)*s.dt_si
 	cuda.Madd2(m, m0, k2, 1, (3./4.)*h) // m = m0*1 + k2*3/4
 	NormMag.normalize()
 	s.torqueFn(k3)
@@ -74,7 +74,7 @@ func (s *Solver) rk23() {
 	NormMag.normalize()
 
 	// error estimate
-	s.time = t0 + s.dt_si
+	s.Time = t0 + s.dt_si
 	s.torqueFn(k4)
 	Err := k2 // re-use k2 as error
 	// difference of 3rd and 2nd order torque without explicitly storing them first
@@ -88,15 +88,15 @@ func (s *Solver) rk23() {
 		// step OK
 		s.setLastErr(err)
 		s.setMaxTorque(k4)
-		s.nSteps++
-		s.time = t0 + s.dt_si
+		s.NSteps++
+		s.Time = t0 + s.dt_si
 		s.adaptDt(math.Pow(s.maxErr/err, 1./3.))
 		data.Copy(s.previousStepBuffer, k4) // FSAL
 	} else {
 		// undo bad step
 		//log.Println("Bad step at t=", t0, ", err=", err)
 		log_old.AssertMsg(s.fixDt == 0, "Invalid step: cannot undo step when s.fixDt is set")
-		s.time = t0
+		s.Time = t0
 		data.Copy(m, m0)
 		s.nUndone++
 		s.adaptDt(math.Pow(s.maxErr/err, 1./4.))

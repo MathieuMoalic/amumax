@@ -29,6 +29,6 @@ func (s *Solver) euler() {
 
 	cuda.Madd2(y, y, dy0, 1, dt) // y = y + dt * dy
 	NormMag.normalize()
-	s.time += s.dt_si
-	s.nSteps++
+	s.Time += s.dt_si
+	s.NSteps++
 }
