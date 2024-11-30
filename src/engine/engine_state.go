@@ -7,6 +7,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
+	"github.com/MathieuMoalic/amumax/src/grains"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag_config"
 	"github.com/MathieuMoalic/amumax/src/mesh"
@@ -30,7 +31,7 @@ type engineState struct {
 	savedQuantities *savedQuantities
 	windowShift     *windowShift
 	shape           *shapeList
-	grains          *grains
+	grains          *grains.Grains
 	config          *mag_config.ConfigList
 	script          *script.ScriptParser
 
@@ -61,7 +62,7 @@ func (s *engineState) start(scriptPath string) {
 	s.regions = newRegions(s)
 	s.geometry = newGeom(s)
 	s.savedQuantities = newSavedQuantities(s)
-	s.grains = newGrains(s)
+	s.grains = grains.NewGrains(s.script.RegisterFunction, s.regions.voronoi)
 	s.config = mag_config.NewConfigList(s.mesh, s.script)
 	err := s.script.Parse()
 	if err != nil {

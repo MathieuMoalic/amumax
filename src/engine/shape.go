@@ -262,7 +262,7 @@ func (s *shapeList) imageShape(fname string) shape {
 }
 
 func (s *shapeList) grainRoughness(grainsize, zmin, zmax float64, seed int) shape {
-	s.e.grains.voronoi(grainsize, 0, 256, seed)
+	s.e.grains.Voronoi(grainsize, 0, 256, seed)
 	return func(x, y, z float64) bool {
 		if z <= zmin {
 			return true
@@ -270,7 +270,7 @@ func (s *shapeList) grainRoughness(grainsize, zmin, zmax float64, seed int) shap
 		if z >= zmax {
 			return false
 		}
-		r := s.e.grains.getRegion(x, y, z)
+		r := s.e.grains.GetRegion(x, y, z)
 		return (z-zmin)/(zmax-zmin) < (float64(r) / 256)
 	}
 }

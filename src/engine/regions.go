@@ -23,6 +23,14 @@ func (r *regions) addIndex(i int) {
 	r.indices[i] = true
 }
 
+func (r *regions) voronoi(minRegion, maxRegion int, getRegion func(float64, float64, float64) int) {
+	r.hist = append(r.hist, getRegion)
+	for i := minRegion; i < maxRegion; i++ {
+		r.addIndex(i)
+	}
+	r.render(getRegion)
+}
+
 // func (r *regions) getExistingIndices() []int {
 // 	indices := make([]int, 0, len(r.indices))
 // 	for i := range r.indices {
