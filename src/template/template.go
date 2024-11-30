@@ -1,4 +1,4 @@
-package entrypoint
+package template
 
 import (
 	"fmt"
@@ -365,8 +365,8 @@ func generateFiles(parentDir, mx3 string, expressions []Expression, flat bool) e
 	return nil
 }
 
-// Main function for handling the template logic
-func template(path string, flat bool) (err error) {
+// Main function for handling the Template logic
+func Template(path string, flat bool) (err error) {
 	path, err = filepath.Abs(path)
 	if err != nil {
 		return fmt.Errorf("error getting absolute path: %v", err)

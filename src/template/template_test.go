@@ -1,4 +1,4 @@
-package entrypoint
+package template
 
 import (
 	"fmt"
@@ -44,7 +44,7 @@ func writeParseTestClean(t *testing.T, templateContent string, expectedFiles []s
 	writeTemplateFile(t, templatePath, templateContent)
 
 	// Parse template
-	err := template(templatePath, flat)
+	err := Template(templatePath, flat)
 	if err != nil {
 		t.Fatalf("Error processing template: %v", err)
 	}
@@ -237,7 +237,7 @@ func TestFormatError(t *testing.T) {
 	writeTemplateFile(t, templatePath, templateContent)
 
 	// Parse template
-	err := template(templatePath, false)
+	err := Template(templatePath, false)
 	if err.Error() != `error finding expressions: invalid format: %g` {
 		t.Fatalf("Expected error: %v", err)
 	}
@@ -330,7 +330,7 @@ func TestEmptyArray(t *testing.T) {
 	templatePath := "test_output/template"
 	writeTemplateFile(t, templatePath, templateContent)
 
-	err := template(templatePath, false)
+	err := Template(templatePath, false)
 	if err == nil || err.Error() != `error finding expressions: array cannot be empty` {
 		t.Fatalf("Expected error for empty array, but got: %v", err)
 	}
@@ -342,7 +342,7 @@ func TestInvalidStartEnd(t *testing.T) {
 	templatePath := "test_output/template"
 	writeTemplateFile(t, templatePath, templateContent)
 
-	err := template(templatePath, false)
+	err := Template(templatePath, false)
 	if err == nil || err.Error() != `error finding expressions: start value should be less than end value` {
 		t.Fatalf("Expected error for start > end, but got: %v", err)
 	}
@@ -354,7 +354,7 @@ func TestZeroStep(t *testing.T) {
 	templatePath := "test_output/template"
 	writeTemplateFile(t, templatePath, templateContent)
 
-	err := template(templatePath, false)
+	err := Template(templatePath, false)
 	if err == nil || err.Error() != `error finding expressions: step value should be greater than 0` {
 		t.Fatalf("Expected error for zero step, but got: %v", err)
 	}
@@ -366,7 +366,7 @@ func TestMissingFields(t *testing.T) {
 	templatePath := "test_output/template"
 	writeTemplateFile(t, templatePath, templateContent)
 
-	err := template(templatePath, false)
+	err := Template(templatePath, false)
 	if err == nil || err.Error() != `error finding expressions: start should be given when array is not given` {
 		t.Fatalf("Expected error for missing start field, but got: %v", err)
 	}
@@ -378,7 +378,7 @@ func TestConflictingFields(t *testing.T) {
 	templatePath := "test_output/template"
 	writeTemplateFile(t, templatePath, templateContent)
 
-	err := template(templatePath, false)
+	err := Template(templatePath, false)
 	if err == nil || err.Error() != `error finding expressions: start should not be given when array is given` {
 		t.Fatalf("Expected error for conflicting fields, but got: %v", err)
 	}
@@ -390,7 +390,7 @@ func TestUnexpectedTokens(t *testing.T) {
 	templatePath := "test_output/template"
 	writeTemplateFile(t, templatePath, templateContent)
 
-	err := template(templatePath, false)
+	err := Template(templatePath, false)
 	if err == nil || err.Error() != `error finding expressions: invalid field name: unknown` {
 		t.Fatalf("Expected error for unexpected tokens, but got: %v", err)
 	}
@@ -402,7 +402,7 @@ func TestMalformedExpression(t *testing.T) {
 	templatePath := "test_output/template"
 	writeTemplateFile(t, templatePath, templateContent)
 
-	err := template(templatePath, false)
+	err := Template(templatePath, false)
 	if err == nil || !strings.Contains(err.Error(), `no expressions found`) {
 		t.Fatalf("Expected error for malformed expression, but got: %v", err)
 	}
@@ -463,7 +463,7 @@ func TestZeroCountLinspace(t *testing.T) {
 	templatePath := "test_output/template"
 	writeTemplateFile(t, templatePath, templateContent)
 
-	err := template(templatePath, false)
+	err := Template(templatePath, false)
 	if err == nil || !strings.Contains(err.Error(), `error finding expressions: count value should be greater than 0`) {
 		t.Fatalf("Expected error for zero count in linspace, but got: %v", err)
 	}
@@ -567,7 +567,7 @@ func TestStringArrayWithNumericFormatError(t *testing.T) {
 	templatePath := "test_output/template"
 	writeTemplateFile(t, templatePath, templateContent)
 
-	err := template(templatePath, false)
+	err := Template(templatePath, false)
 	if err == nil || !strings.Contains(err.Error(), `invalid format '%02.0f' for string value`) {
 		t.Fatalf("Expected error for invalid format with string array, but got: %v", err)
 	}
@@ -660,7 +660,7 @@ func TestEmptyStringArray(t *testing.T) {
 	templatePath := "test_output/template"
 	writeTemplateFile(t, templatePath, templateContent)
 
-	err := template(templatePath, false)
+	err := Template(templatePath, false)
 	if err == nil || !strings.Contains(err.Error(), `array cannot be empty`) {
 		t.Fatalf("Expected error for empty string array, but got: %v", err)
 	}
