@@ -24,7 +24,7 @@ var (
 	numOK, numFailed atom = 0, 0
 )
 
-func RunQueue(files []string, flags *flags.FlagsType) {
+func RunQueue(files []string, flags *flags.Flags) {
 	s := NewStateTab(files)
 	host, port, path, err := url.ParseAddrPath(flags.WebUIQueueAddress)
 	log_old.Log.PanicIfError(err)
@@ -90,7 +90,7 @@ func (s *stateTab) Finish(j job) {
 }
 
 // Runs all the jobs in stateTab.
-func (s *stateTab) Run(flags *flags.FlagsType) {
+func (s *stateTab) Run(flags *flags.Flags) {
 	nGPU := cu.DeviceGetCount()
 	idle := initGPUs(nGPU)
 	for {
@@ -117,7 +117,7 @@ type atom int32
 func (a *atom) get() int { return int(atomic.LoadInt32((*int32)(a))) }
 func (a *atom) inc()     { atomic.AddInt32((*int32)(a), 1) }
 
-func run(inFile string, gpu int, flags *flags.FlagsType) {
+func run(inFile string, gpu int, flags *flags.Flags) {
 	// invalid flags: Version, Update, Gpu, Interactive, OutputDir, SelfTest
 	// add all of the other flags to the command line
 	cmd := []string{os.Args[0]}

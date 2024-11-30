@@ -1,7 +1,7 @@
 package main
 
-import entrypoint "github.com/MathieuMoalic/amumax/src/entrypoint"
+import "github.com/MathieuMoalic/amumax/src/cli"
 
 func main() {
-	entrypoint.Entrypoint()
+	cli.Entrypoint()
 }

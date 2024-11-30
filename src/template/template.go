@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/MathieuMoalic/amumax/src/flags"
 )
 
 type Expression struct {
@@ -366,7 +368,7 @@ func generateFiles(parentDir, mx3 string, expressions []Expression, flat bool) e
 }
 
 // Main function for handling the Template logic
-func Template(path string, flat bool) (err error) {
+func Template(path string, templateFlags *flags.TemplateFlags) (err error) {
 	path, err = filepath.Abs(path)
 	if err != nil {
 		return fmt.Errorf("error getting absolute path: %v", err)
@@ -384,7 +386,7 @@ func Template(path string, flat bool) (err error) {
 		return fmt.Errorf("error finding expressions: %v", err)
 	}
 
-	err = generateFiles(parentDir, mx3, expressions, flat)
+	err = generateFiles(parentDir, mx3, expressions, templateFlags.Flat)
 	if err != nil {
 		return fmt.Errorf("error generating files: %v", err)
 	}

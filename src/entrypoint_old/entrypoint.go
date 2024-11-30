@@ -1,5 +1,4 @@
-// mumax3 main command
-package entrypoint
+package entrypoint_old
 
 import (
 	"errors"
@@ -15,16 +14,61 @@ import (
 	"github.com/MathieuMoalic/amumax/src/engine_old"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/queue"
 	"github.com/MathieuMoalic/amumax/src/script_old"
+	"github.com/MathieuMoalic/amumax/src/slurm"
+	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/update"
 	"github.com/MathieuMoalic/amumax/src/url"
 	"github.com/MathieuMoalic/amumax/src/version"
+	"github.com/spf13/cobra"
 )
+
+func Entrypoint(cmd *cobra.Command, args []string, flags *flags.Flags) {
+
+	log_old.Log.SetDebug(flags.Debug)
+
+	if flags.Update {
+		update.ShowUpdateMenu()
+		return
+	}
+
+	go slurm.SetEndTimerIfSlurm()
+	cuda.Init(flags.Gpu)
+
+	cuda.Synchronous = flags.Sync
+	timer.Enabled = flags.Sync
+
+	printVersion()
+	if flags.Version {
+		return
+	}
+
+	engine_old.Insecure = flags.Insecure
+
+	defer engine_old.CleanExit() // flushes pending output, if any
+
+	if flags.Vet {
+		engine_old.Vet()
+		return
+	}
+
+	if len(args) == 0 && flags.Interactive {
+		runInteractive(flags)
+	} else if len(args) == 1 {
+		runFileAndServe(args[0], flags)
+	} else if len(args) > 1 {
+		queue.RunQueue(args, flags)
+	} else {
+		_ = cmd.Help()
+	}
+}
 
 type Release struct {
 	TagName string `json:"tag_name"`
 }
 
-func runInteractive(flags *flags.FlagsType) {
+func runInteractive(flags *flags.Flags) {
 	log_old.Log.Info("No input files: starting interactive session")
 	// setup outut dir
 	now := time.Now()
@@ -55,7 +99,7 @@ m = RandomMag()`)
 	engine_old.RunInteractive()
 }
 
-func runFileAndServe(mx3Path string, flags *flags.FlagsType) {
+func runFileAndServe(mx3Path string, flags *flags.Flags) {
 	if _, err := os.Stat(mx3Path); errors.Is(err, os.ErrNotExist) {
 		log_old.Log.ErrAndExit("Error: File `%s` does not exist", mx3Path)
 	}

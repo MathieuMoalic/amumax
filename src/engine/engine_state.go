@@ -20,7 +20,7 @@ import (
 )
 
 type engineState struct {
-	flags    *flags.FlagsType
+	flags    *flags.Flags
 	fs       *fsutil.FileSystem
 	log      *log.Logs
 	metadata *metadata.Metadata
@@ -41,7 +41,7 @@ type engineState struct {
 	autoFlushInterval time.Duration
 }
 
-func newEngineState(givenFlags *flags.FlagsType, log *log.Logs) *engineState {
+func newEngineState(givenFlags *flags.Flags, log *log.Logs) *engineState {
 	return &engineState{flags: givenFlags, log: log, autoFlushInterval: 5 * time.Second}
 }
 
@@ -110,7 +110,7 @@ func (s *engineState) readScript(scriptPath string) string {
 
 // fs cannot depend on log, so we need to initialize it here
 func (s *engineState) initFileSystem(scriptPath string) {
-	fs, warn, err := fsutil.NewFileSystem(scriptPath, flags.Flags.OutputDir, flags.Flags.SkipExists, flags.Flags.ForceClean)
+	fs, warn, err := fsutil.NewFileSystem(scriptPath, s.flags.OutputDir, s.flags.SkipExists, s.flags.ForceClean)
 	if err != nil {
 		s.log.ErrAndExit("Error creating file system: %v", err)
 	}
