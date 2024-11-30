@@ -43,7 +43,7 @@ func (m *Mesh) Init(nx, ny, nz int, dx, dy, dz float64, pbcx, pbcy, pbcz int) {
 	m.PBCz = pbcz
 }
 
-func (m *Mesh) prettyPrint() {
+func (m *Mesh) PrettyPrint() {
 	m.log.Info("+----------------+------------+------------+------------+")
 	m.log.Info("| Axis           |     X      |     Y      |     Z      |")
 	m.log.Info("| Gridsize       | %10d | %10d | %10d |", m.Nx, m.Ny, m.Nz)
@@ -176,7 +176,7 @@ func (m *Mesh) SmoothMesh(smoothx, smoothy, smoothz bool) {
 		m.Tz = m.Dz * float64(m.Nz)
 	}
 	m.log.Info("Smoothed mesh: ")
-	m.prettyPrint()
+	m.PrettyPrint()
 }
 
 func (m *Mesh) SetGridSize(Nx, Ny, Nz int) {
@@ -289,7 +289,7 @@ func (m *Mesh) Create() {
 		m.validateGridSize()
 		m.validateCellSize()
 		m.created = true
-		m.prettyPrint()
+		m.PrettyPrint()
 	}
 }
 

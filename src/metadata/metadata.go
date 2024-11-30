@@ -29,7 +29,10 @@ func NewMetadata(fs *fsutil.FileSystem, log *log.Logs) *Metadata {
 	m.log = log
 	m.Add("start_time", m.startTime.Format(time.UnixDate))
 	m.Add("gpu", cuda.GPUInfo_old)
-	m.FlushToFile()
+	err := m.FlushToFile()
+	if err != nil {
+		m.log.Err("Failed to save metadata to file: %v", err)
+	}
 	return m
 }
 
@@ -61,37 +64,46 @@ func (m *Metadata) Get(key string) interface{} {
 }
 
 func (m *Metadata) Close() {
+	// there is no need to close the file, as it is closed when the file is written
 	m.Add("end_time", time.Now().Format(time.UnixDate))
 	m.Add("total_time", fmt.Sprint(time.Since(m.startTime)))
-	m.FlushToFile()
-	// there is no need to close the file, as it is closed when the file is written
+	err := m.FlushToFile()
+	if err != nil {
+		m.log.Err("Failed to save metadata to file: %v", err)
+	}
 }
 
-func (m *Metadata) FlushToFile() {
+func (m *Metadata) FlushToFile() error {
 	// Compute the hash of the current Fields
 	jsonMeta, err := json.Marshal(m.Fields)
-	m.log.PanicIfError(err)
-
+	if err != nil {
+		return fmt.Errorf("failed to marshal metadata: %v", err)
+	}
 	currentHash := sha256.Sum256(jsonMeta)
 	if currentHash == m.lastSavedHash {
 		// No changes in Fields, skip saving
-		return
+		return nil
 	}
 
 	// Save the metadata to the file
 	writer, file, err := m.fs.Create(".zattrs")
-	m.log.PanicIfError(err)
+	if err != nil {
+		return fmt.Errorf("failed to create metadata file: %v", err)
+	}
 	defer file.Close()
 
 	indentedJsonMeta, err := json.MarshalIndent(m.Fields, "", "\t")
-	m.log.PanicIfError(err)
-
+	if err != nil {
+		return fmt.Errorf("failed to marshal metadata: %v", err)
+	}
 	_, err = writer.Write(indentedJsonMeta)
 	writer.Flush()
-	m.log.PanicIfError(err)
-
+	if err != nil {
+		return fmt.Errorf("failed to write metadata to file: %v", err)
+	}
 	// Update the hash after successful save
 	m.lastSavedHash = currentHash
+	return nil
 }
 
 func (m *Metadata) AddMesh(mesh *mesh.Mesh) {
