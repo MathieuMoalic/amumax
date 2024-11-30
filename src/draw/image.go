@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Renders an image of slice. fmin, fmax = "auto" or a number to set the min/max color scale.

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Parse D:HH:MM:SS, HH:MM:SS, or MM:SS format into time.Duration

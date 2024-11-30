@@ -2,7 +2,7 @@ package cuda
 
 import (
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Crop stores in dst a rectangle cropped from src at given offset position.

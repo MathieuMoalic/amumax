@@ -5,7 +5,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Bogacki-Shampine solver. 3rd order, 3 evaluations per step, adaptive step.

@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/fsutil_old"
-	"github.com/MathieuMoalic/amumax/src/log_old"
-	"github.com/MathieuMoalic/amumax/src/mesh_old"
-	"github.com/MathieuMoalic/amumax/src/script_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/script_old"
 )
 
 var Mesh mesh_old.Mesh

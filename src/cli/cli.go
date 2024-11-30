@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/entrypoint_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/entrypoint_old"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/template"
 	"github.com/MathieuMoalic/amumax/src/version"

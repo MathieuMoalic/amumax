@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/fsutil_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
 	"github.com/fatih/color"
 )
 

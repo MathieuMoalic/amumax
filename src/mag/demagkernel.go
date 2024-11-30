@@ -8,11 +8,11 @@ import (
 
 	"github.com/DataDog/zstd"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/fsutil_old"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/zarr_old"
 	"github.com/MathieuMoalic/amumax/src/progressbar"
 	"github.com/MathieuMoalic/amumax/src/timer"
-	"github.com/MathieuMoalic/amumax/src/zarr_old"
 )
 
 // Obtains the demag kernel either from cacheDir/ or by calculating (and then storing in cacheDir for next time).

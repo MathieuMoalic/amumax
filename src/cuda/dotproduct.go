@@ -2,7 +2,7 @@ package cuda
 
 import (
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // dst += prefactor * dot(a, b), as used for energy density

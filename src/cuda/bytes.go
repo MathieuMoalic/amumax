@@ -7,7 +7,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // 3D byte slice, used for region lookup.

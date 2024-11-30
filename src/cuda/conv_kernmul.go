@@ -5,7 +5,7 @@ package cuda
 
 import (
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // kernel multiplication for 3D demag convolution, exploiting full kernel symmetry.
