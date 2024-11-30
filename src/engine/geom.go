@@ -5,6 +5,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/shape"
 	"github.com/MathieuMoalic/amumax/src/utils"
 )
 
@@ -12,7 +13,7 @@ type geometry struct {
 	e          *engineState
 	edgeSmooth int
 	gpuSlice   *data.Slice
-	shape      shape
+	shapeFunc  shape.Shape
 }
 
 func newGeom(engineState *engineState) *geometry {
@@ -54,14 +55,14 @@ func (g *geometry) Average() []float64 {
 	return utils.AverageSlice(s)
 }
 
-func (g *geometry) setGeom(s shape) {
+func (g *geometry) setGeom(s shape.Shape) {
 
 	if s == nil {
 		// TODO: would be nice not to save volume if entirely filled
-		s = g.e.shape.universeInner
+		s = shape.Universe
 	}
 
-	g.shape = s
+	g.shapeFunc = s
 	if g.getOrCreateGpuSlice().IsNil() {
 		g.gpuSlice = cuda.NewSlice(1, g.e.mesh.Size())
 	}
@@ -150,7 +151,7 @@ func (g *geometry) cellVolume(ix, iy, iz int) float32 {
 
 	c := g.e.mesh.CellSize()
 	cx, cy, cz := c[X], c[Y], c[Z]
-	s := g.shape
+	s := g.shapeFunc
 	var vol float32
 
 	N := g.edgeSmooth
@@ -197,7 +198,7 @@ func (g *geometry) shift(dx int) {
 		for iy := 0; iy < n[Y]; iy++ {
 			for ix := x1; ix < x2; ix++ {
 				r := g.e.mesh.Index2Coord(ix, iy, iz) // includes shift
-				if !g.shape(r[X], r[Y], r[Z]) {
+				if !g.shapeFunc(r[X], r[Y], r[Z]) {
 					cuda.SetCell(g.gpuSlice, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
 				}
 			}
@@ -227,7 +228,7 @@ func (g *geometry) shiftY(dy int) {
 		for ix := 0; ix < n[X]; ix++ {
 			for iy := y1; iy < y2; iy++ {
 				r := g.e.mesh.Index2Coord(ix, iy, iz) // includes shift
-				if !g.shape(r[X], r[Y], r[Z]) {
+				if !g.shapeFunc(r[X], r[Y], r[Z]) {
 					cuda.SetCell(g.gpuSlice, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
 				}
 			}

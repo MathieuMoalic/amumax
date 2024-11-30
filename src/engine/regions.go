@@ -3,6 +3,7 @@ package engine
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/shape"
 	"github.com/MathieuMoalic/amumax/src/utils"
 )
 
@@ -66,11 +67,11 @@ func (r *regions) voronoi(minRegion, maxRegion int, getRegion func(float64, floa
 
 func (r *regions) initializeBuffer() {
 	r.gpuBuffer = cuda.NewBytes(r.e.mesh.NCell())
-	r.defRegion(0, r.e.shape.universeInner)
+	r.defRegion(0, shape.Universe)
 }
 
 // Define a region with id (0-255) to be inside the Shape.
-func (r *regions) defRegion(id int, s shape) {
+func (r *regions) defRegion(id int, s shape.Shape) {
 	r.defRegionId(id)
 	f := func(x, y, z float64) int {
 		if s(x, y, z) {

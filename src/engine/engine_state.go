@@ -13,6 +13,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/metadata"
 	"github.com/MathieuMoalic/amumax/src/script"
+	"github.com/MathieuMoalic/amumax/src/shape"
 	"github.com/MathieuMoalic/amumax/src/solver"
 	"github.com/MathieuMoalic/amumax/src/table"
 	"github.com/MathieuMoalic/amumax/src/timer"
@@ -32,7 +33,7 @@ type engineState struct {
 	regions         *regions
 	savedQuantities *savedQuantities
 	windowShift     *windowShift
-	shape           *shapeList
+	shape           *shape.ShapeList
 	grains          *grains.Grains
 	config          *mag_config.ConfigList
 	script          *script.ScriptParser
@@ -57,7 +58,7 @@ func (s *engineState) start(scriptPath string) {
 
 	s.script.RegisterMesh(s.mesh)
 	s.windowShift = newWindowShift(s)
-	s.shape = newShape(s)
+	s.shape = shape.NewShape(s.mesh, s.log, s.script, s.fs, s.grains)
 	s.table = table.NewTable(s.solver, s.log, s.fs, s.script)
 	s.solver = solver.NewSolver()
 	s.magnetization = newMagnetization(s)

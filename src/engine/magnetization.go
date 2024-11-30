@@ -6,6 +6,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/mag_config"
+	"github.com/MathieuMoalic/amumax/src/shape"
 )
 
 // Special buffered quantity to store magnetization
@@ -118,9 +119,9 @@ const (
 )
 
 // Sets the magnetization inside the shape
-func (m *magnetization) setInShape(region shape, conf mag_config.Config) {
+func (m *magnetization) setInShape(region shape.Shape, conf mag_config.Config) {
 	if region == nil {
-		region = m.e.shape.universeInner
+		region = shape.Universe
 	}
 	cpuSlice := m.slice.HostCopy()
 	vectors := cpuSlice.Vectors()
