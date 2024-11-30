@@ -1,12 +1,15 @@
-package engine
+package grains
 
 import (
 	"math"
 	"math/rand"
 )
 
-type grains struct {
-	e              *engineState
+type addVoronoiToRegionsType func(minRegion int, maxRegion int, getRegion func(float64, float64, float64) int)
+
+type Grains struct {
+	addVoronoiToRegions addVoronoiToRegionsType
+
 	grainsize      float64
 	tilesize       float64
 	tile           int
@@ -18,33 +21,31 @@ type grains struct {
 	poisson_lambda float64
 }
 
-// nRegion exclusive
-func newGrains(EngineState *engineState) *grains {
+// we pass the registerFunction and addVoronoiToRegions functions to the constructor
+// to avoid circular dependencies
+func NewGrains(registerFunction func(string, interface{}), addVoronoiToRegions addVoronoiToRegionsType) *Grains {
 	TILE := 2 // tile size in grains
-	g := &grains{
-		e:              EngineState,
-		tile:           TILE,
-		cache:          make(map[int2][]center),
-		rnd:            rand.New(rand.NewSource(0)),
-		poisson_lambda: float64(TILE * TILE),
+	g := &Grains{
+		addVoronoiToRegions: addVoronoiToRegions,
+		tile:                TILE,
+		cache:               make(map[int2][]center),
+		rnd:                 rand.New(rand.NewSource(0)),
+		poisson_lambda:      float64(TILE * TILE),
 	}
-	EngineState.script.RegisterFunction("ext_makegrains", g.voronoi)
-	// w.RegisterFunction("ext_make3dgrains", voronoi3d)
+	registerFunction("ext_makegrains", g.Voronoi)
 
 	return g
 }
 
-func (g *grains) voronoi(grainsize float64, minRegion, maxRegion, seed int) {
+// script function
+func (g *Grains) Voronoi(grainsize float64, minRegion, maxRegion, seed int) {
 	g.grainsize = grainsize
 	g.minRegion = minRegion
 	g.maxRegion = maxRegion
 	g.seed = int64(seed)
 	g.tilesize = grainsize * float64(g.tile) // expect 4 grains/block, 36 per 3x3 blocks = safe, relatively round number
-	g.e.regions.hist = append(g.e.regions.hist, g.getRegion)
-	for i := minRegion; i < maxRegion; i++ {
-		g.e.regions.addIndex(i)
-	}
-	g.e.regions.render(g.getRegion)
+	// put this code in the region struct
+	g.addVoronoiToRegions(minRegion, maxRegion, g.GetRegion)
 }
 
 // integer tile coordinate
@@ -57,7 +58,7 @@ type center struct {
 }
 
 // Returns the region of the grain where cell at x,y,z belongs to
-func (t *grains) getRegion(x, y, z float64) int {
+func (t *Grains) GetRegion(x, y, z float64) int {
 	tile := t.tileOf(x, y) // tile containing x,y
 
 	// look for nearest center in tile + neighbors
@@ -81,7 +82,7 @@ func (t *grains) getRegion(x, y, z float64) int {
 }
 
 // Returns the list of Voronoi centers in tile(ix, iy), using only ix,iy to seed the random generator
-func (t *grains) centersInTile(tx, ty int) []center {
+func (t *Grains) centersInTile(tx, ty int) []center {
 	pos := int2{tx, ty}
 	if c, ok := t.cache[pos]; ok {
 		return c
@@ -106,14 +107,14 @@ func (t *grains) centersInTile(tx, ty int) []center {
 	}
 }
 
-func (t *grains) tileOf(x, y float64) int2 {
+func (t *Grains) tileOf(x, y float64) int2 {
 	ix := int(math.Floor(x / t.tilesize))
 	iy := int(math.Floor(y / t.tilesize))
 	return int2{ix, iy}
 }
 
 // Generate poisson distributed numbers (according to Knuth)
-func (t *grains) poisson() int {
+func (t *Grains) poisson() int {
 	L := math.Exp(-t.poisson_lambda)
 	k := 1
 	p := t.rnd.Float64()
