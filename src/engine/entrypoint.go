@@ -12,19 +12,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.FlagsType) {
+func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.Flags) {
+	// we create the log as early as possible to catch all messages
+	log := log.NewLogs(givenFlags.Debug)
+
 	if givenFlags.Update {
 		update.ShowUpdateMenu()
 		return
 	}
-	go slurm.SetEndTimerIfSlurm()
 	GpuInfo := cuda.Init(givenFlags.Gpu)
 
 	cuda.Synchronous = givenFlags.Sync
 	timer.Enabled = givenFlags.Sync
-
-	// we create the log as early as possible to catch all messages
-	log := log.NewLogs(givenFlags.Debug)
 
 	log.PrintVersion(version.VERSION, GpuInfo)
 	if givenFlags.Version {
@@ -35,6 +34,9 @@ func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.FlagsType) 
 	if givenFlags.Vet {
 		return
 	}
+
+	go slurm.SetEndTimerIfSlurm()
+
 	if len(args) == 0 && givenFlags.Interactive {
 		engineState := newEngineState(givenFlags, log)
 		engineState.start("") // interactive
