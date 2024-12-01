@@ -7,32 +7,36 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
+	"github.com/MathieuMoalic/amumax/src/geometry"
 	"github.com/MathieuMoalic/amumax/src/grains"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag_config"
+	"github.com/MathieuMoalic/amumax/src/magnetization"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/metadata"
+	"github.com/MathieuMoalic/amumax/src/regions"
+	"github.com/MathieuMoalic/amumax/src/saved_quantities"
 	"github.com/MathieuMoalic/amumax/src/script"
 	"github.com/MathieuMoalic/amumax/src/shape"
 	"github.com/MathieuMoalic/amumax/src/solver"
 	"github.com/MathieuMoalic/amumax/src/table"
 	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/window_shift"
 )
 
 type engineState struct {
-	flags    *flags.Flags
-	fs       *fsutil.FileSystem
-	log      *log.Logs
-	metadata *metadata.Metadata
-
+	flags           *flags.Flags
+	fs              *fsutil.FileSystem
+	log             *log.Logs
+	metadata        *metadata.Metadata
 	table           *table.Table
 	solver          *solver.Solver
 	mesh            *mesh.Mesh
-	magnetization   *magnetization
-	geometry        *geometry
-	regions         *regions
-	savedQuantities *savedQuantities
-	windowShift     *windowShift
+	magnetization   *magnetization.Magnetization
+	geometry        *geometry.Geometry
+	regions         *regions.Regions
+	savedQuantities *saved_quantities.SavedQuantities
+	windowShift     *window_shift.WindowShift
 	shape           *shape.ShapeList
 	grains          *grains.Grains
 	config          *mag_config.ConfigList
@@ -44,6 +48,39 @@ type engineState struct {
 func newEngineState(givenFlags *flags.Flags, log *log.Logs) *engineState {
 	return &engineState{flags: givenFlags, log: log, autoFlushInterval: 5 * time.Second}
 }
+func (s *engineState) init(scriptStr string) {
+	// initialize empty structs first so we can pass the pointers
+	// to the actual init functions
+
+	s.metadata = &metadata.Metadata{}
+	s.table = &table.Table{}
+	s.solver = &solver.Solver{}
+	s.mesh = &mesh.Mesh{}
+	s.magnetization = &magnetization.Magnetization{}
+	s.geometry = &geometry.Geometry{}
+	s.regions = &regions.Regions{}
+	s.savedQuantities = &saved_quantities.SavedQuantities{}
+	s.windowShift = &window_shift.WindowShift{}
+	s.shape = &shape.ShapeList{}
+	s.grains = &grains.Grains{}
+	s.config = &mag_config.ConfigList{}
+	s.script = &script.ScriptParser{}
+
+	s.metadata.Init(s.fs, s.log)
+	s.mesh.Init(s.log)
+	s.script.Init(&scriptStr, s.log, s.metadata, s.initializeMeshIfReady)
+	s.script.RegisterMesh(s.mesh)
+	s.windowShift.Init()
+	s.shape.Init(s.mesh, s.log, s.fs, s.grains)
+	s.table.Init(s.solver, s.log, s.fs)
+	s.solver.Init()
+	s.magnetization.Init(s.mesh, s.config, s.geometry)
+	s.regions.Init(s.mesh, s.log)
+	s.geometry.Init(s.mesh, s.log, s.config, s.magnetization.Value(), s.magnetization.Normalize)
+	s.savedQuantities.Init(s.log, s.fs, s.solver)
+	s.grains.Init(s.regions.Voronoi)
+	s.config.Init(s.mesh)
+}
 
 func (s *engineState) start(scriptPath string) {
 	// I commented the following line for debugging purposes
@@ -51,22 +88,10 @@ func (s *engineState) start(scriptPath string) {
 	// defer s.cleanExit()
 	// The order of the following lines is important
 	scriptStr := s.readScript(scriptPath)
-	s.initFileSystem(scriptPath)
-	s.metadata = metadata.NewMetadata(s.fs, s.log)
-	s.mesh = mesh.NewMesh(s.log)
-	s.script = script.NewScriptParser(&scriptStr, s.log, s.metadata, s.initializeMeshIfReady)
 
-	s.script.RegisterMesh(s.mesh)
-	s.windowShift = newWindowShift(s)
-	s.shape = shape.NewShape(s.mesh, s.log, s.script, s.fs, s.grains)
-	s.table = table.NewTable(s.solver, s.log, s.fs, s.script)
-	s.solver = solver.NewSolver()
-	s.magnetization = newMagnetization(s)
-	s.regions = newRegions(s)
-	s.geometry = newGeom(s)
-	s.savedQuantities = newSavedQuantities(s)
-	s.grains = grains.NewGrains(s.script.RegisterFunction, s.regions.voronoi)
-	s.config = mag_config.NewConfigList(s.mesh, s.script)
+	s.initFileSystem(scriptPath)
+	s.init(scriptStr)
+
 	err := s.script.Parse()
 	if err != nil {
 		s.log.ErrAndExit("Error parsing script: %v", err)
@@ -170,8 +195,8 @@ func (s *engineState) initializeMeshIfReady() {
 	if s.mesh.ReadyToCreate() {
 		s.log.Info("Creating mesh")
 		s.mesh.Create()
-		s.magnetization.initializeBuffer()
-		s.regions.initializeBuffer()
+		s.magnetization.InitializeBuffer()
+		s.regions.InitializeBuffer()
 		s.metadata.AddMesh(s.mesh)
 	}
 }

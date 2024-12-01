@@ -1,41 +1,43 @@
-package engine
+package magnetization
 
 import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/geometry"
 	"github.com/MathieuMoalic/amumax/src/mag_config"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/shape"
 )
 
-// Special buffered quantity to store magnetization
+// Special buffered quantity to store Magnetization
 // makes sure it's normalized etc.
-type magnetization struct {
-	e     *engineState
-	slice *data.Slice
+type Magnetization struct {
+	mesh     *mesh.Mesh
+	config   *mag_config.ConfigList
+	geometry *geometry.Geometry
+	Slice    *data.Slice
 }
 
-func newMagnetization(es *engineState) *magnetization {
-	m := &magnetization{
-		e: es,
-	}
-	m.e.script.RegisterVariable("m", m)
-	return m
+func (m *Magnetization) Init(mesh *mesh.Mesh, config *mag_config.ConfigList, geometry *geometry.Geometry) {
+	m.mesh = mesh
+	m.config = config
+	m.geometry = geometry
 }
 
 // These methods are defined for the Quantity interface
 
-func (m *magnetization) Size() [3]int           { return m.slice.Size() }
-func (m *magnetization) EvalTo(dst *data.Slice) { data.Copy(dst, m.slice) }
-func (m *magnetization) NComp() int             { return 3 }
-func (m *magnetization) Name() string           { return "m" }
-func (m *magnetization) Unit() string           { return "" }
-func (m *magnetization) Value() *data.Slice     { return m.slice }
+func (m *Magnetization) Size() [3]int           { return m.Slice.Size() }
+func (m *Magnetization) EvalTo(dst *data.Slice) { data.Copy(dst, m.Slice) }
+func (m *Magnetization) NComp() int             { return 3 }
+func (m *Magnetization) Name() string           { return "m" }
+func (m *Magnetization) Unit() string           { return "" }
+func (m *Magnetization) Value() *data.Slice     { return m.Slice }
 
-func (m *magnetization) Average() []float64 {
-	s := m.slice
-	geom := m.e.geometry.getOrCreateGpuSlice()
+func (m *Magnetization) Average() []float64 {
+	s := m.Slice
+	geom := m.geometry.GetOrCreateGpuSlice()
 	avg := make([]float64, s.NComp())
 	for i := range avg {
 		avg[i] = float64(cuda.Dot(s.Comp(i), geom)) / float64(cuda.Sum(geom))
@@ -60,25 +62,25 @@ func (m *magnetization) Average() []float64 {
 // func (m *magnetization) eval() interface{}       { return m }
 
 // func (m *Magnetization) Average() data.Vector    { return unslice(m.average()) }
-func (m *magnetization) normalize() {
-	cuda.Normalize(m.slice, m.e.geometry.getOrCreateGpuSlice())
+func (m *Magnetization) Normalize() {
+	cuda.Normalize(m.Slice, m.geometry.GetOrCreateGpuSlice())
 }
 
 // allocate storage (not done by init, as mesh size may not yet be known then)
-func (m *magnetization) initializeBuffer() {
-	m.slice = cuda.NewSlice(3, m.e.mesh.Size())
-	m.set(m.e.config.RandomMag()) // sane starting config
+func (m *Magnetization) InitializeBuffer() {
+	m.Slice = cuda.NewSlice(3, m.mesh.Size())
+	m.set(m.config.RandomMag()) // sane starting config
 }
 
-func (m *magnetization) setArray(src *data.Slice) {
-	if src.Size() != m.e.mesh.Size() {
-		src = data.Resample(src, m.e.mesh.Size())
+func (m *Magnetization) setArray(src *data.Slice) {
+	if src.Size() != m.mesh.Size() {
+		src = data.Resample(src, m.mesh.Size())
 	}
-	data.Copy(m.slice, src)
-	m.normalize()
+	data.Copy(m.Slice, src)
+	m.Normalize()
 }
 
-func (m *magnetization) set(c mag_config.Config) {
+func (m *Magnetization) set(c mag_config.Config) {
 	m.setInShape(nil, c)
 }
 
@@ -119,18 +121,18 @@ const (
 )
 
 // Sets the magnetization inside the shape
-func (m *magnetization) setInShape(region shape.Shape, conf mag_config.Config) {
+func (m *Magnetization) setInShape(region shape.Shape, conf mag_config.Config) {
 	if region == nil {
 		region = shape.Universe
 	}
-	cpuSlice := m.slice.HostCopy()
+	cpuSlice := m.Slice.HostCopy()
 	vectors := cpuSlice.Vectors()
-	Nx, Ny, Nz := m.e.mesh.GetNi()
+	Nx, Ny, Nz := m.mesh.GetNi()
 
 	for iz := 0; iz < Nz; iz++ {
 		for iy := 0; iy < Ny; iy++ {
 			for ix := 0; ix < Nx; ix++ {
-				r := m.e.mesh.Index2Coord(ix, iy, iz)
+				r := m.mesh.Index2Coord(ix, iy, iz)
 				x, y, z := r[X], r[Y], r[Z]
 				if region(x, y, z) { // inside
 					m := conf(x, y, z)

@@ -1,30 +1,39 @@
-package engine
+package regions
 
 import (
+	"sort"
+
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/shape"
 	"github.com/MathieuMoalic/amumax/src/utils"
 )
 
 // stores the region index for each cell
-type regions struct {
-	e          *engineState
+type Regions struct {
+	mesh       *mesh.Mesh
+	log        *log.Logs
 	maxRegions int
 	gpuBuffer  *cuda.Bytes                 // region data on GPU
 	hist       []func(x, y, z float64) int // history of region set operations
 	indices    map[int]bool
 }
 
-func newRegions(engineState *engineState) *regions {
-	return &regions{e: engineState, maxRegions: 256, indices: make(map[int]bool), hist: make([]func(x, y, z float64) int, 0)}
+func (r *Regions) Init(mesh *mesh.Mesh, log *log.Logs) {
+	r.mesh = mesh
+	r.log = log
+	r.maxRegions = 256
+	r.hist = make([]func(x, y, z float64) int, 0)
+	r.indices = make(map[int]bool)
 }
 
-func (r *regions) addIndex(i int) {
+func (r *Regions) addIndex(i int) {
 	r.indices[i] = true
 }
 
-func (r *regions) voronoi(minRegion, maxRegion int, getRegion func(float64, float64, float64) int) {
+func (r *Regions) Voronoi(minRegion, maxRegion int, getRegion func(float64, float64, float64) int) {
 	r.hist = append(r.hist, getRegion)
 	for i := minRegion; i < maxRegion; i++ {
 		r.addIndex(i)
@@ -32,24 +41,24 @@ func (r *regions) voronoi(minRegion, maxRegion int, getRegion func(float64, floa
 	r.render(getRegion)
 }
 
-// func (r *regions) getExistingIndices() []int {
-// 	indices := make([]int, 0, len(r.indices))
-// 	for i := range r.indices {
-// 		indices = append(indices, i)
-// 	}
-// 	sort.Ints(indices)
-// 	return indices
-// }
+func (r *Regions) GetExistingIndices() []int {
+	indices := make([]int, 0, len(r.indices))
+	for i := range r.indices {
+		indices = append(indices, i)
+	}
+	sort.Ints(indices)
+	return indices
+}
 
 // func (r *regions) redefine(startId, endId int) {
 // 	// Loop through all cells, if their region ID matches startId, change it to endId
-// 	n := r.e.mesh.Size()
+// 	n := r.mesh.Size()
 // 	l := r.regionListCPU() // need to start from previous state
-// 	arr := reshapeBytes(l, r.e.mesh.Size())
+// 	arr := reshapeBytes(l, r.mesh.Size())
 
-// 	for iz := 0; iz < n[Z]; iz++ {
-// 		for iy := 0; iy < n[Y]; iy++ {
-// 			for ix := 0; ix < n[X]; ix++ {
+// 	for iz := 0; iz < n[2]; iz++ {
+// 		for iy := 0; iy < n[1]; iy++ {
+// 			for ix := 0; ix < n[0]; ix++ {
 // 				if arr[iz][iy][ix] == byte(startId) {
 // 					arr[iz][iy][ix] = byte(endId)
 // 				}
@@ -65,13 +74,13 @@ func (r *regions) voronoi(minRegion, maxRegion int, getRegion func(float64, floa
 // 	}
 // }
 
-func (r *regions) initializeBuffer() {
-	r.gpuBuffer = cuda.NewBytes(r.e.mesh.NCell())
+func (r *Regions) InitializeBuffer() {
+	r.gpuBuffer = cuda.NewBytes(r.mesh.NCell())
 	r.defRegion(0, shape.Universe)
 }
 
 // Define a region with id (0-255) to be inside the Shape.
-func (r *regions) defRegion(id int, s shape.Shape) {
+func (r *Regions) defRegion(id int, s shape.Shape) {
 	r.defRegionId(id)
 	f := func(x, y, z float64) int {
 		if s(x, y, z) {
@@ -114,16 +123,16 @@ func (r *regions) defRegion(id int, s shape.Shape) {
 
 // renders (rasterizes) shape, filling it with region number #id, between x1 and x2
 // TODO: a tidbit expensive
-func (r *regions) render(f func(x, y, z float64) int) {
-	mesh := r.e.mesh
+func (r *Regions) render(f func(x, y, z float64) int) {
+	mesh := r.mesh
 	regionArray1D := r.regionListCPU() // need to start from previous state
 	regionArray3D := r.reshapeBytes(regionArray1D, mesh.Size())
 
 	for iz := 0; iz < mesh.Nz; iz++ {
 		for iy := 0; iy < mesh.Ny; iy++ {
 			for ix := 0; ix < mesh.Nx; ix++ {
-				r := r.e.mesh.Index2Coord(ix, iy, iz)
-				region := f(r[X], r[Y], r[Z])
+				r := r.mesh.Index2Coord(ix, iy, iz)
+				region := f(r[0], r[1], r[2])
 				if region >= 0 {
 					regionArray3D[iz][iy][ix] = byte(region)
 				}
@@ -134,11 +143,11 @@ func (r *regions) render(f func(x, y, z float64) int) {
 }
 
 // get the region for position R based on the history
-func (r *regions) get(R data.Vector) int {
+func (r *Regions) get(R data.Vector) int {
 	// reverse order, last one set wins.
 	for i := len(r.hist) - 1; i >= 0; i-- {
 		f := r.hist[i]
-		region := f(R[X], R[Y], R[Z])
+		region := f(R[0], R[1], R[2])
 		if region >= 0 {
 			return region
 		}
@@ -147,22 +156,22 @@ func (r *regions) get(R data.Vector) int {
 }
 
 // func (r *regions) hostArray() [][][]byte {
-// 	return reshapeBytes(r.regionListCPU(), r.e.mesh.Size())
+// 	return reshapeBytes(r.regionListCPU(), r.mesh.Size())
 // }
 
-func (r *regions) regionListCPU() []byte {
-	regionsList := make([]byte, r.e.mesh.NCell())
+func (r *Regions) regionListCPU() []byte {
+	regionsList := make([]byte, r.mesh.NCell())
 	r.gpuBuffer.Download(regionsList)
 	return regionsList
 }
 
 // func (r *regions) defRegionCell(id int, x, y, z int) {
 // 	r.defRegionId(id)
-// 	index := data.Index(r.e.mesh.Size(), x, y, z)
+// 	index := data.Index(r.mesh.Size(), x, y, z)
 // 	r.gpuBuffer.Set(index, byte(id))
 // }
 
-func (r *regions) Average() float64 {
+func (r *Regions) Average() float64 {
 	s, recycle := r.slice()
 	if recycle {
 		defer cuda.Recycle(s)
@@ -171,22 +180,22 @@ func (r *regions) Average() float64 {
 }
 
 // Set the region of one cell
-func (r *regions) setCell(ix, iy, iz int, region int) {
-	size := r.e.mesh.Size()
+func (r *Regions) setCell(ix, iy, iz int, region int) {
+	size := r.mesh.Size()
 	i := data.Index(size, ix, iy, iz)
 	r.gpuBuffer.Set(i, byte(region))
 	r.addIndex(region)
 }
 
 // func (r *regions) getCell(ix, iy, iz int) int {
-// 	size := r.e.mesh.Size()
+// 	size := r.mesh.Size()
 // 	i := data.Index(size, ix, iy, iz)
 // 	return int(r.gpuBuffer.Get(i))
 // }
 
-func (r *regions) defRegionId(id int) {
+func (r *Regions) defRegionId(id int) {
 	if id < 0 || id > r.maxRegions {
-		r.e.log.ErrAndExit("region id should be 0 -%d, have: %d", r.maxRegions, id)
+		r.log.ErrAndExit("region id should be 0 -%d, have: %d", r.maxRegions, id)
 	}
 	r.addIndex(id)
 }
@@ -202,12 +211,12 @@ func (r *regions) defRegionId(id int) {
 // 			vol++
 // 		}
 // 	}
-// 	V := float64(vol) / float64(r.e.mesh.NCell())
+// 	V := float64(vol) / float64(r.mesh.NCell())
 // 	return V
 // }
 
 // Get the region data on GPU
-func (r *regions) gpu() *cuda.Bytes {
+func (r *Regions) gpu() *cuda.Bytes {
 	return r.gpuBuffer
 }
 
@@ -221,8 +230,8 @@ func (r *regions) gpu() *cuda.Bytes {
 // }
 
 // Get returns the regions as a slice of floats, so it can be output.
-func (r *regions) slice() (*data.Slice, bool) {
-	buf := cuda.Buffer(1, r.e.mesh.Size())
+func (r *Regions) slice() (*data.Slice, bool) {
+	buf := cuda.Buffer(1, r.mesh.Size())
 	// cuda.RegionDecode(buf, unitMap.gpuLUT1(), Regions.Gpu())
 	return buf, true
 }
@@ -232,10 +241,10 @@ func (r *regions) slice() (*data.Slice, bool) {
 // var _ Quantity = &Regions
 
 // Re-interpret a contiguous array as a multi-dimensional array of given size.
-func (r *regions) reshapeBytes(array []byte, size [3]int) [][][]byte {
-	Nxx, Nyy, Nzz := size[X], size[Y], size[Z]
+func (r *Regions) reshapeBytes(array []byte, size [3]int) [][][]byte {
+	Nxx, Nyy, Nzz := size[0], size[1], size[2]
 	if Nxx*Nyy*Nzz != len(array) {
-		r.e.log.ErrAndExit("reshapeBytes: size mismatch")
+		r.log.ErrAndExit("reshapeBytes: size mismatch")
 	}
 	sliced := make([][][]byte, Nzz)
 	for i := range sliced {
@@ -249,22 +258,22 @@ func (r *regions) reshapeBytes(array []byte, size [3]int) [][][]byte {
 	return sliced
 }
 
-func (r *regions) shift(dx int) {
+func (r *Regions) Shift(dx int) {
 	// TODO: return if no regions defined
 	r1 := r.gpu()
-	r2 := cuda.NewBytes(r.e.mesh.NCell()) // TODO: somehow recycle
+	r2 := cuda.NewBytes(r.mesh.NCell()) // TODO: somehow recycle
 	defer r2.Free()
 	newreg := byte(0) // new region at edge
-	cuda.ShiftBytes(r2, r1, r.e.mesh, dx, newreg)
+	cuda.ShiftBytes(r2, r1, r.mesh, dx, newreg)
 	r1.Copy(r2)
 
-	n := r.e.mesh.Size()
+	n := r.mesh.Size()
 	x1, x2 := r.shiftDirtyRange(dx)
 
-	for iz := 0; iz < n[Z]; iz++ {
-		for iy := 0; iy < n[Y]; iy++ {
+	for iz := 0; iz < n[2]; iz++ {
+		for iy := 0; iy < n[1]; iy++ {
 			for ix := x1; ix < x2; ix++ {
-				i := r.e.mesh.Index2Coord(ix, iy, iz) // includes shift
+				i := r.mesh.Index2Coord(ix, iy, iz) // includes shift
 				reg := r.get(i)
 				if reg != 0 {
 					r.setCell(ix, iy, iz, reg) // a bit slowish, but hardly reached
@@ -274,22 +283,22 @@ func (r *regions) shift(dx int) {
 	}
 }
 
-func (r *regions) shiftY(dy int) {
+func (r *Regions) ShiftY(dy int) {
 	// TODO: return if no regions defined
 	r1 := r.gpu()
-	r2 := cuda.NewBytes(r.e.mesh.NCell()) // TODO: somehow recycle
+	r2 := cuda.NewBytes(r.mesh.NCell()) // TODO: somehow recycle
 	defer r2.Free()
 	newreg := byte(0) // new region at edge
-	cuda.ShiftBytesY(r2, r1, r.e.mesh, dy, newreg)
+	cuda.ShiftBytesY(r2, r1, r.mesh, dy, newreg)
 	r1.Copy(r2)
 
-	n := r.e.mesh.Size()
+	n := r.mesh.Size()
 	y1, y2 := r.shiftDirtyRange(dy)
 
-	for iz := 0; iz < n[Z]; iz++ {
-		for ix := 0; ix < n[X]; ix++ {
+	for iz := 0; iz < n[2]; iz++ {
+		for ix := 0; ix < n[0]; ix++ {
 			for iy := y1; iy < y2; iy++ {
-				i := r.e.mesh.Index2Coord(ix, iy, iz) // includes shift
+				i := r.mesh.Index2Coord(ix, iy, iz) // includes shift
 				reg := r.get(i)
 				if reg != 0 {
 					r.setCell(ix, iy, iz, reg) // a bit slowish, but hardly reached
@@ -300,9 +309,9 @@ func (r *regions) shiftY(dy int) {
 }
 
 // x range that needs to be refreshed after shift over dx
-func (r *regions) shiftDirtyRange(dx int) (x1, x2 int) {
-	Nx := r.e.mesh.Nx
-	r.e.log.AssertMsg(dx != 0, "Invalid shift: dx must not be zero in shiftDirtyRange")
+func (r *Regions) shiftDirtyRange(dx int) (x1, x2 int) {
+	Nx := r.mesh.Nx
+	r.log.AssertMsg(dx != 0, "Invalid shift: dx must not be zero in shiftDirtyRange")
 	if dx < 0 {
 		x1 = Nx + dx
 		x2 = Nx

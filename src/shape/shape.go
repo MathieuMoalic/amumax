@@ -8,7 +8,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/grains"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mesh"
-	"github.com/MathieuMoalic/amumax/src/script"
 	"github.com/MathieuMoalic/amumax/src/utils"
 )
 
@@ -17,37 +16,40 @@ type ShapeList struct {
 	grains *grains.Grains
 	mesh   *mesh.Mesh
 	log    *log.Logs
-	script *script.ScriptParser
 }
 
-func NewShape(mesh *mesh.Mesh, log *log.Logs, script *script.ScriptParser, fs *fsutil.FileSystem, grains *grains.Grains) *ShapeList {
-	s := &ShapeList{mesh: mesh, log: log, script: script, fs: fs, grains: grains}
+func (s *ShapeList) Init(mesh *mesh.Mesh, log *log.Logs, fs *fsutil.FileSystem, grains *grains.Grains) {
+	s.mesh = mesh
+	s.log = log
+	s.fs = fs
+	s.grains = grains
+}
 
-	s.script.RegisterFunction("Wave", s.wave)
-	s.script.RegisterFunction("Ellipsoid", s.ellipsoid)
-	s.script.RegisterFunction("Ellipse", s.ellipse)
-	s.script.RegisterFunction("Cone", s.cone)
-	s.script.RegisterFunction("Circle", s.circle)
-	s.script.RegisterFunction("Cylinder", s.cylinder)
-	s.script.RegisterFunction("Cuboid", s.cuboid)
-	s.script.RegisterFunction("Rect", s.rect)
-	s.script.RegisterFunction("Triangle", s.triangle)
-	s.script.RegisterFunction("RTriangle", s.rTriangle)
-	s.script.RegisterFunction("Hexagon", s.hexagon)
-	s.script.RegisterFunction("Diamond", s.diamond)
-	s.script.RegisterFunction("Squircle", s.squircle)
-	s.script.RegisterFunction("Square", s.square)
-	s.script.RegisterFunction("XRange", s.xRange)
-	s.script.RegisterFunction("YRange", s.yRange)
-	s.script.RegisterFunction("ZRange", s.zRange)
-	s.script.RegisterFunction("Universe", s.universe)
-	s.script.RegisterFunction("ImageShape", s.imageShape)
-	s.script.RegisterFunction("GrainRoughness", s.grainRoughness)
-	s.script.RegisterFunction("Layers", s.layers)
-	s.script.RegisterFunction("Layer", s.layer)
-	s.script.RegisterFunction("Cell", s.cell)
-
-	return s
+func (s *ShapeList) AddToScope() []interface{} {
+	// s.script.RegisterFunction("Wave", s.wave)
+	// s.script.RegisterFunction("Ellipsoid", s.ellipsoid)
+	// s.script.RegisterFunction("Ellipse", s.ellipse)
+	// s.script.RegisterFunction("Cone", s.cone)
+	// s.script.RegisterFunction("Circle", s.circle)
+	// s.script.RegisterFunction("Cylinder", s.cylinder)
+	// s.script.RegisterFunction("Cuboid", s.cuboid)
+	// s.script.RegisterFunction("Rect", s.rect)
+	// s.script.RegisterFunction("Triangle", s.triangle)
+	// s.script.RegisterFunction("RTriangle", s.rTriangle)
+	// s.script.RegisterFunction("Hexagon", s.hexagon)
+	// s.script.RegisterFunction("Diamond", s.diamond)
+	// s.script.RegisterFunction("Squircle", s.squircle)
+	// s.script.RegisterFunction("Square", s.square)
+	// s.script.RegisterFunction("XRange", s.xRange)
+	// s.script.RegisterFunction("YRange", s.yRange)
+	// s.script.RegisterFunction("ZRange", s.zRange)
+	// s.script.RegisterFunction("Universe", s.universe)
+	// s.script.RegisterFunction("ImageShape", s.imageShape)
+	// s.script.RegisterFunction("GrainRoughness", s.grainRoughness)
+	// s.script.RegisterFunction("Layers", s.layers)
+	// s.script.RegisterFunction("Layer", s.layer)
+	// s.script.RegisterFunction("Cell", s.cell)
+	return []interface{}{s.wave, s.ellipsoid, s.ellipse, s.cone, s.circle, s.cylinder, s.cuboid, s.rect, s.triangle, s.rTriangle, s.hexagon, s.diamond, s.squircle, s.square, s.xRange, s.yRange, s.zRange, s.universe, s.imageShape, s.grainRoughness, s.layers, s.layer, s.cell}
 }
 
 // geometrical Shape for setting sample geometry

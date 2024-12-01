@@ -21,8 +21,7 @@ type Metadata struct {
 	lastSavedHash [32]byte // Hash of the last saved Fields
 }
 
-func NewMetadata(fs *fsutil.FileSystem, log *log.Logs) *Metadata {
-	m := &Metadata{}
+func (m *Metadata) Init(fs *fsutil.FileSystem, log *log.Logs) {
 	m.Fields = make(map[string]interface{})
 	m.startTime = time.Now()
 	m.fs = fs
@@ -33,7 +32,6 @@ func NewMetadata(fs *fsutil.FileSystem, log *log.Logs) *Metadata {
 	if err != nil {
 		m.log.Err("Failed to save metadata to file: %v", err)
 	}
-	return m
 }
 
 func (m *Metadata) Add(key string, val interface{}) {

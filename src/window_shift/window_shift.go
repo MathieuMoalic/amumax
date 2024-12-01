@@ -1,45 +1,53 @@
-package engine
+package window_shift
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/geometry"
+	"github.com/MathieuMoalic/amumax/src/magnetization"
+	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/regions"
 )
 
-type windowShift struct {
-	e                        *engineState
+type WindowShift struct {
 	totalXShift, totalYShift float64
 	shiftMagL                data.Vector
 	// shiftMagR, shiftMagU, shiftMagD data.Vector // unused for now
 	shiftM, shiftGeom, shiftRegions bool
 	edgeCarryShift                  bool
+	mesh                            *mesh.Mesh
+	magnetization                   *magnetization.Magnetization
+	regions                         *regions.Regions
+	geometry                        *geometry.Geometry
 }
 
-func newWindowShift(es *engineState) *windowShift {
-	w := new(windowShift)
-	w.e = es
-	es.script.RegisterFunction("shift", w.shiftX)
-	es.script.RegisterFunction("yshift", w.shiftY)
-	return w
+func (w *WindowShift) Init() {
+	// es.script.RegisterFunction("shift", w.shiftX)
+	// es.script.RegisterFunction("yshift", w.shiftY)
+}
+
+func (w *WindowShift) AddToScope() []interface{} {
+	return []interface{}{w.shiftX, w.shiftY}
 }
 
 // position of the window lab frame
 // func (w *WindowShift) getShiftXPos() float64 { return -w.TotalXShift }
 // func (w *WindowShift) getShiftYPos() float64 { return -w.TotalYShift }
-func (w *windowShift) shiftX(dx int) {
-	w.totalXShift += float64(dx) * w.e.mesh.Dx
+func (w *WindowShift) shiftX(dx int) {
+	w.totalXShift += float64(dx) * w.mesh.Dx
 	if w.shiftM {
-		w.shiftMagX(w.e.magnetization.slice, dx)
+		w.shiftMagX(w.magnetization.Slice, dx)
 	}
 	if w.shiftRegions {
-		w.e.regions.shift(dx)
+		w.regions.Shift(dx)
 	}
 	if w.shiftGeom {
-		w.e.geometry.shift(dx)
+		w.geometry.Shift(dx)
 	}
-	w.e.magnetization.normalize()
+	w.magnetization.Normalize()
 }
 
-func (w *windowShift) shiftMagX(m *data.Slice, dx int) {
+func (w *WindowShift) shiftMagX(m *data.Slice, dx int) {
 	m2 := cuda.Buffer(1, m.Size())
 	defer cuda.Recycle(m2)
 	for c := 0; c < m.NComp(); c++ {
@@ -54,21 +62,21 @@ func (w *windowShift) shiftMagX(m *data.Slice, dx int) {
 }
 
 // shift the simulation window over dy cells in Y direction
-func (w *windowShift) shiftY(dy int) {
-	w.totalYShift += float64(dy) * w.e.mesh.Dy // needed to re-init geom, regions
+func (w *WindowShift) shiftY(dy int) {
+	w.totalYShift += float64(dy) * w.mesh.Dy // needed to re-init geom, regions
 	if w.shiftM {
-		w.shiftMagY(w.e.magnetization.slice, dy)
+		w.shiftMagY(w.magnetization.Slice, dy)
 	}
 	if w.shiftRegions {
-		w.e.regions.shiftY(dy)
+		w.regions.ShiftY(dy)
 	}
 	if w.shiftGeom {
-		w.e.geometry.shiftY(dy)
+		w.geometry.ShiftY(dy)
 	}
-	w.e.magnetization.normalize()
+	w.magnetization.Normalize()
 }
 
-func (w *windowShift) shiftMagY(m *data.Slice, dy int) {
+func (w *WindowShift) shiftMagY(m *data.Slice, dy int) {
 	m2 := cuda.Buffer(1, m.Size())
 	defer cuda.Recycle(m2)
 	for c := 0; c < m.NComp(); c++ {
