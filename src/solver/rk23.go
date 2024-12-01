@@ -22,8 +22,8 @@ func (s *Solver) rk23() {
 	m := NormMag.Buffer()
 	size := m.Size()
 
-	if s.fixDt != 0 {
-		s.dt_si = s.fixDt
+	if s.FixDt != 0 {
+		s.dt_si = s.FixDt
 	}
 
 	// upon resize: remove wrongly sized k1
@@ -84,21 +84,21 @@ func (s *Solver) rk23() {
 	err := cuda.MaxVecNorm(Err) * float64(h)
 
 	// adjust next time step
-	if err < s.maxErr || s.dt_si <= s.minDt || s.fixDt != 0 { // mindt check to avoid infinite loop
+	if err < s.MaxErr || s.dt_si <= s.MinDt || s.FixDt != 0 { // mindt check to avoid infinite loop
 		// step OK
 		s.setLastErr(err)
 		s.setMaxTorque(k4)
 		s.NSteps++
 		s.Time = t0 + s.dt_si
-		s.adaptDt(math.Pow(s.maxErr/err, 1./3.))
+		s.adaptDt(math.Pow(s.MaxErr/err, 1./3.))
 		data.Copy(s.previousStepBuffer, k4) // FSAL
 	} else {
 		// undo bad step
 		//log.Println("Bad step at t=", t0, ", err=", err)
-		log_old.AssertMsg(s.fixDt == 0, "Invalid step: cannot undo step when s.fixDt is set")
+		log_old.AssertMsg(s.FixDt == 0, "Invalid step: cannot undo step when s.fixDt is set")
 		s.Time = t0
 		data.Copy(m, m0)
 		s.nUndone++
-		s.adaptDt(math.Pow(s.maxErr/err, 1./4.))
+		s.adaptDt(math.Pow(s.MaxErr/err, 1./4.))
 	}
 }

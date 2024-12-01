@@ -69,7 +69,6 @@ func (s *engineState) init(scriptStr string) {
 	s.metadata.Init(s.fs, s.log)
 	s.mesh.Init(s.log)
 	s.script.Init(&scriptStr, s.log, s.metadata, s.initializeMeshIfReady)
-	s.script.RegisterMesh(s.mesh)
 	s.windowShift.Init()
 	s.shape.Init(s.mesh, s.log, s.fs, s.grains)
 	s.table.Init(s.solver, s.log, s.fs)
@@ -91,6 +90,7 @@ func (s *engineState) start(scriptPath string) {
 
 	s.initFileSystem(scriptPath)
 	s.init(scriptStr)
+	s.script.AddToScopeAll(s.fs, s.mesh, s.geometry, s.grains, s.config, s.magnetization, s.metadata, s.regions, s.savedQuantities, s.solver, s.table, s.windowShift, s.shape)
 
 	err := s.script.Parse()
 	if err != nil {

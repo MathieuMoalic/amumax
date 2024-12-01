@@ -156,9 +156,6 @@ func (sqs *SavedQuantities) Init(log *log.Logs, fs *fsutil.FileSystem, solver *s
 //			}
 //		}
 //	}
-func (sqs *SavedQuantities) AddToScope() []interface{} {
-	return []interface{}{sqs.autoSave, sqs.autoSaveAs, sqs.autoSaveAsChunk, sqs.save, sqs.saveAs, sqs.saveAsChunk}
-}
 
 func (sqs *SavedQuantities) savedQuandtityExists(name string) bool {
 	for _, z := range sqs.Quantities {
@@ -234,15 +231,15 @@ func (sqs *SavedQuantities) autoSaveInner(q quantity.Quantity, name string, peri
 }
 
 // User-facing save functions (function signatures cannot change)
-func (sqs *SavedQuantities) autoSave(q quantity.Quantity, period float64) {
+func (sqs *SavedQuantities) AutoSave(q quantity.Quantity, period float64) {
 	sqs.autoSaveInner(q, q.Name(), period, chunk.RequestedChunking{X: 1, Y: 1, Z: 1, C: 1})
 }
 
-func (sqs *SavedQuantities) autoSaveAs(q quantity.Quantity, name string, period float64) {
+func (sqs *SavedQuantities) AutoSaveAs(q quantity.Quantity, name string, period float64) {
 	sqs.autoSaveInner(q, name, period, chunk.RequestedChunking{X: 1, Y: 1, Z: 1, C: 1})
 }
 
-func (sqs *SavedQuantities) autoSaveAsChunk(q quantity.Quantity, name string, period float64, rchunks chunk.RequestedChunking) {
+func (sqs *SavedQuantities) AutoSaveAsChunk(q quantity.Quantity, name string, period float64, rchunks chunk.RequestedChunking) {
 	sqs.autoSaveInner(q, name, period, rchunks)
 }
 
@@ -252,14 +249,14 @@ func (sqs *SavedQuantities) saveAsInner(q quantity.Quantity, name string, rchunk
 	}
 	sqs.getSavedQuantity(name).save()
 }
-func (sqs *SavedQuantities) saveAs(q quantity.Quantity, name string) {
+func (sqs *SavedQuantities) SaveAs(q quantity.Quantity, name string) {
 	sqs.saveAsInner(q, name, chunk.RequestedChunking{X: 1, Y: 1, Z: 1, C: 1})
 }
 
-func (sqs *SavedQuantities) save(q quantity.Quantity) {
+func (sqs *SavedQuantities) Save(q quantity.Quantity) {
 	sqs.saveAsInner(q, q.Name(), chunk.RequestedChunking{X: 1, Y: 1, Z: 1, C: 1})
 }
 
-func (sqs *SavedQuantities) saveAsChunk(q quantity.Quantity, name string, rchunks chunk.RequestedChunking) {
+func (sqs *SavedQuantities) SaveAsChunk(q quantity.Quantity, name string, rchunks chunk.RequestedChunking) {
 	sqs.saveAsInner(q, name, rchunks)
 }

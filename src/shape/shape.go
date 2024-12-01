@@ -25,68 +25,41 @@ func (s *ShapeList) Init(mesh *mesh.Mesh, log *log.Logs, fs *fsutil.FileSystem, 
 	s.grains = grains
 }
 
-func (s *ShapeList) AddToScope() []interface{} {
-	// s.script.RegisterFunction("Wave", s.wave)
-	// s.script.RegisterFunction("Ellipsoid", s.ellipsoid)
-	// s.script.RegisterFunction("Ellipse", s.ellipse)
-	// s.script.RegisterFunction("Cone", s.cone)
-	// s.script.RegisterFunction("Circle", s.circle)
-	// s.script.RegisterFunction("Cylinder", s.cylinder)
-	// s.script.RegisterFunction("Cuboid", s.cuboid)
-	// s.script.RegisterFunction("Rect", s.rect)
-	// s.script.RegisterFunction("Triangle", s.triangle)
-	// s.script.RegisterFunction("RTriangle", s.rTriangle)
-	// s.script.RegisterFunction("Hexagon", s.hexagon)
-	// s.script.RegisterFunction("Diamond", s.diamond)
-	// s.script.RegisterFunction("Squircle", s.squircle)
-	// s.script.RegisterFunction("Square", s.square)
-	// s.script.RegisterFunction("XRange", s.xRange)
-	// s.script.RegisterFunction("YRange", s.yRange)
-	// s.script.RegisterFunction("ZRange", s.zRange)
-	// s.script.RegisterFunction("Universe", s.universe)
-	// s.script.RegisterFunction("ImageShape", s.imageShape)
-	// s.script.RegisterFunction("GrainRoughness", s.grainRoughness)
-	// s.script.RegisterFunction("Layers", s.layers)
-	// s.script.RegisterFunction("Layer", s.layer)
-	// s.script.RegisterFunction("Cell", s.cell)
-	return []interface{}{s.wave, s.ellipsoid, s.ellipse, s.cone, s.circle, s.cylinder, s.cuboid, s.rect, s.triangle, s.rTriangle, s.hexagon, s.diamond, s.squircle, s.square, s.xRange, s.yRange, s.zRange, s.universe, s.imageShape, s.grainRoughness, s.layers, s.layer, s.cell}
-}
-
 // geometrical Shape for setting sample geometry
 type Shape func(x, y, z float64) bool
 
-// wave with given diameters
-func (s *ShapeList) wave(period, amin, amax float64) Shape {
+// Wave with given diameters
+func (s *ShapeList) Wave(period, amin, amax float64) Shape {
 	return func(x, y, z float64) bool {
 		wavex := (math.Cos(x/period*2*math.Pi)/2 - 0.5) * (amax - amin) / 2
 		return y > wavex-amin/2 && y < -wavex+amin/2
 	}
 }
 
-// ellipsoid with given diameters
-func (s *ShapeList) ellipsoid(diamx, diamy, diamz float64) Shape {
+// Ellipsoid with given diameters
+func (s *ShapeList) Ellipsoid(diamx, diamy, diamz float64) Shape {
 	return func(x, y, z float64) bool {
 		return utils.Sqr64(x/diamx)+utils.Sqr64(y/diamy)+utils.Sqr64(z/diamz) <= 0.25
 	}
 }
 
-func (s *ShapeList) ellipse(diamx, diamy float64) Shape {
-	return s.ellipsoid(diamx, diamy, math.Inf(1))
+func (s *ShapeList) Ellipse(diamx, diamy float64) Shape {
+	return s.Ellipsoid(diamx, diamy, math.Inf(1))
 }
 
-// 3D cone with base at z=0 and vertex at z=height.
-func (s *ShapeList) cone(diam, height float64) Shape {
+// 3D Cone with base at z=0 and vertex at z=height.
+func (s *ShapeList) Cone(diam, height float64) Shape {
 	return func(x, y, z float64) bool {
 		return (height-z)*z >= 0 && utils.Sqr64(x/diam)+utils.Sqr64(y/diam) <= 0.25*utils.Sqr64(1-z/height)
 	}
 }
 
-func (s *ShapeList) circle(diam float64) Shape {
-	return s.cylinder(diam, math.Inf(1))
+func (s *ShapeList) Circle(diam float64) Shape {
+	return s.Cylinder(diam, math.Inf(1))
 }
 
-// cylinder along z.
-func (s *ShapeList) cylinder(diam, height float64) Shape {
+// Cylinder along z.
+func (s *ShapeList) Cylinder(diam, height float64) Shape {
 	return func(x, y, z float64) bool {
 		return z <= height/2 && z >= -height/2 &&
 			utils.Sqr64(x/diam)+utils.Sqr64(y/diam) <= 0.25
@@ -94,7 +67,7 @@ func (s *ShapeList) cylinder(diam, height float64) Shape {
 }
 
 // 3D Rectangular slab with given sides.
-func (s *ShapeList) cuboid(sidex, sidey, sidez float64) Shape {
+func (s *ShapeList) Cuboid(sidex, sidey, sidez float64) Shape {
 	return func(x, y, z float64) bool {
 		rx, ry, rz := sidex/2, sidey/2, sidez/2
 		return x < rx && x > -rx && y < ry && y > -ry && z < rz && z > -rz
@@ -102,15 +75,15 @@ func (s *ShapeList) cuboid(sidex, sidey, sidez float64) Shape {
 }
 
 // 2D Rectangle with given sides.
-func (s *ShapeList) rect(sidex, sidey float64) Shape {
+func (s *ShapeList) Rect(sidex, sidey float64) Shape {
 	return func(x, y, z float64) bool {
 		rx, ry := sidex/2, sidey/2
 		return x < rx && x > -rx && y < ry && y > -ry
 	}
 }
 
-// Equilateral triangle with given sides.
-func (s *ShapeList) triangle(side float64) Shape {
+// Equilateral Triangle with given sides.
+func (s *ShapeList) Triangle(side float64) Shape {
 	return func(x, y, z float64) bool {
 		c := math.Sqrt(3)
 		return y > -side/(2*c) && y < x*c+side/c && y < -x*c+side/c
@@ -118,31 +91,31 @@ func (s *ShapeList) triangle(side float64) Shape {
 }
 
 // Rounded Equilateral triangle with given sides.
-func (s *ShapeList) rTriangle(side, diam float64) Shape {
+func (s *ShapeList) RTriangle(side, diam float64) Shape {
 	return func(x, y, z float64) bool {
 		c := math.Sqrt(3)
 		return y > -side/(2*c) && y < x*c+side/c && y < -x*c+side/c && math.Sqrt(utils.Sqr64(x)+utils.Sqr64(y)) < diam/2
 	}
 }
 
-// hexagon with given sides.
-func (s *ShapeList) hexagon(side float64) Shape {
+// Hexagon with given sides.
+func (s *ShapeList) Hexagon(side float64) Shape {
 	return func(x, y, z float64) bool {
 		a, b := math.Sqrt(3), math.Sqrt(3)*side
 		return y < b/2 && y < -a*x+b && y > a*x-b && y > -b/2 && y > -a*x-b && y < a*x+b
 	}
 }
 
-// diamond with given sides.
-func (s *ShapeList) diamond(sidex, sidey float64) Shape {
+// Diamond with given sides.
+func (s *ShapeList) Diamond(sidex, sidey float64) Shape {
 	return func(x, y, z float64) bool {
 		a, b := sidey/sidex, sidey/2
 		return y < a*x+b && y < -a*x+b && y > a*x-b && y > -a*x-b
 	}
 }
 
-// squircle creates a 3D rounded rectangle (a generalized squircle) with specified side lengths and thickness.
-func (s *ShapeList) squircle(sidex, sidey, sidez, a float64) Shape {
+// Squircle creates a 3D rounded rectangle (a generalized Squircle) with specified side lengths and thickness.
+func (s *ShapeList) Squircle(sidex, sidey, sidez, a float64) Shape {
 	// r := math.Min(sidex, sidey) / 2
 	return func(x, y, z float64) bool {
 		normX := x / (sidex / 2)
@@ -161,34 +134,34 @@ func (s *ShapeList) squircle(sidex, sidey, sidez, a float64) Shape {
 	}
 }
 
-// 2D square with given side.
-func (s *ShapeList) square(side float64) Shape {
-	return s.rect(side, side)
+// 2D Square with given side.
+func (s *ShapeList) Square(side float64) Shape {
+	return s.Rect(side, side)
 }
 
 // All cells with x-coordinate between a and b
-func (s *ShapeList) xRange(a, b float64) Shape {
+func (s *ShapeList) XRange(a, b float64) Shape {
 	return func(x, y, z float64) bool {
 		return x >= a && x < b
 	}
 }
 
 // All cells with y-coordinate between a and b
-func (s *ShapeList) yRange(a, b float64) Shape {
+func (s *ShapeList) YRange(a, b float64) Shape {
 	return func(x, y, z float64) bool {
 		return y >= a && y < b
 	}
 }
 
 // All cells with z-coordinate between a and b
-func (s *ShapeList) zRange(a, b float64) Shape {
+func (s *ShapeList) ZRange(a, b float64) Shape {
 	return func(x, y, z float64) bool {
 		return z >= a && z < b
 	}
 }
 
-// Cell layers #a (inclusive) up to #b (exclusive).
-func (s *ShapeList) layers(a, b int) Shape {
+// Cell Layers #a (inclusive) up to #b (exclusive).
+func (s *ShapeList) Layers(a, b int) Shape {
 	Nz := s.mesh.Nz
 	if a < 0 || a > Nz || b < 0 || b < a {
 		s.log.ErrAndExit("layers %d:%d out of bounds (0 - %d)", a, b, Nz)
@@ -196,15 +169,15 @@ func (s *ShapeList) layers(a, b int) Shape {
 	dz := s.mesh.Dz
 	z1 := s.mesh.Index2Coord(0, 0, a)[2] - dz/2
 	z2 := s.mesh.Index2Coord(0, 0, b)[2] - dz/2
-	return s.zRange(z1, z2)
+	return s.ZRange(z1, z2)
 }
 
-func (s *ShapeList) layer(index int) Shape {
-	return s.layers(index, index+1)
+func (s *ShapeList) Layer(index int) Shape {
+	return s.Layers(index, index+1)
 }
 
-// Single cell with given index
-func (s *ShapeList) cell(ix, iy, iz int) Shape {
+// Single Cell with given index
+func (s *ShapeList) Cell(ix, iy, iz int) Shape {
 	dx, dy, dz := s.mesh.GetDi()
 	pos := s.mesh.Index2Coord(ix, iy, iz)
 	x1 := pos[0] - dx/2
@@ -220,11 +193,11 @@ func (s *ShapeList) cell(ix, iy, iz int) Shape {
 	}
 }
 
-func (s *ShapeList) universe() Shape {
+func (s *ShapeList) Universe() Shape {
 	return Universe
 }
 
-func (s *ShapeList) imageShape(fname string) Shape {
+func (s *ShapeList) ImageShape(fname string) Shape {
 	r, err1 := s.fs.Open(fname)
 	if err1 != nil {
 		s.log.ErrAndExit("Error opening image file: %s: %s", fname, err1)
@@ -267,7 +240,7 @@ func (s *ShapeList) imageShape(fname string) Shape {
 	}
 }
 
-func (s *ShapeList) grainRoughness(grainsize, zmin, zmax float64, seed int) Shape {
+func (s *ShapeList) GrainRoughness(grainsize, zmin, zmax float64, seed int) Shape {
 	s.grains.Voronoi(grainsize, 0, 256, seed)
 	return func(x, y, z float64) bool {
 		if z <= zmin {

@@ -18,7 +18,7 @@ type Geometry struct {
 	config        *mag_config.ConfigList
 	mag_slice     *data.Slice
 	mag_Normalize func()
-	edgeSmooth    int
+	EdgeSmooth    int
 	gpuSlice      *data.Slice
 	shapeFunc     shape.Shape
 }
@@ -29,11 +29,7 @@ func (g *Geometry) Init(mesh *mesh.Mesh, log *log.Logs, config *mag_config.Confi
 	g.config = config
 	g.mag_slice = mag_slice
 	g.mag_Normalize = mag_Normalize
-	g.edgeSmooth = 0
-}
-
-func (g *Geometry) AddToScope() []interface{} {
-	return []interface{}{g, g.setGeom}
+	g.EdgeSmooth = 0
 }
 
 func (g *Geometry) GetOrCreateGpuSlice() *data.Slice {
@@ -68,7 +64,7 @@ func (g *Geometry) Average() []float64 {
 	return utils.AverageSlice(s)
 }
 
-func (g *Geometry) setGeom(s shape.Shape) {
+func (g *Geometry) SetGeom(s shape.Shape) {
 
 	if s == nil {
 		// TODO: would be nice not to save volume if entirely filled
@@ -101,7 +97,7 @@ func (g *Geometry) setGeom(s shape.Shape) {
 					allIn = false
 				}
 
-				if g.edgeSmooth != 0 { // center is sufficient if we're not really smoothing
+				if g.EdgeSmooth != 0 { // center is sufficient if we're not really smoothing
 					for _, Δx := range []float64{-mesh.Dx / 2, mesh.Dx / 2} {
 						for _, Δy := range []float64{-mesh.Dy / 2, mesh.Dy / 2} {
 							for _, Δz := range []float64{-mesh.Dz / 2, mesh.Dz / 2} {
@@ -167,8 +163,8 @@ func (g *Geometry) cellVolume(ix, iy, iz int) float32 {
 	s := g.shapeFunc
 	var vol float32
 
-	N := g.edgeSmooth
-	S := float64(g.edgeSmooth)
+	N := g.EdgeSmooth
+	S := float64(g.EdgeSmooth)
 
 	for dx := 0; dx < N; dx++ {
 		Δx := -cx/2 + (cx / (2 * S)) + (cx/S)*float64(dx)
