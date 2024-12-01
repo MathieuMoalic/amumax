@@ -8,7 +8,7 @@ import (
 
 // Backward Euler method
 func (s *Solver) backWardEulerStep() {
-	log_old.AssertMsg(s.maxErr > 0, "Backward euler solver requires s.maxErr > 0")
+	log_old.AssertMsg(s.MaxErr > 0, "Backward euler solver requires s.maxErr > 0")
 
 	t0 := s.Time
 
@@ -25,7 +25,7 @@ func (s *Solver) backWardEulerStep() {
 	}
 	dy1 := s.previousStepBuffer
 
-	s.dt_si = s.fixDt
+	s.dt_si = s.FixDt
 	dt := float32(s.dt_si * gammaLL)
 	log_old.AssertMsg(dt > 0, "Backward Euler solver requires fixed time step > 0")
 

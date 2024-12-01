@@ -52,14 +52,14 @@ type Solver struct {
 	postStep             []func()    // Functions to call after every full time step
 	inject               chan func() // Injects code between time steps
 	dt_si                float64     //s.time step in seconds
-	minDt, maxDt         float64     // Minimum and maximum time steps
-	maxErr               float64     // Maximum error per step
+	MinDt, MaxDt         float64     // Minimum and maximum time steps
+	MaxErr               float64     // Maximum error per step
 	headroom             float64     // Solver headroom, (Gustafsson, 1992)
 	lastErr, peakErr     float64     // Error of last step, highest error ever
 	lastTorque           float64     // Maximum torque of last time step
 	NSteps, nUndone      int         // Number of successful steps and undone steps
 	nEvals               int         // Number of evaluations
-	fixDt                float64     // Fixed time step (if any)
+	FixDt                float64     // Fixed time step (if any)
 	solverType           int         // Identifier for the solver type
 	exchangeLengthWarned bool        // Whether the exchange length warning has been issued
 	mesh                 *mesh.Mesh
@@ -74,9 +74,9 @@ func (s *Solver) Init() {
 	s.postStep = []func(){}
 	s.inject = make(chan func())
 	s.dt_si = 1e-15
-	s.minDt = 0
-	s.maxDt = 0
-	s.maxErr = 1e-5
+	s.MinDt = 0
+	s.MaxDt = 0
+	s.MaxErr = 1e-5
 	s.headroom = 0.8
 	s.lastErr = 0
 	s.peakErr = 0
@@ -84,7 +84,7 @@ func (s *Solver) Init() {
 	s.NSteps = 0
 	s.nUndone = 0
 	s.nEvals = 0
-	s.fixDt = 0
+	s.FixDt = 0
 	s.solverType = 0
 	s.exchangeLengthWarned = false
 }
@@ -122,8 +122,8 @@ func (s *Solver) setMaxTorque(τ *data.Slice) {
 
 // adapt time step: dt *= corr, but limited to sensible values.
 func (s *Solver) adaptDt(corr float64) {
-	if s.fixDt != 0 {
-		s.dt_si = s.fixDt
+	if s.FixDt != 0 {
+		s.dt_si = s.FixDt
 		return
 	}
 
@@ -142,11 +142,11 @@ func (s *Solver) adaptDt(corr float64) {
 		corr = 1. / 2.
 	}
 	s.dt_si *= corr
-	if s.minDt != 0 && s.dt_si < s.minDt {
-		s.dt_si = s.minDt
+	if s.MinDt != 0 && s.dt_si < s.MinDt {
+		s.dt_si = s.MinDt
 	}
-	if s.maxDt != 0 && s.dt_si > s.maxDt {
-		s.dt_si = s.maxDt
+	if s.MaxDt != 0 && s.dt_si > s.MaxDt {
+		s.dt_si = s.MaxDt
 	}
 	if s.dt_si == 0 {
 		s.log.ErrAndExit("time step too small")

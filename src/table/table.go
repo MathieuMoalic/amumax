@@ -54,10 +54,6 @@ func (ts *Table) Init(solver *solver.Solver, log *log.Logs, fs *fsutil.FileSyste
 	ts.lastSavedHash = ""
 }
 
-func (ts *Table) AddToScope() []interface{} {
-	return []interface{}{ts.tableAutoSave, ts.tableAdd, ts.tableAddAs, ts.tableSave}
-}
-
 // generateHash creates a hash based on the current Step and column names.
 func (ts *Table) generateHash() string {
 	hash := sha256.New()
@@ -160,7 +156,7 @@ func (ts *Table) addColumn(name, unit string) {
 	ts.columns = append(ts.columns, column{name: name, unit: unit, writer: writer, file: file})
 }
 
-func (ts *Table) tableSave() {
+func (ts *Table) Save() {
 	if len(ts.columns) == 0 {
 		ts.log.Warn("No columns in table, not saving.")
 	}
@@ -168,11 +164,11 @@ func (ts *Table) tableSave() {
 	ts.writeToBuffer()
 }
 
-func (ts *Table) tableAdd(q quantity.Quantity) {
-	ts.tableAddAs(q, q.Name())
+func (ts *Table) Add(q quantity.Quantity) {
+	ts.AddAs(q, q.Name())
 }
 
-func (ts *Table) tableAddAs(q quantity.Quantity, name string) {
+func (ts *Table) AddAs(q quantity.Quantity, name string) {
 	suffixes := []string{"x", "y", "z"}
 	if ts.Step != -1 {
 		ts.log.Warn("You cannot add a new quantity to the table after the simulation has started. Ignoring.")
@@ -195,7 +191,7 @@ func (ts *Table) tableAddAs(q quantity.Quantity, name string) {
 	}
 }
 
-func (ts *Table) tableAutoSave(period float64) {
+func (ts *Table) AutoSave(period float64) {
 	ts.AutoSaveStart = ts.solver.Time
 	ts.AutoSavePeriod = period
 }

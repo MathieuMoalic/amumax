@@ -17,11 +17,11 @@ func (s *Solver) euler() {
 	// Adaptive time stepping: treat s.maxErr as the maximum magnetization delta
 	// (proportional to the error, but an overestimation for sure)
 	var dt float32
-	if s.fixDt != 0 {
-		s.dt_si = s.fixDt
+	if s.FixDt != 0 {
+		s.dt_si = s.FixDt
 		dt = float32(s.dt_si * gammaLL)
 	} else {
-		dt = float32(s.maxErr / s.lastTorque)
+		dt = float32(s.MaxErr / s.lastTorque)
 		s.dt_si = float64(dt) / gammaLL
 	}
 	log_old.AssertMsg(dt > 0, "Euler solver requires fixed time step > 0")

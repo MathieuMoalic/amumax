@@ -13,8 +13,8 @@ func (s *Solver) rk4() {
 	m := NormMag.Buffer()
 	size := m.Size()
 
-	if s.fixDt != 0 {
-		s.dt_si = s.fixDt
+	if s.FixDt != 0 {
+		s.dt_si = s.FixDt
 	}
 
 	t0 := s.Time
@@ -55,21 +55,21 @@ func (s *Solver) rk4() {
 	err := cuda.MaxVecDiff(k1, k4) * float64(h)
 
 	// adjust next time step
-	if err < s.maxErr || s.dt_si <= s.minDt || s.fixDt != 0 { // mindt check to avoid infinite loop
+	if err < s.MaxErr || s.dt_si <= s.MinDt || s.FixDt != 0 { // mindt check to avoid infinite loop
 		// step OK
 		// 4th order solution
 		cuda.Madd5(m, m0, k1, k2, k3, k4, 1, (1./6.)*h, (1./3.)*h, (1./3.)*h, (1./6.)*h)
 		NormMag.normalize()
 		s.NSteps++
-		s.adaptDt(math.Pow(s.maxErr/err, 1./4.))
+		s.adaptDt(math.Pow(s.MaxErr/err, 1./4.))
 		s.setLastErr(err)
 		s.setMaxTorque(k4)
 	} else {
 		// undo bad step
-		log_old.AssertMsg(s.fixDt == 0, "Invalid step: cannot undo step when s.fixDt is set")
+		log_old.AssertMsg(s.FixDt == 0, "Invalid step: cannot undo step when s.fixDt is set")
 		s.Time = t0
 		data.Copy(m, m0)
 		s.nUndone++
-		s.adaptDt(math.Pow(s.maxErr/err, 1./5.))
+		s.adaptDt(math.Pow(s.MaxErr/err, 1./5.))
 	}
 }

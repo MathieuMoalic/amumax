@@ -22,18 +22,14 @@ func (c *ConfigList) Init(mesh *mesh.Mesh) {
 	c.mesh = mesh
 }
 
-func (c *ConfigList) AddToScope() []interface{} {
-	return []interface{}{c.RandomMag, c.randomMagSeed, c.uniform, c.vortex, c.neelSkyrmion, c.blochSkyrmion, c.antiVortex, c.radial, c.vortexWall, c.twoDomain, c.conical, c.helical}
-}
-
 // Random initial magnetization.
 func (c *ConfigList) RandomMag() Config {
-	return c.randomMagSeed(0)
+	return c.RandomMagSeed(0)
 }
 
 // Random initial magnetization,
 // generated from random seed.
-func (c *ConfigList) randomMagSeed(seed int) Config {
+func (c *ConfigList) RandomMagSeed(seed int) Config {
 	rng := rand.New(rand.NewSource(int64(seed)))
 	return func(x, y, z float64) data.Vector {
 		return c.RandomDir(rng)
@@ -50,18 +46,18 @@ func (c *ConfigList) RandomDir(rng *rand.Rand) data.Vector {
 	return data.Vector{x, y, z}
 }
 
-// Returns a uniform magnetization state. E.g.:
+// Returns a Uniform magnetization state. E.g.:
 //
-//	M = uniform(1, 0, 0)) // saturated along 0
-func (c *ConfigList) uniform(mx, my, mz float64) Config {
+//	M = Uniform(1, 0, 0)) // saturated along 0
+func (c *ConfigList) Uniform(mx, my, mz float64) Config {
 	return func(x, y, z float64) data.Vector {
 		return data.Vector{mx, my, mz}
 	}
 }
 
-// Make a vortex magnetization with given circulation and core polarization (+1 or -1).
+// Make a Vortex magnetization with given circulation and core polarization (+1 or -1).
 // The core is smoothed over a few exchange lengths and should easily relax to its ground state.
-func (c *ConfigList) vortex(circ, pol int) Config {
+func (c *ConfigList) Vortex(circ, pol int) Config {
 	diam2 := 2 * utils.Sqr64(c.mesh.CellSize()[0])
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
@@ -73,7 +69,7 @@ func (c *ConfigList) vortex(circ, pol int) Config {
 	}
 }
 
-func (c *ConfigList) neelSkyrmion(charge, pol int) Config {
+func (c *ConfigList) NeelSkyrmion(charge, pol int) Config {
 	w := 8 * c.mesh.CellSize()[0]
 	w2 := w * w
 	return func(x, y, z float64) data.Vector {
@@ -86,7 +82,7 @@ func (c *ConfigList) neelSkyrmion(charge, pol int) Config {
 	}
 }
 
-func (c *ConfigList) blochSkyrmion(charge, pol int) Config {
+func (c *ConfigList) BlochSkyrmion(charge, pol int) Config {
 	w := 8 * c.mesh.CellSize()[0]
 	w2 := w * w
 	return func(x, y, z float64) data.Vector {
@@ -99,7 +95,7 @@ func (c *ConfigList) blochSkyrmion(charge, pol int) Config {
 	}
 }
 
-func (c *ConfigList) antiVortex(circ, pol int) Config {
+func (c *ConfigList) AntiVortex(circ, pol int) Config {
 	diam2 := 2 * utils.Sqr64(c.mesh.CellSize()[0])
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
@@ -111,7 +107,7 @@ func (c *ConfigList) antiVortex(circ, pol int) Config {
 	}
 }
 
-func (c *ConfigList) radial(charge, pol int) Config {
+func (c *ConfigList) Radial(charge, pol int) Config {
 	return func(x, y, z float64) data.Vector {
 		r2 := x*x + y*y
 		r := math.Sqrt(r2)
@@ -123,9 +119,9 @@ func (c *ConfigList) radial(charge, pol int) Config {
 }
 
 // Make a vortex wall configuration.
-func (c *ConfigList) vortexWall(mleft, mright float64, circ, pol int) Config {
+func (c *ConfigList) VortexWall(mleft, mright float64, circ, pol int) Config {
 	h := c.mesh.WorldSize()[1]
-	v := c.vortex(circ, pol)
+	v := c.Vortex(circ, pol)
 	return func(x, y, z float64) data.Vector {
 		if x < -h/2 {
 			return data.Vector{mleft, 0, 0}
@@ -151,10 +147,10 @@ func (c *ConfigList) noNaN(v data.Vector, pol int) data.Vector {
 // easily relax to its ground state.
 // E.g.:
 //
-//	twoDomain(1,0,0,  0,1,0,  -1,0,0) // head-to-head domains with transverse (Néel) wall
-//	twoDomain(1,0,0,  0,0,1,  -1,0,0) // head-to-head domains with perpendicular (Bloch) wall
-//	twoDomain(0,0,1,  1,0,0,   0,0,-1)// up-down domains with Bloch wall
-func (c *ConfigList) twoDomain(mx1, my1, mz1, mxwall, mywall, mzwall, mx2, my2, mz2 float64) Config {
+//	TwoDomain(1,0,0,  0,1,0,  -1,0,0) // head-to-head domains with transverse (Néel) wall
+//	TwoDomain(1,0,0,  0,0,1,  -1,0,0) // head-to-head domains with perpendicular (Bloch) wall
+//	TwoDomain(0,0,1,  1,0,0,   0,0,-1)// up-down domains with Bloch wall
+func (c *ConfigList) TwoDomain(mx1, my1, mz1, mxwall, mywall, mzwall, mx2, my2, mz2 float64) Config {
 	ww := 2 * c.mesh.CellSize()[0] // wall width in cells
 	return func(x, y, z float64) data.Vector {
 		var m data.Vector
@@ -171,15 +167,15 @@ func (c *ConfigList) twoDomain(mx1, my1, mz1, mxwall, mywall, mzwall, mx2, my2, 
 	}
 }
 
-// conical magnetization configuration.
+// Conical magnetization configuration.
 // The magnetization rotates on a cone defined by coneAngle and coneDirection.
-// q is the wave vector of the conical magnetization configuration.
+// q is the wave vector of the Conical magnetization configuration.
 // The magnetization is
 //
 //	m = u*cos(coneAngle) + sin(coneAngle)*( ua*cos(q*r) + ub*sin(q*r) )
 //
 // with ua and ub unit vectors perpendicular to u (normalized coneDirection)
-func (c *ConfigList) conical(q, coneDirection data.Vector, coneAngle float64) Config {
+func (c *ConfigList) Conical(q, coneDirection data.Vector, coneAngle float64) Config {
 	u := coneDirection.Div(coneDirection.Len())
 	// two unit vectors perpendicular to each other and to the cone direction u
 	p := math.Sqrt(1 - u[2]*u[2])
@@ -197,8 +193,8 @@ func (c *ConfigList) conical(q, coneDirection data.Vector, coneAngle float64) Co
 	}
 }
 
-func (c *ConfigList) helical(q data.Vector) Config {
-	return c.conical(q, q, math.Pi/2)
+func (c *ConfigList) Helical(q data.Vector) Config {
+	return c.Conical(q, q, math.Pi/2)
 }
 
 // Transl returns a translated copy of configuration c. E.g.:

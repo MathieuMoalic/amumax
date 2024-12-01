@@ -10,14 +10,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/quantity"
 )
 
-// TODO: registers some functions
-// u.e.script.RegisterFunction("Print", u.customPrint)
-
-// print with special formatting for some known types
-func CustomPrint(msg ...interface{}) {
-	// u.e.log.Info("%v", u.customFmt(msg))
-}
-
 // mumax specific formatting (Slice -> average, etc).
 func CustomFmt(msg []interface{}) (fmtMsg string) {
 	for _, m := range msg {
