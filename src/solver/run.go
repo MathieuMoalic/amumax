@@ -7,10 +7,11 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
-	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/progressbar"
+	"github.com/MathieuMoalic/amumax/src/regions"
 )
 
 // START OF TODO
@@ -40,13 +41,11 @@ func setTorque(dst *data.Slice) {}
 // TODO: implement saveIfNeeded
 func saveIfNeeded() {}
 
-type RegionsInterface interface{ GetExistingIndices() []int }
-
-var Regions RegionsInterface
-
 // END OF TODO
 
 type Solver struct {
+	regions              *regions.Regions
+	log                  *log.Logs
 	Time                 float64     // Current time in seconds
 	alarm                float64     // End time for the run, dt adaptation must not cross it
 	pause                bool        // Set to true to stop running after the current step
@@ -68,27 +67,26 @@ type Solver struct {
 }
 
 // NewSolver creates a new instance of the solver with default settings.
-func NewSolver() *Solver {
-	return &Solver{
-		Time:                 0,
-		pause:                true,
-		postStep:             []func(){},
-		inject:               make(chan func()),
-		dt_si:                1e-15,
-		minDt:                0,
-		maxDt:                0,
-		maxErr:               1e-5,
-		headroom:             0.8,
-		lastErr:              0,
-		peakErr:              0,
-		lastTorque:           0,
-		NSteps:               0,
-		nUndone:              0,
-		nEvals:               0,
-		fixDt:                0,
-		solverType:           0,
-		exchangeLengthWarned: false,
-	}
+func (s *Solver) Init() {
+	s.Time = 0
+	s.alarm = 0
+	s.pause = true
+	s.postStep = []func(){}
+	s.inject = make(chan func())
+	s.dt_si = 1e-15
+	s.minDt = 0
+	s.maxDt = 0
+	s.maxErr = 1e-5
+	s.headroom = 0.8
+	s.lastErr = 0
+	s.peakErr = 0
+	s.lastTorque = 0
+	s.NSteps = 0
+	s.nUndone = 0
+	s.nEvals = 0
+	s.fixDt = 0
+	s.solverType = 0
+	s.exchangeLengthWarned = false
 }
 
 func (s *Solver) SetSolver(solverIndex int) {
@@ -99,7 +97,7 @@ func (s *Solver) SetSolver(solverIndex int) {
 	}
 	// check if solverIndex is valid
 	if solverIndex < -1 || solverIndex > 6 {
-		log_old.Log.ErrAndExit("SetSolver: unknown solver type:  %v", solverIndex)
+		s.log.ErrAndExit("SetSolver: unknown solver type:  %v", solverIndex)
 	}
 	s.solverType = solverIndex
 }
@@ -135,7 +133,7 @@ func (s *Solver) adaptDt(corr float64) {
 		corr = 1
 	}
 
-	log_old.AssertMsg(corr != 0, "Time step too small, check if parameters are sensible")
+	s.log.AssertMsg(corr != 0, "Time step too small, check if parameters are sensible")
 	corr *= s.headroom
 	if corr > 2 {
 		corr = 2
@@ -151,7 +149,7 @@ func (s *Solver) adaptDt(corr float64) {
 		s.dt_si = s.maxDt
 	}
 	if s.dt_si == 0 {
-		log_old.Log.ErrAndExit("time step too small")
+		s.log.ErrAndExit("time step too small")
 	}
 
 	// do not cross alarm time
@@ -159,7 +157,7 @@ func (s *Solver) adaptDt(corr float64) {
 		s.dt_si = s.alarm - s.Time
 	}
 
-	log_old.AssertMsg(s.dt_si > 0, fmt.Sprint("Time step too small: ", s.dt_si))
+	s.log.AssertMsg(s.dt_si > 0, fmt.Sprint("Time step too small: ", s.dt_si))
 }
 
 // Run the simulation for a number of seconds.
@@ -246,7 +244,7 @@ func (s *Solver) RunInteractive() {
 func (s *Solver) step(output bool) {
 	switch s.solverType {
 	default:
-		log_old.Log.ErrAndExit("Step: unknown solver type:  %v", s.solverType)
+		s.log.ErrAndExit("Step: unknown solver type:  %v", s.solverType)
 	case -1:
 		s.backWardEulerStep()
 	case 1:
@@ -289,10 +287,10 @@ func (s *Solver) InjectAndWait(task func()) {
 
 func (s *Solver) sanityCheck() {
 	if Msat.isZero() {
-		log_old.Log.Info("Note: Msat = 0")
+		s.log.Info("Note: Msat = 0")
 	}
 	if Aex.isZero() {
-		log_old.Log.Info("Note: Aex = 0")
+		s.log.Info("Note: Aex = 0")
 	}
 }
 
@@ -300,7 +298,7 @@ func (s *Solver) checkExchangeLenght() {
 	if s.exchangeLengthWarned {
 		return
 	}
-	existingRegions := Regions.GetExistingIndices()
+	existingRegions := s.regions.GetExistingIndices()
 	// iterate over all of the quantities
 	for _, region := range existingRegions {
 		Msat_r := Msat.GetRegion(region)
@@ -308,15 +306,15 @@ func (s *Solver) checkExchangeLenght() {
 		lex := math.Sqrt(2 * Aex_r / (mag.Mu0 * Msat_r * Msat_r))
 		if !s.exchangeLengthWarned {
 			if s.mesh.Dx > lex {
-				log_old.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dx (%.3g nm) in region %d", lex*1e9, s.mesh.Dx*1e9, region)
+				s.log.Warn("Warning: Exchange length (%.3g nm) smaller than dx (%.3g nm) in region %d", lex*1e9, s.mesh.Dx*1e9, region)
 				s.exchangeLengthWarned = true
 			}
 			if s.mesh.Dy > lex {
-				log_old.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dy (%.3g nm) in region %d", lex*1e9, s.mesh.Dy*1e9, region)
+				s.log.Warn("Warning: Exchange length (%.3g nm) smaller than dy (%.3g nm) in region %d", lex*1e9, s.mesh.Dy*1e9, region)
 				s.exchangeLengthWarned = true
 			}
 			if s.mesh.Dz > lex && s.mesh.Nz > 1 {
-				log_old.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dz (%.3g nm) in region %d", lex*1e9, s.mesh.Dz*1e9, region)
+				s.log.Warn("Warning: Exchange length (%.3g nm) smaller than dz (%.3g nm) in region %d", lex*1e9, s.mesh.Dz*1e9, region)
 				s.exchangeLengthWarned = true
 			}
 		}

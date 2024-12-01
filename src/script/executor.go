@@ -6,7 +6,7 @@ import (
 )
 
 func (p *ScriptParser) Execute() error {
-	scriptLines := strings.Split(*p.script, "\n")
+	scriptLines := strings.Split(*p.scriptStr, "\n")
 	var executeStatements func([]Statement, int) error
 	executeStatements = func(statements []Statement, indentLevel int) error {
 		indent := strings.Repeat("    ", indentLevel) // Indentation for nested blocks

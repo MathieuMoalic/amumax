@@ -8,7 +8,6 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/mesh"
-	"github.com/MathieuMoalic/amumax/src/script"
 	"github.com/MathieuMoalic/amumax/src/utils"
 )
 
@@ -19,21 +18,12 @@ type ConfigList struct {
 	mesh *mesh.Mesh
 }
 
-func NewConfigList(mesh *mesh.Mesh, s *script.ScriptParser) *ConfigList {
-	c := &ConfigList{mesh: mesh}
-	s.RegisterFunction("RandomMag", c.RandomMag)
-	s.RegisterFunction("RandomMagSeed", c.randomMagSeed)
-	s.RegisterFunction("Uniform", c.uniform)
-	s.RegisterFunction("Vortex", c.vortex)
-	s.RegisterFunction("NeelSkyrmion", c.neelSkyrmion)
-	s.RegisterFunction("BlochSkyrmion", c.blochSkyrmion)
-	s.RegisterFunction("AntiVortex", c.antiVortex)
-	s.RegisterFunction("Radial", c.radial)
-	s.RegisterFunction("VortexWall", c.vortexWall)
-	s.RegisterFunction("TwoDomain", c.twoDomain)
-	s.RegisterFunction("Conical", c.conical)
-	s.RegisterFunction("Helical", c.helical)
-	return c
+func (c *ConfigList) Init(mesh *mesh.Mesh) {
+	c.mesh = mesh
+}
+
+func (c *ConfigList) AddToScope() []interface{} {
+	return []interface{}{c.RandomMag, c.randomMagSeed, c.uniform, c.vortex, c.neelSkyrmion, c.blochSkyrmion, c.antiVortex, c.radial, c.vortexWall, c.twoDomain, c.conical, c.helical}
 }
 
 // Random initial magnetization.

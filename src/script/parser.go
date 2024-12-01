@@ -16,7 +16,7 @@ type ScriptParser struct {
 	fset       *token.FileSet
 	lineOffset int // Adjusts line numbers for printing
 	log        *log.Logs
-	script     *string
+	scriptStr  *string
 	metadata   *metadata.Metadata
 	// scope holds the state of the script execution environment.
 	functionsScope        map[string]interface{}
@@ -24,26 +24,21 @@ type ScriptParser struct {
 	initializeMeshIfReady func()
 }
 
-// newScriptParser initializes and returns a new ScriptParser instance.
 // Warning: It is called more than once, for example for each for loop and if statements
-func NewScriptParser(script *string, log *log.Logs, metadata *metadata.Metadata, f func()) *ScriptParser {
-	p := &ScriptParser{
-		statements:            []Statement{},
-		fset:                  token.NewFileSet(),
-		lineOffset:            -3,
-		log:                   log,
-		script:                script,
-		metadata:              metadata,
-		functionsScope:        make(map[string]interface{}),
-		variablesScope:        make(map[string]interface{}),
-		initializeMeshIfReady: f,
-	}
-	return p
+func (p *ScriptParser) Init(script *string, log *log.Logs, metadata *metadata.Metadata, f func()) {
+	p.scriptStr = script
+	p.log = log
+	p.metadata = metadata
+	p.initializeMeshIfReady = f
+	p.fset = token.NewFileSet()
+	p.lineOffset = -3
+	p.functionsScope = make(map[string]interface{})
+	p.variablesScope = make(map[string]interface{})
 }
 
 // Parse parses a script, wrapping it in a main function to process each statement.
 func (p *ScriptParser) Parse() error {
-	wrappedScript := "package main\nfunc main() {\n" + *p.script + "\n}"
+	wrappedScript := "package main\nfunc main() {\n" + *p.scriptStr + "\n}"
 	file, err := parser.ParseFile(p.fset, "", wrappedScript, parser.AllErrors)
 	if err != nil {
 		return fmt.Errorf("parsing error: %v", err)
@@ -141,7 +136,8 @@ func (p *ScriptParser) processIfStmt(ifStmt *ast.IfStmt) {
 		LineNum: p.fset.Position(ifStmt.Pos()).Line,
 	}
 	if ifStmt.Body != nil {
-		bodyParser := NewScriptParser(p.script, p.log, p.metadata, p.initializeMeshIfReady)
+		bodyParser := ScriptParser{}
+		bodyParser.Init(p.scriptStr, p.log, p.metadata, p.initializeMeshIfReady)
 		bodyParser.fset = p.fset
 		for _, node := range ifStmt.Body.List {
 			bodyParser.processNode(node)
@@ -169,7 +165,8 @@ func (p *ScriptParser) processForLoop(loop *ast.ForStmt) {
 
 	// Process the body
 	if loop.Body != nil {
-		bodyParser := NewScriptParser(p.script, p.log, p.metadata, p.initializeMeshIfReady)
+		bodyParser := ScriptParser{}
+		bodyParser.Init(p.scriptStr, p.log, p.metadata, p.initializeMeshIfReady)
 		bodyParser.fset = p.fset
 		for _, node := range loop.Body.List {
 			bodyParser.processNode(node)
@@ -197,7 +194,8 @@ func (p *ScriptParser) processRangeLoop(loop *ast.RangeStmt) {
 
 	// Process body statements
 	if loop.Body != nil {
-		bodyParser := NewScriptParser(p.script, p.log, p.metadata, p.initializeMeshIfReady)
+		bodyParser := ScriptParser{}
+		bodyParser.Init(p.scriptStr, p.log, p.metadata, p.initializeMeshIfReady)
 		bodyParser.fset = p.fset
 		for _, node := range loop.Body.List {
 			bodyParser.processNode(node)

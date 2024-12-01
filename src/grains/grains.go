@@ -23,18 +23,13 @@ type Grains struct {
 
 // we pass the registerFunction and addVoronoiToRegions functions to the constructor
 // to avoid circular dependencies
-func NewGrains(registerFunction func(string, interface{}), addVoronoiToRegions addVoronoiToRegionsType) *Grains {
+func (g *Grains) Init(addVoronoiToRegions addVoronoiToRegionsType) {
 	TILE := 2 // tile size in grains
-	g := &Grains{
-		addVoronoiToRegions: addVoronoiToRegions,
-		tile:                TILE,
-		cache:               make(map[int2][]center),
-		rnd:                 rand.New(rand.NewSource(0)),
-		poisson_lambda:      float64(TILE * TILE),
-	}
-	registerFunction("ext_makegrains", g.Voronoi)
-
-	return g
+	g.addVoronoiToRegions = addVoronoiToRegions
+	g.tile = TILE
+	g.cache = make(map[int2][]center)
+	g.rnd = rand.New(rand.NewSource(0))
+	g.poisson_lambda = float64(TILE * TILE)
 }
 
 // script function

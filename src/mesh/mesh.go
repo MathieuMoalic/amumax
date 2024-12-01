@@ -26,21 +26,8 @@ type Mesh struct {
 	created          bool
 }
 
-// NewMesh creates an empty new mesh.
-func NewMesh(log *log.Logs) *Mesh {
-	return &Mesh{log: log}
-}
-
-func (m *Mesh) Init(nx, ny, nz int, dx, dy, dz float64, pbcx, pbcy, pbcz int) {
-	m.Nx = nx
-	m.Ny = ny
-	m.Nz = nz
-	m.Dx = dx
-	m.Dy = dy
-	m.Dz = dz
-	m.PBCx = pbcx
-	m.PBCy = pbcy
-	m.PBCz = pbcz
+func (m *Mesh) Init(log *log.Logs) {
+	m.log = log
 }
 
 func (m *Mesh) PrettyPrint() {

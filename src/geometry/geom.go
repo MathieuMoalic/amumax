@@ -1,53 +1,66 @@
-package engine
+package geometry
 
 import (
 	"math/rand"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mag_config"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/shape"
 	"github.com/MathieuMoalic/amumax/src/utils"
 )
 
-type geometry struct {
-	e          *engineState
-	edgeSmooth int
-	gpuSlice   *data.Slice
-	shapeFunc  shape.Shape
+type Geometry struct {
+	mesh          *mesh.Mesh
+	log           *log.Logs
+	config        *mag_config.ConfigList
+	mag_slice     *data.Slice
+	mag_Normalize func()
+	edgeSmooth    int
+	gpuSlice      *data.Slice
+	shapeFunc     shape.Shape
 }
 
-func newGeom(engineState *engineState) *geometry {
-	g := &geometry{e: engineState}
-	g.e.script.RegisterFunction("SetGeom", g.setGeom)
-	g.e.script.RegisterVariable("geom", g)
-	return g
+func (g *Geometry) Init(mesh *mesh.Mesh, log *log.Logs, config *mag_config.ConfigList, mag_slice *data.Slice, mag_Normalize func()) {
+	g.mesh = mesh
+	g.log = log
+	g.config = config
+	g.mag_slice = mag_slice
+	g.mag_Normalize = mag_Normalize
+	g.edgeSmooth = 0
 }
 
-func (g *geometry) getOrCreateGpuSlice() *data.Slice {
+func (g *Geometry) AddToScope() []interface{} {
+	return []interface{}{g, g.setGeom}
+}
+
+func (g *Geometry) GetOrCreateGpuSlice() *data.Slice {
 	if g.gpuSlice == nil {
-		g.gpuSlice = data.NilSlice(1, g.e.mesh.Size())
+		g.gpuSlice = data.NilSlice(1, g.mesh.Size())
 	}
 	return g.gpuSlice
 }
 
-func (g *geometry) slice() (*data.Slice, bool) {
-	s := g.getOrCreateGpuSlice()
+func (g *Geometry) slice() (*data.Slice, bool) {
+	s := g.GetOrCreateGpuSlice()
 	if s.IsNil() {
-		buffer := cuda.Buffer(1, g.e.mesh.Size())
+		buffer := cuda.Buffer(1, g.mesh.Size())
 		cuda.Memset(buffer, 1)
 		return buffer, true
 	} else {
 		return s, false
 	}
 }
-func (g *geometry) NComp() int             { return 1 }
-func (g *geometry) Size() [3]int           { return g.gpuSlice.Size() }
-func (g *geometry) Name() string           { return "geom" }
-func (g *geometry) Unit() string           { return "" }
-func (g *geometry) EvalTo(dst *data.Slice) { data.Copy(dst, g.gpuSlice) }
-func (g *geometry) Value() *data.Slice     { return g.gpuSlice }
+func (g *Geometry) NComp() int             { return 1 }
+func (g *Geometry) Size() [3]int           { return g.gpuSlice.Size() }
+func (g *Geometry) Name() string           { return "geom" }
+func (g *Geometry) Unit() string           { return "" }
+func (g *Geometry) EvalTo(dst *data.Slice) { data.Copy(dst, g.gpuSlice) }
+func (g *Geometry) Value() *data.Slice     { return g.gpuSlice }
 
-func (g *geometry) Average() []float64 {
+func (g *Geometry) Average() []float64 {
 	s, r := g.slice()
 	if r {
 		defer cuda.Recycle(s)
@@ -55,7 +68,7 @@ func (g *geometry) Average() []float64 {
 	return utils.AverageSlice(s)
 }
 
-func (g *geometry) setGeom(s shape.Shape) {
+func (g *Geometry) setGeom(s shape.Shape) {
 
 	if s == nil {
 		// TODO: would be nice not to save volume if entirely filled
@@ -63,22 +76,22 @@ func (g *geometry) setGeom(s shape.Shape) {
 	}
 
 	g.shapeFunc = s
-	if g.getOrCreateGpuSlice().IsNil() {
-		g.gpuSlice = cuda.NewSlice(1, g.e.mesh.Size())
+	if g.GetOrCreateGpuSlice().IsNil() {
+		g.gpuSlice = cuda.NewSlice(1, g.mesh.Size())
 	}
 
-	CpuSlice := data.NewSlice(1, g.getOrCreateGpuSlice().Size())
+	CpuSlice := data.NewSlice(1, g.GetOrCreateGpuSlice().Size())
 	array := CpuSlice.Scalars()
-	mesh := g.e.mesh
+	mesh := g.mesh
 
-	g.e.log.Info("Initializing geometry")
+	g.log.Info("Initializing geometry")
 	empty := true
 	for iz := 0; iz < mesh.Nz; iz++ {
 		for iy := 0; iy < mesh.Ny; iy++ {
 			for ix := 0; ix < mesh.Nx; ix++ {
 
-				r := g.e.mesh.Index2Coord(ix, iy, iz)
-				x0, y0, z0 := r[X], r[Y], r[Z]
+				r := g.mesh.Index2Coord(ix, iy, iz)
+				x0, y0, z0 := r[0], r[1], r[2]
 
 				// check if center and all vertices lie inside or all outside
 				allIn, allOut := true, true
@@ -117,40 +130,40 @@ func (g *geometry) setGeom(s shape.Shape) {
 	}
 
 	if empty {
-		g.e.log.ErrAndExit("SetGeom: geometry completely empty")
+		g.log.ErrAndExit("SetGeom: geometry completely empty")
 	}
 
 	data.Copy(g.gpuSlice, CpuSlice)
 	// M inside geom but previously outside needs to be re-inited
 	needupload := false
 	geomlist := CpuSlice.Host()[0]
-	mhost := g.e.magnetization.slice.HostCopy()
+	mhost := g.mag_slice.HostCopy()
 	m := mhost.Host()
 	rng := rand.New(rand.NewSource(0))
 	for i := range m[0] {
 		if geomlist[i] != 0 {
-			mx, my, mz := m[X][i], m[Y][i], m[Z][i]
+			mx, my, mz := m[0][i], m[1][i], m[2][i]
 			if mx == 0 && my == 0 && mz == 0 {
 				needupload = true
-				rnd := g.e.config.RandomDir(rng)
-				m[X][i], m[Y][i], m[Z][i] = float32(rnd[X]), float32(rnd[Y]), float32(rnd[Z])
+				rnd := g.config.RandomDir(rng)
+				m[0][i], m[1][i], m[2][i] = float32(rnd[0]), float32(rnd[1]), float32(rnd[2])
 			}
 		}
 	}
 	if needupload {
-		data.Copy(g.e.magnetization.slice, mhost)
+		data.Copy(g.mag_slice, mhost)
 	}
 
-	g.e.magnetization.normalize() // removes m outside vol
+	g.mag_Normalize() // removes m outside vol
 }
 
 // Sample edgeSmooth^3 points inside the cell to estimate its volume.
-func (g *geometry) cellVolume(ix, iy, iz int) float32 {
-	r := g.e.mesh.Index2Coord(ix, iy, iz)
-	x0, y0, z0 := r[X], r[Y], r[Z]
+func (g *Geometry) cellVolume(ix, iy, iz int) float32 {
+	r := g.mesh.Index2Coord(ix, iy, iz)
+	x0, y0, z0 := r[0], r[1], r[2]
 
-	c := g.e.mesh.CellSize()
-	cx, cy, cz := c[X], c[Y], c[Z]
+	c := g.mesh.CellSize()
+	cx, cy, cz := c[0], c[1], c[2]
 	s := g.shapeFunc
 	var vol float32
 
@@ -177,7 +190,7 @@ func (g *geometry) cellVolume(ix, iy, iz int) float32 {
 // 	return float64(cuda.GetCell(g.getOrCreateGpuSlice(), 0, ix, iy, iz))
 // }
 
-func (g *geometry) shift(dx int) {
+func (g *Geometry) Shift(dx int) {
 	// empty mask, nothing to do
 	if g == nil || g.gpuSlice.IsNil() {
 		return
@@ -185,20 +198,20 @@ func (g *geometry) shift(dx int) {
 
 	// allocated mask: shift
 	s := g.gpuSlice
-	s2 := cuda.Buffer(1, g.e.mesh.Size())
+	s2 := cuda.Buffer(1, g.mesh.Size())
 	defer cuda.Recycle(s2)
 	newv := float32(1) // initially fill edges with 1's
 	cuda.ShiftX(s2, s, dx, newv, newv)
 	data.Copy(s, s2)
 
-	n := g.e.mesh.Size()
+	n := g.mesh.Size()
 	x1, x2 := g.shiftDirtyRange(dx)
 
-	for iz := 0; iz < n[Z]; iz++ {
-		for iy := 0; iy < n[Y]; iy++ {
+	for iz := 0; iz < n[2]; iz++ {
+		for iy := 0; iy < n[1]; iy++ {
 			for ix := x1; ix < x2; ix++ {
-				r := g.e.mesh.Index2Coord(ix, iy, iz) // includes shift
-				if !g.shapeFunc(r[X], r[Y], r[Z]) {
+				r := g.mesh.Index2Coord(ix, iy, iz) // includes shift
+				if !g.shapeFunc(r[0], r[1], r[2]) {
 					cuda.SetCell(g.gpuSlice, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
 				}
 			}
@@ -207,7 +220,7 @@ func (g *geometry) shift(dx int) {
 
 }
 
-func (g *geometry) shiftY(dy int) {
+func (g *Geometry) ShiftY(dy int) {
 	// empty mask, nothing to do
 	if g == nil || g.gpuSlice.IsNil() {
 		return
@@ -215,20 +228,20 @@ func (g *geometry) shiftY(dy int) {
 
 	// allocated mask: shift
 	s := g.gpuSlice
-	s2 := cuda.Buffer(1, g.e.mesh.Size())
+	s2 := cuda.Buffer(1, g.mesh.Size())
 	defer cuda.Recycle(s2)
 	newv := float32(1) // initially fill edges with 1's
 	cuda.ShiftY(s2, s, dy, newv, newv)
 	data.Copy(s, s2)
 
-	n := g.e.mesh.Size()
+	n := g.mesh.Size()
 	y1, y2 := g.shiftDirtyRange(dy)
 
-	for iz := 0; iz < n[Z]; iz++ {
-		for ix := 0; ix < n[X]; ix++ {
+	for iz := 0; iz < n[2]; iz++ {
+		for ix := 0; ix < n[0]; ix++ {
 			for iy := y1; iy < y2; iy++ {
-				r := g.e.mesh.Index2Coord(ix, iy, iz) // includes shift
-				if !g.shapeFunc(r[X], r[Y], r[Z]) {
+				r := g.mesh.Index2Coord(ix, iy, iz) // includes shift
+				if !g.shapeFunc(r[0], r[1], r[2]) {
 					cuda.SetCell(g.gpuSlice, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
 				}
 			}
@@ -238,9 +251,9 @@ func (g *geometry) shiftY(dy int) {
 }
 
 // x range that needs to be refreshed after shift over dx
-func (g *geometry) shiftDirtyRange(dx int) (x1, x2 int) {
-	nx := g.e.mesh.Size()[X]
-	g.e.log.AssertMsg(dx != 0, "Invalid shift: dx must not be zero in shiftDirtyRange")
+func (g *Geometry) shiftDirtyRange(dx int) (x1, x2 int) {
+	nx := g.mesh.Size()[0]
+	g.log.AssertMsg(dx != 0, "Invalid shift: dx must not be zero in shiftDirtyRange")
 
 	if dx < 0 {
 		x1 = nx + dx

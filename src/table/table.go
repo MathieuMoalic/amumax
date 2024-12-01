@@ -11,7 +11,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/quantity"
-	"github.com/MathieuMoalic/amumax/src/script"
 	"github.com/MathieuMoalic/amumax/src/solver"
 	"github.com/MathieuMoalic/amumax/src/utils"
 )
@@ -28,7 +27,7 @@ type Table struct {
 	AutoSaveStart  float64              `json:"autoSaveStart"`
 	Step           int                  `json:"step"`
 	mu             sync.Mutex
-	initialized    bool
+	startedSaving  bool
 	lastSavedHash  string // Hash of the last saved state
 }
 
@@ -40,26 +39,23 @@ type column struct {
 }
 
 // NewTable creates a new empty table, does not save it to disk
-func NewTable(solver *solver.Solver, log *log.Logs, fs *fsutil.FileSystem, script *script.ScriptParser) *Table {
-	t := &Table{
-		solver:         solver,
-		log:            log,
-		fs:             fs,
-		quantities:     []quantity.Quantity{},
-		columns:        []column{},
-		Data:           make(map[string][]float64),
-		AutoSavePeriod: 0,
-		AutoSaveStart:  0,
-		Step:           -1,
-		mu:             sync.Mutex{},
-		initialized:    false,
-		lastSavedHash:  "",
-	}
-	script.RegisterFunction("TableAutoSave", t.tableAutoSave)
-	script.RegisterFunction("TableAdd", t.tableAdd)
-	script.RegisterFunction("TableAddAs", t.tableAddAs)
-	script.RegisterFunction("TableSave", t.tableSave)
-	return t
+func (ts *Table) Init(solver *solver.Solver, log *log.Logs, fs *fsutil.FileSystem) {
+	ts.solver = solver
+	ts.log = log
+	ts.fs = fs
+	ts.quantities = []quantity.Quantity{}
+	ts.columns = []column{}
+	ts.Data = make(map[string][]float64)
+	ts.AutoSavePeriod = 0
+	ts.AutoSaveStart = 0
+	ts.Step = -1
+	ts.mu = sync.Mutex{}
+	ts.startedSaving = false
+	ts.lastSavedHash = ""
+}
+
+func (ts *Table) AddToScope() []interface{} {
+	return []interface{}{ts.tableAutoSave, ts.tableAdd, ts.tableAddAs, ts.tableSave}
 }
 
 // generateHash creates a hash based on the current Step and column names.
@@ -80,7 +76,7 @@ func (ts *Table) initTable() {
 	ts.log.PanicIfError(err)
 	ts.addColumn("step", "")
 	ts.addColumn("t", "s")
-	ts.initialized = true
+	ts.startedSaving = true
 }
 
 func (ts *Table) writeToBuffer() {
@@ -154,7 +150,7 @@ func (ts *Table) exists(q quantity.Quantity, name string) bool {
 }
 
 func (ts *Table) addColumn(name, unit string) {
-	if !ts.initialized {
+	if !ts.startedSaving {
 		ts.initTable()
 	}
 	err := ts.fs.Mkdir("table/" + name)
