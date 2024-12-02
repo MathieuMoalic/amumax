@@ -3,7 +3,7 @@ package engine_old
 import (
 	"fmt"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 var (
@@ -18,7 +18,7 @@ func centerWallInner(c int) {
 	n := GetMesh().Size()
 	tolerance := 4 / float64(n[X]) // x*2 * expected <m> change for 1 cell shift
 
-	zero := data.Vector{0, 0, 0}
+	zero := data_old.Vector{0, 0, 0}
 	if shiftMagL == zero || shiftMagR == zero {
 		sign := magsign(M.GetCell(0, n[Y]/2, n[Z]/2)[c])
 		shiftMagL[c] = float64(sign)

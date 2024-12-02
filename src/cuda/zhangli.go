@@ -1,13 +1,13 @@
 package cuda
 
 import (
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 // Add Zhang-Li ST torque (Tesla) to torque.
 // see zhangli.cu
-func AddZhangLiTorque(torque, m *data.Slice, Msat, J, alpha, xi, pol MSlice, mesh mesh.MeshLike) {
+func AddZhangLiTorque(torque, m *data_old.Slice, Msat, J, alpha, xi, pol MSlice, mesh mesh.MeshLike) {
 	c := mesh.CellSize()
 	N := mesh.Size()
 	cfg := make3DConf(N)

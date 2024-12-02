@@ -5,7 +5,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
@@ -16,7 +16,7 @@ import "C"
 const REDUCE_BLOCKSIZE = C.REDUCE_BLOCKSIZE
 
 // Sum of all elements.
-func Sum(in *data.Slice) float32 {
+func Sum(in *data_old.Slice) float32 {
 	log_old.AssertMsg(in.NComp() == 1, "Component mismatch: input must have 1 component in Sum")
 	out := reduceBuf(0)
 	k_reducesum_async(in.DevPtr(0), out, 0, in.Len(), reducecfg)
@@ -24,7 +24,7 @@ func Sum(in *data.Slice) float32 {
 }
 
 // Dot product.
-func Dot(a, b *data.Slice) float32 {
+func Dot(a, b *data_old.Slice) float32 {
 	nComp := a.NComp()
 	log_old.AssertMsg(nComp == b.NComp(), "Component mismatch: a and b must have the same number of components in Dot")
 	out := reduceBuf(0)
@@ -36,7 +36,7 @@ func Dot(a, b *data.Slice) float32 {
 }
 
 // Maximum of absolute values of all elements.
-func MaxAbs(in *data.Slice) float32 {
+func MaxAbs(in *data_old.Slice) float32 {
 	log_old.AssertMsg(in.NComp() == 1, "Component mismatch: input must have 1 component in MaxAbs")
 	out := reduceBuf(0)
 	k_reducemaxabs_async(in.DevPtr(0), out, 0, in.Len(), reducecfg)
@@ -46,7 +46,7 @@ func MaxAbs(in *data.Slice) float32 {
 // Maximum of the norms of all vectors (x[i], y[i], z[i]).
 //
 //	max_i sqrt( x[i]*x[i] + y[i]*y[i] + z[i]*z[i] )
-func MaxVecNorm(v *data.Slice) float64 {
+func MaxVecNorm(v *data_old.Slice) float64 {
 	out := reduceBuf(0)
 	k_reducemaxvecnorm2_async(v.DevPtr(0), v.DevPtr(1), v.DevPtr(2), out, 0, v.Len(), reducecfg)
 	return math.Sqrt(float64(copyback(out)))
@@ -56,7 +56,7 @@ func MaxVecNorm(v *data.Slice) float64 {
 //
 //	(dx, dy, dz) = (x1, y1, z1) - (x2, y2, z2)
 //	max_i sqrt( dx[i]*dx[i] + dy[i]*dy[i] + dz[i]*dz[i] )
-func MaxVecDiff(x, y *data.Slice) float64 {
+func MaxVecDiff(x, y *data_old.Slice) float64 {
 	log_old.AssertMsg(x.Len() == y.Len(), "Length mismatch: x and y must have the same length in MaxVecDiff")
 	out := reduceBuf(0)
 	k_reducemaxvecdiff2_async(x.DevPtr(0), x.DevPtr(1), x.DevPtr(2),

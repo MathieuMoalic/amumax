@@ -4,7 +4,7 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 var (
@@ -13,7 +13,7 @@ var (
 		"2D topological charge density according to Berg and Lüscher", setTopologicalChargeDensityLattice)
 )
 
-func setTopologicalChargeDensityLattice(dst *data.Slice) {
+func setTopologicalChargeDensityLattice(dst *data_old.Slice) {
 	cuda.SetTopologicalChargeLattice(dst, NormMag.Buffer(), NormMag.Mesh())
 }
 

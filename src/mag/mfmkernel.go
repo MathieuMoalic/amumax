@@ -4,20 +4,20 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
-func MFMKernel(mesh mesh.MeshLike, lift, tipsize float64, cacheDir string) (kernel [3]*data.Slice) {
+func MFMKernel(mesh mesh.MeshLike, lift, tipsize float64, cacheDir string) (kernel [3]*data_old.Slice) {
 	return CalcMFMKernel(mesh, lift, tipsize)
 
 }
 
 // Kernel for the vertical derivative of the force on an MFM tip due to mx, my, mz.
 // This is the 2nd derivative of the energy w.r.t. z.
-func CalcMFMKernel(kernelMesh mesh.MeshLike, lift, tipsize float64) (kernel [3]*data.Slice) {
+func CalcMFMKernel(kernelMesh mesh.MeshLike, lift, tipsize float64) (kernel [3]*data_old.Slice) {
 
 	const TipCharge = 1 / Mu0 // tip charge
 	const Δ = 1e-9            // tip oscillation, take 2nd derivative over this distance
@@ -50,7 +50,7 @@ func CalcMFMKernel(kernelMesh mesh.MeshLike, lift, tipsize float64) (kernel [3]*
 	// Allocate only upper diagonal part. The rest is symmetric due to reciprocity.
 	var K [3][][][]float32
 	for i := 0; i < 3; i++ {
-		kernel[i] = data.NewSlice(1, kernelMesh.Size())
+		kernel[i] = data_old.NewSlice(1, kernelMesh.Size())
 		K[i] = kernel[i].Scalars()
 	}
 
@@ -69,18 +69,18 @@ func CalcMFMKernel(kernelMesh mesh.MeshLike, lift, tipsize float64) (kernel [3]*
 				xw := wrap(ix, size[X])
 
 				for s := 0; s < 3; s++ { // source index Ksxyz
-					m := data.Vector{0, 0, 0}
+					m := data_old.Vector{0, 0, 0}
 					m[s] = 1
 
 					var E [3]float64 // 3 energies for 2nd derivative
 
 					for i := -1; i <= 1; i++ {
 						I := float64(i)
-						R := data.Vector{-x, -y, z - (lift + (I * Δ))}
+						R := data_old.Vector{-x, -y, z - (lift + (I * Δ))}
 						r := R.Len()
 						B := R.Mul(TipCharge / (4 * math.Pi * r * r * r))
 
-						R = data.Vector{-x, -y, z - (lift + tipsize + (I * Δ))}
+						R = data_old.Vector{-x, -y, z - (lift + tipsize + (I * Δ))}
 						r = R.Len()
 						B = B.Add(R.Mul(-TipCharge / (4 * math.Pi * r * r * r)))
 

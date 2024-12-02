@@ -4,7 +4,7 @@ import (
 	"reflect"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
@@ -37,14 +37,14 @@ func init() {
 }
 
 // Sets dst to the current total torque
-func setTorque(dst *data.Slice) {
+func setTorque(dst *data_old.Slice) {
 	setLLTorque(dst)
 	addSTTorque(dst)
 	freezeSpins(dst)
 }
 
 // Sets dst to the current Landau-Lifshitz torque
-func setLLTorque(dst *data.Slice) {
+func setLLTorque(dst *data_old.Slice) {
 	setEffectiveField(dst) // calc and store B_eff
 	alpha := Alpha.MSlice()
 	defer alpha.Recycle()
@@ -56,7 +56,7 @@ func setLLTorque(dst *data.Slice) {
 }
 
 // Adds the current spin transfer torque to dst
-func addSTTorque(dst *data.Slice) {
+func addSTTorque(dst *data_old.Slice) {
 	if J.isZero() {
 		return
 	}
@@ -107,7 +107,7 @@ func addSTTorque(dst *data.Slice) {
 	}
 }
 
-func freezeSpins(dst *data.Slice) {
+func freezeSpins(dst *data_old.Slice) {
 	if !FrozenSpins.isZero() {
 		cuda.ZeroMask(dst, FrozenSpins.gpuLUT1(), Regions.Gpu())
 	}

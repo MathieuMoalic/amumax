@@ -6,7 +6,7 @@ import (
 	"reflect"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/script_old"
@@ -23,7 +23,7 @@ type excitation struct {
 // space-dependent mask plus time dependent multiplier
 type mulmask struct {
 	mul  func() float64
-	mask *data.Slice
+	mask *data_old.Slice
 }
 
 func newExcitation(name, unit, desc string) *excitation {
@@ -40,7 +40,7 @@ func (p *excitation) MSlice() cuda.MSlice {
 	return cuda.ToMSlice(buf)
 }
 
-func (e *excitation) AddTo(dst *data.Slice) {
+func (e *excitation) AddTo(dst *data_old.Slice) {
 	if !e.perRegion.isZero() {
 		cuda.RegionAddV(dst, e.perRegion.gpuLUT(), Regions.Gpu())
 	}
@@ -58,7 +58,7 @@ func (e *excitation) isZero() bool {
 	return e.perRegion.isZero() && len(e.extraTerms) == 0
 }
 
-func (e *excitation) Slice() (*data.Slice, bool) {
+func (e *excitation) Slice() (*data_old.Slice, bool) {
 	buf := cuda.Buffer(e.NComp(), e.Mesh().Size())
 	cuda.Zero(buf)
 	e.AddTo(buf)
@@ -81,7 +81,7 @@ func (e *excitation) RemoveExtraTerms() {
 }
 
 // Add an extra mask*multiplier term to the excitation.
-func (e *excitation) Add(mask *data.Slice, f script_old.ScalarFunction) {
+func (e *excitation) Add(mask *data_old.Slice, f script_old.ScalarFunction) {
 	var mul func() float64
 	if f != nil {
 		if isConst(f) {
@@ -99,10 +99,10 @@ func (e *excitation) Add(mask *data.Slice, f script_old.ScalarFunction) {
 }
 
 // An Add(mask, f) equivalent for Go use
-func (e *excitation) AddGo(mask *data.Slice, mul func() float64) {
+func (e *excitation) AddGo(mask *data_old.Slice, mul func() float64) {
 	if mask != nil {
 		checkNaN(mask, e.Name()+".add()") // TODO: in more places
-		mask = data.Resample(mask, e.Mesh().Size())
+		mask = data_old.Resample(mask, e.Mesh().Size())
 		mask = assureGPU(mask)
 	}
 	e.extraTerms = append(e.extraTerms, mulmask{mul, mask})
@@ -112,7 +112,7 @@ func (e *excitation) SetRegion(region int, f script_old.VectorFunction) {
 	e.perRegion.SetRegion(region, f)
 }
 func (e *excitation) SetValue(v interface{}) { e.perRegion.SetValue(v) }
-func (e *excitation) Set(v data.Vector)      { e.perRegion.setRegions(0, NREGION, slice(v)) }
+func (e *excitation) Set(v data_old.Vector)  { e.perRegion.setRegions(0, NREGION, slice(v)) }
 
 func (e *excitation) SetRegionFn(region int, f func() [3]float64) {
 	e.perRegion.setFunc(region, region+1, func() []float64 {
@@ -120,26 +120,26 @@ func (e *excitation) SetRegionFn(region int, f func() [3]float64) {
 	})
 }
 
-func (e *excitation) average() []float64      { return qAverageUniverse(e) }
-func (e *excitation) Average() data.Vector    { return unslice(qAverageUniverse(e)) }
-func (e *excitation) IsUniform() bool         { return e.perRegion.IsUniform() }
-func (e *excitation) Name() string            { return e.name }
-func (e *excitation) Unit() string            { return e.perRegion.Unit() }
-func (e *excitation) NComp() int              { return e.perRegion.NComp() }
-func (e *excitation) Mesh() *mesh_old.Mesh    { return GetMesh() }
-func (e *excitation) Region(r int) *vOneReg   { return vOneRegion(e, r) }
-func (e *excitation) Comp(c int) ScalarField  { return comp(e, c) }
-func (e *excitation) Eval() interface{}       { return e }
-func (e *excitation) Type() reflect.Type      { return reflect.TypeOf(new(excitation)) }
-func (e *excitation) InputType() reflect.Type { return script_old.VectorFunction_t }
-func (e *excitation) EvalTo(dst *data.Slice)  { evalTo(e, dst) }
+func (e *excitation) average() []float64         { return qAverageUniverse(e) }
+func (e *excitation) Average() data_old.Vector   { return unslice(qAverageUniverse(e)) }
+func (e *excitation) IsUniform() bool            { return e.perRegion.IsUniform() }
+func (e *excitation) Name() string               { return e.name }
+func (e *excitation) Unit() string               { return e.perRegion.Unit() }
+func (e *excitation) NComp() int                 { return e.perRegion.NComp() }
+func (e *excitation) Mesh() *mesh_old.Mesh       { return GetMesh() }
+func (e *excitation) Region(r int) *vOneReg      { return vOneRegion(e, r) }
+func (e *excitation) Comp(c int) ScalarField     { return comp(e, c) }
+func (e *excitation) Eval() interface{}          { return e }
+func (e *excitation) Type() reflect.Type         { return reflect.TypeOf(new(excitation)) }
+func (e *excitation) InputType() reflect.Type    { return script_old.VectorFunction_t }
+func (e *excitation) EvalTo(dst *data_old.Slice) { evalTo(e, dst) }
 
 func (e *excitation) GetRegionToString(region int) string {
 	v := e.perRegion.GetRegion(region)
 	return fmt.Sprintf("(%g,%g,%g)", v[0], v[1], v[2])
 }
 
-func checkNaN(s *data.Slice, name string) {
+func checkNaN(s *data_old.Slice, name string) {
 	h := s.Host()
 	for _, h := range h {
 		for _, v := range h {

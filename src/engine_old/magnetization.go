@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 )
 
@@ -14,7 +14,7 @@ var NormMag magnetization // reduced magnetization (unit length)
 // Special buffered quantity to store magnetization
 // makes sure it's normalized etc.
 type magnetization struct {
-	buffer_ *data.Slice
+	buffer_ *data_old.Slice
 }
 
 func (m *magnetization) GetRegionToString(region int) string {
@@ -22,20 +22,20 @@ func (m *magnetization) GetRegionToString(region int) string {
 	return fmt.Sprintf("(%g,%g,%g)", v[0], v[1], v[2])
 }
 
-func (m *magnetization) Mesh() *mesh_old.Mesh { return GetMesh() }
-func (m *magnetization) NComp() int           { return 3 }
-func (m *magnetization) Name() string         { return "m" }
-func (m *magnetization) Unit() string         { return "" }
-func (m *magnetization) Buffer() *data.Slice  { return m.buffer_ } // todo: rename Gpu()?
+func (m *magnetization) Mesh() *mesh_old.Mesh    { return GetMesh() }
+func (m *magnetization) NComp() int              { return 3 }
+func (m *magnetization) Name() string            { return "m" }
+func (m *magnetization) Unit() string            { return "" }
+func (m *magnetization) Buffer() *data_old.Slice { return m.buffer_ } // todo: rename Gpu()?
 
-func (m *magnetization) Comp(c int) ScalarField  { return comp(m, c) }
-func (m *magnetization) SetValue(v interface{})  { m.SetInShape(nil, v.(config)) }
-func (m *magnetization) InputType() reflect.Type { return reflect.TypeOf(config(nil)) }
-func (m *magnetization) Type() reflect.Type      { return reflect.TypeOf(new(magnetization)) }
-func (m *magnetization) Eval() interface{}       { return m }
-func (m *magnetization) average() []float64      { return sAverageMagnet(NormMag.Buffer()) }
-func (m *magnetization) Average() data.Vector    { return unslice(m.average()) }
-func (m *magnetization) normalize()              { cuda.Normalize(m.Buffer(), Geometry.Gpu()) }
+func (m *magnetization) Comp(c int) ScalarField   { return comp(m, c) }
+func (m *magnetization) SetValue(v interface{})   { m.SetInShape(nil, v.(config)) }
+func (m *magnetization) InputType() reflect.Type  { return reflect.TypeOf(config(nil)) }
+func (m *magnetization) Type() reflect.Type       { return reflect.TypeOf(new(magnetization)) }
+func (m *magnetization) Eval() interface{}        { return m }
+func (m *magnetization) average() []float64       { return sAverageMagnet(NormMag.Buffer()) }
+func (m *magnetization) Average() data_old.Vector { return unslice(m.average()) }
+func (m *magnetization) normalize()               { cuda.Normalize(m.Buffer(), Geometry.Gpu()) }
 
 // allocate storage (not done by init, as mesh size may not yet be known then)
 func (m *magnetization) Alloc() {
@@ -43,11 +43,11 @@ func (m *magnetization) Alloc() {
 	m.Set(randomMag()) // sane starting config
 }
 
-func (b *magnetization) SetArray(src *data.Slice) {
+func (b *magnetization) SetArray(src *data_old.Slice) {
 	if src.Size() != b.Mesh().Size() {
-		src = data.Resample(src, b.Mesh().Size())
+		src = data_old.Resample(src, b.Mesh().Size())
 	}
-	data.Copy(b.Buffer(), src)
+	data_old.Copy(b.Buffer(), src)
 	b.normalize()
 }
 
@@ -62,18 +62,18 @@ func (m *magnetization) LoadOvfFile(fname string) {
 	m.SetArray(loadOvfFile(fname))
 }
 
-func (m *magnetization) Slice() (s *data.Slice, recycle bool) {
+func (m *magnetization) Slice() (s *data_old.Slice, recycle bool) {
 	return m.Buffer(), false
 }
 
-func (m *magnetization) EvalTo(dst *data.Slice) {
-	data.Copy(dst, m.buffer_)
+func (m *magnetization) EvalTo(dst *data_old.Slice) {
+	data_old.Copy(dst, m.buffer_)
 }
 
 func (m *magnetization) Region(r int) *vOneReg { return vOneRegion(m, r) }
 
 // Set the value of one cell.
-func (m *magnetization) SetCell(ix, iy, iz int, v data.Vector) {
+func (m *magnetization) SetCell(ix, iy, iz int, v data_old.Vector) {
 	r := index2Coord(ix, iy, iz)
 	if Geometry.shape != nil && !Geometry.shape(r[X], r[Y], r[Z]) {
 		return
@@ -85,7 +85,7 @@ func (m *magnetization) SetCell(ix, iy, iz int, v data.Vector) {
 }
 
 // Get the value of one cell.
-func (m *magnetization) GetCell(ix, iy, iz int) data.Vector {
+func (m *magnetization) GetCell(ix, iy, iz int) data_old.Vector {
 	mx := float64(cuda.GetCell(m.Buffer(), X, ix, iy, iz))
 	my := float64(cuda.GetCell(m.Buffer(), Y, ix, iy, iz))
 	mz := float64(cuda.GetCell(m.Buffer(), Z, ix, iy, iz))

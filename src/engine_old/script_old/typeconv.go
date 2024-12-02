@@ -5,7 +5,7 @@ import (
 	"go/token"
 	"reflect"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 // converts in to an expression of type OutT.
@@ -73,7 +73,7 @@ var (
 	func_bool_t      = reflect.TypeOf(func() bool { panic(0) })
 	int_t            = reflect.TypeOf(int(0))
 	string_t         = reflect.TypeOf("")
-	vector_t         = reflect.TypeOf(data.Vector{})
+	vector_t         = reflect.TypeOf(data_old.Vector{})
 	ScalarFunction_t = reflect.TypeOf(dummy_f).In(0)
 	VectorFunction_t = reflect.TypeOf(dummy_f3).In(0)
 	ScalarIf_t       = reflect.TypeOf(dummy_scalarif).In(0)
@@ -135,5 +135,5 @@ type ScalarIf interface {
 } // TODO: Scalar
 
 type VectorIf interface {
-	Get() data.Vector
+	Get() data_old.Vector
 } // TODO: Vector

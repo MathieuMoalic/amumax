@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/mag"
 )
 
@@ -31,7 +31,7 @@ func init() {
 }
 
 // Sets dst to the current demag field
-func setDemagField(dst *data.Slice) {
+func setDemagField(dst *data_old.Slice) {
 	if EnableDemag {
 		msat := Msat.MSlice()
 		defer msat.Recycle()
@@ -47,7 +47,7 @@ func setDemagField(dst *data.Slice) {
 }
 
 // Sets dst to the demag field, but cells where NoDemagSpins != 0 do not generate nor receive field.
-func setMaskedDemagField(dst *data.Slice, msat cuda.MSlice) {
+func setMaskedDemagField(dst *data_old.Slice, msat cuda.MSlice) {
 	// No-demag spins: mask-out geometry with zeros where NoDemagSpins is set,
 	// so these spins do not generate a field
 
@@ -59,7 +59,7 @@ func setMaskedDemagField(dst *data.Slice, msat cuda.MSlice) {
 	if r {
 		defer cuda.Recycle(geom)
 	}
-	data.Copy(buf, geom)
+	data_old.Copy(buf, geom)
 
 	// mask-out
 	cuda.ZeroMask(buf, NoDemagSpins.gpuLUT1(), Regions.Gpu())
@@ -73,7 +73,7 @@ func setMaskedDemagField(dst *data.Slice, msat cuda.MSlice) {
 }
 
 // Sets dst to the full (unnormalized) magnetization in A/m
-func setMFull(dst *data.Slice) {
+func setMFull(dst *data_old.Slice) {
 	// scale m by Msat...
 	msat, rM := Msat.Slice()
 	if rM {

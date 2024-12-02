@@ -3,7 +3,7 @@ package engine_old
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 func centerBubbleInner() {
@@ -14,7 +14,7 @@ func centerBubbleInner() {
 	centerIdx[X] = int(math.Floor((position[X] - getShiftPos()) / c[X]))
 	centerIdx[Y] = int(math.Floor((position[Y] - getShiftYPos()) / c[Y]))
 
-	zero := data.Vector{0, 0, 0}
+	zero := data_old.Vector{0, 0, 0}
 	if shiftMagL == zero || shiftMagR == zero || shiftMagD == zero || shiftMagU == zero {
 		shiftMagL[Z] = -BubbleMz
 		shiftMagR[Z] = -BubbleMz

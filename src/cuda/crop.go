@@ -1,13 +1,13 @@
 package cuda
 
 import (
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Crop stores in dst a rectangle cropped from src at given offset position.
 // dst size may be smaller than src.
-func Crop(dst, src *data.Slice, offX, offY, offZ int) {
+func Crop(dst, src *data_old.Slice, offX, offY, offZ int) {
 	D := dst.Size()
 	S := src.Size()
 	log_old.AssertMsg(dst.NComp() == src.NComp(), "dst and src must have the same number of components in Crop function")

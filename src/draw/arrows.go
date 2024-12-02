@@ -5,7 +5,7 @@ import (
 	"image/color"
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/golang/freetype/raster"
 	"golang.org/x/image/math/fixed"
 )
@@ -13,12 +13,12 @@ import (
 func drawArrows(img *image.RGBA, arr [3][][][]float32, sub int) {
 	c := newCanvas(img)
 
-	Na := data.SizeOf(arr[0]) // number of arrows
-	h := Na[Y]                // orignal image height
+	Na := data_old.SizeOf(arr[0]) // number of arrows
+	h := Na[Y]                    // orignal image height
 	Na[X] = imax(Na[X]/sub, 1)
 	Na[Y] = imax(Na[Y]/sub, 1)
 	Na[Z] = 1
-	small := data.Downsample(arr[:], Na)
+	small := data_old.Downsample(arr[:], Na)
 	S := float32(sub)
 
 	for iy := 0; iy < Na[Y]; iy++ {

@@ -4,7 +4,7 @@ import (
 	"math/rand"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag_config"
 	"github.com/MathieuMoalic/amumax/src/mesh"
@@ -16,14 +16,14 @@ type Geometry struct {
 	mesh          *mesh.Mesh
 	log           *log.Logs
 	config        *mag_config.ConfigList
-	mag_slice     *data.Slice
+	mag_slice     *data_old.Slice
 	mag_Normalize func()
 	EdgeSmooth    int
-	gpuSlice      *data.Slice
+	gpuSlice      *data_old.Slice
 	shapeFunc     shape.Shape
 }
 
-func (g *Geometry) Init(mesh *mesh.Mesh, log *log.Logs, config *mag_config.ConfigList, mag_slice *data.Slice, mag_Normalize func()) {
+func (g *Geometry) Init(mesh *mesh.Mesh, log *log.Logs, config *mag_config.ConfigList, mag_slice *data_old.Slice, mag_Normalize func()) {
 	g.mesh = mesh
 	g.log = log
 	g.config = config
@@ -32,14 +32,14 @@ func (g *Geometry) Init(mesh *mesh.Mesh, log *log.Logs, config *mag_config.Confi
 	g.EdgeSmooth = 0
 }
 
-func (g *Geometry) GetOrCreateGpuSlice() *data.Slice {
+func (g *Geometry) GetOrCreateGpuSlice() *data_old.Slice {
 	if g.gpuSlice == nil {
-		g.gpuSlice = data.NilSlice(1, g.mesh.Size())
+		g.gpuSlice = data_old.NilSlice(1, g.mesh.Size())
 	}
 	return g.gpuSlice
 }
 
-func (g *Geometry) slice() (*data.Slice, bool) {
+func (g *Geometry) slice() (*data_old.Slice, bool) {
 	s := g.GetOrCreateGpuSlice()
 	if s.IsNil() {
 		buffer := cuda.Buffer(1, g.mesh.Size())
@@ -49,12 +49,12 @@ func (g *Geometry) slice() (*data.Slice, bool) {
 		return s, false
 	}
 }
-func (g *Geometry) NComp() int             { return 1 }
-func (g *Geometry) Size() [3]int           { return g.gpuSlice.Size() }
-func (g *Geometry) Name() string           { return "geom" }
-func (g *Geometry) Unit() string           { return "" }
-func (g *Geometry) EvalTo(dst *data.Slice) { data.Copy(dst, g.gpuSlice) }
-func (g *Geometry) Value() *data.Slice     { return g.gpuSlice }
+func (g *Geometry) NComp() int                 { return 1 }
+func (g *Geometry) Size() [3]int               { return g.gpuSlice.Size() }
+func (g *Geometry) Name() string               { return "geom" }
+func (g *Geometry) Unit() string               { return "" }
+func (g *Geometry) EvalTo(dst *data_old.Slice) { data_old.Copy(dst, g.gpuSlice) }
+func (g *Geometry) Value() *data_old.Slice     { return g.gpuSlice }
 
 func (g *Geometry) Average() []float64 {
 	s, r := g.slice()
@@ -76,7 +76,7 @@ func (g *Geometry) SetGeom(s shape.Shape) {
 		g.gpuSlice = cuda.NewSlice(1, g.mesh.Size())
 	}
 
-	CpuSlice := data.NewSlice(1, g.GetOrCreateGpuSlice().Size())
+	CpuSlice := data_old.NewSlice(1, g.GetOrCreateGpuSlice().Size())
 	array := CpuSlice.Scalars()
 	mesh := g.mesh
 
@@ -129,7 +129,7 @@ func (g *Geometry) SetGeom(s shape.Shape) {
 		g.log.ErrAndExit("SetGeom: geometry completely empty")
 	}
 
-	data.Copy(g.gpuSlice, CpuSlice)
+	data_old.Copy(g.gpuSlice, CpuSlice)
 	// M inside geom but previously outside needs to be re-inited
 	needupload := false
 	geomlist := CpuSlice.Host()[0]
@@ -147,7 +147,7 @@ func (g *Geometry) SetGeom(s shape.Shape) {
 		}
 	}
 	if needupload {
-		data.Copy(g.mag_slice, mhost)
+		data_old.Copy(g.mag_slice, mhost)
 	}
 
 	g.mag_Normalize() // removes m outside vol
@@ -198,7 +198,7 @@ func (g *Geometry) Shift(dx int) {
 	defer cuda.Recycle(s2)
 	newv := float32(1) // initially fill edges with 1's
 	cuda.ShiftX(s2, s, dx, newv, newv)
-	data.Copy(s, s2)
+	data_old.Copy(s, s2)
 
 	n := g.mesh.Size()
 	x1, x2 := g.shiftDirtyRange(dx)
@@ -228,7 +228,7 @@ func (g *Geometry) ShiftY(dy int) {
 	defer cuda.Recycle(s2)
 	newv := float32(1) // initially fill edges with 1's
 	cuda.ShiftY(s2, s, dy, newv, newv)
-	data.Copy(s, s2)
+	data_old.Copy(s, s2)
 
 	n := g.mesh.Size()
 	y1, y2 := g.shiftDirtyRange(dy)

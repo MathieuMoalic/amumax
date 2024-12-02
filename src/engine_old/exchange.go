@@ -9,7 +9,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
@@ -42,7 +42,7 @@ func init() {
 }
 
 // Adds the current exchange field to dst
-func addExchangeField(dst *data.Slice) {
+func addExchangeField(dst *data_old.Slice) {
 	inter := !Dind.isZero()
 	bulk := !Dbulk.isZero()
 	ms := Msat.MSlice()
@@ -61,12 +61,12 @@ func addExchangeField(dst *data.Slice) {
 }
 
 // Set dst to the average exchange coupling per cell (average of lex2 with all neighbors).
-func exchangeDecode(dst *data.Slice) {
+func exchangeDecode(dst *data_old.Slice) {
 	cuda.ExchangeDecode(dst, lex2.Gpu(), Regions.Gpu(), NormMag.Mesh())
 }
 
 // Set dst to the average dmi coupling per cell (average of din2 with all neighbors).
-func dindDecode(dst *data.Slice) {
+func dindDecode(dst *data_old.Slice) {
 	cuda.ExchangeDecode(dst, din2.Gpu(), Regions.Gpu(), NormMag.Mesh())
 }
 

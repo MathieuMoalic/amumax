@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/script_old"
@@ -173,7 +173,7 @@ func (x *userVar) Name() string       { return x.name }
 func (x *userVar) NComp() int         { return 1 }
 func (x *userVar) Unit() string       { return x.unit }
 func (x *userVar) average() []float64 { return []float64{x.value.Float()} }
-func (x *userVar) EvalTo(dst *data.Slice) {
+func (x *userVar) EvalTo(dst *data_old.Slice) {
 	avg := x.average()
 	for c := 0; c < x.NComp(); c++ {
 		cuda.Memset(dst.Comp(c), float32(avg[c]))

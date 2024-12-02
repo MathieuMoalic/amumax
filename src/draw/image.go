@@ -5,19 +5,19 @@ import (
 	"image/color"
 	"strconv"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Renders an image of slice. fmin, fmax = "auto" or a number to set the min/max color scale.
-func createRGBAImage(f *data.Slice, fmin, fmax string, arrowSize int, colormap ...ColorMapSpec) *image.RGBA {
+func createRGBAImage(f *data_old.Slice, fmin, fmax string, arrowSize int, colormap ...ColorMapSpec) *image.RGBA {
 	img := new(image.RGBA)
 	on(img, f, fmin, fmax, arrowSize, colormap...)
 	return img
 }
 
 // Render on existing image buffer. Resize it if needed
-func on(img *image.RGBA, f *data.Slice, fmin, fmax string, arrowSize int, colormap ...ColorMapSpec) {
+func on(img *image.RGBA, f *data_old.Slice, fmin, fmax string, arrowSize int, colormap ...ColorMapSpec) {
 	dim := f.NComp()
 	switch dim {
 	default:
@@ -48,7 +48,7 @@ func on(img *image.RGBA, f *data.Slice, fmin, fmax string, arrowSize int, colorm
 	}
 }
 
-func parseMinMax(f *data.Slice, fmin, fmax string) (min, max float32) {
+func parseMinMax(f *data_old.Slice, fmin, fmax string) (min, max float32) {
 	min, max = extrema(f.Host()[0])
 	if fmin != "auto" {
 		m, err := strconv.ParseFloat(fmin, 32)

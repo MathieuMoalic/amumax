@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/script_old"
@@ -86,7 +86,7 @@ func (p *regionwise) init(nComp int, name, unit string, children []derived) {
 
 func (p *regionwise) MSlice() cuda.MSlice {
 	if p.IsUniform() {
-		return cuda.MakeMSlice(data.NilSlice(p.NComp(), GetMesh().Size()), p.getRegion(0))
+		return cuda.MakeMSlice(data_old.NilSlice(p.NComp(), GetMesh().Size()), p.getRegion(0))
 	} else {
 		buf, r := p.Slice()
 		log_old.AssertMsg(r, "Failed to retrieve slice: invalid state in regionwise.MSlice")
@@ -346,9 +346,9 @@ func (p *regionwiseVector) GetRegionToString(region int) string {
 	v := unslice(p.getRegion(region))
 	return fmt.Sprintf("(%g,%g,%g)", v[0], v[1], v[2])
 }
-func (p *regionwiseVector) Eval() interface{}       { return p }
-func (p *regionwiseVector) Type() reflect.Type      { return reflect.TypeOf(new(regionwiseVector)) }
-func (p *regionwiseVector) InputType() reflect.Type { return script_old.VectorFunction_t }
-func (p *regionwiseVector) Region(r int) *vOneReg   { return vOneRegion(p, r) }
-func (p *regionwiseVector) Average() data.Vector    { return unslice(qAverageUniverse(p)) }
-func (p *regionwiseVector) Comp(c int) ScalarField  { return comp(p, c) }
+func (p *regionwiseVector) Eval() interface{}        { return p }
+func (p *regionwiseVector) Type() reflect.Type       { return reflect.TypeOf(new(regionwiseVector)) }
+func (p *regionwiseVector) InputType() reflect.Type  { return script_old.VectorFunction_t }
+func (p *regionwiseVector) Region(r int) *vOneReg    { return vOneRegion(p, r) }
+func (p *regionwiseVector) Average() data_old.Vector { return unslice(qAverageUniverse(p)) }
+func (p *regionwiseVector) Comp(c int) ScalarField   { return comp(p, c) }

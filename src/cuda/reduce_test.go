@@ -4,12 +4,12 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // test input data
-var in1, in2 *data.Slice
+var in1, in2 *data_old.Slice
 
 func initTest() {
 	if in1 != nil {
@@ -31,11 +31,11 @@ func initTest() {
 	}
 }
 
-func toGPU(list []float32) *data.Slice {
+func toGPU(list []float32) *data_old.Slice {
 	mesh := [3]int{1, 1, len(list)}
 	h := sliceFromList([][]float32{list}, mesh)
 	d := NewSlice(1, mesh)
-	data.Copy(d, h)
+	data_old.Copy(d, h)
 	return d
 }
 
@@ -82,12 +82,12 @@ func TestReduceMaxAbs(t *testing.T) {
 	}
 }
 
-func sliceFromList(arr [][]float32, size [3]int) *data.Slice {
+func sliceFromList(arr [][]float32, size [3]int) *data_old.Slice {
 	ptrs := make([]unsafe.Pointer, len(arr))
 	for i := range ptrs {
 		log_old.AssertMsg(len(arr[i]) == prod(size),
 			"Size mismatch: length of arr must be equal to the product of the provided size in sliceFromList")
 		ptrs[i] = unsafe.Pointer(&arr[i][0])
 	}
-	return data.SliceFromPtrs(size, data.CPUMemory, ptrs)
+	return data_old.SliceFromPtrs(size, data_old.CPUMemory, ptrs)
 }

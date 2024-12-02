@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/engine_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/labstack/echo/v4"
 )
@@ -110,30 +110,30 @@ func (s *PreviewState) UpdateQuantityBuffer() {
 	GPU_in := engine_old.ValueOf(s.getQuantity())
 	defer cuda.Recycle(GPU_in)
 
-	CPU_out := data.NewSlice(componentCount, [3]int{s.XChosenSize, s.YChosenSize, 1})
+	CPU_out := data_old.NewSlice(componentCount, [3]int{s.XChosenSize, s.YChosenSize, 1})
 	GPU_out := cuda.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
 	defer GPU_out.Free()
 
 	if s.Type == "3D" {
 		for c := 0; c < componentCount; c++ {
 			cuda.Resize(GPU_out, GPU_in.Comp(c), s.Layer)
-			data.Copy(CPU_out.Comp(c), GPU_out)
+			data_old.Copy(CPU_out.Comp(c), GPU_out)
 		}
 		s.normalizeVectors(CPU_out)
 		s.UpdateVectorField(CPU_out.Vectors())
 	} else {
 		if s.getQuantity().NComp() > 1 {
 			cuda.Resize(GPU_out, GPU_in.Comp(s.getComponent()), s.Layer)
-			data.Copy(CPU_out.Comp(0), GPU_out)
+			data_old.Copy(CPU_out.Comp(0), GPU_out)
 		} else {
 			cuda.Resize(GPU_out, GPU_in.Comp(0), s.Layer)
-			data.Copy(CPU_out.Comp(0), GPU_out)
+			data_old.Copy(CPU_out.Comp(0), GPU_out)
 		}
 		s.UpdateScalarField(CPU_out.Scalars())
 	}
 }
 
-func (s *PreviewState) normalizeVectors(f *data.Slice) {
+func (s *PreviewState) normalizeVectors(f *data_old.Slice) {
 	a := f.Vectors()
 	maxnorm := 0.
 	for i := range a[0] {
@@ -263,9 +263,9 @@ func (s *PreviewState) updateMask() {
 	cuda.Resize(GPU_resized, GPU_fullsize.Comp(0), s.Layer)
 
 	// copy resized geom from GPU to CPU
-	CPU_out := data.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
+	CPU_out := data_old.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
 	defer CPU_out.Free()
-	data.Copy(CPU_out.Comp(0), GPU_resized)
+	data_old.Copy(CPU_out.Comp(0), GPU_resized)
 
 	// extract mask from CPU slice
 	s.layerMask = CPU_out.Scalars()[0]

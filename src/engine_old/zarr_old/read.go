@@ -11,12 +11,12 @@ import (
 	"time"
 
 	"github.com/DataDog/zstd"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
-func Read(binaryPath string, od string) (*data.Slice, error) {
+func Read(binaryPath string, od string) (*data_old.Slice, error) {
 	// Resolve the binary path to an absolute path
 	binaryPath = resolvePath(binaryPath, od)
 
@@ -35,7 +35,7 @@ func Read(binaryPath string, od string) (*data.Slice, error) {
 	}
 
 	// Create the data.Slice
-	array := data.NewSlice(zarray.Chunks[4], [3]int{zarray.Chunks[3], zarray.Chunks[2], zarray.Chunks[1]})
+	array := data_old.NewSlice(zarray.Chunks[4], [3]int{zarray.Chunks[3], zarray.Chunks[2], zarray.Chunks[1]})
 	tensors := array.Tensors()
 
 	// Read and decompress data with retries

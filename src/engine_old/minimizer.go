@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
@@ -48,7 +48,7 @@ func (r *fifoRing) Max() float64 {
 }
 
 type Minimizer struct {
-	k      *data.Slice // torque saved to calculate time step
+	k      *data_old.Slice // torque saved to calculate time step
 	lastDm fifoRing
 	h      float32
 }
@@ -68,7 +68,7 @@ func (mini *Minimizer) Step() {
 	// save original magnetization
 	m0 := cuda.Buffer(3, size)
 	defer cuda.Recycle(m0)
-	data.Copy(m0, m)
+	data_old.Copy(m0, m)
 
 	// make descent
 	cuda.Minimize(m, m0, k, h)
@@ -76,7 +76,7 @@ func (mini *Minimizer) Step() {
 	// calculate new torque for next step
 	k0 := cuda.Buffer(3, size)
 	defer cuda.Recycle(k0)
-	data.Copy(k0, k)
+	data_old.Copy(k0, k)
 	torqueFn(k)
 	setMaxTorque(k) // report to user
 

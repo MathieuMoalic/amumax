@@ -3,7 +3,7 @@ package cuda
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/cuda/cufft"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/timer"
 )
@@ -23,7 +23,7 @@ func newFFT3DR2C(Nx, Ny, Nz int) fft3DR2CPlan {
 
 // Execute the FFT plan, asynchronous.
 // src and dst are 3D arrays stored as 1D arrays.
-func (p *fft3DR2CPlan) ExecAsync(src, dst *data.Slice) {
+func (p *fft3DR2CPlan) ExecAsync(src, dst *data_old.Slice) {
 	if Synchronous {
 		Sync()
 		timer.Start("fft")

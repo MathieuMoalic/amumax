@@ -11,7 +11,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
@@ -23,7 +23,7 @@ var (
 const buf_max = 100 // maximum number of buffers to allocate (detect memory leak early)
 
 // Returns a GPU slice for temporary use. To be returned to the pool with Recycle
-func Buffer(nComp int, size [3]int) *data.Slice {
+func Buffer(nComp int, size [3]int) *data_old.Slice {
 	if Synchronous {
 		Sync()
 	}
@@ -48,11 +48,11 @@ func Buffer(nComp int, size [3]int) *data.Slice {
 		buf_check[ptrs[i]] = struct{}{} // mark this pointer as mine
 	}
 
-	return data.SliceFromPtrs(size, data.GPUMemory, ptrs)
+	return data_old.SliceFromPtrs(size, data_old.GPUMemory, ptrs)
 }
 
 // Returns a buffer obtained from GetBuffer to the pool.
-func Recycle(s *data.Slice) {
+func Recycle(s *data_old.Slice) {
 	if Synchronous {
 		Sync()
 	}

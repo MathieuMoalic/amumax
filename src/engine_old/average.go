@@ -4,7 +4,7 @@ package engine_old
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 // average of quantity over universe
@@ -15,7 +15,7 @@ func qAverageUniverse(q Quantity) []float64 {
 }
 
 // average of slice over universe
-func sAverageUniverse(s *data.Slice) []float64 {
+func sAverageUniverse(s *data_old.Slice) []float64 {
 	nCell := float64(prod(s.Size()))
 	avg := make([]float64, s.NComp())
 	for i := range avg {
@@ -26,7 +26,7 @@ func sAverageUniverse(s *data.Slice) []float64 {
 }
 
 // average of slice over the magnet volume
-func sAverageMagnet(s *data.Slice) []float64 {
+func sAverageMagnet(s *data_old.Slice) []float64 {
 	if Geometry.Gpu().IsNil() {
 		return sAverageUniverse(s)
 	} else {

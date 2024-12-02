@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
@@ -21,12 +21,12 @@ type Meta struct {
 }
 
 // Read any OOMMF file, autodetect OVF1/OVF2 format
-func Read(in io.Reader) (s *data.Slice, meta Meta, err error) {
+func Read(in io.Reader) (s *data_old.Slice, meta Meta, err error) {
 	//in := fullReader{bufio.NewReader(in_)}
 	info := readHeader(in)
 
 	n := info.Size
-	data_ := data.NewSlice(info.NComp, n)
+	data_ := data_old.NewSlice(info.NComp, n)
 
 	format := strings.ToLower(info.Format)
 	ovf := info.OVF
@@ -49,7 +49,7 @@ func Read(in io.Reader) (s *data.Slice, meta Meta, err error) {
 	return data_, Meta{Name: info.Title, Time: info.TotalTime, Unit: info.ValueUnit, CellSize: info.StepSize}, nil
 }
 
-func ReadFile(fname string) (*data.Slice, Meta, error) {
+func ReadFile(fname string) (*data_old.Slice, Meta, error) {
 	f, err := os.Open(fname)
 	if err != nil {
 		return nil, Meta{}, err
@@ -58,7 +58,7 @@ func ReadFile(fname string) (*data.Slice, Meta, error) {
 	return Read(bufio.NewReader(f))
 }
 
-func MustReadFile(fname string) (*data.Slice, Meta) {
+func MustReadFile(fname string) (*data_old.Slice, Meta) {
 	s, t, err := ReadFile(fname)
 	log_old.Log.PanicIfError(err)
 	return s, t
@@ -198,7 +198,7 @@ const OVF_CONTROL_NUMBER_4 = 1234567.0 // The omf format requires the first enco
 const OVF_CONTROL_NUMBER_8 = 123456789012345.0
 
 // read data block in text format, for OVF1 and OVF2
-func readOVFDataText(in io.Reader, t *data.Slice) {
+func readOVFDataText(in io.Reader, t *data_old.Slice) {
 	size := t.Size()
 	data := t.Tensors()
 	for iz := 0; iz < size[Z]; iz++ {
@@ -216,7 +216,7 @@ func readOVFDataText(in io.Reader, t *data.Slice) {
 }
 
 // write data block in text format, for OVF1 and OVF2
-func writeOVFText(out io.Writer, tens *data.Slice) (err error) {
+func writeOVFText(out io.Writer, tens *data_old.Slice) (err error) {
 	data := tens.Tensors()
 	gridsize := tens.Size()
 	ncomp := tens.NComp()

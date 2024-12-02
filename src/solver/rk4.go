@@ -4,7 +4,7 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
@@ -21,7 +21,7 @@ func (s *Solver) rk4() {
 	// backup magnetization
 	m0 := cuda.Buffer(3, size)
 	defer cuda.Recycle(m0)
-	data.Copy(m0, m)
+	data_old.Copy(m0, m)
 
 	k1, k2, k3, k4 := cuda.Buffer(3, size), cuda.Buffer(3, size), cuda.Buffer(3, size), cuda.Buffer(3, size)
 
@@ -68,7 +68,7 @@ func (s *Solver) rk4() {
 		// undo bad step
 		log_old.AssertMsg(s.FixDt == 0, "Invalid step: cannot undo step when s.fixDt is set")
 		s.Time = t0
-		data.Copy(m, m0)
+		data_old.Copy(m, m0)
 		s.nUndone++
 		s.adaptDt(math.Pow(s.MaxErr/err, 1./5.))
 	}

@@ -2,14 +2,14 @@ package engine_old
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 var (
-	totalShift, totalYShift                    float64                        // accumulated window shift (X and Y) in meter
-	shiftMagL, shiftMagR, shiftMagU, shiftMagD data.Vector                    // when shifting m, put these value at the left/right edge.
-	shiftM, shiftGeom, shiftRegions            bool        = true, true, true // should shift act on magnetization, geometry, regions?
-	EdgeCarryShift                             bool        = true             // Use the values of M at the border for the new cells
+	totalShift, totalYShift                    float64                            // accumulated window shift (X and Y) in meter
+	shiftMagL, shiftMagR, shiftMagU, shiftMagD data_old.Vector                    // when shifting m, put these value at the left/right edge.
+	shiftM, shiftGeom, shiftRegions            bool            = true, true, true // should shift act on magnetization, geometry, regions?
+	EdgeCarryShift                             bool            = true             // Use the values of M at the border for the new cells
 )
 
 // position of the window lab frame
@@ -31,7 +31,7 @@ func shift(dx int) {
 	NormMag.normalize()
 }
 
-func shiftMag(m *data.Slice, dx int) {
+func shiftMag(m *data_old.Slice, dx int) {
 	m2 := cuda.Buffer(1, m.Size())
 	defer cuda.Recycle(m2)
 	for c := 0; c < m.NComp(); c++ {
@@ -41,7 +41,7 @@ func shiftMag(m *data.Slice, dx int) {
 		} else {
 			cuda.ShiftX(m2, comp, dx, float32(shiftMagL[c]), float32(shiftMagL[c]))
 		}
-		data.Copy(comp, m2) // str0 ?
+		data_old.Copy(comp, m2) // str0 ?
 	}
 }
 
@@ -60,7 +60,7 @@ func yShift(dy int) {
 	NormMag.normalize()
 }
 
-func shiftMagY(m *data.Slice, dy int) {
+func shiftMagY(m *data_old.Slice, dy int) {
 	m2 := cuda.Buffer(1, m.Size())
 	defer cuda.Recycle(m2)
 	for c := 0; c < m.NComp(); c++ {
@@ -70,6 +70,6 @@ func shiftMagY(m *data.Slice, dy int) {
 		} else {
 			cuda.ShiftX(m2, comp, dy, float32(shiftMagL[c]), float32(shiftMagL[c]))
 		}
-		data.Copy(comp, m2) // str0 ?
+		data_old.Copy(comp, m2) // str0 ?
 	}
 }

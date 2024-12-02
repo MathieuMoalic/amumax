@@ -1,12 +1,12 @@
 package cuda
 
 import (
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Select and resize one layer for interactive output
-func Resize(dst, src *data.Slice, layer int) {
+func Resize(dst, src *data_old.Slice, layer int) {
 	dstsize := dst.Size()
 	srcsize := src.Size()
 	log_old.AssertMsg(dstsize[Z] == 1, "Destination slice must have a single layer (Z=1) in Resize")

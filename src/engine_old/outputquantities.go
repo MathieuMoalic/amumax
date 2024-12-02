@@ -12,7 +12,7 @@ import (
 	"fmt"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 )
 
@@ -37,7 +37,7 @@ type valueFunc struct {
 
 func (g *valueFunc) get() []float64     { return g.f() }
 func (g *valueFunc) average() []float64 { return g.get() }
-func (g *valueFunc) EvalTo(dst *data.Slice) {
+func (g *valueFunc) EvalTo(dst *data_old.Slice) {
 	v := g.get()
 	for c, v := range v {
 		cuda.Memset(dst.Comp(c), float32(v))
@@ -76,12 +76,12 @@ func newVectorValue(name, unit, desc string, f func() []float64) *VectorValue {
 	return v
 }
 
-func (v *VectorValue) Get() data.Vector     { return unslice(v.average()) }
-func (v *VectorValue) Average() data.Vector { return v.Get() }
+func (v *VectorValue) Get() data_old.Vector     { return unslice(v.average()) }
+func (v *VectorValue) Average() data_old.Vector { return v.Get() }
 
 // newVectorField constructs an outputable space-dependent vector quantity whose
 // value is provided by function f.
-func newVectorField(name, unit, desc string, f func(dst *data.Slice)) VectorField {
+func newVectorField(name, unit, desc string, f func(dst *data_old.Slice)) VectorField {
 	v := AsVectorField(&fieldFunc{info{3, name, unit}, f})
 	declROnly(name, v, cat(desc, unit))
 	return v
@@ -89,7 +89,7 @@ func newVectorField(name, unit, desc string, f func(dst *data.Slice)) VectorFiel
 
 // NewVectorField constructs an outputable space-dependent scalar quantity whose
 // value is provided by function f.
-func newScalarField(name, unit, desc string, f func(dst *data.Slice)) ScalarField {
+func newScalarField(name, unit, desc string, f func(dst *data_old.Slice)) ScalarField {
 	q := AsScalarField(&fieldFunc{info{1, name, unit}, f})
 	declROnly(name, q, cat(desc, unit))
 	return q
@@ -97,16 +97,16 @@ func newScalarField(name, unit, desc string, f func(dst *data.Slice)) ScalarFiel
 
 type fieldFunc struct {
 	info
-	f func(*data.Slice)
+	f func(*data_old.Slice)
 }
 
-func (c *fieldFunc) Mesh() *mesh_old.Mesh   { return GetMesh() }
-func (c *fieldFunc) average() []float64     { return qAverageUniverse(c) }
-func (c *fieldFunc) EvalTo(dst *data.Slice) { evalTo(c, dst) }
+func (c *fieldFunc) Mesh() *mesh_old.Mesh       { return GetMesh() }
+func (c *fieldFunc) average() []float64         { return qAverageUniverse(c) }
+func (c *fieldFunc) EvalTo(dst *data_old.Slice) { evalTo(c, dst) }
 
 // Calculates and returns the quantity.
 // recycle is true: slice needs to be recycled.
-func (q *fieldFunc) Slice() (s *data.Slice, recycle bool) {
+func (q *fieldFunc) Slice() (s *data_old.Slice, recycle bool) {
 	buf := cuda.Buffer(q.NComp(), q.Mesh().Size())
 	cuda.Zero(buf)
 	q.f(buf)
@@ -150,13 +150,13 @@ func AsVectorField(q Quantity) VectorField {
 }
 
 func (v VectorField) average() []float64       { return AverageOf(v.Quantity) }
-func (v VectorField) Average() data.Vector     { return unslice(v.average()) }
+func (v VectorField) Average() data_old.Vector { return unslice(v.average()) }
 func (v VectorField) Region(r int) VectorField { return AsVectorField(inRegion(v.Quantity, r)) }
 func (v VectorField) Comp(c int) ScalarField   { return AsScalarField(comp(v.Quantity, c)) }
 func (v VectorField) Mesh() *mesh_old.Mesh     { return MeshOf(v.Quantity) }
 func (v VectorField) Name() string             { return nameOf(v.Quantity) }
 func (v VectorField) Unit() string             { return unitOf(v.Quantity) }
-func (v VectorField) HostCopy() *data.Slice {
+func (v VectorField) HostCopy() *data_old.Slice {
 	s := ValueOf(v.Quantity)
 	defer cuda.Recycle(s)
 	return s.HostCopy()

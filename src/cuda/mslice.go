@@ -3,23 +3,23 @@ package cuda
 import (
 	"unsafe"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 // Slice + scalar multiplier.
 type MSlice struct {
-	arr *data.Slice
+	arr *data_old.Slice
 	mul []float64
 }
 
-func ToMSlice(s *data.Slice) MSlice {
+func ToMSlice(s *data_old.Slice) MSlice {
 	return MSlice{
 		arr: s,
 		mul: ones(s.NComp()),
 	}
 }
 
-func MakeMSlice(arr *data.Slice, mul []float64) MSlice {
+func MakeMSlice(arr *data_old.Slice, mul []float64) MSlice {
 	return MSlice{arr, mul}
 }
 

@@ -2,26 +2,26 @@ package cuda
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Stores the necessary state to perform FFT-accelerated convolution
 // with magnetostatic kernel (or other kernel of same symmetry).
 type DemagConvolution struct {
-	inputSize        [3]int            // 3D size of the input/output data
-	realKernSize     [3]int            // Size of kernel and logical FFT size.
-	fftKernLogicSize [3]int            // logic size FFTed kernel, real parts only, we store less
-	fftRBuf          [3]*data.Slice    // FFT input buf; 2D: Z shares storage with X.
-	fftCBuf          [3]*data.Slice    // FFT output buf; 2D: Z shares storage with X.
-	kern             [3][3]*data.Slice // FFT kernel on device
-	fwPlan           fft3DR2CPlan      // Forward FFT (1 component)
-	bwPlan           fft3DC2RPlan      // Backward FFT (1 component)
+	inputSize        [3]int                // 3D size of the input/output data
+	realKernSize     [3]int                // Size of kernel and logical FFT size.
+	fftKernLogicSize [3]int                // logic size FFTed kernel, real parts only, we store less
+	fftRBuf          [3]*data_old.Slice    // FFT input buf; 2D: Z shares storage with X.
+	fftCBuf          [3]*data_old.Slice    // FFT output buf; 2D: Z shares storage with X.
+	kern             [3][3]*data_old.Slice // FFT kernel on device
+	fwPlan           fft3DR2CPlan          // Forward FFT (1 component)
+	bwPlan           fft3DC2RPlan          // Backward FFT (1 component)
 }
 
 // Initializes a convolution to evaluate the demag field for the given mesh geometry.
 // Sanity-checked if test == true (slow-ish for large meshes).
-func NewDemag(inputSize, PBC [3]int, kernel [3][3]*data.Slice, test bool) *DemagConvolution {
+func NewDemag(inputSize, PBC [3]int, kernel [3][3]*data_old.Slice, test bool) *DemagConvolution {
 	c := new(DemagConvolution)
 	c.inputSize = inputSize
 	c.realKernSize = kernel[X][X].Size()
@@ -38,7 +38,7 @@ func NewDemag(inputSize, PBC [3]int, kernel [3][3]*data.Slice, test bool) *Demag
 //	vol:  unitless mask used to scale m's length, may be nil
 //	Bsat: saturation magnetization in Tesla
 //	B:    resulting demag field, in Tesla
-func (c *DemagConvolution) Exec(B, m, vol *data.Slice, Msat MSlice) {
+func (c *DemagConvolution) Exec(B, m, vol *data_old.Slice, Msat MSlice) {
 	log_old.AssertMsg(B.Size() == c.inputSize && m.Size() == c.inputSize, "Exec: Size mismatch between input slices and convolution input size")
 	if c.is2D() {
 		c.exec2D(B, m, vol, Msat)
@@ -47,7 +47,7 @@ func (c *DemagConvolution) Exec(B, m, vol *data.Slice, Msat MSlice) {
 	}
 }
 
-func (c *DemagConvolution) exec3D(outp, inp, vol *data.Slice, Msat MSlice) {
+func (c *DemagConvolution) exec3D(outp, inp, vol *data_old.Slice, Msat MSlice) {
 	for i := 0; i < 3; i++ { // FW FFT
 		c.fwFFT(i, inp, vol, Msat)
 	}
@@ -63,7 +63,7 @@ func (c *DemagConvolution) exec3D(outp, inp, vol *data.Slice, Msat MSlice) {
 	}
 }
 
-func (c *DemagConvolution) exec2D(outp, inp, vol *data.Slice, Msat MSlice) {
+func (c *DemagConvolution) exec2D(outp, inp, vol *data_old.Slice, Msat MSlice) {
 	// Convolution is separated into
 	// a 1D convolution for z and a 2D convolution for xy.
 	// So only 2 FFT buffers are needed at the same time.
@@ -88,12 +88,12 @@ func (c *DemagConvolution) is2D() bool {
 }
 
 // zero 1-component slice
-func zero1_async(dst *data.Slice) {
+func zero1_async(dst *data_old.Slice) {
 	cu.MemsetD32Async(cu.DevicePtr(uintptr(dst.DevPtr(0))), 0, int64(dst.Len()), stream0)
 }
 
 // forward FFT component i
-func (c *DemagConvolution) fwFFT(i int, inp, vol *data.Slice, Msat MSlice) {
+func (c *DemagConvolution) fwFFT(i int, inp, vol *data_old.Slice, Msat MSlice) {
 	zero1_async(c.fftRBuf[i])
 	in := inp.Comp(i)
 	copyPadMul(c.fftRBuf[i], in, vol, c.realKernSize, c.inputSize, Msat)
@@ -101,13 +101,13 @@ func (c *DemagConvolution) fwFFT(i int, inp, vol *data.Slice, Msat MSlice) {
 }
 
 // backward FFT component i
-func (c *DemagConvolution) bwFFT(i int, outp *data.Slice) {
+func (c *DemagConvolution) bwFFT(i int, outp *data_old.Slice) {
 	c.bwPlan.ExecAsync(c.fftCBuf[i], c.fftRBuf[i])
 	out := outp.Comp(i)
 	copyUnPad(out, c.fftRBuf[i], c.inputSize, c.realKernSize)
 }
 
-func (c *DemagConvolution) init(realKern [3][3]*data.Slice) {
+func (c *DemagConvolution) init(realKern [3][3]*data_old.Slice) {
 	// init device buffers
 	// 2D re-uses fftBuf[X] as fftBuf[Z], 3D needs all 3 fftBufs.
 	nc := fftR2COutputSizeFloats(c.realKernSize)
@@ -144,21 +144,21 @@ func (c *DemagConvolution) init(realKern [3][3]*data.Slice) {
 
 	output := c.fftCBuf[0]
 	input := c.fftRBuf[0]
-	fftKern := data.NewSlice(1, physKSize)
-	kfull := data.NewSlice(1, output.Size()) // not yet exploiting symmetry
+	fftKern := data_old.NewSlice(1, physKSize)
+	kfull := data_old.NewSlice(1, output.Size()) // not yet exploiting symmetry
 	kfulls := kfull.Scalars()
 	kCSize := physKSize
-	kCSize[X] *= 2                     // size of kernel after removing Y,Z redundant parts, but still complex
-	kCmplx := data.NewSlice(1, kCSize) // not yet exploiting X symmetry
+	kCSize[X] *= 2                         // size of kernel after removing Y,Z redundant parts, but still complex
+	kCmplx := data_old.NewSlice(1, kCSize) // not yet exploiting X symmetry
 	kc := kCmplx.Scalars()
 
 	for i := 0; i < 3; i++ {
 		for j := i; j < 3; j++ { // upper triangular part
 			if realKern[i][j] != nil { // ignore 0's
 				// FW FFT
-				data.Copy(input, realKern[i][j])
+				data_old.Copy(input, realKern[i][j])
 				c.fwPlan.ExecAsync(input, output)
-				data.Copy(kfull, output)
+				data_old.Copy(kfull, output)
 
 				// extract non-redundant part (Y,Z symmetry)
 				for iz := 0; iz < kCSize[Z]; iz++ {

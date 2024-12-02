@@ -5,7 +5,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
@@ -24,8 +24,8 @@ func MemAlloc(bytes int64) unsafe.Pointer {
 }
 
 // Returns a copy of in, allocated on GPU.
-func GPUCopy(in *data.Slice) *data.Slice {
+func GPUCopy(in *data_old.Slice) *data_old.Slice {
 	s := NewSlice(in.NComp(), in.Size())
-	data.Copy(s, in)
+	data_old.Copy(s, in)
 	return s
 }

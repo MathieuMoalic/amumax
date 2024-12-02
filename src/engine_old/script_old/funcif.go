@@ -3,8 +3,9 @@ package script_old
 // Here be dragons
 
 import (
-	"github.com/MathieuMoalic/amumax/src/data"
 	"reflect"
+
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 type ScalarFunction interface {
@@ -23,14 +24,14 @@ func (c *scalFn) Fix() Expr          { return &scalFn{in: c.in.Fix()} }
 
 type VectorFunction interface {
 	Expr
-	Float3() data.Vector
+	Float3() data_old.Vector
 }
 
 // converts data.Vector to VectorFunction
 type vecFn struct{ in Expr }
 
-func (c *vecFn) Eval() interface{}   { return c }
-func (c *vecFn) Type() reflect.Type  { return VectorFunction_t }
-func (c *vecFn) Float3() data.Vector { return c.in.Eval().(data.Vector) }
-func (c *vecFn) Child() []Expr       { return []Expr{c.in} }
-func (c *vecFn) Fix() Expr           { return &vecFn{in: c.in.Fix()} }
+func (c *vecFn) Eval() interface{}       { return c }
+func (c *vecFn) Type() reflect.Type      { return VectorFunction_t }
+func (c *vecFn) Float3() data_old.Vector { return c.in.Eval().(data_old.Vector) }
+func (c *vecFn) Child() []Expr           { return []Expr{c.in} }
+func (c *vecFn) Fix() Expr               { return &vecFn{in: c.in.Fix()} }
