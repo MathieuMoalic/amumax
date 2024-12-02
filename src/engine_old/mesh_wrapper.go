@@ -2,7 +2,7 @@ package engine_old
 
 import (
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/mag_old"
+	"github.com/MathieuMoalic/amumax/src/mag"
 )
 
 // This package is a wrapper around data.Mesh, to allow for engine initialization during Mesh creation.
@@ -30,6 +30,6 @@ func ReCreateMesh(Nx, Ny, Nz int, dx, dy, dz float64, PBCx, PBCy, PBCz int) {
 	Mesh.ReCreate(Nx, Ny, Nz, dx, dy, dz, PBCx, PBCy, PBCz)
 	NormMag.Alloc()
 	Regions.Alloc()
-	kernel := mag_old.DemagKernel(Mesh.Size(), Mesh.PBC(), Mesh.CellSize(), DemagAccuracy, CacheDir, HideProgresBar)
+	kernel := mag.DemagKernel(Mesh.Size(), Mesh.PBC(), Mesh.CellSize(), DemagAccuracy, CacheDir, HideProgresBar)
 	conv_ = cuda_old.NewDemag(Mesh.Size(), Mesh.PBC(), kernel, SelfTest)
 }

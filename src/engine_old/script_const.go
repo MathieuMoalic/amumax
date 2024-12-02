@@ -1,6 +1,6 @@
 package engine_old
 
-import "github.com/MathieuMoalic/amumax/src/engine_old/mag_old"
+import "github.com/MathieuMoalic/amumax/src/mag"
 
 // Add a constant to the script world
 func declConst(name string, value float64, doc string) {
@@ -8,5 +8,5 @@ func declConst(name string, value float64, doc string) {
 }
 
 func init() {
-	declConst("Mu0", mag_old.Mu0, "Permittivity of vacuum (Tm/A)")
+	declConst("Mu0", mag.Mu0, "Permittivity of vacuum (Tm/A)")
 }
