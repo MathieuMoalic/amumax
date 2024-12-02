@@ -2,8 +2,10 @@ package cuda
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
+	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
 // CUDA Launch parameters.
@@ -73,4 +75,20 @@ func checkSize(a interface {
 			panic(fmt.Sprintf("size mismatch: %v != %v", sa, b.Size()))
 		}
 	}
+}
+
+func AverageSlice(s *slice.Slice) []float64 {
+	nCell := float64(Prod(s.Size()))
+	avg := make([]float64, s.NComp())
+	for i := range avg {
+		avg[i] = float64(Sum(s.Comp(i))) / nCell
+		if math.IsNaN(avg[i]) {
+			panic("NaN")
+		}
+	}
+	return avg
+}
+
+func Prod(s [3]int) int {
+	return s[0] * s[1] * s[2]
 }

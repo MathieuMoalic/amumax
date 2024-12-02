@@ -1,15 +1,15 @@
 package quantity
 
 import (
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
+	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
 type Quantity interface {
-	EvalTo(*data_old.Slice)
+	EvalTo(*slice.Slice)
 	NComp() int
 	Size() [3]int
 	Average() []float64
 	Name() string
 	Unit() string
-	Value() *data_old.Slice
+	Value() *slice.Slice
 }

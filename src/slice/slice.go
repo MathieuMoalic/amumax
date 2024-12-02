@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/MathieuMoalic/amumax/src/utils"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/vector"
 )
 
@@ -26,12 +26,10 @@ var (
 	memCpy, memCpyDtoH, memCpyHtoD func(dst, src unsafe.Pointer, bytes int64)
 )
 
-// value for Slice.memType
-const (
-	CPUMemory      = 1 << 0
-	GPUMemory      = 1 << 1
-	SIZEOF_FLOAT32 = 4
-)
+// product of elements.
+func prod(size [3]int) int {
+	return size[0] * size[1] * size[2]
+}
 
 // Internal: enables slices on GPU. Called upon cuda init.
 func EnableGPU(free, freeHost func(unsafe.Pointer),
@@ -43,11 +41,8 @@ func EnableGPU(free, freeHost func(unsafe.Pointer),
 }
 
 // Make a CPU Slice with nComp components of size length.
-func NewSlice(nComp int, size [3]int) (*Slice, error) {
-	length := utils.Prod(size)
-	if nComp <= 0 || length <= 0 {
-		return nil, fmt.Errorf("invalid input: number of components and size must be greater than 0")
-	}
+func NewSlice(nComp int, size [3]int) *Slice {
+	length := prod(size)
 	ptrs := make([]unsafe.Pointer, nComp)
 	for i := range ptrs {
 		ptrs[i] = unsafe.Pointer(&(make([]float32, length)[0]))
@@ -55,13 +50,13 @@ func NewSlice(nComp int, size [3]int) (*Slice, error) {
 	return SliceFromPtrs(size, CPUMemory, ptrs)
 }
 
-func SliceFromArray(data [][]float32, size [3]int) (*Slice, error) {
+func SliceFromArray(data [][]float32, size [3]int) *Slice {
 	nComp := len(data)
-	length := utils.Prod(size)
+	length := prod(size)
 	ptrs := make([]unsafe.Pointer, nComp)
 	for i := range ptrs {
 		if len(data[i]) != length {
-			return nil, fmt.Errorf("invalid input: data[%v] has length %v, expected %v", i, len(data[i]), length)
+			panic("size mismatch")
 		}
 		ptrs[i] = unsafe.Pointer(&data[i][0])
 	}
@@ -69,36 +64,35 @@ func SliceFromArray(data [][]float32, size [3]int) (*Slice, error) {
 }
 
 // Return a slice without underlying storage. Used to represent a mask containing all 1's.
-func NilSlice(nComp int, size [3]int) (*Slice, error) {
+func NilSlice(nComp int, size [3]int) *Slice {
 	return SliceFromPtrs(size, GPUMemory, make([]unsafe.Pointer, nComp))
 }
 
 // Internal: construct a Slice using bare memory pointers.
-func SliceFromPtrs(size [3]int, memType int8, ptrs []unsafe.Pointer) (*Slice, error) {
-	length := utils.Prod(size)
+func SliceFromPtrs(size [3]int, memType int8, ptrs []unsafe.Pointer) *Slice {
+	length := prod(size)
 	nComp := len(ptrs)
-	if nComp <= 0 || length <= 0 {
-		return nil, fmt.Errorf("invalid input: number of components and size must be greater than 0 in SliceFromPtrs")
-	}
+	log.AssertMsg(nComp > 0 && length > 0,
+		"Invalid input: number of components must be greater than 0 and size product must be greater than 0 in SliceFromPtrs")
 
 	s := new(Slice)
 	s.ptrs = make([]unsafe.Pointer, nComp)
 	s.size = size
 	copy(s.ptrs, ptrs)
 	s.memType = memType
-	return s, nil
+	return s
 }
 
 // Frees the underlying storage and zeros the Slice header to avoid accidental use.
 // Slices sharing storage will be invalid after Free. Double free is OK.
-func (s *Slice) Free() error {
+func (s *Slice) Free() {
 	if s == nil {
-		return nil
+		return
 	}
 	// free storage
 	switch s.memType {
 	case 0:
-		return nil // already freed
+		return // already freed
 	case GPUMemory:
 		for _, ptr := range s.ptrs {
 			memFree(ptr)
@@ -110,10 +104,9 @@ func (s *Slice) Free() error {
 	case CPUMemory:
 		// nothing to do
 	default:
-		return fmt.Errorf("invalid memory type")
+		panic("invalid memory type")
 	}
 	s.Disable()
-	return nil
 }
 
 // INTERNAL. Overwrite struct fields with zeros to avoid
@@ -123,6 +116,13 @@ func (s *Slice) Disable() {
 	s.size = [3]int{0, 0, 0}
 	s.memType = 0
 }
+
+// value for Slice.memType
+const (
+	CPUMemory = 1 << 0
+	GPUMemory = 1 << 1
+	//UnifiedMemory = CPUMemory | GPUMemory
+)
 
 // MemType returns the memory type of the underlying storage:
 // CPUMemory, GPUMemory or UnifiedMemory
@@ -149,7 +149,7 @@ func (s *Slice) NComp() int {
 
 // Len returns the number of elements per component.
 func (s *Slice) Len() int {
-	return utils.Prod(s.size)
+	return prod(s.size)
 }
 
 func (s *Slice) Size() [3]int {
@@ -160,157 +160,131 @@ func (s *Slice) Size() [3]int {
 }
 
 // Comp returns a single component of the Slice.
-func (s *Slice) Comp(i int) (*Slice, error) {
-	if i < 0 || i >= len(s.ptrs) {
-		return nil, fmt.Errorf("component index out of bounds")
-	}
+func (s *Slice) Comp(i int) *Slice {
 	sl := new(Slice)
 	sl.ptrs = make([]unsafe.Pointer, 1)
 	sl.ptrs[0] = s.ptrs[i]
 	sl.size = s.size
 	sl.memType = s.memType
-	return sl, nil
+	return sl
 }
 
 // DevPtr returns a CUDA device pointer to a component.
 // Slice must have GPUAccess.
 // It is safe to call on a nil slice, returns NULL.
-func (s *Slice) DevPtr(component int) (unsafe.Pointer, error) {
+func (s *Slice) DevPtr(component int) unsafe.Pointer {
 	if s == nil {
-		return nil, nil
+		return nil
 	}
 	if !s.GPUAccess() {
-		return nil, fmt.Errorf("slice not accessible by GPU")
+		panic("slice not accessible by GPU")
 	}
-	if component < 0 || component >= len(s.ptrs) {
-		return nil, fmt.Errorf("component index out of bounds")
-	}
-	return s.ptrs[component], nil
+	return s.ptrs[component]
 }
+
+const SIZEOF_FLOAT32 = 4
 
 // Host returns the Slice as a [][]float32 indexed by component, cell number.
 // It should have CPUAccess() == true.
-func (s *Slice) Host() ([][]float32, error) {
+func (s *Slice) Host() [][]float32 {
 	if !s.CPUAccess() {
-		return nil, fmt.Errorf("slice not accessible by CPU")
+		log.PanicIfError(fmt.Errorf("slice not accessible by CPU"))
 	}
 	list := make([][]float32, s.NComp())
 	for c := range list {
 		list[c] = unsafe.Slice((*float32)(unsafe.Pointer(s.ptrs[c])), s.Len())
 	}
-	return list, nil
+	return list
 }
 
 // Returns a copy of the Slice, allocated on CPU.
-func (s *Slice) HostCopy() (*Slice, error) {
+func (s *Slice) HostCopy() *Slice {
 	if s == nil {
-		return nil, fmt.Errorf("nil slice")
+		panic("nil slice")
 	}
-	cpy, err := NewSlice(s.NComp(), s.Size())
-	if err != nil {
-		return nil, fmt.Errorf("error creating slice copy: %v", err)
-	}
-	err = s.CopyTo(cpy)
-	if err != nil {
-		return nil, err
-	}
-	return cpy, nil
+	cpy := NewSlice(s.NComp(), s.Size())
+	Copy(cpy, s)
+	return cpy
 }
 
-func (s *Slice) CopyTo(dst *Slice) error {
-	if dst.NComp() != s.NComp() || dst.Len() != s.Len() {
-		return fmt.Errorf("slice copy: illegal sizes: dst: %vx%v, src: %vx%v", dst.NComp(), dst.Len(), s.NComp(), s.Len())
+func Copy(dst, src *Slice) {
+	if dst.NComp() != src.NComp() || dst.Len() != src.Len() {
+		panic(fmt.Sprintf("slice copy: illegal sizes: dst: %vx%v, src: %vx%v", dst.NComp(), dst.Len(), src.NComp(), src.Len()))
 	}
-	dstIsGpu, srcIsGpu := dst.GPUAccess(), s.GPUAccess()
+	dstIsGpu, srcIsGpu := dst.GPUAccess(), src.GPUAccess()
 	bytes := SIZEOF_FLOAT32 * int64(dst.Len())
 	switch {
 	default:
-		return fmt.Errorf("unexpected case in Copy()")
+		panic("bug")
 	case dstIsGpu && srcIsGpu:
 		for c := 0; c < dst.NComp(); c++ {
-			dstPtr, err := dst.DevPtr(c)
-			if err != nil {
-				return err
-			}
-			srcPtr, err := s.DevPtr(c)
-			if err != nil {
-				return err
-			}
-			memCpy(dstPtr, srcPtr, bytes)
+			memCpy(dst.DevPtr(c), src.DevPtr(c), bytes)
 		}
 	case srcIsGpu && !dstIsGpu:
 		for c := 0; c < dst.NComp(); c++ {
-			srcPtr, err := s.DevPtr(c)
-			if err != nil {
-				return err
-			}
-			memCpyDtoH(dst.ptrs[c], srcPtr, bytes)
+			memCpyDtoH(dst.ptrs[c], src.DevPtr(c), bytes)
 		}
 	case !srcIsGpu && dstIsGpu:
 		for c := 0; c < dst.NComp(); c++ {
-			dstPtr, err := dst.DevPtr(c)
-			if err != nil {
-				return err
-			}
-			memCpyHtoD(dstPtr, s.ptrs[c], bytes)
+			memCpyHtoD(dst.DevPtr(c), src.ptrs[c], bytes)
 		}
 	case !dstIsGpu && !srcIsGpu:
-		dstHost, err := dst.Host()
-		if err != nil {
-			return err
-		}
-		srcHost, err := s.Host()
-		if err != nil {
-			return err
-		}
-		for c := range dstHost {
-			copy(dstHost[c], srcHost[c])
+		dst, src := dst.Host(), src.Host()
+		for c := range dst {
+			copy(dst[c], src[c])
 		}
 	}
-	return nil
 }
 
 // Floats returns the data as 3D array,
 // indexed by cell position. Data should be
 // scalar (1 component) and have CPUAccess() == true.
-func (s *Slice) Scalars() ([][][]float32, error) {
-	x, err := s.Tensors()
-	if err != nil {
-		return nil, err
-	}
+func (f *Slice) Scalars() [][][]float32 {
+	x := f.Tensors()
 	if len(x) != 1 {
-		return nil, fmt.Errorf("expecting 1 component, got %v", s.NComp())
+		panic(fmt.Sprintf("expecting 1 component, got %v", f.NComp()))
 	}
-	return x[0], nil
+	return x[0]
 }
 
 // Vectors returns the data as 4D array,
 // indexed by component, cell position. Data should have
 // 3 components and have CPUAccess() == true.
-func (s *Slice) Vectors() ([3][][][]float32, error) {
-	x, err := s.Tensors()
-	if err != nil {
-		return [3][][][]float32{}, err
-	}
+func (f *Slice) Vectors() [3][][][]float32 {
+	x := f.Tensors()
 	if len(x) != 3 {
-		return [3][][][]float32{}, fmt.Errorf("expecting 3 components, got %v", s.NComp())
+		panic(fmt.Sprintf("expecting 3 components, got %v", f.NComp()))
 	}
-	return [3][][][]float32{x[0], x[1], x[2]}, nil
+	return [3][][][]float32{x[0], x[1], x[2]}
 }
 
 // Tensors returns the data as 4D array,
 // indexed by component, cell position.
 // Requires CPUAccess() == true.
-func (s *Slice) Tensors() ([][][][]float32, error) {
-	tensors := make([][][][]float32, s.NComp())
-	host, err := s.Host()
-	if err != nil {
-		return nil, err
-	}
+func (f *Slice) Tensors() [][][][]float32 {
+	tensors := make([][][][]float32, f.NComp())
+	host := f.Host()
 	for i := range tensors {
-		tensors[i] = utils.Reshape(host[i], s.Size())
+		tensors[i] = reshape(host[i], f.Size())
 	}
-	return tensors, nil
+	return tensors
+}
+
+func reshape(array []float32, size [3]int) [][][]float32 {
+	Nx, Ny, Nz := size[0], size[1], size[2]
+	if Nx*Ny*Nz != len(array) {
+		panic(fmt.Errorf("reshape: size mismatch: %v*%v*%v != %v", Nx, Ny, Nz, len(array)))
+	}
+	sliced := make([][][]float32, Nz)
+	for i := range sliced {
+		sliced[i] = make([][]float32, Ny)
+	}
+	for i := range sliced {
+		for j := range sliced[i] {
+			sliced[i][j] = array[(i*Ny+j)*Nx+0 : (i*Ny+j)*Nx+Nx]
+		}
+	}
+	return sliced
 }
 
 // IsNil returns true if either s is nil or s.pointer[0] == nil
@@ -321,151 +295,101 @@ func (s *Slice) IsNil() bool {
 	return s.ptrs[0] == nil
 }
 
-func (s *Slice) Set(comp, ix, iy, iz int, value float64) error {
-	if err := s.checkComp(comp); err != nil {
-		return err
-	}
-	host, err := s.Host()
-	if err != nil {
-		return err
-	}
-	index, err := s.Index(ix, iy, iz)
-	if err != nil {
-		return err
-	}
-	host[comp][index] = float32(value)
-	return nil
+func (s *Slice) Set(comp, ix, iy, iz int, value float64) {
+	s.checkComp(comp)
+	s.Host()[comp][s.Index(ix, iy, iz)] = float32(value)
 }
 
-func (s *Slice) SetVector(ix, iy, iz int, v vector.Vector) error {
-	index, err := s.Index(ix, iy, iz)
-	if err != nil {
-		return err
-	}
-	host, err := s.Host()
-	if err != nil {
-		return err
-	}
+func (s *Slice) SetVector(ix, iy, iz int, v vector.Vector) {
+	i := s.Index(ix, iy, iz)
 	for c := range v {
-		host[c][index] = float32(v[c])
+		s.Host()[c][i] = float32(v[c])
 	}
-	return nil
 }
 
-func (s *Slice) SetScalar(ix, iy, iz int, v float64) error {
-	host, err := s.Host()
-	if err != nil {
-		return err
-	}
-	index, err := s.Index(ix, iy, iz)
-	if err != nil {
-		return err
-	}
-	host[0][index] = float32(v)
-	return nil
+func (s *Slice) SetScalar(ix, iy, iz int, v float64) {
+	s.Host()[0][s.Index(ix, iy, iz)] = float32(v)
 }
 
-func (s *Slice) Get(comp, ix, iy, iz int) (float64, error) {
-	if err := s.checkComp(comp); err != nil {
-		return 0, err
-	}
-	host, err := s.Host()
-	if err != nil {
-		return 0, err
-	}
-	index, err := s.Index(ix, iy, iz)
-	if err != nil {
-		return 0, err
-	}
-	return float64(host[comp][index]), nil
+func (s *Slice) Get(comp, ix, iy, iz int) float64 {
+	s.checkComp(comp)
+	return float64(s.Host()[comp][s.Index(ix, iy, iz)])
 }
 
-func (s *Slice) checkComp(comp int) error {
+func (s *Slice) checkComp(comp int) {
 	if comp < 0 || comp >= s.NComp() {
-		return fmt.Errorf("slice: invalid component index: %v (number of components=%v)", comp, s.NComp())
+		panic(fmt.Sprintf("slice: invalid component index: %v (number of components=%v)\n", comp, s.NComp()))
 	}
-	return nil
 }
 
-func (s *Slice) Index(ix, iy, iz int) (int, error) {
+func (s *Slice) Index(ix, iy, iz int) int {
 	return Index(s.Size(), ix, iy, iz)
 }
 
-func Index(size [3]int, ix, iy, iz int) (int, error) {
-	if ix < 0 || ix >= size[0] || iy < 0 || iy >= size[1] || iz < 0 || iz >= size[2] {
-		return 0, fmt.Errorf("Slice index out of bounds: %v,%v,%v (bounds=%v)", ix, iy, iz, size)
+func Index(size [3]int, ix, iy, iz int) int {
+	if ix < 0 || ix >= size[X] || iy < 0 || iy >= size[Y] || iz < 0 || iz >= size[Z] {
+		panic(fmt.Sprintf("Slice index out of bounds: %v,%v,%v (bounds=%v)\n", ix, iy, iz, size))
 	}
-	return (iz*size[1]+iy)*size[0] + ix, nil
+	return (iz*size[Y]+iy)*size[X] + ix
 }
+
+const (
+	X = 0
+	Y = 1
+	Z = 2
+)
 
 // Resample returns a slice of new size N,
 // using nearest neighbor interpolation over the input slice.
-func (s *Slice) Resample(N [3]int) (*Slice, error) {
-	if s.Size() == N {
-		return s, nil // nothing to do
+func Resample(in *Slice, N [3]int) *Slice {
+	if in.Size() == N {
+		return in // nothing to do
 	}
-	In, err := s.Tensors()
-	if err != nil {
-		return nil, err
-	}
-	out, err := NewSlice(s.NComp(), N)
-	if err != nil {
-		return nil, fmt.Errorf("error creating slice: %v", err)
-	}
-	Out, err := out.Tensors()
-	if err != nil {
-		return nil, err
-	}
-	size1 := utils.SizeOf(In[0])
-	size2 := utils.SizeOf(Out[0])
+	In := in.Tensors()
+	out := NewSlice(in.NComp(), N)
+	Out := out.Tensors()
+	size1 := SizeOf(In[0])
+	size2 := SizeOf(Out[0])
 	for c := range Out {
 		for i := range Out[c] {
-			i1 := (i * size1[2]) / size2[2]
+			i1 := (i * size1[Z]) / size2[Z]
 			for j := range Out[c][i] {
-				j1 := (j * size1[1]) / size2[1]
+				j1 := (j * size1[Y]) / size2[Y]
 				for k := range Out[c][i][j] {
-					k1 := (k * size1[0]) / size2[0]
+					k1 := (k * size1[X]) / size2[X]
 					Out[c][i][j][k] = In[c][i1][j1][k1]
 				}
 			}
 		}
 	}
-	return out, nil
+	return out
 }
 
 // Downsample returns a slice of new size N, smaller than in.Size().
 // Averaging interpolation over the input slice.
 // in is returned untouched if the sizes are equal.
-func Downsample(In [][][][]float32, N [3]int) ([][][][]float32, error) {
-	if utils.SizeOf(In[0]) == N {
-		return In, nil // nothing to do
+func Downsample(In [][][][]float32, N [3]int) [][][][]float32 {
+	if SizeOf(In[0]) == N {
+		return In // nothing to do
 	}
 
 	nComp := len(In)
-	out, err := NewSlice(nComp, N)
-	if err != nil {
-		return nil, fmt.Errorf("error creating slice: %v", err)
-	}
-	Out, err := out.Tensors()
-	if err != nil {
-		return nil, err
-	}
+	out := NewSlice(nComp, N)
+	Out := out.Tensors()
 
-	srcsize := utils.SizeOf(In[0])
-	dstsize := utils.SizeOf(Out[0])
+	srcsize := SizeOf(In[0])
+	dstsize := SizeOf(Out[0])
 
-	Dx := dstsize[0]
-	Dy := dstsize[1]
-	Dz := dstsize[2]
-	Sx := srcsize[0]
-	Sy := srcsize[1]
-	Sz := srcsize[2]
+	Dx := dstsize[X]
+	Dy := dstsize[Y]
+	Dz := dstsize[Z]
+	Sx := srcsize[X]
+	Sy := srcsize[Y]
+	Sz := srcsize[Z]
 	scalex := Sx / Dx
 	scaley := Sy / Dy
 	scalez := Sz / Dz
-	if scalex <= 0 || scaley <= 0 || scalez <= 0 {
-		return nil, fmt.Errorf("scaling factors must be positive in Downsample")
-	}
+	log.AssertMsg(scalex > 0 && scaley > 0, "Scaling factors must be positive in Downsample")
 
 	for c := range Out {
 
@@ -494,5 +418,10 @@ func Downsample(In [][][][]float32, N [3]int) ([][][][]float32, error) {
 		}
 	}
 
-	return Out, nil
+	return Out
+}
+
+// Returns the 3D size of block
+func SizeOf(block [][][]float32) [3]int {
+	return [3]int{len(block[0][0]), len(block[0]), len(block)}
 }

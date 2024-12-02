@@ -1,14 +1,14 @@
 package cuda
 
 import (
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
 // Set Bth to thermal noise (Brown).
 // see temperature.cu
-func SetTemperature(Bth, noise *data_old.Slice, k2mu0_Mu0VgammaDt float64, Msat, Temp, Alpha MSlice) {
-	log_old.AssertMsg(Bth.NComp() == 1 && noise.NComp() == 1,
+func SetTemperature(Bth, noise *slice.Slice, k2mu0_Mu0VgammaDt float64, Msat, Temp, Alpha MSlice) {
+	log.AssertMsg(Bth.NComp() == 1 && noise.NComp() == 1,
 		"Component mismatch: Bth and noise must both have 1 component in SetTemperature")
 
 	N := Bth.Len()

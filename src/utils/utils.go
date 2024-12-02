@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/quantity"
 )
 
@@ -54,17 +52,17 @@ func Prod(s [3]int) int {
 }
 
 // average of slice over universe
-func AverageSlice(s *data_old.Slice) []float64 {
-	nCell := float64(Prod(s.Size()))
-	avg := make([]float64, s.NComp())
-	for i := range avg {
-		avg[i] = float64(cuda_old.Sum(s.Comp(i))) / nCell
-		if math.IsNaN(avg[i]) {
-			panic("NaN")
-		}
-	}
-	return avg
-}
+// func AverageSlice(s *slice.Slice) []float64 {
+// 	nCell := float64(Prod(s.Size()))
+// 	avg := make([]float64, s.NComp())
+// 	for i := range avg {
+// 		avg[i] = float64(cuda.Sum(s.Comp(i))) / nCell
+// 		if math.IsNaN(avg[i]) {
+// 			panic("NaN")
+// 		}
+// 	}
+// 	return avg
+// }
 
 func Sign(x float64) float64 {
 	switch {

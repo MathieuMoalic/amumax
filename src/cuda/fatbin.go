@@ -2,7 +2,7 @@ package cuda
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // load PTX code for function name, find highest SM that matches our card.
@@ -24,7 +24,7 @@ func determineCC() int {
 		}
 	}
 	if UseCC == 0 {
-		log_old.Log.ErrAndExit("\nNo binary for GPU. Your nvidia driver may be out-of-date\n")
+		log.ErrAndExit("\nNo binary for GPU. Your nvidia driver may be out-of-date\n")
 	}
 	return UseCC
 }
