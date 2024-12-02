@@ -3,7 +3,7 @@ package engine_old
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
@@ -14,13 +14,13 @@ var (
 )
 
 func setTopologicalChargeDensityLattice(dst *data_old.Slice) {
-	cuda.SetTopologicalChargeLattice(dst, NormMag.Buffer(), NormMag.Mesh())
+	cuda_old.SetTopologicalChargeLattice(dst, NormMag.Buffer(), NormMag.Mesh())
 }
 
 func getTopologicalChargeLattice() float64 {
 	s := ValueOf(TopologicalChargeDensityLattice)
-	defer cuda.Recycle(s)
+	defer cuda_old.Recycle(s)
 	c := GetMesh().CellSize()
 	N := GetMesh().Size()
-	return (0.25 * c[X] * c[Y] / math.Pi / float64(N[Z])) * float64(cuda.Sum(s))
+	return (0.25 * c[X] * c[Y] / math.Pi / float64(N[Z])) * float64(cuda_old.Sum(s))
 }

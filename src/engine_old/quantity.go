@@ -3,7 +3,7 @@ package engine_old
 import (
 	"reflect"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 )
@@ -47,7 +47,7 @@ func AverageOf(q Quantity) []float64 {
 	}
 	// otherwise: default mesh
 	buf := ValueOf(q)
-	defer cuda.Recycle(buf)
+	defer cuda_old.Recycle(buf)
 	return sAverageMagnet(buf)
 }
 
@@ -83,7 +83,7 @@ func MeshOf(q Quantity) *mesh_old.Mesh {
 
 func ValueOf(q Quantity) *data_old.Slice {
 	// TODO: check for Buffered() implementation
-	buf := cuda.Buffer(q.NComp(), sizeOf(q))
+	buf := cuda_old.Buffer(q.NComp(), sizeOf(q))
 	q.EvalTo(buf)
 	return buf
 }
@@ -94,7 +94,7 @@ func evalTo(q interface {
 }, dst *data_old.Slice) {
 	v, r := q.Slice()
 	if r {
-		defer cuda.Recycle(v)
+		defer cuda_old.Recycle(v)
 	}
 	data_old.Copy(dst, v)
 }

@@ -1,7 +1,7 @@
 package engine
 
 import (
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/slurm"
@@ -21,9 +21,9 @@ func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.Flags) {
 		update.ShowUpdateMenu()
 		return
 	}
-	GpuInfo := cuda.Init(givenFlags.Gpu)
+	GpuInfo := cuda_old.Init(givenFlags.Gpu)
 
-	cuda.Synchronous = givenFlags.Sync
+	cuda_old.Synchronous = givenFlags.Sync
 	timer.Enabled = givenFlags.Sync
 
 	// engine.Insecure = givenFlags.Insecure

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/cuda/cu"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/cuda_old/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/api_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
@@ -34,9 +34,9 @@ func Entrypoint(cmd *cobra.Command, args []string, flags *flags.Flags) {
 	}
 
 	go slurm.SetEndTimerIfSlurm()
-	cuda.Init(flags.Gpu)
+	cuda_old.Init(flags.Gpu)
 
-	cuda.Synchronous = flags.Sync
+	cuda_old.Synchronous = flags.Sync
 	timer.Enabled = flags.Sync
 
 	printVersion()
@@ -146,6 +146,6 @@ func printVersion() {
 	log_old.Log.Info("Version:         %s", version.VERSION)
 	log_old.Log.Info("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
 	log_old.Log.Info("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
-	log_old.Log.Info("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda.UseCC)
-	log_old.Log.Info("GPU Information: %s", cuda.GPUInfo_old)
+	log_old.Log.Info("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda_old.UseCC)
+	log_old.Log.Info("GPU Information: %s", cuda_old.GPUInfo_old)
 }

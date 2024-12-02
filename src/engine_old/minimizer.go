@@ -5,7 +5,7 @@ package engine_old
 import (
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
@@ -58,7 +58,7 @@ func (mini *Minimizer) Step() {
 	size := m.Size()
 
 	if mini.k == nil {
-		mini.k = cuda.Buffer(3, size)
+		mini.k = cuda_old.Buffer(3, size)
 		torqueFn(mini.k)
 	}
 
@@ -66,16 +66,16 @@ func (mini *Minimizer) Step() {
 	h := mini.h
 
 	// save original magnetization
-	m0 := cuda.Buffer(3, size)
-	defer cuda.Recycle(m0)
+	m0 := cuda_old.Buffer(3, size)
+	defer cuda_old.Recycle(m0)
 	data_old.Copy(m0, m)
 
 	// make descent
-	cuda.Minimize(m, m0, k, h)
+	cuda_old.Minimize(m, m0, k, h)
 
 	// calculate new torque for next step
-	k0 := cuda.Buffer(3, size)
-	defer cuda.Recycle(k0)
+	k0 := cuda_old.Buffer(3, size)
+	defer cuda_old.Recycle(k0)
 	data_old.Copy(k0, k)
 	torqueFn(k)
 	setMaxTorque(k) // report to user
@@ -85,22 +85,22 @@ func (mini *Minimizer) Step() {
 	dk := k0
 
 	// calculate step difference of m and k
-	cuda.Madd2(dm, m, m0, 1., -1.)
-	cuda.Madd2(dk, k, k0, -1., 1.) // reversed due to LLNoPrecess sign
+	cuda_old.Madd2(dm, m, m0, 1., -1.)
+	cuda_old.Madd2(dk, k, k0, -1., 1.) // reversed due to LLNoPrecess sign
 
 	// get maxdiff and add to list
-	max_dm := cuda.MaxVecNorm(dm)
+	max_dm := cuda_old.MaxVecNorm(dm)
 	mini.lastDm.Add(max_dm)
 	setLastErr(mini.lastDm.Max()) // report maxDm to user as LastErr
 
 	// adjust next time step
 	var nom, div float32
 	if NSteps%2 == 0 {
-		nom = cuda.Dot(dm, dm)
-		div = cuda.Dot(dm, dk)
+		nom = cuda_old.Dot(dm, dm)
+		div = cuda_old.Dot(dm, dk)
 	} else {
-		nom = cuda.Dot(dm, dk)
-		div = cuda.Dot(dk, dk)
+		nom = cuda_old.Dot(dm, dk)
+		div = cuda_old.Dot(dk, dk)
 	}
 	if div != 0. {
 		mini.h = nom / div

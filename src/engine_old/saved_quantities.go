@@ -8,7 +8,7 @@ import (
 
 	"github.com/DataDog/zstd"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
@@ -48,7 +48,7 @@ func (sq *savedQuantity) Save() {
 	sq.times = append(sq.times, Time)
 	sq.SaveAttrs()
 	buffer := ValueOf(sq.q)
-	defer cuda.Recycle(buffer)
+	defer cuda_old.Recycle(buffer)
 	dataSlice := buffer.HostCopy()
 	queOutput(func() {
 		err := syncSave(dataSlice, sq.name, len(sq.times), sq.chunks)

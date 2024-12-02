@@ -3,7 +3,7 @@ package magnetization
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/geometry"
 	"github.com/MathieuMoalic/amumax/src/mag_config"
@@ -40,7 +40,7 @@ func (m *Magnetization) Average() []float64 {
 	geom := m.geometry.GetOrCreateGpuSlice()
 	avg := make([]float64, s.NComp())
 	for i := range avg {
-		avg[i] = float64(cuda.Dot(s.Comp(i), geom)) / float64(cuda.Sum(geom))
+		avg[i] = float64(cuda_old.Dot(s.Comp(i), geom)) / float64(cuda_old.Sum(geom))
 		if math.IsNaN(avg[i]) {
 			panic("NaN")
 		}
@@ -63,12 +63,12 @@ func (m *Magnetization) Average() []float64 {
 
 // func (m *Magnetization) Average() data.Vector    { return unslice(m.average()) }
 func (m *Magnetization) Normalize() {
-	cuda.Normalize(m.Slice, m.geometry.GetOrCreateGpuSlice())
+	cuda_old.Normalize(m.Slice, m.geometry.GetOrCreateGpuSlice())
 }
 
 // allocate storage (not done by init, as mesh size may not yet be known then)
 func (m *Magnetization) InitializeBuffer() {
-	m.Slice = cuda.NewSlice(3, m.mesh.Size())
+	m.Slice = cuda_old.NewSlice(3, m.mesh.Size())
 	m.set(m.config.RandomMag()) // sane starting config
 }
 

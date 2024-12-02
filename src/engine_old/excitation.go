@@ -5,7 +5,7 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
@@ -34,15 +34,15 @@ func newExcitation(name, unit, desc string) *excitation {
 	return e
 }
 
-func (p *excitation) MSlice() cuda.MSlice {
+func (p *excitation) MSlice() cuda_old.MSlice {
 	buf, r := p.Slice()
 	log_old.AssertMsg(r, "Failed to retrieve slice: invalid state in excitation.MSlice")
-	return cuda.ToMSlice(buf)
+	return cuda_old.ToMSlice(buf)
 }
 
 func (e *excitation) AddTo(dst *data_old.Slice) {
 	if !e.perRegion.isZero() {
-		cuda.RegionAddV(dst, e.perRegion.gpuLUT(), Regions.Gpu())
+		cuda_old.RegionAddV(dst, e.perRegion.gpuLUT(), Regions.Gpu())
 	}
 
 	for _, t := range e.extraTerms {
@@ -50,7 +50,7 @@ func (e *excitation) AddTo(dst *data_old.Slice) {
 		if t.mul != nil {
 			mul = float32(t.mul())
 		}
-		cuda.Madd2(dst, dst, t.mask, 1, mul)
+		cuda_old.Madd2(dst, dst, t.mask, 1, mul)
 	}
 }
 
@@ -59,8 +59,8 @@ func (e *excitation) isZero() bool {
 }
 
 func (e *excitation) Slice() (*data_old.Slice, bool) {
-	buf := cuda.Buffer(e.NComp(), e.Mesh().Size())
-	cuda.Zero(buf)
+	buf := cuda_old.Buffer(e.NComp(), e.Mesh().Size())
+	cuda_old.Zero(buf)
 	e.AddTo(buf)
 	return buf, true
 }

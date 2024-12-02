@@ -3,7 +3,7 @@ package engine_old
 // Magnetocrystalline anisotropy.
 
 import (
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
@@ -41,7 +41,7 @@ func addUniaxialAnisotropyFrom(dst *data_old.Slice, M magnetization, Msat, Ku1, 
 		u := AnisU.MSlice()
 		defer u.Recycle()
 
-		cuda.AddUniaxialAnisotropy2(dst, M.Buffer(), ms, ku1, ku2, u)
+		cuda_old.AddUniaxialAnisotropy2(dst, M.Buffer(), ms, ku1, ku2, u)
 	}
 }
 
@@ -64,7 +64,7 @@ func addCubicAnisotropyFrom(dst *data_old.Slice, M magnetization, Msat, Kc1, Kc2
 
 		c2 := AnisC2.MSlice()
 		defer c2.Recycle()
-		cuda.AddCubicAnisotropy2(dst, M.Buffer(), ms, kc1, kc2, kc3, c1, c2)
+		cuda_old.AddCubicAnisotropy2(dst, M.Buffer(), ms, kc1, kc2, kc3, c1, c2)
 	}
 }
 
@@ -83,49 +83,49 @@ func addAnisotropyEnergyDensity(dst *data_old.Slice) {
 		return
 	}
 
-	buf := cuda.Buffer(B_anis.NComp(), GetMesh().Size())
-	defer cuda.Recycle(buf)
+	buf := cuda_old.Buffer(B_anis.NComp(), GetMesh().Size())
+	defer cuda_old.Recycle(buf)
 
 	// unnormalized magnetization:
 	Mf := ValueOf(M_full)
-	defer cuda.Recycle(Mf)
+	defer cuda_old.Recycle(Mf)
 
 	if haveUnixial {
 		// 1st
-		cuda.Zero(buf)
+		cuda_old.Zero(buf)
 		addUniaxialAnisotropyFrom(buf, NormMag, Msat, Ku1, sZero, AnisU)
-		cuda.AddDotProduct(dst, -1./2., buf, Mf)
+		cuda_old.AddDotProduct(dst, -1./2., buf, Mf)
 
 		// 2nd
-		cuda.Zero(buf)
+		cuda_old.Zero(buf)
 		addUniaxialAnisotropyFrom(buf, NormMag, Msat, sZero, Ku2, AnisU)
-		cuda.AddDotProduct(dst, -1./4., buf, Mf)
+		cuda_old.AddDotProduct(dst, -1./4., buf, Mf)
 	}
 
 	if haveCubic {
 		// 1st
-		cuda.Zero(buf)
+		cuda_old.Zero(buf)
 		addCubicAnisotropyFrom(buf, NormMag, Msat, Kc1, sZero, sZero, AnisC1, AnisC2)
-		cuda.AddDotProduct(dst, -1./4., buf, Mf)
+		cuda_old.AddDotProduct(dst, -1./4., buf, Mf)
 
 		// 2nd
-		cuda.Zero(buf)
+		cuda_old.Zero(buf)
 		addCubicAnisotropyFrom(buf, NormMag, Msat, sZero, Kc2, sZero, AnisC1, AnisC2)
-		cuda.AddDotProduct(dst, -1./6., buf, Mf)
+		cuda_old.AddDotProduct(dst, -1./6., buf, Mf)
 
 		// 3nd
-		cuda.Zero(buf)
+		cuda_old.Zero(buf)
 		addCubicAnisotropyFrom(buf, NormMag, Msat, sZero, sZero, Kc3, AnisC1, AnisC2)
-		cuda.AddDotProduct(dst, -1./8., buf, Mf)
+		cuda_old.AddDotProduct(dst, -1./8., buf, Mf)
 	}
 }
 
 // Returns anisotropy energy in joules.
 func getAnisotropyEnergy() float64 {
-	buf := cuda.Buffer(1, GetMesh().Size())
-	defer cuda.Recycle(buf)
+	buf := cuda_old.Buffer(1, GetMesh().Size())
+	defer cuda_old.Recycle(buf)
 
-	cuda.Zero(buf)
+	cuda_old.Zero(buf)
 	addAnisotropyEnergyDensity(buf)
-	return cellVolume() * float64(cuda.Sum(buf))
+	return cellVolume() * float64(cuda_old.Sum(buf))
 }
