@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/engine_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/labstack/echo/v4"
@@ -108,25 +108,25 @@ func (s *PreviewState) UpdateQuantityBuffer() {
 		componentCount = 3
 	}
 	GPU_in := engine_old.ValueOf(s.getQuantity())
-	defer cuda.Recycle(GPU_in)
+	defer cuda_old.Recycle(GPU_in)
 
 	CPU_out := data_old.NewSlice(componentCount, [3]int{s.XChosenSize, s.YChosenSize, 1})
-	GPU_out := cuda.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
+	GPU_out := cuda_old.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
 	defer GPU_out.Free()
 
 	if s.Type == "3D" {
 		for c := 0; c < componentCount; c++ {
-			cuda.Resize(GPU_out, GPU_in.Comp(c), s.Layer)
+			cuda_old.Resize(GPU_out, GPU_in.Comp(c), s.Layer)
 			data_old.Copy(CPU_out.Comp(c), GPU_out)
 		}
 		s.normalizeVectors(CPU_out)
 		s.UpdateVectorField(CPU_out.Vectors())
 	} else {
 		if s.getQuantity().NComp() > 1 {
-			cuda.Resize(GPU_out, GPU_in.Comp(s.getComponent()), s.Layer)
+			cuda_old.Resize(GPU_out, GPU_in.Comp(s.getComponent()), s.Layer)
 			data_old.Copy(CPU_out.Comp(0), GPU_out)
 		} else {
-			cuda.Resize(GPU_out, GPU_in.Comp(0), s.Layer)
+			cuda_old.Resize(GPU_out, GPU_in.Comp(0), s.Layer)
 			data_old.Copy(CPU_out.Comp(0), GPU_out)
 		}
 		s.UpdateScalarField(CPU_out.Scalars())
@@ -253,14 +253,14 @@ func (s *PreviewState) updateMask() {
 	}
 	// cuda full size geom
 	geom := engine_old.Geometry
-	GPU_fullsize := cuda.Buffer(geom.NComp(), geom.Buffer.Size())
+	GPU_fullsize := cuda_old.Buffer(geom.NComp(), geom.Buffer.Size())
 	geom.EvalTo(GPU_fullsize)
-	defer cuda.Recycle(GPU_fullsize)
+	defer cuda_old.Recycle(GPU_fullsize)
 
 	// resize geom in GPU
-	GPU_resized := cuda.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
+	GPU_resized := cuda_old.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
 	defer GPU_resized.Free()
-	cuda.Resize(GPU_resized, GPU_fullsize.Comp(0), s.Layer)
+	cuda_old.Resize(GPU_resized, GPU_fullsize.Comp(0), s.Layer)
 
 	// copy resized geom from GPU to CPU
 	CPU_out := data_old.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})

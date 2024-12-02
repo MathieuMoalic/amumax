@@ -3,7 +3,7 @@ package engine_old
 import (
 	"sort"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
@@ -15,7 +15,7 @@ const NREGION = 256 // maximum number of regions, limited by size of byte.
 
 // stores the region index for each cell
 type RegionsState struct {
-	gpuBuffer *cuda.Bytes                 // region data on GPU
+	gpuBuffer *cuda_old.Bytes             // region data on GPU
 	hist      []func(x, y, z float64) int // history of region set operations
 	info
 	Indices map[int]bool
@@ -58,7 +58,7 @@ func ShapeFromRegion(id int) shape {
 }
 
 func (r *RegionsState) Alloc() {
-	r.gpuBuffer = cuda.NewBytes(r.Mesh().NCell())
+	r.gpuBuffer = cuda_old.NewBytes(r.Mesh().NCell())
 	DefRegion(0, universeInner)
 }
 
@@ -157,7 +157,7 @@ func DefRegionCell(id int, x, y, z int) {
 func (r *RegionsState) average() []float64 {
 	s, recycle := r.Slice()
 	if recycle {
-		defer cuda.Recycle(s)
+		defer cuda_old.Recycle(s)
 	}
 	return sAverageUniverse(s)
 }
@@ -201,7 +201,7 @@ func (r *RegionsState) volume(region_ int) float64 {
 }
 
 // Get the region data on GPU
-func (r *RegionsState) Gpu() *cuda.Bytes {
+func (r *RegionsState) Gpu() *cuda_old.Bytes {
 	return r.gpuBuffer
 }
 
@@ -216,8 +216,8 @@ func init() {
 
 // Get returns the regions as a slice of floats, so it can be output.
 func (r *RegionsState) Slice() (*data_old.Slice, bool) {
-	buf := cuda.Buffer(1, r.Mesh().Size())
-	cuda.RegionDecode(buf, unitMap.gpuLUT1(), Regions.Gpu())
+	buf := cuda_old.Buffer(1, r.Mesh().Size())
+	cuda_old.RegionDecode(buf, unitMap.gpuLUT1(), Regions.Gpu())
 	return buf, true
 }
 
@@ -246,10 +246,10 @@ func reshapeBytes(array []byte, size [3]int) [][][]byte {
 func (b *RegionsState) shift(dx int) {
 	// TODO: return if no regions defined
 	r1 := b.Gpu()
-	r2 := cuda.NewBytes(b.Mesh().NCell()) // TODO: somehow recycle
+	r2 := cuda_old.NewBytes(b.Mesh().NCell()) // TODO: somehow recycle
 	defer r2.Free()
 	newreg := byte(0) // new region at edge
-	cuda.ShiftBytes(r2, r1, b.Mesh(), dx, newreg)
+	cuda_old.ShiftBytes(r2, r1, b.Mesh(), dx, newreg)
 	r1.Copy(r2)
 
 	n := GetMesh().Size()
@@ -271,10 +271,10 @@ func (b *RegionsState) shift(dx int) {
 func (b *RegionsState) shiftY(dy int) {
 	// TODO: return if no regions defined
 	r1 := b.Gpu()
-	r2 := cuda.NewBytes(b.Mesh().NCell()) // TODO: somehow recycle
+	r2 := cuda_old.NewBytes(b.Mesh().NCell()) // TODO: somehow recycle
 	defer r2.Free()
 	newreg := byte(0) // new region at edge
-	cuda.ShiftBytesY(r2, r1, b.Mesh(), dy, newreg)
+	cuda_old.ShiftBytesY(r2, r1, b.Mesh(), dy, newreg)
 	r1.Copy(r2)
 
 	n := GetMesh().Size()

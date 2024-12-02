@@ -5,7 +5,7 @@ package engine_old
 import (
 	"fmt"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
@@ -128,8 +128,8 @@ func (q *cropped) Average() []float64 { return q.average() }         // handy fo
 
 func (q *cropped) Slice() (*data_old.Slice, bool) {
 	src := ValueOf(q.parent)
-	defer cuda.Recycle(src)
-	dst := cuda.Buffer(q.NComp(), q.Mesh().Size())
-	cuda.Crop(dst, src, q.x1, q.y1, q.z1)
+	defer cuda_old.Recycle(src)
+	dst := cuda_old.Buffer(q.NComp(), q.Mesh().Size())
+	cuda_old.Crop(dst, src, q.x1, q.y1, q.z1)
 	return dst, true
 }

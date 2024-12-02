@@ -3,7 +3,7 @@ package solver
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
@@ -33,7 +33,7 @@ func (s *Solver) rk23() {
 
 	// first step ever: one-time k1 init and eval
 	if s.previousStepBuffer == nil {
-		s.previousStepBuffer = cuda.NewSlice(3, size)
+		s.previousStepBuffer = cuda_old.NewSlice(3, size)
 		s.torqueFn(s.previousStepBuffer)
 	}
 
@@ -44,14 +44,14 @@ func (s *Solver) rk23() {
 
 	t0 := s.Time
 	// backup magnetization
-	m0 := cuda.Buffer(3, size)
-	defer cuda.Recycle(m0)
+	m0 := cuda_old.Buffer(3, size)
+	defer cuda_old.Recycle(m0)
 	data_old.Copy(m0, m)
 
-	k2, k3, k4 := cuda.Buffer(3, size), cuda.Buffer(3, size), cuda.Buffer(3, size)
-	defer cuda.Recycle(k2)
-	defer cuda.Recycle(k3)
-	defer cuda.Recycle(k4)
+	k2, k3, k4 := cuda_old.Buffer(3, size), cuda_old.Buffer(3, size), cuda_old.Buffer(3, size)
+	defer cuda_old.Recycle(k2)
+	defer cuda_old.Recycle(k3)
+	defer cuda_old.Recycle(k4)
 
 	h := float32(s.dt_si * gammaLL) // internal time step = Dt * gammaLL
 
@@ -59,18 +59,18 @@ func (s *Solver) rk23() {
 
 	// stage 2
 	s.Time = t0 + (1./2.)*s.dt_si
-	cuda.Madd2(m, m, s.previousStepBuffer, 1, (1./2.)*h) // m = m*1 + k1*h/2
+	cuda_old.Madd2(m, m, s.previousStepBuffer, 1, (1./2.)*h) // m = m*1 + k1*h/2
 	NormMag.normalize()
 	s.torqueFn(k2)
 
 	// stage 3
 	s.Time = t0 + (3./4.)*s.dt_si
-	cuda.Madd2(m, m0, k2, 1, (3./4.)*h) // m = m0*1 + k2*3/4
+	cuda_old.Madd2(m, m0, k2, 1, (3./4.)*h) // m = m0*1 + k2*3/4
 	NormMag.normalize()
 	s.torqueFn(k3)
 
 	// 3rd order solution
-	cuda.Madd4(m, m0, s.previousStepBuffer, k2, k3, 1, (2./9.)*h, (1./3.)*h, (4./9.)*h)
+	cuda_old.Madd4(m, m0, s.previousStepBuffer, k2, k3, 1, (2./9.)*h, (1./3.)*h, (4./9.)*h)
 	NormMag.normalize()
 
 	// error estimate
@@ -78,10 +78,10 @@ func (s *Solver) rk23() {
 	s.torqueFn(k4)
 	Err := k2 // re-use k2 as error
 	// difference of 3rd and 2nd order torque without explicitly storing them first
-	cuda.Madd4(Err, s.previousStepBuffer, k2, k3, k4, (7./24.)-(2./9.), (1./4.)-(1./3.), (1./3.)-(4./9.), (1. / 8.))
+	cuda_old.Madd4(Err, s.previousStepBuffer, k2, k3, k4, (7./24.)-(2./9.), (1./4.)-(1./3.), (1./3.)-(4./9.), (1. / 8.))
 
 	// determine error
-	err := cuda.MaxVecNorm(Err) * float64(h)
+	err := cuda_old.MaxVecNorm(Err) * float64(h)
 
 	// adjust next time step
 	if err < s.MaxErr || s.dt_si <= s.MinDt || s.FixDt != 0 { // mindt check to avoid infinite loop

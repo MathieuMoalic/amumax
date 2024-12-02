@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mesh"
@@ -27,7 +27,7 @@ func (m *Metadata) Init(fs *fsutil.FileSystem, log *log.Logs) {
 	m.fs = fs
 	m.log = log
 	m.Add("start_time", m.startTime.Format(time.UnixDate))
-	m.Add("gpu", cuda.GPUInfo_old)
+	m.Add("gpu", cuda_old.GPUInfo_old)
 	err := m.FlushToFile()
 	if err != nil {
 		m.log.Err("Failed to save metadata to file: %v", err)

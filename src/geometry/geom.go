@@ -3,7 +3,7 @@ package geometry
 import (
 	"math/rand"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag_config"
@@ -42,8 +42,8 @@ func (g *Geometry) GetOrCreateGpuSlice() *data_old.Slice {
 func (g *Geometry) slice() (*data_old.Slice, bool) {
 	s := g.GetOrCreateGpuSlice()
 	if s.IsNil() {
-		buffer := cuda.Buffer(1, g.mesh.Size())
-		cuda.Memset(buffer, 1)
+		buffer := cuda_old.Buffer(1, g.mesh.Size())
+		cuda_old.Memset(buffer, 1)
 		return buffer, true
 	} else {
 		return s, false
@@ -59,7 +59,7 @@ func (g *Geometry) Value() *data_old.Slice     { return g.gpuSlice }
 func (g *Geometry) Average() []float64 {
 	s, r := g.slice()
 	if r {
-		defer cuda.Recycle(s)
+		defer cuda_old.Recycle(s)
 	}
 	return utils.AverageSlice(s)
 }
@@ -73,7 +73,7 @@ func (g *Geometry) SetGeom(s shape.Shape) {
 
 	g.shapeFunc = s
 	if g.GetOrCreateGpuSlice().IsNil() {
-		g.gpuSlice = cuda.NewSlice(1, g.mesh.Size())
+		g.gpuSlice = cuda_old.NewSlice(1, g.mesh.Size())
 	}
 
 	CpuSlice := data_old.NewSlice(1, g.GetOrCreateGpuSlice().Size())
@@ -194,10 +194,10 @@ func (g *Geometry) Shift(dx int) {
 
 	// allocated mask: shift
 	s := g.gpuSlice
-	s2 := cuda.Buffer(1, g.mesh.Size())
-	defer cuda.Recycle(s2)
+	s2 := cuda_old.Buffer(1, g.mesh.Size())
+	defer cuda_old.Recycle(s2)
 	newv := float32(1) // initially fill edges with 1's
-	cuda.ShiftX(s2, s, dx, newv, newv)
+	cuda_old.ShiftX(s2, s, dx, newv, newv)
 	data_old.Copy(s, s2)
 
 	n := g.mesh.Size()
@@ -208,7 +208,7 @@ func (g *Geometry) Shift(dx int) {
 			for ix := x1; ix < x2; ix++ {
 				r := g.mesh.Index2Coord(ix, iy, iz) // includes shift
 				if !g.shapeFunc(r[0], r[1], r[2]) {
-					cuda.SetCell(g.gpuSlice, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
+					cuda_old.SetCell(g.gpuSlice, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
 				}
 			}
 		}
@@ -224,10 +224,10 @@ func (g *Geometry) ShiftY(dy int) {
 
 	// allocated mask: shift
 	s := g.gpuSlice
-	s2 := cuda.Buffer(1, g.mesh.Size())
-	defer cuda.Recycle(s2)
+	s2 := cuda_old.Buffer(1, g.mesh.Size())
+	defer cuda_old.Recycle(s2)
 	newv := float32(1) // initially fill edges with 1's
-	cuda.ShiftY(s2, s, dy, newv, newv)
+	cuda_old.ShiftY(s2, s, dy, newv, newv)
 	data_old.Copy(s, s2)
 
 	n := g.mesh.Size()
@@ -238,7 +238,7 @@ func (g *Geometry) ShiftY(dy int) {
 			for iy := y1; iy < y2; iy++ {
 				r := g.mesh.Index2Coord(ix, iy, iz) // includes shift
 				if !g.shapeFunc(r[0], r[1], r[2]) {
-					cuda.SetCell(g.gpuSlice, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
+					cuda_old.SetCell(g.gpuSlice, 0, ix, iy, iz, 0) // a bit slowish, but hardly reached
 				}
 			}
 		}

@@ -5,7 +5,7 @@ package engine_old
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 )
 
 // Stopping relax Maxtorque in T. The user can check MaxTorque for sane values (e.g. 1e-3).
@@ -62,10 +62,10 @@ func relax() {
 	defer stepper.Free() // purge previous rk.k1 because FSAL will be dead wrong.
 
 	maxTorque := func() float64 {
-		return cuda.MaxVecNorm(solver.k1)
+		return cuda_old.MaxVecNorm(solver.k1)
 	}
 	avgTorque := func() float32 {
-		return cuda.Dot(solver.k1, solver.k1)
+		return cuda_old.Dot(solver.k1, solver.k1)
 	}
 
 	if relaxTorqueThreshold > 0 {
