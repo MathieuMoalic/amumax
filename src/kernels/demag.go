@@ -8,66 +8,90 @@ import (
 
 	"github.com/DataDog/zstd"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/zarr_old"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/progressbar"
 	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/utils"
 )
+
+type kernelSlice [3][3]*data_old.Slice
+
+func emptyKernel() kernelSlice {
+	var kernel kernelSlice
+	for i := 0; i < 3; i++ {
+		for j := i; j < 3; j++ {
+			kernel[i][j] = nil
+		}
+	}
+	return kernel
+}
 
 // Obtains the demag kernel either from cacheDir/ or by calculating (and then storing in cacheDir for next time).
 // Empty cacheDir disables caching.
-func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cacheDir string, hideProgressBar bool) (kernel [3][3]*data_old.Slice) {
+func NewDemagKernel(fs *fsutil.FileSystem, log *log.Logs, gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cacheDir string, hideProgressBar bool) (kernel kernelSlice, err error) {
 	timer.Start("kernel_init")
 	timer.Stop("kernel_init") // warm-up
 
 	timer.Start("kernel_init")
 	defer timer.Stop("kernel_init")
 
-	sanityCheck(cellsize)
+	err = sanityCheck(cellsize)
+	if err != nil {
+		return emptyKernel(), fmt.Errorf("sanity check failed: %v", err)
+	}
 	// Cache disabled
 	if cacheDir == "" {
-		log_old.Log.Warn(`Kernel cache disabled.`)
-		kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, hideProgressBar)
+		log.Warn(`Kernel cache disabled.`)
+		kernel, err = calcDemagKernel(gridsize, pbc, cellsize, accuracy, hideProgressBar)
+		if err != nil {
+			return emptyKernel(), fmt.Errorf("couldn't calculate kernel: %v", err)
+		}
 		// return without saving
 		return
 	}
 	// Make sure cache directory exists
-	if !fsutil_old.Exists(cacheDir) {
-		err := fsutil_old.Mkdir(cacheDir)
+	if !fs.Exists(cacheDir) {
+		err = fs.Mkdir(cacheDir)
 		if err != nil {
-			log_old.Log.Warn("Unable to create kernel cache directory: %v", err)
+			log.Warn("Unable to create kernel cache directory: %v", err)
 		}
 	}
 	defer func() {
 		if err := recover(); err != nil {
-			log_old.Log.Warn("Unable to use kernel cache: %v", err)
-			kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, hideProgressBar)
+			log.Warn("Unable to use kernel cache: %v", err)
+			kernel, err = calcDemagKernel(gridsize, pbc, cellsize, accuracy, hideProgressBar)
+			log.Err("Couldn't calculate kernel: %v", err)
 		}
 	}()
 
 	basename := kernelName(gridsize, pbc, cellsize, accuracy, cacheDir)
-	if fsutil_old.Exists(basename) {
-		log_old.Log.Info("Loading kernel from cache")
-		var err error
-		kernel, err = loadKernel(basename, padSize(gridsize, pbc))
+	if fs.Exists(basename) {
+		log.Info("Loading kernel from cache")
+		kernel, err = loadKernel(fs, basename, padSize(gridsize, pbc))
 		if err != nil {
-			log_old.Log.Warn("Couldn't load kernel from cache: %v", err)
-			kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, hideProgressBar)
+			log.Warn("Couldn't load kernel from cache: %v", err)
+			kernel, err = calcDemagKernel(gridsize, pbc, cellsize, accuracy, hideProgressBar)
+			if err != nil {
+				return emptyKernel(), fmt.Errorf("couldn't calculate kernel: %v", err)
+			}
 		}
-		return kernel
+		return kernel, nil
 	} else {
-		log_old.Log.Info("Calculating kernel and saving to cache")
-		kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, hideProgressBar)
+		log.Info("Calculating kernel and saving to cache")
+		kernel, err = calcDemagKernel(gridsize, pbc, cellsize, accuracy, hideProgressBar)
+		if err != nil {
+			return emptyKernel(), fmt.Errorf("couldn't calculate kernel: %v", err)
+		}
 		err := saveKernel(basename, kernel)
 		if err != nil {
-			log_old.Log.Warn("Couldn't save kernel to cache: %v \n %v", basename, err.Error())
+			log.Warn("Couldn't save kernel to cache: %v \n %v", basename, err.Error())
 		}
-		return
+		return kernel, nil
 	}
 }
 
-func bytesToKernel(kernelBytes []byte, size [3]int) (kernel [3][3]*data_old.Slice) {
+func bytesToKernel(kernelBytes []byte, size [3]int) (kernel kernelSlice) {
 	offset := 0
 	sliceLength := size[X] * size[Y] * size[Z] * 4
 	for i := 0; i < 3; i++ {
@@ -87,7 +111,7 @@ func bytesToKernel(kernelBytes []byte, size [3]int) (kernel [3][3]*data_old.Slic
 	return
 }
 
-func kernelToBytes(kernel [3][3]*data_old.Slice) (bytes []byte) {
+func kernelToBytes(kernel kernelSlice) (bytes []byte) {
 	for i := 0; i < 3; i++ {
 		for j := i; j < 3; j++ {
 			kernelBytes := sliceToBytes(kernel[i][j])
@@ -108,7 +132,7 @@ func sliceToBytes(slice *data_old.Slice) (bytes []byte) {
 	for iz := 0; iz < size[Z]; iz++ {
 		for iy := 0; iy < size[Y]; iy++ {
 			for ix := 0; ix < size[X]; ix++ {
-				bytes = append(bytes, zarr_old.Float32ToBytes(data[0][iz][iy][ix])...)
+				bytes = append(bytes, utils.Float32ToBytes(data[0][iz][iy][ix])...)
 			}
 		}
 	}
@@ -122,7 +146,7 @@ func bytesToSlice(kernelBytes []byte, size [3]int) (slice *data_old.Slice) {
 	for iz := 0; iz < size[Z]; iz++ {
 		for iy := 0; iy < size[Y]; iy++ {
 			for ix := 0; ix < size[X]; ix++ {
-				tensors[0][iz][iy][ix] = zarr_old.BytesToFloat32(kernelBytes[count*4 : (count+1)*4])
+				tensors[0][iz][iy][ix] = utils.BytesToFloat32(kernelBytes[count*4 : (count+1)*4])
 				count++
 			}
 		}
@@ -137,19 +161,19 @@ func kernelName(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cac
 	return fmt.Sprintf("%s/%s_%s_%s_%v.cache", cacheDir, sSize, sPBC, sCellsize, accuracy)
 }
 
-func loadKernel(fname string, size [3]int) ([3][3]*data_old.Slice, error) {
-	compressedData, err := fsutil_old.Read(fname)
+func loadKernel(fs *fsutil.FileSystem, fname string, size [3]int) (kernelSlice, error) {
+	compressedData, err := fs.Read(fname)
 	if err != nil {
-		return [3][3]*data_old.Slice{}, err
+		return kernelSlice{}, err
 	}
 	kernelBytes, err := zstd.Decompress(nil, compressedData)
 	if err != nil {
-		return [3][3]*data_old.Slice{}, err
+		return kernelSlice{}, err
 	}
 	return bytesToKernel(kernelBytes, size), nil
 }
 
-func saveKernel(fname string, kernel [3][3]*data_old.Slice) error {
+func saveKernel(fname string, kernel kernelSlice) error {
 	kernelBytes := kernelToBytes(kernel)
 	compressedData, err := zstd.Compress(nil, kernelBytes)
 	if err != nil {
@@ -170,16 +194,21 @@ func saveKernel(fname string, kernel [3][3]*data_old.Slice) error {
 
 // Calculates the magnetostatic kernel by brute-force integration
 // of magnetic charges over the faces and averages over cell volumes.
-func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, hideProgressBar bool) (kernel [3][3]*data_old.Slice) {
+func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, hideProgressBar bool) (kernel kernelSlice, err error) {
 	// Add zero-padding in non-PBC directions
 	size := padSize(gridsize, pbc)
 
-	// Sanity check
-	{
-		log_old.AssertMsg(size[Z] > 0 && size[Y] > 0 && size[X] > 0, "Grid size dimensions must be greater than 0 in calcDemagKernel")
-		log_old.AssertMsg(cellsize[X] > 0 && cellsize[Y] > 0 && cellsize[Z] > 0, "Cell size dimensions must be positive in calcDemagKernel")
-		log_old.AssertMsg(pbc[X] >= 0 && pbc[Y] >= 0 && pbc[Z] >= 0, "PBC values must be non-negative in calcDemagKernel")
-		log_old.AssertMsg(accuracy > 0, "Accuracy must be greater than 0 in calcDemagKernel")
+	if size[Z] > 0 && size[Y] > 0 && size[X] > 0 {
+		return emptyKernel(), fmt.Errorf("grid size dimensions must be greater than 0 in calcDemagKernel")
+	}
+	if cellsize[X] <= 0 || cellsize[Y] <= 0 || cellsize[Z] <= 0 {
+		return emptyKernel(), fmt.Errorf("cell size dimensions must be positive in calcDemagKernel")
+	}
+	if pbc[X] < 0 || pbc[Y] < 0 || pbc[Z] < 0 {
+		return emptyKernel(), fmt.Errorf("the PBC values must be non-negative in calcDemagKernel")
+	}
+	if accuracy <= 0 {
+		return emptyKernel(), fmt.Errorf("accuracy must be greater than 0 in calcDemagKernel")
 	}
 
 	// Allocate only upper diagonal part. The rest is symmetric due to reciprocity.
@@ -211,7 +240,7 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 	// Start brute integration
 	// 9 nested loops, does that stress you out?
 	// Fortunately, the 5 inner ones usually loop over just one element.
-
+	var err_loop error
 	for s := 0; s < 3; s++ { // source index Ksdxyz (parallelized over)
 		go func(s int) {
 			u, v, w := s, (s+1)%3, (s+2)%3 // u = direction of source (s), v & w are the orthogonal directions
@@ -271,7 +300,10 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 						nv *= 2
 						nw *= 2
 
-						log_old.AssertMsg(nv > 0 && nw > 0 && nx > 0 && ny > 0 && nz > 0, "Integration points must be greater than 0 in all dimensions (nv, nw, nx, ny, nz) in calcDemagKernel")
+						if nv > 0 && nw > 0 && nx > 0 && ny > 0 && nz > 0 {
+							err_loop = fmt.Errorf("integration points must be greater than 0 in all dimensions (nv, nw, nx, ny, nz) in calcDemagKernel")
+							return
+						}
 
 						scale := 1 / float64(nv*nw*nx*ny*nz)
 						surface := cellsize[v] * cellsize[w] // the two directions perpendicular to direction s
@@ -333,6 +365,9 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 	<-done
 	<-done
 	<-done
+	if err_loop != nil {
+		return emptyKernel(), err_loop
+	}
 	// Reconstruct skipped parts from symmetry (X)
 	for z := 0; z < size[Z]; z++ {
 		for y := 0; y < size[Y]; y++ {
@@ -391,7 +426,7 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 	kernel[Z][Y] = kernel[Y][Z]
 
 	ProgressBar.Finish()
-	return kernel
+	return kernel, nil
 }
 
 // integration ranges for kernel. size=kernelsize, so padded for no PBC, not padded for PBC
@@ -441,7 +476,7 @@ func wrap(number, max int) int {
 
 const maxAspect = 100.0 // maximum sane cell aspect ratio
 
-func sanityCheck(cellsize [3]float64) {
+func sanityCheck(cellsize [3]float64) error {
 	a3 := cellsize[X] / cellsize[Y]
 	a2 := cellsize[Y] / cellsize[Z]
 	a1 := cellsize[Z] / cellsize[X]
@@ -450,8 +485,9 @@ func sanityCheck(cellsize [3]float64) {
 	aMin := math.Min(a1, math.Min(a2, a3))
 
 	if aMax > maxAspect || aMin < 1./maxAspect {
-		log_old.Log.PanicIfError(fmt.Errorf("unrealistic cell aspect ratio %v", cellsize))
+		return fmt.Errorf("unrealistic cell aspect ratio %v", cellsize)
 	}
+	return nil
 }
 
 // Returns the size after zero-padding, taking into account periodic boundary conditions.
