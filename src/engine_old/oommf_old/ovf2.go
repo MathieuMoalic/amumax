@@ -1,4 +1,4 @@
-package oommf
+package oommf_old
 
 import (
 	"fmt"
