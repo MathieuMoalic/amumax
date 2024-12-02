@@ -1,7 +1,7 @@
 package window_shift
 
 import (
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/geometry"
 	"github.com/MathieuMoalic/amumax/src/magnetization"
@@ -41,14 +41,14 @@ func (w *WindowShift) ShiftX(dx int) {
 }
 
 func (w *WindowShift) shiftMagX(m *data_old.Slice, dx int) {
-	m2 := cuda_old.Buffer(1, m.Size())
-	defer cuda_old.Recycle(m2)
+	m2 := cuda.Buffer(1, m.Size())
+	defer cuda.Recycle(m2)
 	for c := 0; c < m.NComp(); c++ {
 		comp := m.Comp(c)
 		if w.edgeCarryShift {
-			cuda_old.ShiftEdgeCarryX(m2, comp, m.Comp((c+1)%3), m.Comp((c+2)%3), dx, float32(w.ShiftMagL[c]), float32(w.ShiftMagL[c]))
+			cuda.ShiftEdgeCarryX(m2, comp, m.Comp((c+1)%3), m.Comp((c+2)%3), dx, float32(w.ShiftMagL[c]), float32(w.ShiftMagL[c]))
 		} else {
-			cuda_old.ShiftX(m2, comp, dx, float32(w.ShiftMagL[c]), float32(w.ShiftMagL[c]))
+			cuda.ShiftX(m2, comp, dx, float32(w.ShiftMagL[c]), float32(w.ShiftMagL[c]))
 		}
 		data_old.Copy(comp, m2) // str0 ?
 	}
@@ -70,14 +70,14 @@ func (w *WindowShift) ShiftY(dy int) {
 }
 
 func (w *WindowShift) shiftMagY(m *data_old.Slice, dy int) {
-	m2 := cuda_old.Buffer(1, m.Size())
-	defer cuda_old.Recycle(m2)
+	m2 := cuda.Buffer(1, m.Size())
+	defer cuda.Recycle(m2)
 	for c := 0; c < m.NComp(); c++ {
 		comp := m.Comp(c)
 		if w.edgeCarryShift {
-			cuda_old.ShiftEdgeCarryX(m2, comp, m.Comp((c+1)%3), m.Comp((c+2)%3), dy, float32(w.ShiftMagL[c]), float32(w.ShiftMagL[c]))
+			cuda.ShiftEdgeCarryX(m2, comp, m.Comp((c+1)%3), m.Comp((c+2)%3), dy, float32(w.ShiftMagL[c]), float32(w.ShiftMagL[c]))
 		} else {
-			cuda_old.ShiftX(m2, comp, dy, float32(w.ShiftMagL[c]), float32(w.ShiftMagL[c]))
+			cuda.ShiftX(m2, comp, dy, float32(w.ShiftMagL[c]), float32(w.ShiftMagL[c]))
 		}
 		data_old.Copy(comp, m2) // str0 ?
 	}

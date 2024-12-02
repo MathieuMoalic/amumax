@@ -3,7 +3,7 @@ package engine_old
 // Total energy calculation
 
 import (
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
@@ -35,7 +35,7 @@ func getTotalEnergy() float64 {
 
 // Set dst to total energy density in J/m3
 func setTotalEdens(dst *data_old.Slice) {
-	cuda_old.Zero(dst)
+	cuda.Zero(dst)
 	for _, addTerm := range edensTerms {
 		addTerm(dst)
 	}
@@ -53,19 +53,19 @@ func cellVolume() float64 {
 func makeEdensAdder(field Quantity, prefactor float64) func(*data_old.Slice) {
 	return func(dst *data_old.Slice) {
 		B := ValueOf(field)
-		defer cuda_old.Recycle(B)
+		defer cuda.Recycle(B)
 		m := ValueOf(M_full)
-		defer cuda_old.Recycle(m)
+		defer cuda.Recycle(m)
 		factor := float32(prefactor)
-		cuda_old.AddDotProduct(dst, factor, B, m)
+		cuda.AddDotProduct(dst, factor, B, m)
 	}
 }
 
 // vector dot product
 func dot(a, b Quantity) float64 {
 	A := ValueOf(a)
-	defer cuda_old.Recycle(A)
+	defer cuda.Recycle(A)
 	B := ValueOf(b)
-	defer cuda_old.Recycle(B)
-	return float64(cuda_old.Dot(A, B))
+	defer cuda.Recycle(B)
+	return float64(cuda.Dot(A, B))
 }

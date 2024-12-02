@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/draw"
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
@@ -59,7 +59,7 @@ func saveAsOVF(q Quantity, fname string) {
 		fname += ("." + StringFromOutputFormat[outputFormat])
 	}
 	buffer := ValueOf(q) // TODO: check and optimize for Buffer()
-	defer cuda_old.Recycle(buffer)
+	defer cuda.Recycle(buffer)
 	info := oommf.Meta{Time: Time, Name: nameOf(q), Unit: unitOf(q), CellSize: MeshOf(q).CellSize()}
 	data := buffer.HostCopy() // must be copy (async io)
 	queOutput(func() { saveAs_sync(fname, data, info, outputFormat) })
@@ -70,7 +70,7 @@ func snapshot(q Quantity) {
 	qname := nameOf(q)
 	fname := fmt.Sprintf(OD()+filenameFormat+"."+snapshotFormat, qname, autonum[qname])
 	s := ValueOf(q)
-	defer cuda_old.Recycle(s)
+	defer cuda.Recycle(s)
 	data := s.HostCopy() // must be copy (asyncio)
 	queOutput(func() { snapshot_sync(fname, data) })
 	autonum[qname]++
@@ -85,7 +85,7 @@ func snapshotAs(q Quantity, fname string) {
 		fname += ("." + StringFromOutputFormat[outputFormat])
 	}
 	s := ValueOf(q)
-	defer cuda_old.Recycle(s)
+	defer cuda.Recycle(s)
 	data := s.HostCopy() // must be copy (asyncio)
 	queOutput(func() { snapshot_sync(fname, data) })
 }

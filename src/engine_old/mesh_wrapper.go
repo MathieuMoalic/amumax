@@ -1,7 +1,7 @@
 package engine_old
 
 import (
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/mag"
 )
 
@@ -31,5 +31,5 @@ func ReCreateMesh(Nx, Ny, Nz int, dx, dy, dz float64, PBCx, PBCy, PBCz int) {
 	NormMag.Alloc()
 	Regions.Alloc()
 	kernel := mag.DemagKernel(Mesh.Size(), Mesh.PBC(), Mesh.CellSize(), DemagAccuracy, CacheDir, HideProgresBar)
-	conv_ = cuda_old.NewDemag(Mesh.Size(), Mesh.PBC(), kernel, SelfTest)
+	conv_ = cuda.NewDemag(Mesh.Size(), Mesh.PBC(), kernel, SelfTest)
 }

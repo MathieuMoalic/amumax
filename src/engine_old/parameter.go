@@ -11,7 +11,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
@@ -84,13 +84,13 @@ func (p *regionwise) init(nComp int, name, unit string, children []derived) {
 	p.timestamp = math.Inf(-1)
 }
 
-func (p *regionwise) MSlice() cuda_old.MSlice {
+func (p *regionwise) MSlice() cuda.MSlice {
 	if p.IsUniform() {
-		return cuda_old.MakeMSlice(data_old.NilSlice(p.NComp(), GetMesh().Size()), p.getRegion(0))
+		return cuda.MakeMSlice(data_old.NilSlice(p.NComp(), GetMesh().Size()), p.getRegion(0))
 	} else {
 		buf, r := p.Slice()
 		log_old.AssertMsg(r, "Failed to retrieve slice: invalid state in regionwise.MSlice")
-		return cuda_old.ToMSlice(buf)
+		return cuda.ToMSlice(buf)
 	}
 }
 

@@ -5,7 +5,7 @@ package engine_old
 import (
 	"fmt"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
@@ -46,8 +46,8 @@ func addEdensTerm(e Quantity) {
 func addCustomField(dst *data_old.Slice) {
 	for _, term := range customTerms {
 		buf := ValueOf(term)
-		cuda_old.Add(dst, dst, buf)
-		cuda_old.Recycle(buf)
+		cuda.Add(dst, dst, buf)
+		cuda.Recycle(buf)
 	}
 }
 
@@ -55,17 +55,17 @@ func addCustomField(dst *data_old.Slice) {
 func addCustomEnergyDensity(dst *data_old.Slice) {
 	for _, term := range customEnergies {
 		buf := ValueOf(term)
-		cuda_old.Add(dst, dst, buf)
-		cuda_old.Recycle(buf)
+		cuda.Add(dst, dst, buf)
+		cuda.Recycle(buf)
 	}
 }
 
 func getCustomEnergy() float64 {
-	buf := cuda_old.Buffer(1, GetMesh().Size())
-	defer cuda_old.Recycle(buf)
-	cuda_old.Zero(buf)
+	buf := cuda.Buffer(1, GetMesh().Size())
+	defer cuda.Recycle(buf)
+	cuda.Zero(buf)
 	addCustomEnergyDensity(buf)
-	return cellVolume() * float64(cuda_old.Sum(buf))
+	return cellVolume() * float64(cuda.Sum(buf))
 }
 
 type constValue struct {
@@ -76,7 +76,7 @@ func (c *constValue) NComp() int { return len(c.value) }
 
 func (d *constValue) EvalTo(dst *data_old.Slice) {
 	for c, v := range d.value {
-		cuda_old.Memset(dst.Comp(c), float32(v))
+		cuda.Memset(dst.Comp(c), float32(v))
 	}
 }
 
@@ -138,24 +138,24 @@ func mulMV(Ax, Ay, Az, b Quantity) Quantity {
 
 func (q *mulmv) EvalTo(dst *data_old.Slice) {
 	log_old.AssertMsg(dst.NComp() == 3, "Component mismatch: dst must have 3 components in EvalTo")
-	cuda_old.Zero(dst)
+	cuda.Zero(dst)
 	b := ValueOf(q.b)
-	defer cuda_old.Recycle(b)
+	defer cuda.Recycle(b)
 
 	{
 		Ax := ValueOf(q.ax)
-		cuda_old.AddDotProduct(dst.Comp(X), 1, Ax, b)
-		cuda_old.Recycle(Ax)
+		cuda.AddDotProduct(dst.Comp(X), 1, Ax, b)
+		cuda.Recycle(Ax)
 	}
 	{
 		Ay := ValueOf(q.ay)
-		cuda_old.AddDotProduct(dst.Comp(Y), 1, Ay, b)
-		cuda_old.Recycle(Ay)
+		cuda.AddDotProduct(dst.Comp(Y), 1, Ay, b)
+		cuda.Recycle(Ay)
 	}
 	{
 		Az := ValueOf(q.az)
-		cuda_old.AddDotProduct(dst.Comp(Z), 1, Az, b)
-		cuda_old.Recycle(Az)
+		cuda.AddDotProduct(dst.Comp(Z), 1, Az, b)
+		cuda.Recycle(Az)
 	}
 }
 
@@ -173,11 +173,11 @@ func dotProductFunc(a, b Quantity) Quantity {
 
 func (d *dotProduct) EvalTo(dst *data_old.Slice) {
 	A := ValueOf(d.a)
-	defer cuda_old.Recycle(A)
+	defer cuda.Recycle(A)
 	B := ValueOf(d.b)
-	defer cuda_old.Recycle(B)
-	cuda_old.Zero(dst)
-	cuda_old.AddDotProduct(dst, 1, A, B)
+	defer cuda.Recycle(B)
+	cuda.Zero(dst)
+	cuda.AddDotProduct(dst, 1, A, B)
 }
 
 // CrossProduct creates a new quantity that is the cross product of
@@ -190,11 +190,11 @@ func cross(a, b Quantity) Quantity {
 
 func (d *crossProduct) EvalTo(dst *data_old.Slice) {
 	A := ValueOf(d.a)
-	defer cuda_old.Recycle(A)
+	defer cuda.Recycle(A)
 	B := ValueOf(d.b)
-	defer cuda_old.Recycle(B)
-	cuda_old.Zero(dst)
-	cuda_old.CrossProduct(dst, A, B)
+	defer cuda.Recycle(B)
+	cuda.Zero(dst)
+	cuda.CrossProduct(dst, A, B)
 }
 
 func add(a, b Quantity) Quantity {
@@ -206,11 +206,11 @@ func add(a, b Quantity) Quantity {
 
 func (d *addition) EvalTo(dst *data_old.Slice) {
 	A := ValueOf(d.a)
-	defer cuda_old.Recycle(A)
+	defer cuda.Recycle(A)
 	B := ValueOf(d.b)
-	defer cuda_old.Recycle(B)
-	cuda_old.Zero(dst)
-	cuda_old.Add(dst, A, B)
+	defer cuda.Recycle(B)
+	cuda.Zero(dst)
+	cuda.Add(dst, A, B)
 }
 
 type pointwiseMul struct {
@@ -226,11 +226,11 @@ func madd(a, b Quantity, fac1, fac2 float64) *mAddition {
 
 func (o *mAddition) EvalTo(dst *data_old.Slice) {
 	A := ValueOf(o.a)
-	defer cuda_old.Recycle(A)
+	defer cuda.Recycle(A)
 	B := ValueOf(o.b)
-	defer cuda_old.Recycle(B)
-	cuda_old.Zero(dst)
-	cuda_old.Madd2(dst, A, B, float32(o.fac1), float32(o.fac2))
+	defer cuda.Recycle(B)
+	cuda.Zero(dst)
+	cuda.Madd2(dst, A, B, float32(o.fac1), float32(o.fac2))
 }
 
 // mul returns a new quantity that evaluates to the pointwise product a and b.
@@ -251,11 +251,11 @@ func mul(a, b Quantity) Quantity {
 }
 
 func (d *pointwiseMul) EvalTo(dst *data_old.Slice) {
-	cuda_old.Zero(dst)
+	cuda.Zero(dst)
 	a := ValueOf(d.a)
-	defer cuda_old.Recycle(a)
+	defer cuda.Recycle(a)
 	b := ValueOf(d.b)
-	defer cuda_old.Recycle(b)
+	defer cuda.Recycle(b)
 
 	switch {
 	case a.NComp() == b.NComp():
@@ -272,7 +272,7 @@ func (d *pointwiseMul) EvalTo(dst *data_old.Slice) {
 // mulNN pointwise multiplies two N-component vectors,
 // yielding an N-component vector stored in dst.
 func mulNN(dst, a, b *data_old.Slice) {
-	cuda_old.Mul(dst, a, b)
+	cuda.Mul(dst, a, b)
 }
 
 // mul1N pointwise multiplies a scalar (1-component) with an N-component vector,
@@ -281,7 +281,7 @@ func mul1N(dst, a, b *data_old.Slice) {
 	log_old.AssertMsg(a.NComp() == 1, "Component mismatch: a must have 1 component in mul1N")
 	log_old.AssertMsg(dst.NComp() == b.NComp(), "Component mismatch: dst and b must have the same number of components in mul1N")
 	for c := 0; c < dst.NComp(); c++ {
-		cuda_old.Mul(dst.Comp(c), a, b.Comp(c))
+		cuda.Mul(dst.Comp(c), a, b.Comp(c))
 	}
 }
 
@@ -305,9 +305,9 @@ func div(a, b Quantity) Quantity {
 
 func (d *pointwiseDiv) EvalTo(dst *data_old.Slice) {
 	a := ValueOf(d.a)
-	defer cuda_old.Recycle(a)
+	defer cuda.Recycle(a)
 	b := ValueOf(d.b)
-	defer cuda_old.Recycle(b)
+	defer cuda.Recycle(b)
 
 	switch {
 	case a.NComp() == b.NComp():
@@ -321,14 +321,14 @@ func (d *pointwiseDiv) EvalTo(dst *data_old.Slice) {
 }
 
 func divNN(dst, a, b *data_old.Slice) {
-	cuda_old.Div(dst, a, b)
+	cuda.Div(dst, a, b)
 }
 
 func divN1(dst, a, b *data_old.Slice) {
 	log_old.AssertMsg(dst.NComp() == a.NComp(), "Component mismatch: dst and a must have the same number of components in divN1")
 	log_old.AssertMsg(b.NComp() == 1, "Component mismatch: b must have 1 component in divN1")
 	for c := 0; c < dst.NComp(); c++ {
-		cuda_old.Div(dst.Comp(c), a.Comp(c), b)
+		cuda.Div(dst.Comp(c), a.Comp(c), b)
 	}
 }
 
@@ -346,18 +346,18 @@ func shiftedQuant(q Quantity, dx, dy, dz int) Quantity {
 
 func (q *shifted) EvalTo(dst *data_old.Slice) {
 	orig := ValueOf(q.orig)
-	defer cuda_old.Recycle(orig)
+	defer cuda.Recycle(orig)
 	for i := 0; i < q.NComp(); i++ {
 		dsti := dst.Comp(i)
 		origi := orig.Comp(i)
 		if q.dx != 0 {
-			cuda_old.ShiftX(dsti, origi, q.dx, 0, 0)
+			cuda.ShiftX(dsti, origi, q.dx, 0, 0)
 		}
 		if q.dy != 0 {
-			cuda_old.ShiftY(dsti, origi, q.dy, 0, 0)
+			cuda.ShiftY(dsti, origi, q.dy, 0, 0)
 		}
 		if q.dz != 0 {
-			cuda_old.ShiftZ(dsti, origi, q.dz, 0, 0)
+			cuda.ShiftZ(dsti, origi, q.dz, 0, 0)
 		}
 	}
 }
@@ -387,7 +387,7 @@ func (q *masked) EvalTo(dst *data_old.Slice) {
 		q.createMask()
 	}
 	orig := ValueOf(q.orig)
-	defer cuda_old.Recycle(orig)
+	defer cuda.Recycle(orig)
 	mul1N(dst, q.mask, orig)
 }
 
@@ -413,7 +413,7 @@ func (q *masked) createMask() {
 	}
 	// Update mask
 	q.mask.Free()
-	q.mask = cuda_old.NewSlice(SCALAR, size)
+	q.mask = cuda.NewSlice(SCALAR, size)
 	data_old.Copy(q.mask, maskhost)
 	q.mesh = *GetMesh()
 	// Remove mask from host
@@ -435,5 +435,5 @@ func (q *normalized) NComp() int {
 func (q *normalized) EvalTo(dst *data_old.Slice) {
 	log_old.AssertMsg(dst.NComp() == q.NComp(), "Component mismatch: dst must have the same number of components as the normalized quantity in EvalTo")
 	q.orig.EvalTo(dst)
-	cuda_old.Normalize(dst, nil)
+	cuda.Normalize(dst, nil)
 }
