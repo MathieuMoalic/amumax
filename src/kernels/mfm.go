@@ -9,6 +9,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/vector"
 )
 
 func MFMKernel(mesh mesh.MeshLike, lift, tipsize float64, cacheDir string) (kernel [3]*data_old.Slice) {
@@ -70,18 +71,18 @@ func CalcMFMKernel(kernelMesh mesh.MeshLike, lift, tipsize float64) (kernel [3]*
 				xw := wrap(ix, size[X])
 
 				for s := 0; s < 3; s++ { // source index Ksxyz
-					m := data_old.Vector{0, 0, 0}
+					m := vector.Vector{0, 0, 0}
 					m[s] = 1
 
 					var E [3]float64 // 3 energies for 2nd derivative
 
 					for i := -1; i <= 1; i++ {
 						I := float64(i)
-						R := data_old.Vector{-x, -y, z - (lift + (I * Δ))}
+						R := vector.Vector{-x, -y, z - (lift + (I * Δ))}
 						r := R.Len()
 						B := R.Mul(TipCharge / (4 * math.Pi * r * r * r))
 
-						R = data_old.Vector{-x, -y, z - (lift + tipsize + (I * Δ))}
+						R = vector.Vector{-x, -y, z - (lift + tipsize + (I * Δ))}
 						r = R.Len()
 						B = B.Add(R.Mul(-TipCharge / (4 * math.Pi * r * r * r)))
 
