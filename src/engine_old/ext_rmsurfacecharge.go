@@ -6,8 +6,8 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/mag_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
-	"github.com/MathieuMoalic/amumax/src/mag"
 )
 
 // For a nanowire magnetized in-plane, with mx = mxLeft on the left end and
@@ -22,7 +22,7 @@ func removeLRSurfaceCharge(region int, mxLeft, mxRight float64) {
 	log_old.AssertMsg(mxRight == 1 || mxRight == -1,
 		"Invalid value for mxRight: must be either +1 or -1 in removeLRSurfaceCharge")
 
-	bsat := Msat.GetRegion(region) * mag.Mu0
+	bsat := Msat.GetRegion(region) * mag_old.Mu0
 	log_old.AssertMsg(bsat != 0,
 		"RemoveSurfaceCharges: Msat is zero in region "+fmt.Sprint(region))
 

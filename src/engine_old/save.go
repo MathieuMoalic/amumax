@@ -11,7 +11,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
-	"github.com/MathieuMoalic/amumax/src/oommf"
+	"github.com/MathieuMoalic/amumax/src/engine_old/oommf_old"
 )
 
 func init() {
@@ -60,7 +60,7 @@ func saveAsOVF(q Quantity, fname string) {
 	}
 	buffer := ValueOf(q) // TODO: check and optimize for Buffer()
 	defer cuda_old.Recycle(buffer)
-	info := oommf.Meta{Time: Time, Name: nameOf(q), Unit: unitOf(q), CellSize: MeshOf(q).CellSize()}
+	info := oommf_old.Meta{Time: Time, Name: nameOf(q), Unit: unitOf(q), CellSize: MeshOf(q).CellSize()}
 	data := buffer.HostCopy() // must be copy (async io)
 	queOutput(func() { saveAs_sync(fname, data, info, outputFormat) })
 }
@@ -103,20 +103,20 @@ func snapshot_sync(fname string, output *data_old.Slice) {
 }
 
 // synchronous save
-func saveAs_sync(fname string, s *data_old.Slice, info oommf.Meta, format outputFormatType) {
+func saveAs_sync(fname string, s *data_old.Slice, info oommf_old.Meta, format outputFormatType) {
 	f, err := fsutil_old.Create(fname)
 	log_old.Log.PanicIfError(err)
 	defer f.Close()
 
 	switch format {
 	case OVF1_TEXT:
-		oommf.WriteOVF1(f, s, info, "text")
+		oommf_old.WriteOVF1(f, s, info, "text")
 	case OVF1_BINARY:
-		oommf.WriteOVF1(f, s, info, "binary 4")
+		oommf_old.WriteOVF1(f, s, info, "binary 4")
 	case OVF2_TEXT:
-		oommf.WriteOVF2(f, s, info, "text")
+		oommf_old.WriteOVF2(f, s, info, "text")
 	case OVF2_BINARY:
-		oommf.WriteOVF2(f, s, info, "binary 4")
+		oommf_old.WriteOVF2(f, s, info, "binary 4")
 	default:
 		panic("invalid output format")
 	}
