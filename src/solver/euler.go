@@ -1,15 +1,15 @@
 package solver
 
 import (
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Euler method
 func (s *Solver) euler() {
 	y := NormMag.Buffer()
-	dy0 := cuda.Buffer(3, y.Size())
-	defer cuda.Recycle(dy0)
+	dy0 := cuda_old.Buffer(3, y.Size())
+	defer cuda_old.Recycle(dy0)
 
 	s.torqueFn(dy0)
 	s.setMaxTorque(dy0)
@@ -27,7 +27,7 @@ func (s *Solver) euler() {
 	log_old.AssertMsg(dt > 0, "Euler solver requires fixed time step > 0")
 	s.setLastErr(float64(dt) * s.lastTorque)
 
-	cuda.Madd2(y, y, dy0, 1, dt) // y = y + dt * dy
+	cuda_old.Madd2(y, y, dy0, 1, dt) // y = y + dt * dy
 	NormMag.normalize()
 	s.Time += s.dt_si
 	s.NSteps++

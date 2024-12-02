@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 )
@@ -35,11 +35,11 @@ func (m *magnetization) Type() reflect.Type       { return reflect.TypeOf(new(ma
 func (m *magnetization) Eval() interface{}        { return m }
 func (m *magnetization) average() []float64       { return sAverageMagnet(NormMag.Buffer()) }
 func (m *magnetization) Average() data_old.Vector { return unslice(m.average()) }
-func (m *magnetization) normalize()               { cuda.Normalize(m.Buffer(), Geometry.Gpu()) }
+func (m *magnetization) normalize()               { cuda_old.Normalize(m.Buffer(), Geometry.Gpu()) }
 
 // allocate storage (not done by init, as mesh size may not yet be known then)
 func (m *magnetization) Alloc() {
-	m.buffer_ = cuda.NewSlice(3, m.Mesh().Size())
+	m.buffer_ = cuda_old.NewSlice(3, m.Mesh().Size())
 	m.Set(randomMag()) // sane starting config
 }
 
@@ -80,15 +80,15 @@ func (m *magnetization) SetCell(ix, iy, iz int, v data_old.Vector) {
 	}
 	vNorm := v.Len()
 	for c := 0; c < 3; c++ {
-		cuda.SetCell(m.Buffer(), c, ix, iy, iz, float32(v[c]/vNorm))
+		cuda_old.SetCell(m.Buffer(), c, ix, iy, iz, float32(v[c]/vNorm))
 	}
 }
 
 // Get the value of one cell.
 func (m *magnetization) GetCell(ix, iy, iz int) data_old.Vector {
-	mx := float64(cuda.GetCell(m.Buffer(), X, ix, iy, iz))
-	my := float64(cuda.GetCell(m.Buffer(), Y, ix, iy, iz))
-	mz := float64(cuda.GetCell(m.Buffer(), Z, ix, iy, iz))
+	mx := float64(cuda_old.GetCell(m.Buffer(), X, ix, iy, iz))
+	my := float64(cuda_old.GetCell(m.Buffer(), Y, ix, iy, iz))
+	mz := float64(cuda_old.GetCell(m.Buffer(), Z, ix, iy, iz))
 	return vector(mx, my, mz)
 }
 

@@ -11,7 +11,7 @@ in objects that provide:
 import (
 	"fmt"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 )
@@ -40,7 +40,7 @@ func (g *valueFunc) average() []float64 { return g.get() }
 func (g *valueFunc) EvalTo(dst *data_old.Slice) {
 	v := g.get()
 	for c, v := range v {
-		cuda.Memset(dst.Comp(c), float32(v))
+		cuda_old.Memset(dst.Comp(c), float32(v))
 	}
 }
 
@@ -107,8 +107,8 @@ func (c *fieldFunc) EvalTo(dst *data_old.Slice) { evalTo(c, dst) }
 // Calculates and returns the quantity.
 // recycle is true: slice needs to be recycled.
 func (q *fieldFunc) Slice() (s *data_old.Slice, recycle bool) {
-	buf := cuda.Buffer(q.NComp(), q.Mesh().Size())
-	cuda.Zero(buf)
+	buf := cuda_old.Buffer(q.NComp(), q.Mesh().Size())
+	cuda_old.Zero(buf)
 	q.f(buf)
 	return buf, true
 }
@@ -158,6 +158,6 @@ func (v VectorField) Name() string             { return nameOf(v.Quantity) }
 func (v VectorField) Unit() string             { return unitOf(v.Quantity) }
 func (v VectorField) HostCopy() *data_old.Slice {
 	s := ValueOf(v.Quantity)
-	defer cuda.Recycle(s)
+	defer cuda_old.Recycle(s)
 	return s.HostCopy()
 }

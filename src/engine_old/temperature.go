@@ -1,8 +1,8 @@
 package engine_old
 
 import (
-	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/cuda/curand"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/curand"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
@@ -39,7 +39,7 @@ func init() {
 func (b *thermField) AddTo(dst *data_old.Slice) {
 	if !Temp.isZero() {
 		b.update()
-		cuda.Add(dst, dst, b.noise)
+		cuda_old.Add(dst, dst, b.noise)
 	}
 }
 
@@ -55,14 +55,14 @@ func (b *thermField) update() {
 		b.generator.SetSeed(b.seed)
 	}
 	if b.noise == nil {
-		b.noise = cuda.NewSlice(b.NComp(), b.Mesh().Size())
+		b.noise = cuda_old.NewSlice(b.NComp(), b.Mesh().Size())
 		// when noise was (re-)allocated it's invalid for sure.
 		B_therm.step = -1
 		B_therm.dt = -1
 	}
 
 	if Temp.isZero() {
-		cuda.Memset(b.noise, 0, 0, 0)
+		cuda_old.Memset(b.noise, 0, 0, 0)
 		b.step = NSteps
 		b.dt = Dt_si
 		return
@@ -76,7 +76,7 @@ func (b *thermField) update() {
 	// after a bad step the timestep is rescaled and the noise should be rescaled accordingly, instead of redrawing the random numbers
 	if NSteps == b.step && Dt_si != b.dt {
 		for c := 0; c < 3; c++ {
-			cuda.Madd2(b.noise.Comp(c), b.noise.Comp(c), b.noise.Comp(c), float32(math.Sqrt(b.dt/Dt_si)), 0.)
+			cuda_old.Madd2(b.noise.Comp(c), b.noise.Comp(c), b.noise.Comp(c), float32(math.Sqrt(b.dt/Dt_si)), 0.)
 		}
 		b.dt = Dt_si
 		return
@@ -90,8 +90,8 @@ func (b *thermField) update() {
 			"an odd number of cells: %v. This may cause a CURAND_STATUS_LENGTH_NOT_MULTIPLE error.", GetMesh().Size())
 	}
 	k2_VgammaDt := 2 * mag.Kb / (gammaLL * cellVolume() * Dt_si)
-	noise := cuda.Buffer(1, GetMesh().Size())
-	defer cuda.Recycle(noise)
+	noise := cuda_old.Buffer(1, GetMesh().Size())
+	defer cuda_old.Recycle(noise)
 
 	const mean = 0
 	const stddev = 1
@@ -104,7 +104,7 @@ func (b *thermField) update() {
 	defer alpha.Recycle()
 	for i := 0; i < 3; i++ {
 		b.generator.GenerateNormal(uintptr(noise.DevPtr(0)), int64(N), mean, stddev)
-		cuda.SetTemperature(dst.Comp(i), noise, k2_VgammaDt, ms, temp, alpha)
+		cuda_old.SetTemperature(dst.Comp(i), noise, k2_VgammaDt, ms, temp, alpha)
 	}
 
 	b.step = NSteps

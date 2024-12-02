@@ -7,8 +7,8 @@ import (
 	"math"
 	"unsafe"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/cuda/cu"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
@@ -49,11 +49,11 @@ func addExchangeField(dst *data_old.Slice) {
 	defer ms.Recycle()
 	switch {
 	case !inter && !bulk:
-		cuda.AddExchange(dst, NormMag.Buffer(), lex2.Gpu(), ms, Regions.Gpu(), NormMag.Mesh())
+		cuda_old.AddExchange(dst, NormMag.Buffer(), lex2.Gpu(), ms, Regions.Gpu(), NormMag.Mesh())
 	case inter && !bulk:
-		cuda.AddDMI(dst, NormMag.Buffer(), lex2.Gpu(), din2.Gpu(), ms, Regions.Gpu(), NormMag.Mesh(), OpenBC) // dmi+exchange
+		cuda_old.AddDMI(dst, NormMag.Buffer(), lex2.Gpu(), din2.Gpu(), ms, Regions.Gpu(), NormMag.Mesh(), OpenBC) // dmi+exchange
 	case bulk && !inter:
-		cuda.AddDMIBulk(dst, NormMag.Buffer(), lex2.Gpu(), dbulk2.Gpu(), ms, Regions.Gpu(), NormMag.Mesh(), OpenBC) // dmi+exchange
+		cuda_old.AddDMIBulk(dst, NormMag.Buffer(), lex2.Gpu(), dbulk2.Gpu(), ms, Regions.Gpu(), NormMag.Mesh(), OpenBC) // dmi+exchange
 		// TODO: add ScaleInterDbulk and InterDbulk
 	case inter && bulk:
 		log_old.Log.ErrAndExit("Cannot have interfacial-induced DMI and bulk DMI at the same time")
@@ -62,12 +62,12 @@ func addExchangeField(dst *data_old.Slice) {
 
 // Set dst to the average exchange coupling per cell (average of lex2 with all neighbors).
 func exchangeDecode(dst *data_old.Slice) {
-	cuda.ExchangeDecode(dst, lex2.Gpu(), Regions.Gpu(), NormMag.Mesh())
+	cuda_old.ExchangeDecode(dst, lex2.Gpu(), Regions.Gpu(), NormMag.Mesh())
 }
 
 // Set dst to the average dmi coupling per cell (average of din2 with all neighbors).
 func dindDecode(dst *data_old.Slice) {
-	cuda.ExchangeDecode(dst, din2.Gpu(), Regions.Gpu(), NormMag.Mesh())
+	cuda_old.ExchangeDecode(dst, din2.Gpu(), Regions.Gpu(), NormMag.Mesh())
 }
 
 // Returns the current exchange energy in Joules.
@@ -103,7 +103,7 @@ type exchParam struct {
 	lut            [NREGION * (NREGION + 1) / 2]float32 // harmonic mean of regions (i,j)
 	scale          [NREGION * (NREGION + 1) / 2]float32 // extra scale factor for lut[SymmIdx(i, j)]
 	inter          [NREGION * (NREGION + 1) / 2]float32 // extra term for lut[SymmIdx(i, j)]
-	gpu            cuda.SymmLUT                         // gpu copy of lut, lazily transferred when needed
+	gpu            cuda_old.SymmLUT                     // gpu copy of lut, lazily transferred when needed
 	gpu_ok, cpu_ok bool                                 // gpu cache up-to date with lut source
 }
 
@@ -123,7 +123,7 @@ func (p *exchParam) init(parent *regionwiseScalar) {
 
 // Get a GPU mirror of the look-up table.
 // Copies to GPU first only if needed.
-func (p *exchParam) Gpu() cuda.SymmLUT {
+func (p *exchParam) Gpu() cuda_old.SymmLUT {
 	p.update()
 	if !p.gpu_ok {
 		p.upload()
@@ -164,10 +164,10 @@ func (p *exchParam) update() {
 func (p *exchParam) upload() {
 	// alloc if  needed
 	if p.gpu == nil {
-		p.gpu = cuda.SymmLUT(cuda.MemAlloc(int64(len(p.lut)) * cu.SIZEOF_FLOAT32))
+		p.gpu = cuda_old.SymmLUT(cuda_old.MemAlloc(int64(len(p.lut)) * cu.SIZEOF_FLOAT32))
 	}
 	lut := p.lut // Copy, to work around Go 1.6 cgo pointer limitations.
-	cuda.MemCpyHtoD(unsafe.Pointer(p.gpu), unsafe.Pointer(&lut[0]), cu.SIZEOF_FLOAT32*int64(len(p.lut)))
+	cuda_old.MemCpyHtoD(unsafe.Pointer(p.gpu), unsafe.Pointer(&lut[0]), cu.SIZEOF_FLOAT32*int64(len(p.lut)))
 	p.gpu_ok = true
 }
 

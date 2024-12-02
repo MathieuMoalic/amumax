@@ -1,7 +1,7 @@
 package engine_old
 
 import (
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
@@ -32,14 +32,14 @@ func shift(dx int) {
 }
 
 func shiftMag(m *data_old.Slice, dx int) {
-	m2 := cuda.Buffer(1, m.Size())
-	defer cuda.Recycle(m2)
+	m2 := cuda_old.Buffer(1, m.Size())
+	defer cuda_old.Recycle(m2)
 	for c := 0; c < m.NComp(); c++ {
 		comp := m.Comp(c)
 		if EdgeCarryShift {
-			cuda.ShiftEdgeCarryX(m2, comp, m.Comp((c+1)%3), m.Comp((c+2)%3), dx, float32(shiftMagL[c]), float32(shiftMagL[c]))
+			cuda_old.ShiftEdgeCarryX(m2, comp, m.Comp((c+1)%3), m.Comp((c+2)%3), dx, float32(shiftMagL[c]), float32(shiftMagL[c]))
 		} else {
-			cuda.ShiftX(m2, comp, dx, float32(shiftMagL[c]), float32(shiftMagL[c]))
+			cuda_old.ShiftX(m2, comp, dx, float32(shiftMagL[c]), float32(shiftMagL[c]))
 		}
 		data_old.Copy(comp, m2) // str0 ?
 	}
@@ -61,14 +61,14 @@ func yShift(dy int) {
 }
 
 func shiftMagY(m *data_old.Slice, dy int) {
-	m2 := cuda.Buffer(1, m.Size())
-	defer cuda.Recycle(m2)
+	m2 := cuda_old.Buffer(1, m.Size())
+	defer cuda_old.Recycle(m2)
 	for c := 0; c < m.NComp(); c++ {
 		comp := m.Comp(c)
 		if EdgeCarryShift {
-			cuda.ShiftEdgeCarryX(m2, comp, m.Comp((c+1)%3), m.Comp((c+2)%3), dy, float32(shiftMagL[c]), float32(shiftMagL[c]))
+			cuda_old.ShiftEdgeCarryX(m2, comp, m.Comp((c+1)%3), m.Comp((c+2)%3), dy, float32(shiftMagL[c]), float32(shiftMagL[c]))
 		} else {
-			cuda.ShiftX(m2, comp, dy, float32(shiftMagL[c]), float32(shiftMagL[c]))
+			cuda_old.ShiftX(m2, comp, dy, float32(shiftMagL[c]), float32(shiftMagL[c]))
 		}
 		data_old.Copy(comp, m2) // str0 ?
 	}
