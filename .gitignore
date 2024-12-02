@@ -43,3 +43,4 @@ src/api/static
 .go
 node_modules
 **/.svelte-kit
+src/engine_old/api_old/static
