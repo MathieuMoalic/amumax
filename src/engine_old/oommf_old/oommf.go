@@ -1,5 +1,5 @@
 // package oommf provides the OVF data format as used by OOMMF.
-package oommf
+package oommf_old
 
 import (
 	"bufio"
