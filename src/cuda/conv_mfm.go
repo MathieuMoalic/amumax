@@ -4,7 +4,7 @@ package cuda
 
 import (
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
-	"github.com/MathieuMoalic/amumax/src/mag"
+	"github.com/MathieuMoalic/amumax/src/engine_old/mag_old"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
@@ -90,13 +90,13 @@ func (c *MFMConvolution) Exec(outp, inp, vol *data_old.Slice, Msat MSlice) {
 }
 
 func (c *MFMConvolution) Reinit(lift, tipsize float64, cachedir string) {
-	c.kern = mag.MFMKernel(c.mesh, lift, tipsize, cachedir)
+	c.kern = mag_old.MFMKernel(c.mesh, lift, tipsize, cachedir)
 	c.initFFTKern3D()
 }
 
 // Initializes a convolution to evaluate the demag field for the given mesh geometry.
 func NewMFM(mesh mesh.MeshLike, lift, tipsize float64, cachedir string) *MFMConvolution {
-	k := mag.MFMKernel(mesh, lift, tipsize, cachedir)
+	k := mag_old.MFMKernel(mesh, lift, tipsize, cachedir)
 	size := mesh.Size()
 	c := new(MFMConvolution)
 	c.size = size

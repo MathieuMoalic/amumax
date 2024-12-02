@@ -7,8 +7,8 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/mag_old"
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/MathieuMoalic/amumax/src/mag"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/progressbar"
 	"github.com/MathieuMoalic/amumax/src/regions"
@@ -303,7 +303,7 @@ func (s *Solver) checkExchangeLenght() {
 	for _, region := range existingRegions {
 		Msat_r := Msat.GetRegion(region)
 		Aex_r := Aex.GetRegion(region)
-		lex := math.Sqrt(2 * Aex_r / (mag.Mu0 * Msat_r * Msat_r))
+		lex := math.Sqrt(2 * Aex_r / (mag_old.Mu0 * Msat_r * Msat_r))
 		if !s.exchangeLengthWarned {
 			if s.mesh.Dx > lex {
 				s.log.Warn("Warning: Exchange length (%.3g nm) smaller than dx (%.3g nm) in region %d", lex*1e9, s.mesh.Dx*1e9, region)

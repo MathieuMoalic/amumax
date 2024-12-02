@@ -1,4 +1,4 @@
-package mag
+package mag_old
 
 import (
 	"fmt"

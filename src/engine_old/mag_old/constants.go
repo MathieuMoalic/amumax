@@ -1,5 +1,5 @@
 // package mag provides magnetism-specific constants and the demag kernel.
-package mag
+package mag_old
 
 import "math"
 
