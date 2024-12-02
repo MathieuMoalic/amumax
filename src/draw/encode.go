@@ -11,10 +11,10 @@ import (
 	"path"
 	"strings"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
-func RenderFormat(out io.Writer, f *data.Slice, min, max string, arrowSize int, format string, colormap ...ColorMapSpec) error {
+func RenderFormat(out io.Writer, f *data_old.Slice, min, max string, arrowSize int, format string, colormap ...ColorMapSpec) error {
 	var codecs = map[string]codec{".png": pngfull, ".jpg": jpeg100, ".gif": gif256}
 	ext := strings.ToLower(path.Ext(format))
 	enc := codecs[ext]
@@ -28,7 +28,7 @@ func RenderFormat(out io.Writer, f *data.Slice, min, max string, arrowSize int, 
 type codec func(io.Writer, image.Image) error
 
 // render data and encode with arbitrary codec.
-func render(out io.Writer, f *data.Slice, min, max string, arrowSize int, encode codec, colormap ...ColorMapSpec) error {
+func render(out io.Writer, f *data_old.Slice, min, max string, arrowSize int, encode codec, colormap ...ColorMapSpec) error {
 	img := createRGBAImage(f, min, max, arrowSize, colormap...)
 	buf := bufio.NewWriter(out)
 	defer buf.Flush()

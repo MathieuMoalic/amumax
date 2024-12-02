@@ -4,7 +4,7 @@ import (
 	"sort"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 )
@@ -53,7 +53,7 @@ func (r *RegionsState) redefine(startId, endId int) {
 
 func ShapeFromRegion(id int) shape {
 	return func(x, y, z float64) bool {
-		return Regions.get(data.Vector{x, y, z}) == id
+		return Regions.get(data_old.Vector{x, y, z}) == id
 	}
 }
 
@@ -126,7 +126,7 @@ func (r *RegionsState) render(f func(x, y, z float64) int) {
 }
 
 // get the region for position R based on the history
-func (r *RegionsState) get(R data.Vector) int {
+func (r *RegionsState) get(R data_old.Vector) int {
 	// reverse order, last one set wins.
 	for i := len(r.hist) - 1; i >= 0; i-- {
 		f := r.hist[i]
@@ -150,7 +150,7 @@ func (r *RegionsState) RegionListCPU() []byte {
 
 func DefRegionCell(id int, x, y, z int) {
 	defRegionId(id)
-	index := data.Index(GetMesh().Size(), x, y, z)
+	index := data_old.Index(GetMesh().Size(), x, y, z)
 	Regions.gpuBuffer.Set(index, byte(id))
 }
 
@@ -167,14 +167,14 @@ func (r *RegionsState) Average() float64 { return r.average()[0] }
 // Set the region of one cell
 func (r *RegionsState) SetCell(ix, iy, iz int, region int) {
 	size := GetMesh().Size()
-	i := data.Index(size, ix, iy, iz)
+	i := data_old.Index(size, ix, iy, iz)
 	r.gpuBuffer.Set(i, byte(region))
 	r.AddIndex(region)
 }
 
 func (r *RegionsState) GetCell(ix, iy, iz int) int {
 	size := GetMesh().Size()
-	i := data.Index(size, ix, iy, iz)
+	i := data_old.Index(size, ix, iy, iz)
 	return int(r.gpuBuffer.Get(i))
 }
 
@@ -215,13 +215,13 @@ func init() {
 }
 
 // Get returns the regions as a slice of floats, so it can be output.
-func (r *RegionsState) Slice() (*data.Slice, bool) {
+func (r *RegionsState) Slice() (*data_old.Slice, bool) {
 	buf := cuda.Buffer(1, r.Mesh().Size())
 	cuda.RegionDecode(buf, unitMap.gpuLUT1(), Regions.Gpu())
 	return buf, true
 }
 
-func (r *RegionsState) EvalTo(dst *data.Slice) { evalTo(r, dst) }
+func (r *RegionsState) EvalTo(dst *data_old.Slice) { evalTo(r, dst) }
 
 var _ Quantity = &Regions
 

@@ -1,14 +1,14 @@
 package cuda
 
 import (
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 // shift dst by shx cells (positive or negative) along X-axis.
 // new edge value is clampL at left edge or clampR at right edge.
-func ShiftX(dst, src *data.Slice, shiftX int, clampL, clampR float32) {
+func ShiftX(dst, src *data_old.Slice, shiftX int, clampL, clampR float32) {
 	log_old.AssertMsg(dst.NComp() == 1 && src.NComp() == 1, "Component mismatch: dst and src must both have 1 component in ShiftX")
 	log_old.AssertMsg(dst.Len() == src.Len(), "Length mismatch: dst and src must have the same length in ShiftX")
 	N := dst.Size()
@@ -23,7 +23,7 @@ func ShiftX(dst, src *data.Slice, shiftX int, clampL, clampR float32) {
 // also required to pass the two other vector components `othercomp` and `anothercomp` to this function.
 // In cells where the vector (`src`, `othercomp`, `anothercomp`) is the zero-vector,
 // `clampL` or `clampR` is used for the component `src` instead.
-func ShiftEdgeCarryX(dst, src, othercomp, anothercomp *data.Slice, shiftX int, clampL, clampR float32) {
+func ShiftEdgeCarryX(dst, src, othercomp, anothercomp *data_old.Slice, shiftX int, clampL, clampR float32) {
 	log_old.AssertMsg(dst.NComp() == 1 && src.NComp() == 1 && othercomp.NComp() == 1 && anothercomp.NComp() == 1, "Component mismatch: dst, src, othercomp and anothercomp must all have 1 component in ShiftEdgeCarryX")
 	log_old.AssertMsg(dst.Len() == src.Len(), "Length mismatch: dst and src must have the same length in ShiftEdgeCarryX")
 	N := dst.Size()
@@ -31,7 +31,7 @@ func ShiftEdgeCarryX(dst, src, othercomp, anothercomp *data.Slice, shiftX int, c
 	k_shiftedgecarryX_async(dst.DevPtr(0), src.DevPtr(0), othercomp.DevPtr(0), anothercomp.DevPtr(0), N[X], N[Y], N[Z], shiftX, clampL, clampR, cfg)
 }
 
-func ShiftY(dst, src *data.Slice, shiftY int, clampL, clampR float32) {
+func ShiftY(dst, src *data_old.Slice, shiftY int, clampL, clampR float32) {
 	log_old.AssertMsg(dst.NComp() == 1 && src.NComp() == 1, "Component mismatch: dst and src must both have 1 component in ShiftY")
 	log_old.AssertMsg(dst.Len() == src.Len(), "Length mismatch: dst and src must have the same length in ShiftY")
 	N := dst.Size()
@@ -46,7 +46,7 @@ func ShiftY(dst, src *data.Slice, shiftY int, clampL, clampR float32) {
 // also required to pass the two other vector components `othercomp` and `anothercomp` to this function.
 // In cells where the vector (`src`, `othercomp`, `anothercomp`) is the zero-vector,
 // `clampD` or `clampU` is used for the component `src` instead.
-func ShiftEdgeCarry(dst, src, othercomp, anothercomp *data.Slice, shiftY int, clampL, clampR float32) {
+func ShiftEdgeCarry(dst, src, othercomp, anothercomp *data_old.Slice, shiftY int, clampL, clampR float32) {
 	log_old.AssertMsg(dst.NComp() == 1 && src.NComp() == 1 && othercomp.NComp() == 1 && anothercomp.NComp() == 1, "Component mismatch: dst, src, othercomp and anothercomp must all have 1 component in ShiftEdgeCarry")
 	log_old.AssertMsg(dst.Len() == src.Len(), "Length mismatch: dst and src must have the same length in ShiftEdgeCarry")
 	N := dst.Size()
@@ -54,7 +54,7 @@ func ShiftEdgeCarry(dst, src, othercomp, anothercomp *data.Slice, shiftY int, cl
 	k_shiftedgecarryY_async(dst.DevPtr(0), src.DevPtr(0), othercomp.DevPtr(0), anothercomp.DevPtr(0), N[X], N[Y], N[Z], shiftY, clampL, clampR, cfg)
 }
 
-func ShiftZ(dst, src *data.Slice, shiftZ int, clampL, clampR float32) {
+func ShiftZ(dst, src *data_old.Slice, shiftZ int, clampL, clampR float32) {
 	log_old.AssertMsg(dst.NComp() == 1 && src.NComp() == 1, "Component mismatch: dst and src must both have 1 component in ShiftZ")
 	log_old.AssertMsg(dst.Len() == src.Len(), "Length mismatch: dst and src must have the same length in ShiftZ")
 	N := dst.Size()

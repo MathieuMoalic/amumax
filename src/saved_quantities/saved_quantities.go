@@ -9,7 +9,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/chunk"
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/quantity"
@@ -76,7 +76,7 @@ func (sq *SavedQuantity) save() {
 }
 
 // syncSave writes the data slice into chunked, compressed files compatible with the Zarr format.
-func (sq *SavedQuantity) syncSave(array *data.Slice, qname string, step int, chunks chunk.Chunks) error {
+func (sq *SavedQuantity) syncSave(array *data_old.Slice, qname string, step int, chunks chunk.Chunks) error {
 	data := array.Tensors()
 	size := array.Size()
 	ncomp := array.NComp()

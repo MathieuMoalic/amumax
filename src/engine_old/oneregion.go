@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 )
@@ -25,7 +25,7 @@ func (q *sOneReg) Average() float64 { return q.average()[0] }
 
 type vOneReg struct{ oneReg }
 
-func (q *vOneReg) Average() data.Vector { return unslice(q.average()) }
+func (q *vOneReg) Average() data_old.Vector { return unslice(q.average()) }
 
 // represents a new quantity equal to q in the given region, 0 outside.
 type oneReg struct {
@@ -37,14 +37,14 @@ func inRegion(q Quantity, region int) Quantity {
 	return &oneReg{q, region}
 }
 
-func (q *oneReg) NComp() int             { return q.parent.NComp() }
-func (q *oneReg) Name() string           { return fmt.Sprint(nameOf(q.parent), ".region", q.region) }
-func (q *oneReg) Unit() string           { return unitOf(q.parent) }
-func (q *oneReg) Mesh() *mesh_old.Mesh   { return MeshOf(q.parent) }
-func (q *oneReg) EvalTo(dst *data.Slice) { evalTo(q, dst) }
+func (q *oneReg) NComp() int                 { return q.parent.NComp() }
+func (q *oneReg) Name() string               { return fmt.Sprint(nameOf(q.parent), ".region", q.region) }
+func (q *oneReg) Unit() string               { return unitOf(q.parent) }
+func (q *oneReg) Mesh() *mesh_old.Mesh       { return MeshOf(q.parent) }
+func (q *oneReg) EvalTo(dst *data_old.Slice) { evalTo(q, dst) }
 
 // returns a new slice equal to q in the given region, 0 outside.
-func (q *oneReg) Slice() (*data.Slice, bool) {
+func (q *oneReg) Slice() (*data_old.Slice, bool) {
 	src := ValueOf(q.parent)
 	defer cuda.Recycle(src)
 	out := cuda.Buffer(q.NComp(), q.Mesh().Size())

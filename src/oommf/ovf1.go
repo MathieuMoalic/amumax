@@ -7,11 +7,11 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
-func WriteOVF1(out io.Writer, q *data.Slice, meta Meta, dataformat string) {
+func WriteOVF1(out io.Writer, q *data_old.Slice, meta Meta, dataformat string) {
 	if q.NComp() != 3 {
 		log_old.Log.ErrAndExit("Cannot save the quantity: the OVF1 format only supports 3D-vector fields.")
 	}
@@ -20,7 +20,7 @@ func WriteOVF1(out io.Writer, q *data.Slice, meta Meta, dataformat string) {
 	hdr(out, "End", "Segment")
 }
 
-func writeOVF1Data(out io.Writer, q *data.Slice, dataformat string) {
+func writeOVF1Data(out io.Writer, q *data_old.Slice, dataformat string) {
 	canonicalFormat := ""
 	switch strings.ToLower(dataformat) {
 	case "text":
@@ -38,7 +38,7 @@ func writeOVF1Data(out io.Writer, q *data.Slice, dataformat string) {
 }
 
 // Writes the OMF header
-func writeOVF1Header(out io.Writer, q *data.Slice, meta Meta) {
+func writeOVF1Header(out io.Writer, q *data_old.Slice, meta Meta) {
 	gridsize := q.Size()
 	cellsize := meta.CellSize
 
@@ -76,7 +76,7 @@ func writeOVF1Header(out io.Writer, q *data.Slice, meta Meta) {
 }
 
 // Writes data in OMF Binary 4 format
-func writeOVF1Binary4(out io.Writer, array *data.Slice) (err error) {
+func writeOVF1Binary4(out io.Writer, array *data_old.Slice) (err error) {
 	data := array.Tensors()
 	gridsize := array.Size()
 
@@ -107,7 +107,7 @@ func writeOVF1Binary4(out io.Writer, array *data.Slice) (err error) {
 	return
 }
 
-func readOVF1DataBinary4(in io.Reader, t *data.Slice) {
+func readOVF1DataBinary4(in io.Reader, t *data_old.Slice) {
 	size := t.Size()
 	data := t.Tensors()
 
@@ -135,7 +135,7 @@ func readOVF1DataBinary4(in io.Reader, t *data.Slice) {
 	}
 }
 
-func readOVF1DataBinary8(in io.Reader, t *data.Slice) {
+func readOVF1DataBinary8(in io.Reader, t *data_old.Slice) {
 	size := t.Size()
 	data := t.Tensors()
 

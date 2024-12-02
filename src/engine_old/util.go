@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/zarr_old"
@@ -20,21 +20,21 @@ func regionFromCoordinate(x, y, z int) int {
 }
 
 // Returns a new new slice (3D array) with given number of components and size.
-func newSlice(ncomp, Nx, Ny, Nz int) *data.Slice {
-	return data.NewSlice(ncomp, [3]int{Nx, Ny, Nz})
+func newSlice(ncomp, Nx, Ny, Nz int) *data_old.Slice {
+	return data_old.NewSlice(ncomp, [3]int{Nx, Ny, Nz})
 }
 
-func newVectorMask(Nx, Ny, Nz int) *data.Slice {
-	return data.NewSlice(3, [3]int{Nx, Ny, Nz})
+func newVectorMask(Nx, Ny, Nz int) *data_old.Slice {
+	return data_old.NewSlice(3, [3]int{Nx, Ny, Nz})
 }
 
-func newScalarMask(Nx, Ny, Nz int) *data.Slice {
-	return data.NewSlice(1, [3]int{Nx, Ny, Nz})
+func newScalarMask(Nx, Ny, Nz int) *data_old.Slice {
+	return data_old.NewSlice(1, [3]int{Nx, Ny, Nz})
 }
 
 // Constructs a vector
-func vector(x, y, z float64) data.Vector {
-	return data.Vector{x, y, z}
+func vector(x, y, z float64) data_old.Vector {
+	return data_old.Vector{x, y, z}
 }
 
 // Test if have lies within want +/- maxError,
@@ -50,7 +50,7 @@ func expect(msg string, have, want, maxError float64) {
 	// note: we also check "want" for NaN in case "have" and "want" are switched.
 }
 
-func expectV(msg string, have, want data.Vector, maxErr float64) {
+func expectV(msg string, have, want data_old.Vector, maxErr float64) {
 	for c := 0; c < 3; c++ {
 		expect(fmt.Sprintf("%v[%v]", msg, c), have[c], want[c], maxErr)
 	}
@@ -67,17 +67,17 @@ func fprintln(filename string, msg ...interface{}) {
 	log_old.Log.PanicIfError(err)
 }
 
-func loadFile(fname string) *data.Slice {
-	var s *data.Slice
+func loadFile(fname string) *data_old.Slice {
+	var s *data_old.Slice
 	s, err := zarr_old.Read(fname, OD())
 	log_old.Log.PanicIfError(err)
 	return s
 }
 
-func loadOvfFile(fname string) *data.Slice {
+func loadOvfFile(fname string) *data_old.Slice {
 	in, err := fsutil_old.Open(fname)
 	log_old.Log.PanicIfError(err)
-	var s *data.Slice
+	var s *data_old.Slice
 	s, _, err = oommf.Read(in)
 	log_old.Log.PanicIfError(err)
 	return s
@@ -85,7 +85,7 @@ func loadOvfFile(fname string) *data.Slice {
 
 // download a quantity to host,
 // or just return its data when already on host.
-func download(q Quantity) *data.Slice {
+func download(q Quantity) *data_old.Slice {
 	// TODO: optimize for Buffer()
 	buf := ValueOf(q)
 	defer cuda.Recycle(buf)
@@ -120,14 +120,14 @@ func customFmt(msg []interface{}) (fmtMsg string) {
 }
 
 // converts cell index to coordinate, internal coordinates
-func index2Coord(ix, iy, iz int) data.Vector {
+func index2Coord(ix, iy, iz int) data_old.Vector {
 	m := GetMesh()
 	n := m.Size()
 	c := m.CellSize()
 	x := c[X]*(float64(ix)-0.5*float64(n[X]-1)) - totalShift
 	y := c[Y]*(float64(iy)-0.5*float64(n[Y]-1)) - totalYShift
 	z := c[Z] * (float64(iz) - 0.5*float64(n[Z]-1))
-	return data.Vector{x, y, z}
+	return data_old.Vector{x, y, z}
 }
 
 func sign(x float64) float64 {
@@ -151,7 +151,7 @@ func unslice(v []float64) [3]float64 {
 	return [3]float64{v[0], v[1], v[2]}
 }
 
-func assureGPU(s *data.Slice) *data.Slice {
+func assureGPU(s *data_old.Slice) *data_old.Slice {
 	if s.GPUAccess() {
 		return s
 	} else {

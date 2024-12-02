@@ -6,17 +6,17 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
-func WriteOVF2(out io.Writer, q *data.Slice, meta Meta, dataformat string) {
+func WriteOVF2(out io.Writer, q *data_old.Slice, meta Meta, dataformat string) {
 	writeOVF2Header(out, q, meta)
 	writeOVF2Data(out, q, dataformat)
 	hdr(out, "End", "Segment")
 }
 
-func writeOVF2Header(out io.Writer, q *data.Slice, meta Meta) {
+func writeOVF2Header(out io.Writer, q *data_old.Slice, meta Meta) {
 	gridsize := q.Size()
 	cellsize := meta.CellSize
 
@@ -74,7 +74,7 @@ func writeOVF2Header(out io.Writer, q *data.Slice, meta Meta) {
 	hdr(out, "End", "Header")
 }
 
-func writeOVF2Data(out io.Writer, q *data.Slice, dataformat string) {
+func writeOVF2Data(out io.Writer, q *data_old.Slice, dataformat string) {
 	canonicalFormat := ""
 	switch strings.ToLower(dataformat) {
 	case "text":
@@ -91,7 +91,7 @@ func writeOVF2Data(out io.Writer, q *data.Slice, dataformat string) {
 	hdr(out, "End", "Data "+canonicalFormat)
 }
 
-func writeOVF2DataBinary4(out io.Writer, array *data.Slice) {
+func writeOVF2DataBinary4(out io.Writer, array *data_old.Slice) {
 
 	//w.count(w.out.Write((*(*[1<<31 - 1]byte)(unsafe.Pointer(&list[0])))[0 : 4*len(list)])) // (shortcut)
 
@@ -120,7 +120,7 @@ func writeOVF2DataBinary4(out io.Writer, array *data.Slice) {
 	}
 }
 
-func readOVF2DataBinary4(in io.Reader, array *data.Slice) {
+func readOVF2DataBinary4(in io.Reader, array *data_old.Slice) {
 	size := array.Size()
 	data := array.Tensors()
 
@@ -166,7 +166,7 @@ func readFloat64(in io.Reader) float64 {
 	return *((*float64)(unsafe.Pointer(&bytes8)))
 }
 
-func readOVF2DataBinary8(in io.Reader, array *data.Slice) {
+func readOVF2DataBinary8(in io.Reader, array *data_old.Slice) {
 	size := array.Size()
 	data := array.Tensors()
 

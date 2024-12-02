@@ -1,13 +1,13 @@
 package cuda
 
 import (
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Add uniaxial magnetocrystalline anisotropy field to Beff.
 // see uniaxialanisotropy.cu
-func AddCubicAnisotropy2(Beff, m *data.Slice, Msat, k1, k2, k3, c1, c2 MSlice) {
+func AddCubicAnisotropy2(Beff, m *data_old.Slice, Msat, k1, k2, k3, c1, c2 MSlice) {
 	log_old.AssertMsg(Beff.Size() == m.Size(), "AddCubicAnisotropy2: Size mismatch between Beff and m slices")
 
 	N := Beff.Len()
@@ -30,7 +30,7 @@ func AddCubicAnisotropy2(Beff, m *data.Slice, Msat, k1, k2, k3, c1, c2 MSlice) {
 
 // Add uniaxial magnetocrystalline anisotropy field to Beff.
 // see uniaxialanisotropy.cu
-func AddUniaxialAnisotropy2(Beff, m *data.Slice, Msat, k1, k2, u MSlice) {
+func AddUniaxialAnisotropy2(Beff, m *data_old.Slice, Msat, k1, k2, u MSlice) {
 	log_old.AssertMsg(Beff.Size() == m.Size(), "AddUniaxialAnisotropy2: Size mismatch between Beff and m slices")
 
 	checkSize(Beff, m, k1, k2, u, Msat)

@@ -4,7 +4,7 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/geometry"
 	"github.com/MathieuMoalic/amumax/src/mag_config"
 	"github.com/MathieuMoalic/amumax/src/mesh"
@@ -17,7 +17,7 @@ type Magnetization struct {
 	mesh     *mesh.Mesh
 	config   *mag_config.ConfigList
 	geometry *geometry.Geometry
-	Slice    *data.Slice
+	Slice    *data_old.Slice
 }
 
 func (m *Magnetization) Init(mesh *mesh.Mesh, config *mag_config.ConfigList, geometry *geometry.Geometry) {
@@ -28,12 +28,12 @@ func (m *Magnetization) Init(mesh *mesh.Mesh, config *mag_config.ConfigList, geo
 
 // These methods are defined for the Quantity interface
 
-func (m *Magnetization) Size() [3]int           { return m.Slice.Size() }
-func (m *Magnetization) EvalTo(dst *data.Slice) { data.Copy(dst, m.Slice) }
-func (m *Magnetization) NComp() int             { return 3 }
-func (m *Magnetization) Name() string           { return "m" }
-func (m *Magnetization) Unit() string           { return "" }
-func (m *Magnetization) Value() *data.Slice     { return m.Slice }
+func (m *Magnetization) Size() [3]int               { return m.Slice.Size() }
+func (m *Magnetization) EvalTo(dst *data_old.Slice) { data_old.Copy(dst, m.Slice) }
+func (m *Magnetization) NComp() int                 { return 3 }
+func (m *Magnetization) Name() string               { return "m" }
+func (m *Magnetization) Unit() string               { return "" }
+func (m *Magnetization) Value() *data_old.Slice     { return m.Slice }
 
 func (m *Magnetization) Average() []float64 {
 	s := m.Slice
@@ -72,11 +72,11 @@ func (m *Magnetization) InitializeBuffer() {
 	m.set(m.config.RandomMag()) // sane starting config
 }
 
-func (m *Magnetization) setArray(src *data.Slice) {
+func (m *Magnetization) setArray(src *data_old.Slice) {
 	if src.Size() != m.mesh.Size() {
-		src = data.Resample(src, m.mesh.Size())
+		src = data_old.Resample(src, m.mesh.Size())
 	}
-	data.Copy(m.Slice, src)
+	data_old.Copy(m.Slice, src)
 	m.Normalize()
 }
 

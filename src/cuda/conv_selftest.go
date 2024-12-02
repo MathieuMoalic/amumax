@@ -5,35 +5,35 @@ package cuda
 import (
 	"math/rand"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Compares FFT-accelerated convolution against brute-force on sparse data.
 // This is not really needed but very quickly uncovers newly introduced bugs.
-func testConvolution(c *DemagConvolution, PBC [3]int, realKern [3][3]*data.Slice) {
+func testConvolution(c *DemagConvolution, PBC [3]int, realKern [3][3]*data_old.Slice) {
 	if PBC != [3]int{0, 0, 0} {
 		// the brute-force method does not work for pbc.
 		log_old.Log.Info("skipping convolution self-test for PBC")
 		return
 	}
 	log_old.Log.Info("convolution self-test...")
-	inhost := data.NewSlice(3, c.inputSize)
+	inhost := data_old.NewSlice(3, c.inputSize)
 	initConvTestInput(inhost.Vectors())
 	gpu := NewSlice(3, c.inputSize)
 	defer gpu.Free()
-	data.Copy(gpu, inhost)
+	data_old.Copy(gpu, inhost)
 
 	Msat := NewSlice(1, [3]int{1, 1, 256})
 	defer Msat.Free()
 	Memset(Msat, 1)
 
-	vol := data.NilSlice(1, c.inputSize)
+	vol := data_old.NilSlice(1, c.inputSize)
 	c.Exec(gpu, gpu, vol, ToMSlice(Msat))
 
 	output := gpu.HostCopy()
 
-	brute := data.NewSlice(3, c.inputSize)
+	brute := data_old.NewSlice(3, c.inputSize)
 	bruteConv(inhost.Vectors(), brute.Vectors(), realKern)
 
 	a, b := output.Host(), brute.Host()
@@ -62,7 +62,7 @@ const CONV_TOLERANCE = 1e-6
 //	(O0)   (K01 K02 K03)   (I0)
 //	(O1) = (K11 K12 K13) * (I1)
 //	(O2)   (K21 K22 K23)   (I2)
-func bruteConv(in, out [3][][][]float32, kernel [3][3]*data.Slice) {
+func bruteConv(in, out [3][][][]float32, kernel [3][3]*data_old.Slice) {
 
 	var kern [3][3][][][]float32
 	for i := range kern {

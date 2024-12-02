@@ -4,7 +4,7 @@ import (
 	"sort"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/shape"
@@ -143,7 +143,7 @@ func (r *Regions) render(f func(x, y, z float64) int) {
 }
 
 // get the region for position R based on the history
-func (r *Regions) get(R data.Vector) int {
+func (r *Regions) get(R data_old.Vector) int {
 	// reverse order, last one set wins.
 	for i := len(r.hist) - 1; i >= 0; i-- {
 		f := r.hist[i]
@@ -182,7 +182,7 @@ func (r *Regions) Average() float64 {
 // Set the region of one cell
 func (r *Regions) setCell(ix, iy, iz int, region int) {
 	size := r.mesh.Size()
-	i := data.Index(size, ix, iy, iz)
+	i := data_old.Index(size, ix, iy, iz)
 	r.gpuBuffer.Set(i, byte(region))
 	r.addIndex(region)
 }
@@ -230,7 +230,7 @@ func (r *Regions) gpu() *cuda.Bytes {
 // }
 
 // Get returns the regions as a slice of floats, so it can be output.
-func (r *Regions) slice() (*data.Slice, bool) {
+func (r *Regions) slice() (*data_old.Slice, bool) {
 	buf := cuda.Buffer(1, r.mesh.Size())
 	// cuda.RegionDecode(buf, unitMap.gpuLUT1(), Regions.Gpu())
 	return buf, true

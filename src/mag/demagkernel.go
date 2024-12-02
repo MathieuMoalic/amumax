@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/DataDog/zstd"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/zarr_old"
@@ -17,7 +17,7 @@ import (
 
 // Obtains the demag kernel either from cacheDir/ or by calculating (and then storing in cacheDir for next time).
 // Empty cacheDir disables caching.
-func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cacheDir string, hideProgressBar bool) (kernel [3][3]*data.Slice) {
+func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cacheDir string, hideProgressBar bool) (kernel [3][3]*data_old.Slice) {
 	timer.Start("kernel_init")
 	timer.Stop("kernel_init") // warm-up
 
@@ -67,7 +67,7 @@ func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, ca
 	}
 }
 
-func bytesToKernel(kernelBytes []byte, size [3]int) (kernel [3][3]*data.Slice) {
+func bytesToKernel(kernelBytes []byte, size [3]int) (kernel [3][3]*data_old.Slice) {
 	offset := 0
 	sliceLength := size[X] * size[Y] * size[Z] * 4
 	for i := 0; i < 3; i++ {
@@ -87,7 +87,7 @@ func bytesToKernel(kernelBytes []byte, size [3]int) (kernel [3][3]*data.Slice) {
 	return
 }
 
-func kernelToBytes(kernel [3][3]*data.Slice) (bytes []byte) {
+func kernelToBytes(kernel [3][3]*data_old.Slice) (bytes []byte) {
 	for i := 0; i < 3; i++ {
 		for j := i; j < 3; j++ {
 			kernelBytes := sliceToBytes(kernel[i][j])
@@ -99,7 +99,7 @@ func kernelToBytes(kernel [3][3]*data.Slice) (bytes []byte) {
 	return bytes
 }
 
-func sliceToBytes(slice *data.Slice) (bytes []byte) {
+func sliceToBytes(slice *data_old.Slice) (bytes []byte) {
 	size := slice.Size()
 	if size[X] == 0 && size[Y] == 0 && size[Z] == 0 {
 		return
@@ -115,8 +115,8 @@ func sliceToBytes(slice *data.Slice) (bytes []byte) {
 	return bytes
 }
 
-func bytesToSlice(kernelBytes []byte, size [3]int) (slice *data.Slice) {
-	slice = data.NewSlice(1, size)
+func bytesToSlice(kernelBytes []byte, size [3]int) (slice *data_old.Slice) {
+	slice = data_old.NewSlice(1, size)
 	tensors := slice.Tensors()
 	count := 0
 	for iz := 0; iz < size[Z]; iz++ {
@@ -137,19 +137,19 @@ func kernelName(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cac
 	return fmt.Sprintf("%s/%s_%s_%s_%v.cache", cacheDir, sSize, sPBC, sCellsize, accuracy)
 }
 
-func loadKernel(fname string, size [3]int) ([3][3]*data.Slice, error) {
+func loadKernel(fname string, size [3]int) ([3][3]*data_old.Slice, error) {
 	compressedData, err := fsutil_old.Read(fname)
 	if err != nil {
-		return [3][3]*data.Slice{}, err
+		return [3][3]*data_old.Slice{}, err
 	}
 	kernelBytes, err := zstd.Decompress(nil, compressedData)
 	if err != nil {
-		return [3][3]*data.Slice{}, err
+		return [3][3]*data_old.Slice{}, err
 	}
 	return bytesToKernel(kernelBytes, size), nil
 }
 
-func saveKernel(fname string, kernel [3][3]*data.Slice) error {
+func saveKernel(fname string, kernel [3][3]*data_old.Slice) error {
 	kernelBytes := kernelToBytes(kernel)
 	compressedData, err := zstd.Compress(nil, kernelBytes)
 	if err != nil {
@@ -170,7 +170,7 @@ func saveKernel(fname string, kernel [3][3]*data.Slice) error {
 
 // Calculates the magnetostatic kernel by brute-force integration
 // of magnetic charges over the faces and averages over cell volumes.
-func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, hideProgressBar bool) (kernel [3][3]*data.Slice) {
+func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, hideProgressBar bool) (kernel [3][3]*data_old.Slice) {
 	// Add zero-padding in non-PBC directions
 	size := padSize(gridsize, pbc)
 
@@ -186,7 +186,7 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 	var array [3][3][][][]float32
 	for i := 0; i < 3; i++ {
 		for j := i; j < 3; j++ {
-			kernel[i][j] = data.NewSlice(1, size)
+			kernel[i][j] = data_old.NewSlice(1, size)
 			array[i][j] = kernel[i][j].Scalars()
 		}
 	}

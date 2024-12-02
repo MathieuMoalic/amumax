@@ -2,7 +2,7 @@ package engine_old
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 var (
@@ -10,7 +10,7 @@ var (
 	SpinAngle = newScalarField("spinAngle", "rad", "Angle between neighboring spins", setSpinAngle)
 )
 
-func setSpinAngle(dst *data.Slice) {
+func setSpinAngle(dst *data_old.Slice) {
 	cuda.SetMaxAngle(dst, NormMag.Buffer(), lex2.Gpu(), Regions.Gpu(), NormMag.Mesh())
 }
 

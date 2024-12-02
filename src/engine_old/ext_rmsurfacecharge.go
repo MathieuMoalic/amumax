@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 	"github.com/MathieuMoalic/amumax/src/mag"
@@ -29,8 +29,8 @@ func removeLRSurfaceCharge(region int, mxLeft, mxRight float64) {
 	B_ext.Add(compensateLRSurfaceCharges(GetMesh(), mxLeft, mxRight, bsat), nil)
 }
 
-func compensateLRSurfaceCharges(m *mesh_old.Mesh, mxLeft, mxRight float64, bsat float64) *data.Slice {
-	h := data.NewSlice(3, m.Size())
+func compensateLRSurfaceCharges(m *mesh_old.Mesh, mxLeft, mxRight float64, bsat float64) *data_old.Slice {
+	h := data_old.NewSlice(3, m.Size())
 	H := h.Vectors()
 	world := m.WorldSize()
 	cell := m.CellSize()

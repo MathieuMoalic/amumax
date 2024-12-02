@@ -3,7 +3,7 @@ package cuda
 import (
 	"testing"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 func TestSlice(t *testing.T) {
@@ -52,13 +52,13 @@ func TestCpy(t *testing.T) {
 	hs := sliceFromList([][]float32{h1}, mesh)
 
 	d := NewSlice(1, mesh)
-	data.Copy(d, hs)
+	data_old.Copy(d, hs)
 
 	d2 := NewSlice(1, mesh)
-	data.Copy(d2, d)
+	data_old.Copy(d2, d)
 
-	h2 := data.NewSlice(1, mesh)
-	data.Copy(h2, d2)
+	h2 := data_old.NewSlice(1, mesh)
+	data_old.Copy(h2, d2)
 
 	res := h2.Host()[0]
 	for i := range res {

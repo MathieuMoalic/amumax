@@ -1,11 +1,11 @@
 package cuda
 
 import (
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
-func CrossProduct(dst, a, b *data.Slice) {
+func CrossProduct(dst, a, b *data_old.Slice) {
 	log_old.AssertMsg(dst.NComp() == 3 && a.NComp() == 3 && b.NComp() == 3,
 		"Invalid number of components: dst, a, and b must all have 3 components for CrossProduct")
 

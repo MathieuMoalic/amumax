@@ -3,7 +3,7 @@ package engine_old
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/cuda/curand"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 	"github.com/MathieuMoalic/amumax/src/mag"
@@ -25,7 +25,7 @@ var AddThermalEnergyDensity = makeEdensAdder(&B_therm, -1)
 type thermField struct {
 	seed      int64            // seed for generator
 	generator curand.Generator //
-	noise     *data.Slice      // noise buffer
+	noise     *data_old.Slice  // noise buffer
 	step      int              // solver step corresponding to noise
 	dt        float64          // solver timestep corresponding to noise
 }
@@ -36,7 +36,7 @@ func init() {
 	declROnly("B_therm", &B_therm, "Thermal field (T)")
 }
 
-func (b *thermField) AddTo(dst *data.Slice) {
+func (b *thermField) AddTo(dst *data_old.Slice) {
 	if !Temp.isZero() {
 		b.update()
 		cuda.Add(dst, dst, b.noise)
@@ -127,13 +127,13 @@ func thermSeed(seed int) {
 	}
 }
 
-func (b *thermField) Mesh() *mesh_old.Mesh   { return GetMesh() }
-func (b *thermField) NComp() int             { return 3 }
-func (b *thermField) Name() string           { return "Thermal field" }
-func (b *thermField) Unit() string           { return "T" }
-func (b *thermField) average() []float64     { return qAverageUniverse(b) }
-func (b *thermField) EvalTo(dst *data.Slice) { evalTo(b, dst) }
-func (b *thermField) Slice() (*data.Slice, bool) {
+func (b *thermField) Mesh() *mesh_old.Mesh       { return GetMesh() }
+func (b *thermField) NComp() int                 { return 3 }
+func (b *thermField) Name() string               { return "Thermal field" }
+func (b *thermField) Unit() string               { return "T" }
+func (b *thermField) average() []float64         { return qAverageUniverse(b) }
+func (b *thermField) EvalTo(dst *data_old.Slice) { evalTo(b, dst) }
+func (b *thermField) Slice() (*data_old.Slice, bool) {
 	b.update()
 	return b.noise, false
 }

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag"
 	"github.com/MathieuMoalic/amumax/src/mesh"
@@ -30,13 +30,13 @@ var Temp Temperature
 var Msat, Aex Temperature
 
 type NormMagInterface interface {
-	Buffer() *data.Slice
+	Buffer() *data_old.Slice
 	normalize()
 }
 
 var NormMag NormMagInterface
 
-func setTorque(dst *data.Slice) {}
+func setTorque(dst *data_old.Slice) {}
 
 // TODO: implement saveIfNeeded
 func saveIfNeeded() {}
@@ -63,7 +63,7 @@ type Solver struct {
 	solverType           int         // Identifier for the solver type
 	exchangeLengthWarned bool        // Whether the exchange length warning has been issued
 	mesh                 *mesh.Mesh
-	previousStepBuffer   *data.Slice // used by backwardEuler, rk23 and rk45DP
+	previousStepBuffer   *data_old.Slice // used by backwardEuler, rk23 and rk45DP
 }
 
 // NewSolver creates a new instance of the solver with default settings.
@@ -103,7 +103,7 @@ func (s *Solver) SetSolver(solverIndex int) {
 }
 
 // write torque to dst and increment NEvals
-func (s *Solver) torqueFn(dst *data.Slice) {
+func (s *Solver) torqueFn(dst *data_old.Slice) {
 	setTorque(dst)
 	s.nEvals++
 }
@@ -116,7 +116,7 @@ func (s *Solver) setLastErr(err float64) {
 	}
 }
 
-func (s *Solver) setMaxTorque(τ *data.Slice) {
+func (s *Solver) setMaxTorque(τ *data_old.Slice) {
 	s.lastTorque = cuda.MaxVecNorm(τ)
 }
 

@@ -5,14 +5,14 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/timer"
 )
 
 // Make a GPU Slice with nComp components each of size length.
-func NewSlice(nComp int, size [3]int) *data.Slice {
-	return newSlice(nComp, size, MemAlloc, data.GPUMemory)
+func NewSlice(nComp int, size [3]int) *data_old.Slice {
+	return newSlice(nComp, size, MemAlloc, data_old.GPUMemory)
 }
 
 // Make a GPU Slice with nComp components each of size length.
@@ -20,8 +20,8 @@ func NewSlice(nComp int, size [3]int) *data.Slice {
 //	return newSlice(nComp, m, cu.MemAllocHost, data.UnifiedMemory)
 //}
 
-func newSlice(nComp int, size [3]int, alloc func(int64) unsafe.Pointer, memType int8) *data.Slice {
-	data.EnableGPU(memFree, cu.MemFreeHost, MemCpy, MemCpyDtoH, MemCpyHtoD)
+func newSlice(nComp int, size [3]int, alloc func(int64) unsafe.Pointer, memType int8) *data_old.Slice {
+	data_old.EnableGPU(memFree, cu.MemFreeHost, MemCpy, MemCpyDtoH, MemCpyHtoD)
 	length := prod(size)
 	bytes := int64(length) * cu.SIZEOF_FLOAT32
 	ptrs := make([]unsafe.Pointer, nComp)
@@ -29,7 +29,7 @@ func newSlice(nComp int, size [3]int, alloc func(int64) unsafe.Pointer, memType 
 		ptrs[c] = unsafe.Pointer(alloc(bytes))
 		cu.MemsetD32(cu.DevicePtr(uintptr(ptrs[c])), 0, int64(length))
 	}
-	return data.SliceFromPtrs(size, memType, ptrs)
+	return data_old.SliceFromPtrs(size, memType, ptrs)
 }
 
 // wrappers for data.EnableGPU arguments
@@ -62,7 +62,7 @@ func MemCpy(dst, src unsafe.Pointer, bytes int64) {
 
 // Memset sets the Slice's components to the specified values.
 // To be carefully used on unified slice (need sync)
-func Memset(s *data.Slice, val ...float32) {
+func Memset(s *data_old.Slice, val ...float32) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("memset")
@@ -78,27 +78,27 @@ func Memset(s *data.Slice, val ...float32) {
 }
 
 // Set all elements of all components to zero.
-func Zero(s *data.Slice) {
+func Zero(s *data_old.Slice) {
 	Memset(s, make([]float32, s.NComp())...)
 }
 
-func SetCell(s *data.Slice, comp int, ix, iy, iz int, value float32) {
+func SetCell(s *data_old.Slice, comp int, ix, iy, iz int, value float32) {
 	SetElem(s, comp, s.Index(ix, iy, iz), value)
 }
 
-func SetElem(s *data.Slice, comp int, index int, value float32) {
+func SetElem(s *data_old.Slice, comp int, index int, value float32) {
 	f := value
 	dst := unsafe.Pointer(uintptr(s.DevPtr(comp)) + uintptr(index)*cu.SIZEOF_FLOAT32)
 	MemCpyHtoD(dst, unsafe.Pointer(&f), cu.SIZEOF_FLOAT32)
 }
 
-func GetElem(s *data.Slice, comp int, index int) float32 {
+func GetElem(s *data_old.Slice, comp int, index int) float32 {
 	var f float32
 	src := unsafe.Pointer(uintptr(s.DevPtr(comp)) + uintptr(index)*cu.SIZEOF_FLOAT32)
 	MemCpyDtoH(unsafe.Pointer(&f), src, cu.SIZEOF_FLOAT32)
 	return f
 }
 
-func GetCell(s *data.Slice, comp, ix, iy, iz int) float32 {
+func GetCell(s *data_old.Slice, comp, ix, iy, iz int) float32 {
 	return GetElem(s, comp, s.Index(ix, iy, iz))
 }

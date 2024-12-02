@@ -1,4 +1,4 @@
-package data
+package data_old
 
 import (
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"

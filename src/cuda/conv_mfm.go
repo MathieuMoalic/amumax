@@ -3,22 +3,22 @@ package cuda
 // Generation of Magnetic Force Microscopy images.
 
 import (
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/mag"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 // Stores the necessary state to perform FFT-accelerated convolution
 type MFMConvolution struct {
-	size        [3]int         // 3D size of the input/output data
-	kernSize    [3]int         // Size of kernel and logical FFT size.
-	fftKernSize [3]int         //
-	fftRBuf     *data.Slice    // FFT input buf for FFT, shares storage with fftCBuf.
-	fftCBuf     *data.Slice    // FFT output buf, shares storage with fftRBuf
-	gpuFFTKern  [3]*data.Slice // FFT kernel on device
-	fwPlan      fft3DR2CPlan   // Forward FFT (1 component)
-	bwPlan      fft3DC2RPlan   // Backward FFT (1 component)
-	kern        [3]*data.Slice // Real-space kernel (host)
+	size        [3]int             // 3D size of the input/output data
+	kernSize    [3]int             // Size of kernel and logical FFT size.
+	fftKernSize [3]int             //
+	fftRBuf     *data_old.Slice    // FFT input buf for FFT, shares storage with fftCBuf.
+	fftCBuf     *data_old.Slice    // FFT output buf, shares storage with fftRBuf
+	gpuFFTKern  [3]*data_old.Slice // FFT kernel on device
+	fwPlan      fft3DR2CPlan       // Forward FFT (1 component)
+	bwPlan      fft3DC2RPlan       // Backward FFT (1 component)
+	kern        [3]*data_old.Slice // Real-space kernel (host)
 	mesh        mesh.MeshLike
 }
 
@@ -66,7 +66,7 @@ func (c *MFMConvolution) initFFTKern3D() {
 
 	for i := 0; i < 3; i++ {
 		zero1_async(c.fftRBuf)
-		data.Copy(c.fftRBuf, c.kern[i])
+		data_old.Copy(c.fftRBuf, c.kern[i])
 		c.fwPlan.ExecAsync(c.fftRBuf, c.fftCBuf)
 		scale := 2 / float32(c.fwPlan.InputLen()) // ??
 		zero1_async(c.gpuFFTKern[i])
@@ -75,7 +75,7 @@ func (c *MFMConvolution) initFFTKern3D() {
 }
 
 // store MFM image in output, based on magnetization in inp.
-func (c *MFMConvolution) Exec(outp, inp, vol *data.Slice, Msat MSlice) {
+func (c *MFMConvolution) Exec(outp, inp, vol *data_old.Slice, Msat MSlice) {
 	for i := 0; i < 3; i++ {
 		zero1_async(c.fftRBuf)
 		copyPadMul(c.fftRBuf, inp.Comp(i), vol, c.kernSize, c.size, Msat)

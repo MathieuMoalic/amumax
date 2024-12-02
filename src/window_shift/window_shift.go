@@ -2,7 +2,7 @@ package window_shift
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/geometry"
 	"github.com/MathieuMoalic/amumax/src/magnetization"
 	"github.com/MathieuMoalic/amumax/src/mesh"
@@ -11,7 +11,7 @@ import (
 
 type WindowShift struct {
 	totalXShift, totalYShift                   float64
-	ShiftMagL, ShiftMagR, ShiftMagU, ShiftMagD data.Vector // unused for now
+	ShiftMagL, ShiftMagR, ShiftMagU, ShiftMagD data_old.Vector // unused for now
 	shiftM, shiftGeom, shiftRegions            bool
 	edgeCarryShift                             bool
 	mesh                                       *mesh.Mesh
@@ -39,7 +39,7 @@ func (w *WindowShift) ShiftX(dx int) {
 	w.magnetization.Normalize()
 }
 
-func (w *WindowShift) shiftMagX(m *data.Slice, dx int) {
+func (w *WindowShift) shiftMagX(m *data_old.Slice, dx int) {
 	m2 := cuda.Buffer(1, m.Size())
 	defer cuda.Recycle(m2)
 	for c := 0; c < m.NComp(); c++ {
@@ -49,7 +49,7 @@ func (w *WindowShift) shiftMagX(m *data.Slice, dx int) {
 		} else {
 			cuda.ShiftX(m2, comp, dx, float32(w.ShiftMagL[c]), float32(w.ShiftMagL[c]))
 		}
-		data.Copy(comp, m2) // str0 ?
+		data_old.Copy(comp, m2) // str0 ?
 	}
 }
 
@@ -68,7 +68,7 @@ func (w *WindowShift) ShiftY(dy int) {
 	w.magnetization.Normalize()
 }
 
-func (w *WindowShift) shiftMagY(m *data.Slice, dy int) {
+func (w *WindowShift) shiftMagY(m *data_old.Slice, dy int) {
 	m2 := cuda.Buffer(1, m.Size())
 	defer cuda.Recycle(m2)
 	for c := 0; c < m.NComp(); c++ {
@@ -78,6 +78,6 @@ func (w *WindowShift) shiftMagY(m *data.Slice, dy int) {
 		} else {
 			cuda.ShiftX(m2, comp, dy, float32(w.ShiftMagL[c]), float32(w.ShiftMagL[c]))
 		}
-		data.Copy(comp, m2) // str0 ?
+		data_old.Copy(comp, m2) // str0 ?
 	}
 }

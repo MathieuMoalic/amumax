@@ -2,7 +2,7 @@ package solver
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
@@ -16,7 +16,7 @@ func (s *Solver) backWardEulerStep() {
 
 	y0 := cuda.Buffer(3, y.Size())
 	defer cuda.Recycle(y0)
-	data.Copy(y0, y)
+	data_old.Copy(y0, y)
 
 	dy0 := cuda.Buffer(3, y.Size())
 	defer cuda.Recycle(dy0)

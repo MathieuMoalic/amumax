@@ -1,12 +1,12 @@
 package cuda
 
 import (
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // dst += prefactor * dot(a, b), as used for energy density
-func AddDotProduct(dst *data.Slice, prefactor float32, a, b *data.Slice) {
+func AddDotProduct(dst *data_old.Slice, prefactor float32, a, b *data_old.Slice) {
 	log_old.AssertMsg(dst.NComp() == 1 && a.NComp() == 3 && b.NComp() == 3,
 		"Component mismatch: dst must have 1 component, and a and b must each have 3 components in AddDotProduct")
 

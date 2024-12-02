@@ -1,16 +1,17 @@
 package cuda
 
 import (
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 // Landau-Lifshitz torque divided by gamma0:
-// 	- 1/(1+α²) [ m x B +  α m x (m x B) ]
-// 	torque in Tesla
-// 	m normalized
-// 	B in Tesla
+//   - 1/(1+α²) [ m x B +  α m x (m x B) ]
+//     torque in Tesla
+//     m normalized
+//     B in Tesla
+//
 // see lltorque.cu
-func LLTorque(torque, m, B *data.Slice, alpha MSlice) {
+func LLTorque(torque, m, B *data_old.Slice, alpha MSlice) {
 	N := torque.Len()
 	cfg := make1DConf(N)
 
@@ -22,7 +23,7 @@ func LLTorque(torque, m, B *data.Slice, alpha MSlice) {
 
 // Landau-Lifshitz torque with precession disabled.
 // Used by engine.Relax().
-func LLNoPrecess(torque, m, B *data.Slice) {
+func LLNoPrecess(torque, m, B *data_old.Slice) {
 	N := torque.Len()
 	cfg := make1DConf(N)
 

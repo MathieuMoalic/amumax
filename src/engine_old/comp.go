@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 )
@@ -28,7 +28,7 @@ func (q *component) Name() string         { return fmt.Sprint(nameOf(q.parent), 
 func (q *component) Unit() string         { return unitOf(q.parent) }
 func (q *component) Mesh() *mesh_old.Mesh { return MeshOf(q.parent) }
 
-func (q *component) Slice() (*data.Slice, bool) {
+func (q *component) Slice() (*data_old.Slice, bool) {
 	p := q.parent
 	src := ValueOf(p)
 	defer cuda.Recycle(src)
@@ -36,10 +36,10 @@ func (q *component) Slice() (*data.Slice, bool) {
 	return c, true
 }
 
-func (q *component) EvalTo(dst *data.Slice) {
+func (q *component) EvalTo(dst *data_old.Slice) {
 	src := ValueOf(q.parent)
 	defer cuda.Recycle(src)
-	data.Copy(dst, src.Comp(q.comp))
+	data_old.Copy(dst, src.Comp(q.comp))
 }
 
 var compname = map[int]string{0: "x", 1: "y", 2: "z"}

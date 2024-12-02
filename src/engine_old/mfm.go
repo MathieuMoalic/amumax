@@ -2,7 +2,7 @@ package engine_old
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 var (
@@ -17,7 +17,7 @@ func init() {
 	mfmTipSize = numParam(1e-3, "MFMDipole", "m", reinitmfmconv)
 }
 
-func setMFM(dst *data.Slice) {
+func setMFM(dst *data_old.Slice) {
 	buf := cuda.Buffer(3, GetMesh().Size())
 	defer cuda.Recycle(buf)
 	if mfmconv_ == nil {

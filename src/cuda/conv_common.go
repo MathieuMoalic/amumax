@@ -5,7 +5,7 @@ package cuda
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
@@ -23,7 +23,7 @@ func prod(size [3]int) int {
 // In the meanwhile, check if imaginary parts are nearly zero
 // and scale the kernel to compensate for unnormalized FFTs.
 // scale = 1/N, with N the FFT logical size.
-func scaleRealParts(dst, src *data.Slice, scale float32) {
+func scaleRealParts(dst, src *data_old.Slice, scale float32) {
 	log_old.AssertMsg(2*dst.Len() == src.Len(), "scaleRealParts: Source length must be twice the destination length")
 	log_old.AssertMsg(dst.NComp() == 1 && src.NComp() == 1, "scaleRealParts: Both destination and source must have a single component")
 

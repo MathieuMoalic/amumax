@@ -4,12 +4,12 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 type rk45DP struct {
-	k1 *data.Slice // torque at end of step is kept for beginning of next step
+	k1 *data_old.Slice // torque at end of step is kept for beginning of next step
 }
 
 func (rk *rk45DP) Step() {
@@ -40,7 +40,7 @@ func (rk *rk45DP) Step() {
 	// backup magnetization
 	m0 := cuda.Buffer(3, size)
 	defer cuda.Recycle(m0)
-	data.Copy(m0, m)
+	data_old.Copy(m0, m)
 
 	k2, k3, k4, k5, k6 := cuda.Buffer(3, size), cuda.Buffer(3, size), cuda.Buffer(3, size), cuda.Buffer(3, size), cuda.Buffer(3, size)
 	defer cuda.Recycle(k2)
@@ -108,13 +108,13 @@ func (rk *rk45DP) Step() {
 		NSteps++
 		Time = t0 + Dt_si
 		adaptDt(math.Pow(MaxErr/err, 1./5.))
-		data.Copy(rk.k1, k7) // FSAL
+		data_old.Copy(rk.k1, k7) // FSAL
 	} else {
 		// undo bad step
 		//log.Println("Bad step at t=", t0, ", err=", err)
 		log_old.AssertMsg(FixDt == 0, "Invalid step: cannot undo step when FixDt is set")
 		Time = t0
-		data.Copy(m, m0)
+		data_old.Copy(m, m0)
 		NUndone++
 		adaptDt(math.Pow(MaxErr/err, 1./6.))
 	}

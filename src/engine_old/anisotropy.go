@@ -4,7 +4,7 @@ package engine_old
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 // Anisotropy variables
@@ -30,7 +30,7 @@ func init() {
 	registerEnergy(getAnisotropyEnergy, addAnisotropyEnergyDensity)
 }
 
-func addUniaxialAnisotropyFrom(dst *data.Slice, M magnetization, Msat, Ku1, Ku2 *regionwiseScalar, AnisU *regionwiseVector) {
+func addUniaxialAnisotropyFrom(dst *data_old.Slice, M magnetization, Msat, Ku1, Ku2 *regionwiseScalar, AnisU *regionwiseVector) {
 	if Ku1.nonZero() || Ku2.nonZero() {
 		ms := Msat.MSlice()
 		defer ms.Recycle()
@@ -45,7 +45,7 @@ func addUniaxialAnisotropyFrom(dst *data.Slice, M magnetization, Msat, Ku1, Ku2 
 	}
 }
 
-func addCubicAnisotropyFrom(dst *data.Slice, M magnetization, Msat, Kc1, Kc2, Kc3 *regionwiseScalar, AnisC1, AnisC2 *regionwiseVector) {
+func addCubicAnisotropyFrom(dst *data_old.Slice, M magnetization, Msat, Kc1, Kc2, Kc3 *regionwiseScalar, AnisC1, AnisC2 *regionwiseVector) {
 	if Kc1.nonZero() || Kc2.nonZero() || Kc3.nonZero() {
 		ms := Msat.MSlice()
 		defer ms.Recycle()
@@ -69,13 +69,13 @@ func addCubicAnisotropyFrom(dst *data.Slice, M magnetization, Msat, Kc1, Kc2, Kc
 }
 
 // Add the anisotropy field to dst
-func addAnisotropyField(dst *data.Slice) {
+func addAnisotropyField(dst *data_old.Slice) {
 	addUniaxialAnisotropyFrom(dst, NormMag, Msat, Ku1, Ku2, AnisU)
 	addCubicAnisotropyFrom(dst, NormMag, Msat, Kc1, Kc2, Kc3, AnisC1, AnisC2)
 }
 
 // Add the anisotropy energy density to dst
-func addAnisotropyEnergyDensity(dst *data.Slice) {
+func addAnisotropyEnergyDensity(dst *data_old.Slice) {
 	haveUnixial := Ku1.nonZero() || Ku2.nonZero()
 	haveCubic := Kc1.nonZero() || Kc2.nonZero() || Kc3.nonZero()
 

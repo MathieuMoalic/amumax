@@ -9,7 +9,7 @@ import (
 	"github.com/DataDog/zstd"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/zarr_old"
@@ -184,7 +184,7 @@ func (sqs *savedQuantitiesType) saveAsChunk(q Quantity, name string, rchunks req
 }
 
 // syncSave writes the data slice into chunked, compressed files compatible with the Zarr format.
-func syncSave(array *data.Slice, qname string, steps int, chunks chunks) error {
+func syncSave(array *data_old.Slice, qname string, steps int, chunks chunks) error {
 	data := array.Tensors()
 	size := array.Size()
 	ncomp := array.NComp()

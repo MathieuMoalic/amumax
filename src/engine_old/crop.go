@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 )
@@ -113,10 +113,10 @@ func rangeStr(a, b int) string {
 	// (trailing underscore to separate from subsequent autosave number)
 }
 
-func (q *cropped) NComp() int             { return q.parent.NComp() }
-func (q *cropped) Name() string           { return q.name }
-func (q *cropped) Unit() string           { return unitOf(q.parent) }
-func (q *cropped) EvalTo(dst *data.Slice) { evalTo(q, dst) }
+func (q *cropped) NComp() int                 { return q.parent.NComp() }
+func (q *cropped) Name() string               { return q.name }
+func (q *cropped) Unit() string               { return unitOf(q.parent) }
+func (q *cropped) EvalTo(dst *data_old.Slice) { evalTo(q, dst) }
 
 func (q *cropped) Mesh() *mesh_old.Mesh {
 	c := MeshOf(q.parent) // currentMesh
@@ -126,7 +126,7 @@ func (q *cropped) Mesh() *mesh_old.Mesh {
 func (q *cropped) average() []float64 { return qAverageUniverse(q) } // needed for table
 func (q *cropped) Average() []float64 { return q.average() }         // handy for script
 
-func (q *cropped) Slice() (*data.Slice, bool) {
+func (q *cropped) Slice() (*data_old.Slice, bool) {
 	src := ValueOf(q.parent)
 	defer cuda.Recycle(src)
 	dst := cuda.Buffer(q.NComp(), q.Mesh().Size())

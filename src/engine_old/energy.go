@@ -4,21 +4,21 @@ package engine_old
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 // TODO: Integrate(Edens)
 // TODO: consistent naming SetEdensTotal, ...
 
 var (
-	energyTerms []func() float64        // all contributions to total energy
-	edensTerms  []func(dst *data.Slice) // all contributions to total energy density (add to dst)
+	energyTerms []func() float64            // all contributions to total energy
+	edensTerms  []func(dst *data_old.Slice) // all contributions to total energy density (add to dst)
 	Edens_total = newScalarField("Edens_total", "J/m3", "Total energy density", setTotalEdens)
 	E_total     = newScalarValue("E_total", "J", "total energy", getTotalEnergy)
 )
 
 // add energy term to global energy
-func registerEnergy(term func() float64, dens func(*data.Slice)) {
+func registerEnergy(term func() float64, dens func(*data_old.Slice)) {
 	energyTerms = append(energyTerms, term)
 	edensTerms = append(edensTerms, dens)
 }
@@ -34,7 +34,7 @@ func getTotalEnergy() float64 {
 }
 
 // Set dst to total energy density in J/m3
-func setTotalEdens(dst *data.Slice) {
+func setTotalEdens(dst *data_old.Slice) {
 	cuda.Zero(dst)
 	for _, addTerm := range edensTerms {
 		addTerm(dst)
@@ -50,8 +50,8 @@ func cellVolume() float64 {
 // returns a function that adds to dst the energy density:
 //
 //	prefactor * dot (M_full, field)
-func makeEdensAdder(field Quantity, prefactor float64) func(*data.Slice) {
-	return func(dst *data.Slice) {
+func makeEdensAdder(field Quantity, prefactor float64) func(*data_old.Slice) {
+	return func(dst *data_old.Slice) {
 		B := ValueOf(field)
 		defer cuda.Recycle(B)
 		m := ValueOf(M_full)

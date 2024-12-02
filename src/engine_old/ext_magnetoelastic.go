@@ -4,7 +4,7 @@ package engine_old
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
@@ -31,7 +31,7 @@ func init() {
 	registerEnergy(getMagnetoelasticEnergy, addMagnetoelasticEnergyDensity)
 }
 
-func addMagnetoelasticField(dst *data.Slice) {
+func addMagnetoelasticField(dst *data_old.Slice) {
 	haveMel := B1.nonZero() || B2.nonZero()
 	if !haveMel {
 		return
@@ -70,7 +70,7 @@ func addMagnetoelasticField(dst *data.Slice) {
 		b1, b2, ms)
 }
 
-func getMagnetoelasticForceDensity(dst *data.Slice) {
+func getMagnetoelasticForceDensity(dst *data_old.Slice) {
 	haveMel := B1.nonZero() || B2.nonZero()
 	if !haveMel {
 		return
@@ -88,7 +88,7 @@ func getMagnetoelasticForceDensity(dst *data.Slice) {
 		b1, b2, NormMag.Mesh())
 }
 
-func addMagnetoelasticEnergyDensity(dst *data.Slice) {
+func addMagnetoelasticEnergyDensity(dst *data_old.Slice) {
 	haveMel := B1.nonZero() || B2.nonZero()
 	if !haveMel {
 		return

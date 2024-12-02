@@ -5,7 +5,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
@@ -81,14 +81,14 @@ func (p *lut) assureAlloc() {
 func (b *lut) NComp() int { return len(b.cpu_buf) }
 
 // uncompress the table to a full array with parameter values per cell.
-func (p *lut) Slice() (*data.Slice, bool) {
+func (p *lut) Slice() (*data_old.Slice, bool) {
 	b := cuda.Buffer(p.NComp(), GetMesh().Size())
 	p.EvalTo(b)
 	return b, true
 }
 
 // uncompress the table to a full array in the dst Slice with parameter values per cell.
-func (p *lut) EvalTo(dst *data.Slice) {
+func (p *lut) EvalTo(dst *data_old.Slice) {
 	gpu := p.gpuLUT()
 	for c := 0; c < p.NComp(); c++ {
 		cuda.RegionDecode(dst.Comp(c), cuda.LUTPtr(gpu[c]), Regions.Gpu())

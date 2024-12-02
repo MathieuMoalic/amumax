@@ -4,7 +4,7 @@ import (
 	"math/rand"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
 )
@@ -20,7 +20,7 @@ var (
 
 type geom struct {
 	info
-	Buffer *data.Slice
+	Buffer *data_old.Slice
 	shape  shape
 }
 
@@ -30,14 +30,14 @@ func (g *geom) init() {
 	declROnly("geom", g, "Cell fill fraction (0..1)")
 }
 
-func (g *geom) Gpu() *data.Slice {
+func (g *geom) Gpu() *data_old.Slice {
 	if g.Buffer == nil {
-		g.Buffer = data.NilSlice(1, g.Mesh().Size())
+		g.Buffer = data_old.NilSlice(1, g.Mesh().Size())
 	}
 	return g.Buffer
 }
 
-func (g *geom) Slice() (*data.Slice, bool) {
+func (g *geom) Slice() (*data_old.Slice, bool) {
 	s := g.Gpu()
 	if s.IsNil() {
 		buffer := cuda.Buffer(g.NComp(), g.Mesh().Size())
@@ -48,7 +48,7 @@ func (g *geom) Slice() (*data.Slice, bool) {
 	}
 }
 
-func (q *geom) EvalTo(dst *data.Slice) { evalTo(q, dst) }
+func (q *geom) EvalTo(dst *data_old.Slice) { evalTo(q, dst) }
 
 var _ Quantity = &Geometry
 
@@ -76,7 +76,7 @@ func (geometry *geom) setGeom(s shape) {
 		geometry.Buffer = cuda.NewSlice(1, geometry.Mesh().Size())
 	}
 
-	host := data.NewSlice(1, geometry.Gpu().Size())
+	host := data_old.NewSlice(1, geometry.Gpu().Size())
 	array := host.Scalars()
 	V := host
 	v := array
@@ -133,7 +133,7 @@ func (geometry *geom) setGeom(s shape) {
 		log_old.Log.ErrAndExit("SetGeom: geometry completely empty")
 	}
 
-	data.Copy(geometry.Buffer, V)
+	data_old.Copy(geometry.Buffer, V)
 
 	// M inside geom but previously outside needs to be re-inited
 	needupload := false
@@ -152,7 +152,7 @@ func (geometry *geom) setGeom(s shape) {
 		}
 	}
 	if needupload {
-		data.Copy(NormMag.Buffer(), mhost)
+		data_old.Copy(NormMag.Buffer(), mhost)
 	}
 
 	NormMag.normalize() // removes m outside vol
@@ -203,7 +203,7 @@ func (g *geom) shift(dx int) {
 	defer cuda.Recycle(s2)
 	newv := float32(1) // initially fill edges with 1's
 	cuda.ShiftX(s2, s, dx, newv, newv)
-	data.Copy(s, s2)
+	data_old.Copy(s, s2)
 
 	n := GetMesh().Size()
 	x1, x2 := shiftDirtyRange(dx)
@@ -233,7 +233,7 @@ func (g *geom) shiftY(dy int) {
 	defer cuda.Recycle(s2)
 	newv := float32(1) // initially fill edges with 1's
 	cuda.ShiftY(s2, s, dy, newv, newv)
-	data.Copy(s, s2)
+	data_old.Copy(s, s2)
 
 	n := GetMesh().Size()
 	y1, y2 := shiftDirtyRange(dy)

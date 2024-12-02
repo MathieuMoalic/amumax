@@ -2,13 +2,13 @@ package engine_old
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
 // Implicit midpoint solver.
 type backwardEuler struct {
-	dy1 *data.Slice
+	dy1 *data_old.Slice
 }
 
 // Euler method, can be used as solver.Step.
@@ -21,7 +21,7 @@ func (s *backwardEuler) Step() {
 
 	y0 := cuda.Buffer(VECTOR, y.Size())
 	defer cuda.Recycle(y0)
-	data.Copy(y0, y)
+	data_old.Copy(y0, y)
 
 	dy0 := cuda.Buffer(VECTOR, y.Size())
 	defer cuda.Recycle(dy0)

@@ -4,7 +4,7 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
 var (
@@ -13,7 +13,7 @@ var (
 		"2D topological charge density m·(∂m/∂x ✕ ∂m/∂y)", setTopologicalChargeDensity)
 )
 
-func setTopologicalChargeDensity(dst *data.Slice) {
+func setTopologicalChargeDensity(dst *data_old.Slice) {
 	cuda.SetTopologicalCharge(dst, NormMag.Buffer(), NormMag.Mesh())
 }
 

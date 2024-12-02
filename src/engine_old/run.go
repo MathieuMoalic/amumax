@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/mag"
 	"github.com/MathieuMoalic/amumax/src/progressbar"
@@ -88,7 +88,7 @@ func setSolver(typ int) {
 }
 
 // write torque to dst and increment NEvals
-func torqueFn(dst *data.Slice) {
+func torqueFn(dst *data_old.Slice) {
 	setTorque(dst)
 	NEvals++
 }
@@ -101,7 +101,7 @@ func setLastErr(err float64) {
 	}
 }
 
-func setMaxTorque(τ *data.Slice) {
+func setMaxTorque(τ *data_old.Slice) {
 	LastTorque = cuda.MaxVecNorm(τ)
 }
 
