@@ -3,7 +3,7 @@ package engine_old
 // Averaging of quantities over entire universe or just magnet.
 
 import (
-	"github.com/MathieuMoalic/amumax/src/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 

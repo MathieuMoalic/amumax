@@ -12,8 +12,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/MathieuMoalic/amumax/src/cuda_old/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/api_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/url"
