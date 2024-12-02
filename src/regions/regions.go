@@ -3,7 +3,7 @@ package regions
 import (
 	"sort"
 
-	"github.com/MathieuMoalic/amumax/src/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mesh"

@@ -5,7 +5,7 @@ package engine_old
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 )
 
 // Stopping relax Maxtorque in T. The user can check MaxTorque for sane values (e.g. 1e-3).

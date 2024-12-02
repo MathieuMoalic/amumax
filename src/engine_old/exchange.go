@@ -7,8 +7,8 @@ import (
 	"math"
 	"unsafe"
 
-	"github.com/MathieuMoalic/amumax/src/cuda_old"
-	"github.com/MathieuMoalic/amumax/src/cuda_old/cu"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )

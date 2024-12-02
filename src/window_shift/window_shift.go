@@ -1,7 +1,7 @@
 package window_shift
 
 import (
-	"github.com/MathieuMoalic/amumax/src/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/geometry"
 	"github.com/MathieuMoalic/amumax/src/magnetization"

@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/cuda_old"
-	"github.com/MathieuMoalic/amumax/src/cuda_old/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/api_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/queue"
 	"github.com/MathieuMoalic/amumax/src/engine_old/script_old"

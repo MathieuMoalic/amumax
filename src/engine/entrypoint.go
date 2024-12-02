@@ -1,7 +1,7 @@
 package engine
 
 import (
-	"github.com/MathieuMoalic/amumax/src/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/slurm"
