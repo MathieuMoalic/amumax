@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
@@ -85,7 +85,7 @@ func EvalFile(code *script_old.BlockStmt) {
 				CreateMesh()
 				NormMag.Alloc()
 				Regions.Alloc()
-				EngineState.Metadata.Init(OD(), StartTime, cuda_old.GPUInfo_old)
+				EngineState.Metadata.Init(OD(), StartTime, cuda.GPUInfo_old)
 				EngineState.Metadata.AddMesh(&Mesh)
 			}
 		}

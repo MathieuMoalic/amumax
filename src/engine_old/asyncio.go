@@ -4,7 +4,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/timer"
 )
 
@@ -34,12 +34,12 @@ func (a *atom) Load() int32 {
 }
 
 func queOutput(f func()) {
-	if cuda_old.Synchronous {
+	if cuda.Synchronous {
 		timer.Start("io")
 	}
 	queLen.Add(1)
 	saveQue <- f
-	if cuda_old.Synchronous {
+	if cuda.Synchronous {
 		timer.Stop("io")
 	}
 }

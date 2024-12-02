@@ -3,7 +3,7 @@ package solver
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
@@ -19,16 +19,16 @@ func (s *Solver) rk4() {
 
 	t0 := s.Time
 	// backup magnetization
-	m0 := cuda_old.Buffer(3, size)
-	defer cuda_old.Recycle(m0)
+	m0 := cuda.Buffer(3, size)
+	defer cuda.Recycle(m0)
 	data_old.Copy(m0, m)
 
-	k1, k2, k3, k4 := cuda_old.Buffer(3, size), cuda_old.Buffer(3, size), cuda_old.Buffer(3, size), cuda_old.Buffer(3, size)
+	k1, k2, k3, k4 := cuda.Buffer(3, size), cuda.Buffer(3, size), cuda.Buffer(3, size), cuda.Buffer(3, size)
 
-	defer cuda_old.Recycle(k1)
-	defer cuda_old.Recycle(k2)
-	defer cuda_old.Recycle(k3)
-	defer cuda_old.Recycle(k4)
+	defer cuda.Recycle(k1)
+	defer cuda.Recycle(k2)
+	defer cuda.Recycle(k3)
+	defer cuda.Recycle(k4)
 
 	h := float32(s.dt_si * gammaLL) // internal time step = Dt * gammaLL
 
@@ -37,28 +37,28 @@ func (s *Solver) rk4() {
 
 	// stage 2
 	s.Time = t0 + (1./2.)*s.dt_si
-	cuda_old.Madd2(m, m, k1, 1, (1./2.)*h) // m = m*1 + k1*h/2
+	cuda.Madd2(m, m, k1, 1, (1./2.)*h) // m = m*1 + k1*h/2
 	NormMag.normalize()
 	s.torqueFn(k2)
 
 	// stage 3
-	cuda_old.Madd2(m, m0, k2, 1, (1./2.)*h) // m = m0*1 + k2*1/2
+	cuda.Madd2(m, m0, k2, 1, (1./2.)*h) // m = m0*1 + k2*1/2
 	NormMag.normalize()
 	s.torqueFn(k3)
 
 	// stage 4
 	s.Time = t0 + s.dt_si
-	cuda_old.Madd2(m, m0, k3, 1, 1.*h) // m = m0*1 + k3*1
+	cuda.Madd2(m, m0, k3, 1, 1.*h) // m = m0*1 + k3*1
 	NormMag.normalize()
 	s.torqueFn(k4)
 
-	err := cuda_old.MaxVecDiff(k1, k4) * float64(h)
+	err := cuda.MaxVecDiff(k1, k4) * float64(h)
 
 	// adjust next time step
 	if err < s.MaxErr || s.dt_si <= s.MinDt || s.FixDt != 0 { // mindt check to avoid infinite loop
 		// step OK
 		// 4th order solution
-		cuda_old.Madd5(m, m0, k1, k2, k3, k4, 1, (1./6.)*h, (1./3.)*h, (1./3.)*h, (1./6.)*h)
+		cuda.Madd5(m, m0, k1, k2, k3, k4, 1, (1./6.)*h, (1./3.)*h, (1./3.)*h, (1./6.)*h)
 		NormMag.normalize()
 		s.NSteps++
 		s.adaptDt(math.Pow(s.MaxErr/err, 1./4.))

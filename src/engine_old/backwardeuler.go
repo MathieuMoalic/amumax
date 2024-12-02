@@ -1,7 +1,7 @@
 package engine_old
 
 import (
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
@@ -19,14 +19,14 @@ func (s *backwardEuler) Step() {
 
 	y := NormMag.Buffer()
 
-	y0 := cuda_old.Buffer(VECTOR, y.Size())
-	defer cuda_old.Recycle(y0)
+	y0 := cuda.Buffer(VECTOR, y.Size())
+	defer cuda.Recycle(y0)
 	data_old.Copy(y0, y)
 
-	dy0 := cuda_old.Buffer(VECTOR, y.Size())
-	defer cuda_old.Recycle(dy0)
+	dy0 := cuda.Buffer(VECTOR, y.Size())
+	defer cuda.Recycle(dy0)
 	if s.dy1 == nil {
-		s.dy1 = cuda_old.Buffer(VECTOR, y.Size())
+		s.dy1 = cuda.Buffer(VECTOR, y.Size())
 	}
 	dy1 := s.dy1
 
@@ -39,22 +39,22 @@ func (s *backwardEuler) Step() {
 
 	// with temperature, previous torque cannot be used as predictor
 	if Temp.isZero() {
-		cuda_old.Madd2(y, y0, dy1, 1, dt) // predictor euler step with previous torque
+		cuda.Madd2(y, y0, dy1, 1, dt) // predictor euler step with previous torque
 		NormMag.normalize()
 	}
 
 	torqueFn(dy0)
-	cuda_old.Madd2(y, y0, dy0, 1, dt) // y = y0 + dt * dy
+	cuda.Madd2(y, y0, dy0, 1, dt) // y = y0 + dt * dy
 	NormMag.normalize()
 
 	// One iteration
 	torqueFn(dy1)
-	cuda_old.Madd2(y, y0, dy1, 1, dt) // y = y0 + dt * dy1
+	cuda.Madd2(y, y0, dy1, 1, dt) // y = y0 + dt * dy1
 	NormMag.normalize()
 
 	Time = t0 + Dt_si
 
-	err := cuda_old.MaxVecDiff(dy0, dy1) * float64(dt)
+	err := cuda.MaxVecDiff(dy0, dy1) * float64(dt)
 
 	NSteps++
 	setLastErr(err)

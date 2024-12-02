@@ -3,7 +3,7 @@ package engine_old
 import (
 	"reflect"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
@@ -49,9 +49,9 @@ func setLLTorque(dst *data_old.Slice) {
 	alpha := Alpha.MSlice()
 	defer alpha.Recycle()
 	if precess {
-		cuda_old.LLTorque(dst, NormMag.Buffer(), dst, alpha) // overwrite dst with torque
+		cuda.LLTorque(dst, NormMag.Buffer(), dst, alpha) // overwrite dst with torque
 	} else {
-		cuda_old.LLNoPrecess(dst, NormMag.Buffer(), dst)
+		cuda.LLNoPrecess(dst, NormMag.Buffer(), dst)
 	}
 }
 
@@ -63,11 +63,11 @@ func addSTTorque(dst *data_old.Slice) {
 	log_old.AssertMsg(!Pol.isZero(), "spin polarization should not be 0")
 	jspin, rec := J.Slice()
 	if rec {
-		defer cuda_old.Recycle(jspin)
+		defer cuda.Recycle(jspin)
 	}
 	fl, rec := FixedLayer.Slice()
 	if rec {
-		defer cuda_old.Recycle(fl)
+		defer cuda.Recycle(fl)
 	}
 	if !disableZhangLiTorque {
 		msat := Msat.MSlice()
@@ -80,7 +80,7 @@ func addSTTorque(dst *data_old.Slice) {
 		defer xi.Recycle()
 		pol := Pol.MSlice()
 		defer pol.Recycle()
-		cuda_old.AddZhangLiTorque(dst, NormMag.Buffer(), msat, j, alpha, xi, pol, GetMesh())
+		cuda.AddZhangLiTorque(dst, NormMag.Buffer(), msat, j, alpha, xi, pol, GetMesh())
 	}
 	if !disableSlonczewskiTorque && !FixedLayer.isZero() {
 		msat := Msat.MSlice()
@@ -99,7 +99,7 @@ func addSTTorque(dst *data_old.Slice) {
 		defer epsPrime.Recycle()
 		thickness := FreeLayerThickness.MSlice()
 		defer thickness.Recycle()
-		cuda_old.AddSlonczewskiTorque2(dst, NormMag.Buffer(),
+		cuda.AddSlonczewskiTorque2(dst, NormMag.Buffer(),
 			msat, j, fixedP, alpha, pol, lambda, epsPrime,
 			thickness,
 			currentSignFromFixedLayerPosition[fixedLayerPosition],
@@ -109,14 +109,14 @@ func addSTTorque(dst *data_old.Slice) {
 
 func freezeSpins(dst *data_old.Slice) {
 	if !FrozenSpins.isZero() {
-		cuda_old.ZeroMask(dst, FrozenSpins.gpuLUT1(), Regions.Gpu())
+		cuda.ZeroMask(dst, FrozenSpins.gpuLUT1(), Regions.Gpu())
 	}
 }
 
 func getMaxTorque() float64 {
 	torque := ValueOf(Torque)
-	defer cuda_old.Recycle(torque)
-	return cuda_old.MaxVecNorm(torque)
+	defer cuda.Recycle(torque)
+	return cuda.MaxVecNorm(torque)
 }
 
 type fixedLayerPositionType int

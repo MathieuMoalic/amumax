@@ -1,7 +1,7 @@
 package engine_old
 
 import (
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 )
 
@@ -11,11 +11,11 @@ var (
 )
 
 func setSpinAngle(dst *data_old.Slice) {
-	cuda_old.SetMaxAngle(dst, NormMag.Buffer(), lex2.Gpu(), Regions.Gpu(), NormMag.Mesh())
+	cuda.SetMaxAngle(dst, NormMag.Buffer(), lex2.Gpu(), Regions.Gpu(), NormMag.Mesh())
 }
 
 func getMaxAngle() float64 {
 	s := ValueOf(SpinAngle)
-	defer cuda_old.Recycle(s)
-	return float64(cuda_old.MaxAbs(s)) // just a max would be fine, but not currently implemented
+	defer cuda.Recycle(s)
+	return float64(cuda.MaxAbs(s)) // just a max would be fine, but not currently implemented
 }
