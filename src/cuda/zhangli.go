@@ -7,7 +7,7 @@ import (
 
 // Add Zhang-Li ST torque (Tesla) to torque.
 // see zhangli.cu
-func AddZhangLiTorque(torque, m *slice.Slice, Msat, J, alpha, xi, pol MSlice, mesh mesh.MeshLike) {
+func AddZhangLiTorque(torque, m *slice.Slice, Msat, J, alpha, xi, pol MSlice, mesh mesh.Mesh) {
 	c := mesh.CellSize()
 	N := mesh.Size()
 	cfg := make3DConf(N)

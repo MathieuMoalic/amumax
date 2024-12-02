@@ -8,7 +8,7 @@ import (
 
 // Set s to the topological charge density s = m · (∂m/∂x ❌ ∂m/∂y)
 // See topologicalcharge.cu
-func SetTopologicalCharge(s *slice.Slice, m *slice.Slice, mesh mesh.MeshLike) {
+func SetTopologicalCharge(s *slice.Slice, m *slice.Slice, mesh mesh.Mesh) {
 	cellsize := mesh.CellSize()
 	N := s.Size()
 	log.AssertMsg(m.Size() == N, "Size mismatch: m and s must have the same dimensions in SetTopologicalCharge")

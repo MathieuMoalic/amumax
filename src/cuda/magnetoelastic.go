@@ -31,7 +31,7 @@ func AddMagnetoelasticField(Beff, m *slice.Slice, exx, eyy, ezz, exy, exz, eyz, 
 
 // Calculate magneto-elastic force density
 // see magnetoelasticforce.cu
-func GetMagnetoelasticForceDensity(out, m *slice.Slice, B1, B2 MSlice, mesh mesh.MeshLike) {
+func GetMagnetoelasticForceDensity(out, m *slice.Slice, B1, B2 MSlice, mesh mesh.Mesh) {
 	log.AssertMsg(out.Size() == m.Size(), "Size mismatch: out and m must have the same dimensions in GetMagnetoelasticForceDensity")
 
 	cellsize := mesh.CellSize()
