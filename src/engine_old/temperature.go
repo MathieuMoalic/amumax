@@ -5,8 +5,8 @@ import (
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/curand"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/mag_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
-	"github.com/MathieuMoalic/amumax/src/mag"
 
 	"math"
 )
@@ -89,7 +89,7 @@ func (b *thermField) update() {
 		log_old.Log.Warn("nonzero temperature requires an even amount of grid cells, but all axes have "+
 			"an odd number of cells: %v. This may cause a CURAND_STATUS_LENGTH_NOT_MULTIPLE error.", GetMesh().Size())
 	}
-	k2_VgammaDt := 2 * mag.Kb / (gammaLL * cellVolume() * Dt_si)
+	k2_VgammaDt := 2 * mag_old.Kb / (gammaLL * cellVolume() * Dt_si)
 	noise := cuda_old.Buffer(1, GetMesh().Size())
 	defer cuda_old.Recycle(noise)
 

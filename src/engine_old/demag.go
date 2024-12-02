@@ -7,7 +7,7 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
-	"github.com/MathieuMoalic/amumax/src/mag"
+	"github.com/MathieuMoalic/amumax/src/engine_old/mag_old"
 )
 
 // Demag variables
@@ -102,7 +102,7 @@ func demagConv() *cuda_old.DemagConvolution {
 		defer setBusy(false)
 		// these 2 lines make sure the progress bar doesn't break when calculating the kernel
 		fmt.Print("\033[2K\r") // clearline ANSI escape code
-		kernel := mag.DemagKernel(GetMesh().Size(), GetMesh().PBC(), GetMesh().CellSize(), DemagAccuracy, CacheDir, HideProgresBar)
+		kernel := mag_old.DemagKernel(GetMesh().Size(), GetMesh().PBC(), GetMesh().CellSize(), DemagAccuracy, CacheDir, HideProgresBar)
 		conv_ = cuda_old.NewDemag(GetMesh().Size(), GetMesh().PBC(), kernel, SelfTest)
 	}
 	return conv_
