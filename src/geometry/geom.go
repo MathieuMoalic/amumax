@@ -22,13 +22,16 @@ type Geometry struct {
 	shapeFunc     shape.Shape
 }
 
-func (g *Geometry) Init(mesh *mesh.Mesh, log *log.Logs, config *mag_config.ConfigList, mag_slice *slice.Slice, mag_Normalize func()) {
+func (g *Geometry) Init(mesh *mesh.Mesh, log *log.Logs, config *mag_config.ConfigList, mag_Normalize func()) {
 	g.mesh = mesh
 	g.log = log
 	g.config = config
-	g.mag_slice = mag_slice
 	g.mag_Normalize = mag_Normalize
 	g.EdgeSmooth = 0
+}
+
+func (g *Geometry) InitializeBuffer(mag_slice *slice.Slice) {
+	g.mag_slice = mag_slice
 }
 
 func (g *Geometry) GetOrCreateGpuSlice() *slice.Slice {
@@ -132,7 +135,9 @@ func (g *Geometry) SetGeom(s shape.Shape) {
 	// M inside geom but previously outside needs to be re-inited
 	needupload := false
 	geomlist := CpuSlice.Host()[0]
+	g.log.Debug("2")
 	mhost := g.mag_slice.HostCopy()
+	g.log.Debug("3")
 	m := mhost.Host()
 	rng := rand.New(rand.NewSource(0))
 	for i := range m[0] {
