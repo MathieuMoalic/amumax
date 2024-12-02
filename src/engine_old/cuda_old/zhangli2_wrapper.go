@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for addzhanglitorque2 kernel
@@ -87,7 +87,7 @@ func init() {
 func k_addzhanglitorque2_async(tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, Ms_ unsafe.Pointer, Ms_mul float32, jx_ unsafe.Pointer, jx_mul float32, jy_ unsafe.Pointer, jy_mul float32, jz_ unsafe.Pointer, jz_mul float32, alpha_ unsafe.Pointer, alpha_mul float32, xi_ unsafe.Pointer, xi_mul float32, pol_ unsafe.Pointer, pol_mul float32, cx float32, cy float32, cz float32, Nx int, Ny int, Nz int, PBC byte, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("addzhanglitorque2")
+		timer_old.Start("addzhanglitorque2")
 	}
 
 	addzhanglitorque2_args.Lock()
@@ -130,7 +130,7 @@ func k_addzhanglitorque2_async(tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.P
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("addzhanglitorque2")
+		timer_old.Stop("addzhanglitorque2")
 	}
 }
 

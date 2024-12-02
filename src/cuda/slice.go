@@ -7,7 +7,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // Make a GPU Slice with nComp components each of size length.
@@ -38,26 +38,26 @@ func memFree(ptr unsafe.Pointer) { cu.MemFree(cu.DevicePtr(uintptr(ptr))) }
 
 func MemCpyDtoH(dst, src unsafe.Pointer, bytes int64) {
 	Sync() // sync previous kernels
-	timer.Start("memcpyDtoH")
+	timer_old.Start("memcpyDtoH")
 	cu.MemcpyDtoH(dst, cu.DevicePtr(uintptr(src)), bytes)
 	Sync() // sync copy
-	timer.Stop("memcpyDtoH")
+	timer_old.Stop("memcpyDtoH")
 }
 
 func MemCpyHtoD(dst, src unsafe.Pointer, bytes int64) {
 	Sync() // sync previous kernels
-	timer.Start("memcpyHtoD")
+	timer_old.Start("memcpyHtoD")
 	cu.MemcpyHtoD(cu.DevicePtr(uintptr(dst)), src, bytes)
 	Sync() // sync copy
-	timer.Stop("memcpyHtoD")
+	timer_old.Stop("memcpyHtoD")
 }
 
 func MemCpy(dst, src unsafe.Pointer, bytes int64) {
 	Sync()
-	timer.Start("memcpy")
+	timer_old.Start("memcpy")
 	cu.MemcpyAsync(cu.DevicePtr(uintptr(dst)), cu.DevicePtr(uintptr(src)), bytes, stream0)
 	Sync()
-	timer.Stop("memcpy")
+	timer_old.Stop("memcpy")
 }
 
 // Memset sets the Slice's components to the specified values.
@@ -65,7 +65,7 @@ func MemCpy(dst, src unsafe.Pointer, bytes int64) {
 func Memset(s *data_old.Slice, val ...float32) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("memset")
+		timer_old.Start("memset")
 	}
 	log_old.AssertMsg(len(val) == s.NComp(), "Memset: wrong number of values")
 	for c, v := range val {
@@ -73,7 +73,7 @@ func Memset(s *data_old.Slice, val ...float32) {
 	}
 	if Synchronous { //debug
 		Sync()
-		timer.Stop("memset")
+		timer_old.Stop("memset")
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for reducemaxabs kernel
@@ -41,7 +41,7 @@ func init() {
 func k_reducemaxabs_async(src unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("reducemaxabs")
+		timer_old.Start("reducemaxabs")
 	}
 
 	reducemaxabs_args.Lock()
@@ -61,7 +61,7 @@ func k_reducemaxabs_async(src unsafe.Pointer, dst unsafe.Pointer, initVal float3
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("reducemaxabs")
+		timer_old.Stop("reducemaxabs")
 	}
 }
 

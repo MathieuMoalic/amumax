@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for adddmibulk kernel
@@ -71,7 +71,7 @@ func init() {
 func k_adddmibulk_async(Hx unsafe.Pointer, Hy unsafe.Pointer, Hz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, Ms_ unsafe.Pointer, Ms_mul float32, aLUT2d unsafe.Pointer, DLUT2d unsafe.Pointer, regions unsafe.Pointer, cx float32, cy float32, cz float32, Nx int, Ny int, Nz int, PBC byte, OpenBC byte, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("adddmibulk")
+		timer_old.Start("adddmibulk")
 	}
 
 	adddmibulk_args.Lock()
@@ -106,7 +106,7 @@ func k_adddmibulk_async(Hx unsafe.Pointer, Hy unsafe.Pointer, Hz unsafe.Pointer,
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("adddmibulk")
+		timer_old.Stop("adddmibulk")
 	}
 }
 

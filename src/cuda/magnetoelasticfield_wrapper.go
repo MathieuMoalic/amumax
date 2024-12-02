@@ -5,136 +5,136 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import(
-	"unsafe"
-	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+import (
 	"sync"
+	"unsafe"
+
+	"github.com/MathieuMoalic/amumax/src/cuda/cu"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for addmagnetoelasticfield kernel
 var addmagnetoelasticfield_code cu.Function
 
 // Stores the arguments for addmagnetoelasticfield kernel invocation
-type addmagnetoelasticfield_args_t struct{
-	 arg_Bx unsafe.Pointer
-	 arg_By unsafe.Pointer
-	 arg_Bz unsafe.Pointer
-	 arg_mx unsafe.Pointer
-	 arg_my unsafe.Pointer
-	 arg_mz unsafe.Pointer
-	 arg_exx_ unsafe.Pointer
-	 arg_exx_mul float32
-	 arg_eyy_ unsafe.Pointer
-	 arg_eyy_mul float32
-	 arg_ezz_ unsafe.Pointer
-	 arg_ezz_mul float32
-	 arg_exy_ unsafe.Pointer
-	 arg_exy_mul float32
-	 arg_exz_ unsafe.Pointer
-	 arg_exz_mul float32
-	 arg_eyz_ unsafe.Pointer
-	 arg_eyz_mul float32
-	 arg_B1_ unsafe.Pointer
-	 arg_B1_mul float32
-	 arg_B2_ unsafe.Pointer
-	 arg_B2_mul float32
-	 arg_Ms_ unsafe.Pointer
-	 arg_Ms_mul float32
-	 arg_N int
-	 argptr [25]unsafe.Pointer
+type addmagnetoelasticfield_args_t struct {
+	arg_Bx      unsafe.Pointer
+	arg_By      unsafe.Pointer
+	arg_Bz      unsafe.Pointer
+	arg_mx      unsafe.Pointer
+	arg_my      unsafe.Pointer
+	arg_mz      unsafe.Pointer
+	arg_exx_    unsafe.Pointer
+	arg_exx_mul float32
+	arg_eyy_    unsafe.Pointer
+	arg_eyy_mul float32
+	arg_ezz_    unsafe.Pointer
+	arg_ezz_mul float32
+	arg_exy_    unsafe.Pointer
+	arg_exy_mul float32
+	arg_exz_    unsafe.Pointer
+	arg_exz_mul float32
+	arg_eyz_    unsafe.Pointer
+	arg_eyz_mul float32
+	arg_B1_     unsafe.Pointer
+	arg_B1_mul  float32
+	arg_B2_     unsafe.Pointer
+	arg_B2_mul  float32
+	arg_Ms_     unsafe.Pointer
+	arg_Ms_mul  float32
+	arg_N       int
+	argptr      [25]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for addmagnetoelasticfield kernel invocation
 var addmagnetoelasticfield_args addmagnetoelasticfield_args_t
 
-func init(){
+func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	 addmagnetoelasticfield_args.argptr[0] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_Bx)
-	 addmagnetoelasticfield_args.argptr[1] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_By)
-	 addmagnetoelasticfield_args.argptr[2] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_Bz)
-	 addmagnetoelasticfield_args.argptr[3] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_mx)
-	 addmagnetoelasticfield_args.argptr[4] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_my)
-	 addmagnetoelasticfield_args.argptr[5] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_mz)
-	 addmagnetoelasticfield_args.argptr[6] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_exx_)
-	 addmagnetoelasticfield_args.argptr[7] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_exx_mul)
-	 addmagnetoelasticfield_args.argptr[8] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_eyy_)
-	 addmagnetoelasticfield_args.argptr[9] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_eyy_mul)
-	 addmagnetoelasticfield_args.argptr[10] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_ezz_)
-	 addmagnetoelasticfield_args.argptr[11] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_ezz_mul)
-	 addmagnetoelasticfield_args.argptr[12] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_exy_)
-	 addmagnetoelasticfield_args.argptr[13] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_exy_mul)
-	 addmagnetoelasticfield_args.argptr[14] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_exz_)
-	 addmagnetoelasticfield_args.argptr[15] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_exz_mul)
-	 addmagnetoelasticfield_args.argptr[16] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_eyz_)
-	 addmagnetoelasticfield_args.argptr[17] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_eyz_mul)
-	 addmagnetoelasticfield_args.argptr[18] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_B1_)
-	 addmagnetoelasticfield_args.argptr[19] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_B1_mul)
-	 addmagnetoelasticfield_args.argptr[20] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_B2_)
-	 addmagnetoelasticfield_args.argptr[21] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_B2_mul)
-	 addmagnetoelasticfield_args.argptr[22] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_Ms_)
-	 addmagnetoelasticfield_args.argptr[23] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_Ms_mul)
-	 addmagnetoelasticfield_args.argptr[24] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_N)
-	 }
+	addmagnetoelasticfield_args.argptr[0] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_Bx)
+	addmagnetoelasticfield_args.argptr[1] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_By)
+	addmagnetoelasticfield_args.argptr[2] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_Bz)
+	addmagnetoelasticfield_args.argptr[3] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_mx)
+	addmagnetoelasticfield_args.argptr[4] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_my)
+	addmagnetoelasticfield_args.argptr[5] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_mz)
+	addmagnetoelasticfield_args.argptr[6] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_exx_)
+	addmagnetoelasticfield_args.argptr[7] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_exx_mul)
+	addmagnetoelasticfield_args.argptr[8] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_eyy_)
+	addmagnetoelasticfield_args.argptr[9] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_eyy_mul)
+	addmagnetoelasticfield_args.argptr[10] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_ezz_)
+	addmagnetoelasticfield_args.argptr[11] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_ezz_mul)
+	addmagnetoelasticfield_args.argptr[12] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_exy_)
+	addmagnetoelasticfield_args.argptr[13] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_exy_mul)
+	addmagnetoelasticfield_args.argptr[14] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_exz_)
+	addmagnetoelasticfield_args.argptr[15] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_exz_mul)
+	addmagnetoelasticfield_args.argptr[16] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_eyz_)
+	addmagnetoelasticfield_args.argptr[17] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_eyz_mul)
+	addmagnetoelasticfield_args.argptr[18] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_B1_)
+	addmagnetoelasticfield_args.argptr[19] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_B1_mul)
+	addmagnetoelasticfield_args.argptr[20] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_B2_)
+	addmagnetoelasticfield_args.argptr[21] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_B2_mul)
+	addmagnetoelasticfield_args.argptr[22] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_Ms_)
+	addmagnetoelasticfield_args.argptr[23] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_Ms_mul)
+	addmagnetoelasticfield_args.argptr[24] = unsafe.Pointer(&addmagnetoelasticfield_args.arg_N)
+}
 
 // Wrapper for addmagnetoelasticfield CUDA kernel, asynchronous.
-func k_addmagnetoelasticfield_async ( Bx unsafe.Pointer, By unsafe.Pointer, Bz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, exx_ unsafe.Pointer, exx_mul float32, eyy_ unsafe.Pointer, eyy_mul float32, ezz_ unsafe.Pointer, ezz_mul float32, exy_ unsafe.Pointer, exy_mul float32, exz_ unsafe.Pointer, exz_mul float32, eyz_ unsafe.Pointer, eyz_mul float32, B1_ unsafe.Pointer, B1_mul float32, B2_ unsafe.Pointer, B2_mul float32, Ms_ unsafe.Pointer, Ms_mul float32, N int,  cfg *config) {
-	if Synchronous{ // debug
+func k_addmagnetoelasticfield_async(Bx unsafe.Pointer, By unsafe.Pointer, Bz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, exx_ unsafe.Pointer, exx_mul float32, eyy_ unsafe.Pointer, eyy_mul float32, ezz_ unsafe.Pointer, ezz_mul float32, exy_ unsafe.Pointer, exy_mul float32, exz_ unsafe.Pointer, exz_mul float32, eyz_ unsafe.Pointer, eyz_mul float32, B1_ unsafe.Pointer, B1_mul float32, B2_ unsafe.Pointer, B2_mul float32, Ms_ unsafe.Pointer, Ms_mul float32, N int, cfg *config) {
+	if Synchronous { // debug
 		Sync()
-		timer.Start("addmagnetoelasticfield")
+		timer_old.Start("addmagnetoelasticfield")
 	}
 
 	addmagnetoelasticfield_args.Lock()
 	defer addmagnetoelasticfield_args.Unlock()
 
-	if addmagnetoelasticfield_code == 0{
+	if addmagnetoelasticfield_code == 0 {
 		addmagnetoelasticfield_code = fatbinLoad(addmagnetoelasticfield_map, "addmagnetoelasticfield")
 	}
 
-	 addmagnetoelasticfield_args.arg_Bx = Bx
-	 addmagnetoelasticfield_args.arg_By = By
-	 addmagnetoelasticfield_args.arg_Bz = Bz
-	 addmagnetoelasticfield_args.arg_mx = mx
-	 addmagnetoelasticfield_args.arg_my = my
-	 addmagnetoelasticfield_args.arg_mz = mz
-	 addmagnetoelasticfield_args.arg_exx_ = exx_
-	 addmagnetoelasticfield_args.arg_exx_mul = exx_mul
-	 addmagnetoelasticfield_args.arg_eyy_ = eyy_
-	 addmagnetoelasticfield_args.arg_eyy_mul = eyy_mul
-	 addmagnetoelasticfield_args.arg_ezz_ = ezz_
-	 addmagnetoelasticfield_args.arg_ezz_mul = ezz_mul
-	 addmagnetoelasticfield_args.arg_exy_ = exy_
-	 addmagnetoelasticfield_args.arg_exy_mul = exy_mul
-	 addmagnetoelasticfield_args.arg_exz_ = exz_
-	 addmagnetoelasticfield_args.arg_exz_mul = exz_mul
-	 addmagnetoelasticfield_args.arg_eyz_ = eyz_
-	 addmagnetoelasticfield_args.arg_eyz_mul = eyz_mul
-	 addmagnetoelasticfield_args.arg_B1_ = B1_
-	 addmagnetoelasticfield_args.arg_B1_mul = B1_mul
-	 addmagnetoelasticfield_args.arg_B2_ = B2_
-	 addmagnetoelasticfield_args.arg_B2_mul = B2_mul
-	 addmagnetoelasticfield_args.arg_Ms_ = Ms_
-	 addmagnetoelasticfield_args.arg_Ms_mul = Ms_mul
-	 addmagnetoelasticfield_args.arg_N = N
-	
+	addmagnetoelasticfield_args.arg_Bx = Bx
+	addmagnetoelasticfield_args.arg_By = By
+	addmagnetoelasticfield_args.arg_Bz = Bz
+	addmagnetoelasticfield_args.arg_mx = mx
+	addmagnetoelasticfield_args.arg_my = my
+	addmagnetoelasticfield_args.arg_mz = mz
+	addmagnetoelasticfield_args.arg_exx_ = exx_
+	addmagnetoelasticfield_args.arg_exx_mul = exx_mul
+	addmagnetoelasticfield_args.arg_eyy_ = eyy_
+	addmagnetoelasticfield_args.arg_eyy_mul = eyy_mul
+	addmagnetoelasticfield_args.arg_ezz_ = ezz_
+	addmagnetoelasticfield_args.arg_ezz_mul = ezz_mul
+	addmagnetoelasticfield_args.arg_exy_ = exy_
+	addmagnetoelasticfield_args.arg_exy_mul = exy_mul
+	addmagnetoelasticfield_args.arg_exz_ = exz_
+	addmagnetoelasticfield_args.arg_exz_mul = exz_mul
+	addmagnetoelasticfield_args.arg_eyz_ = eyz_
+	addmagnetoelasticfield_args.arg_eyz_mul = eyz_mul
+	addmagnetoelasticfield_args.arg_B1_ = B1_
+	addmagnetoelasticfield_args.arg_B1_mul = B1_mul
+	addmagnetoelasticfield_args.arg_B2_ = B2_
+	addmagnetoelasticfield_args.arg_B2_mul = B2_mul
+	addmagnetoelasticfield_args.arg_Ms_ = Ms_
+	addmagnetoelasticfield_args.arg_Ms_mul = Ms_mul
+	addmagnetoelasticfield_args.arg_N = N
 
 	args := addmagnetoelasticfield_args.argptr[:]
 	cu.LaunchKernel(addmagnetoelasticfield_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous{ // debug
+	if Synchronous { // debug
 		Sync()
-		timer.Stop("addmagnetoelasticfield")
+		timer_old.Stop("addmagnetoelasticfield")
 	}
 }
 
 // maps compute capability on PTX code for addmagnetoelasticfield kernel.
-var addmagnetoelasticfield_map = map[int]string{ 0: "" ,
-52: addmagnetoelasticfield_ptx_52  }
+var addmagnetoelasticfield_map = map[int]string{0: "",
+	52: addmagnetoelasticfield_ptx_52}
 
 // addmagnetoelasticfield PTX code for various compute capabilities.
-const(
-  addmagnetoelasticfield_ptx_52 = `
+const (
+	addmagnetoelasticfield_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -357,4 +357,4 @@ BB0_22:
 
 
 `
- )
+)

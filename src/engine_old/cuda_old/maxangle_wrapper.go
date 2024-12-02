@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for setmaxangle kernel
@@ -53,7 +53,7 @@ func init() {
 func k_setmaxangle_async(dst unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, aLUT2d unsafe.Pointer, regions unsafe.Pointer, Nx int, Ny int, Nz int, PBC byte, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("setmaxangle")
+		timer_old.Start("setmaxangle")
 	}
 
 	setmaxangle_args.Lock()
@@ -79,7 +79,7 @@ func k_setmaxangle_async(dst unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointe
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("setmaxangle")
+		timer_old.Stop("setmaxangle")
 	}
 }
 

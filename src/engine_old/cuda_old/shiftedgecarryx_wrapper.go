@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for shiftedgecarryX kernel
@@ -53,7 +53,7 @@ func init() {
 func k_shiftedgecarryX_async(dst unsafe.Pointer, src unsafe.Pointer, othercomp unsafe.Pointer, anothercomp unsafe.Pointer, Nx int, Ny int, Nz int, shx int, clampL float32, clampR float32, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("shiftedgecarryX")
+		timer_old.Start("shiftedgecarryX")
 	}
 
 	shiftedgecarryX_args.Lock()
@@ -79,7 +79,7 @@ func k_shiftedgecarryX_async(dst unsafe.Pointer, src unsafe.Pointer, othercomp u
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("shiftedgecarryX")
+		timer_old.Stop("shiftedgecarryX")
 	}
 }
 

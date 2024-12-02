@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // Asynchronous I/O queue flushes data to disk while simulation keeps running.
@@ -35,12 +35,12 @@ func (a *atom) Load() int32 {
 
 func queOutput(f func()) {
 	if cuda_old.Synchronous {
-		timer.Start("io")
+		timer_old.Start("io")
 	}
 	queLen.Add(1)
 	saveQue <- f
 	if cuda_old.Synchronous {
-		timer.Stop("io")
+		timer_old.Stop("io")
 	}
 }
 

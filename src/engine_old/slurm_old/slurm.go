@@ -1,4 +1,4 @@
-package slurm
+package slurm_old
 
 import (
 	"fmt"
@@ -11,6 +11,31 @@ import (
 	"github.com/MathieuMoalic/amumax/src/engine_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
+
+func SetEndTimerIfSlurm() {
+	// Check if running in SLURM
+	if os.Getenv("SLURM_JOB_ID") != "" {
+		getSlurmMetadata()
+		endTime, err := getSlurmEndTime()
+		if err != nil {
+			log_old.Log.Warn("Error getting SLURM end time: %v", err)
+			return
+		}
+
+		// Start a goroutine to notify when there are 15 seconds left
+		for {
+			remaining := time.Until(endTime)
+			if remaining <= 30*time.Second && remaining > 0 {
+				// If 30 seconds or less are remaining, print the message
+				log_old.Log.Warn("30 seconds remaining until the job ends!")
+				log_old.Log.Warn("Cleanly exiting the simulation early...")
+				engine_old.Exit()
+			}
+			// Sleep for a short while before checking again
+			time.Sleep(15 * time.Second)
+		}
+	}
+}
 
 // Parse D:HH:MM:SS, HH:MM:SS, or MM:SS format into time.Duration
 func parseRemainingTime(remainingTimeStr string) (time.Duration, error) {
@@ -67,32 +92,6 @@ func getSlurmEndTime() (time.Time, error) {
 	// Calculate the end time by adding the remaining time to the current time
 	endTime := time.Now().Add(remainingTime)
 	return endTime, nil
-}
-
-// Example usage
-func SetEndTimerIfSlurm() {
-	// Check if running in SLURM
-	if os.Getenv("SLURM_JOB_ID") != "" {
-		getSlurmMetadata()
-		endTime, err := getSlurmEndTime()
-		if err != nil {
-			log_old.Log.Warn("Error getting SLURM end time: %v", err)
-			return
-		}
-
-		// Start a goroutine to notify when there are 15 seconds left
-		for {
-			remaining := time.Until(endTime)
-			if remaining <= 30*time.Second && remaining > 0 {
-				// If 30 seconds or less are remaining, print the message
-				log_old.Log.Warn("30 seconds remaining until the job ends!")
-				log_old.Log.Warn("Cleanly exiting the simulation early...")
-				engine_old.Exit()
-			}
-			// Sleep for a short while before checking again
-			time.Sleep(15 * time.Second)
-		}
-	}
 }
 
 func getSlurmMetadata() {

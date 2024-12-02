@@ -5,79 +5,79 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import(
-	"unsafe"
-	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+import (
 	"sync"
+	"unsafe"
+
+	"github.com/MathieuMoalic/amumax/src/cuda/cu"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for setPhi kernel
 var setPhi_code cu.Function
 
 // Stores the arguments for setPhi kernel invocation
-type setPhi_args_t struct{
-	 arg_phi unsafe.Pointer
-	 arg_mx unsafe.Pointer
-	 arg_my unsafe.Pointer
-	 arg_Nx int
-	 arg_Ny int
-	 arg_Nz int
-	 argptr [6]unsafe.Pointer
+type setPhi_args_t struct {
+	arg_phi unsafe.Pointer
+	arg_mx  unsafe.Pointer
+	arg_my  unsafe.Pointer
+	arg_Nx  int
+	arg_Ny  int
+	arg_Nz  int
+	argptr  [6]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for setPhi kernel invocation
 var setPhi_args setPhi_args_t
 
-func init(){
+func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	 setPhi_args.argptr[0] = unsafe.Pointer(&setPhi_args.arg_phi)
-	 setPhi_args.argptr[1] = unsafe.Pointer(&setPhi_args.arg_mx)
-	 setPhi_args.argptr[2] = unsafe.Pointer(&setPhi_args.arg_my)
-	 setPhi_args.argptr[3] = unsafe.Pointer(&setPhi_args.arg_Nx)
-	 setPhi_args.argptr[4] = unsafe.Pointer(&setPhi_args.arg_Ny)
-	 setPhi_args.argptr[5] = unsafe.Pointer(&setPhi_args.arg_Nz)
-	 }
+	setPhi_args.argptr[0] = unsafe.Pointer(&setPhi_args.arg_phi)
+	setPhi_args.argptr[1] = unsafe.Pointer(&setPhi_args.arg_mx)
+	setPhi_args.argptr[2] = unsafe.Pointer(&setPhi_args.arg_my)
+	setPhi_args.argptr[3] = unsafe.Pointer(&setPhi_args.arg_Nx)
+	setPhi_args.argptr[4] = unsafe.Pointer(&setPhi_args.arg_Ny)
+	setPhi_args.argptr[5] = unsafe.Pointer(&setPhi_args.arg_Nz)
+}
 
 // Wrapper for setPhi CUDA kernel, asynchronous.
-func k_setPhi_async ( phi unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, Nx int, Ny int, Nz int,  cfg *config) {
-	if Synchronous{ // debug
+func k_setPhi_async(phi unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, Nx int, Ny int, Nz int, cfg *config) {
+	if Synchronous { // debug
 		Sync()
-		timer.Start("setPhi")
+		timer_old.Start("setPhi")
 	}
 
 	setPhi_args.Lock()
 	defer setPhi_args.Unlock()
 
-	if setPhi_code == 0{
+	if setPhi_code == 0 {
 		setPhi_code = fatbinLoad(setPhi_map, "setPhi")
 	}
 
-	 setPhi_args.arg_phi = phi
-	 setPhi_args.arg_mx = mx
-	 setPhi_args.arg_my = my
-	 setPhi_args.arg_Nx = Nx
-	 setPhi_args.arg_Ny = Ny
-	 setPhi_args.arg_Nz = Nz
-	
+	setPhi_args.arg_phi = phi
+	setPhi_args.arg_mx = mx
+	setPhi_args.arg_my = my
+	setPhi_args.arg_Nx = Nx
+	setPhi_args.arg_Ny = Ny
+	setPhi_args.arg_Nz = Nz
 
 	args := setPhi_args.argptr[:]
 	cu.LaunchKernel(setPhi_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous{ // debug
+	if Synchronous { // debug
 		Sync()
-		timer.Stop("setPhi")
+		timer_old.Stop("setPhi")
 	}
 }
 
 // maps compute capability on PTX code for setPhi kernel.
-var setPhi_map = map[int]string{ 0: "" ,
-52: setPhi_ptx_52  }
+var setPhi_map = map[int]string{0: "",
+	52: setPhi_ptx_52}
 
 // setPhi PTX code for various compute capabilities.
-const(
-  setPhi_ptx_52 = `
+const (
+	setPhi_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -211,4 +211,4 @@ BB0_7:
 
 
 `
- )
+)

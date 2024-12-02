@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for setPhi kernel
@@ -45,7 +45,7 @@ func init() {
 func k_setPhi_async(phi unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, Nx int, Ny int, Nz int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("setPhi")
+		timer_old.Start("setPhi")
 	}
 
 	setPhi_args.Lock()
@@ -67,7 +67,7 @@ func k_setPhi_async(phi unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, Nx
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("setPhi")
+		timer_old.Stop("setPhi")
 	}
 }
 

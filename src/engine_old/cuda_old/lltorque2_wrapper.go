@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for lltorque2 kernel
@@ -57,7 +57,7 @@ func init() {
 func k_lltorque2_async(tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, hx unsafe.Pointer, hy unsafe.Pointer, hz unsafe.Pointer, alpha_ unsafe.Pointer, alpha_mul float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("lltorque2")
+		timer_old.Start("lltorque2")
 	}
 
 	lltorque2_args.Lock()
@@ -85,7 +85,7 @@ func k_lltorque2_async(tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer, 
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("lltorque2")
+		timer_old.Stop("lltorque2")
 	}
 }
 

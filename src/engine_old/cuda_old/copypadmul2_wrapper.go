@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for copypadmul2 kernel
@@ -55,7 +55,7 @@ func init() {
 func k_copypadmul2_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Pointer, Sx int, Sy int, Sz int, Ms_ unsafe.Pointer, Ms_mul float32, vol unsafe.Pointer, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("copypadmul2")
+		timer_old.Start("copypadmul2")
 	}
 
 	copypadmul2_args.Lock()
@@ -82,7 +82,7 @@ func k_copypadmul2_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("copypadmul2")
+		timer_old.Stop("copypadmul2")
 	}
 }
 

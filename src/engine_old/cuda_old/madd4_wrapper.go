@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for madd4 kernel
@@ -53,7 +53,7 @@ func init() {
 func k_madd4_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, src4 unsafe.Pointer, fac4 float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("madd4")
+		timer_old.Start("madd4")
 	}
 
 	madd4_args.Lock()
@@ -79,7 +79,7 @@ func k_madd4_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 u
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("madd4")
+		timer_old.Stop("madd4")
 	}
 }
 

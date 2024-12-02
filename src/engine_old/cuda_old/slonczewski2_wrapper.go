@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for addslonczewskitorque2 kernel
@@ -91,7 +91,7 @@ func init() {
 func k_addslonczewskitorque2_async(tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, Ms_ unsafe.Pointer, Ms_mul float32, jz_ unsafe.Pointer, jz_mul float32, px_ unsafe.Pointer, px_mul float32, py_ unsafe.Pointer, py_mul float32, pz_ unsafe.Pointer, pz_mul float32, alpha_ unsafe.Pointer, alpha_mul float32, pol_ unsafe.Pointer, pol_mul float32, lambda_ unsafe.Pointer, lambda_mul float32, epsPrime_ unsafe.Pointer, epsPrime_mul float32, thickness_ unsafe.Pointer, thickness_mul float32, meshThickness float32, freeLayerPosition float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("addslonczewskitorque2")
+		timer_old.Start("addslonczewskitorque2")
 	}
 
 	addslonczewskitorque2_args.Lock()
@@ -136,7 +136,7 @@ func k_addslonczewskitorque2_async(tx unsafe.Pointer, ty unsafe.Pointer, tz unsa
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("addslonczewskitorque2")
+		timer_old.Stop("addslonczewskitorque2")
 	}
 }
 

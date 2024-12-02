@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for exchangedecode kernel
@@ -53,7 +53,7 @@ func init() {
 func k_exchangedecode_async(dst unsafe.Pointer, aLUT2d unsafe.Pointer, regions unsafe.Pointer, wx float32, wy float32, wz float32, Nx int, Ny int, Nz int, PBC byte, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("exchangedecode")
+		timer_old.Start("exchangedecode")
 	}
 
 	exchangedecode_args.Lock()
@@ -79,7 +79,7 @@ func k_exchangedecode_async(dst unsafe.Pointer, aLUT2d unsafe.Pointer, regions u
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("exchangedecode")
+		timer_old.Stop("exchangedecode")
 	}
 }
 

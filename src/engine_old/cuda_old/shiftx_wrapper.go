@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for shiftx kernel
@@ -49,7 +49,7 @@ func init() {
 func k_shiftx_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz int, shx int, clampL float32, clampR float32, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("shiftx")
+		timer_old.Start("shiftx")
 	}
 
 	shiftx_args.Lock()
@@ -73,7 +73,7 @@ func k_shiftx_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz i
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("shiftx")
+		timer_old.Stop("shiftx")
 	}
 }
 

@@ -5,79 +5,79 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import(
-	"unsafe"
-	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+import (
 	"sync"
+	"unsafe"
+
+	"github.com/MathieuMoalic/amumax/src/cuda/cu"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for reducemaxvecnorm2 kernel
 var reducemaxvecnorm2_code cu.Function
 
 // Stores the arguments for reducemaxvecnorm2 kernel invocation
-type reducemaxvecnorm2_args_t struct{
-	 arg_x unsafe.Pointer
-	 arg_y unsafe.Pointer
-	 arg_z unsafe.Pointer
-	 arg_dst unsafe.Pointer
-	 arg_initVal float32
-	 arg_n int
-	 argptr [6]unsafe.Pointer
+type reducemaxvecnorm2_args_t struct {
+	arg_x       unsafe.Pointer
+	arg_y       unsafe.Pointer
+	arg_z       unsafe.Pointer
+	arg_dst     unsafe.Pointer
+	arg_initVal float32
+	arg_n       int
+	argptr      [6]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for reducemaxvecnorm2 kernel invocation
 var reducemaxvecnorm2_args reducemaxvecnorm2_args_t
 
-func init(){
+func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	 reducemaxvecnorm2_args.argptr[0] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_x)
-	 reducemaxvecnorm2_args.argptr[1] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_y)
-	 reducemaxvecnorm2_args.argptr[2] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_z)
-	 reducemaxvecnorm2_args.argptr[3] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_dst)
-	 reducemaxvecnorm2_args.argptr[4] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_initVal)
-	 reducemaxvecnorm2_args.argptr[5] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_n)
-	 }
+	reducemaxvecnorm2_args.argptr[0] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_x)
+	reducemaxvecnorm2_args.argptr[1] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_y)
+	reducemaxvecnorm2_args.argptr[2] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_z)
+	reducemaxvecnorm2_args.argptr[3] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_dst)
+	reducemaxvecnorm2_args.argptr[4] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_initVal)
+	reducemaxvecnorm2_args.argptr[5] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_n)
+}
 
 // Wrapper for reducemaxvecnorm2 CUDA kernel, asynchronous.
-func k_reducemaxvecnorm2_async ( x unsafe.Pointer, y unsafe.Pointer, z unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int,  cfg *config) {
-	if Synchronous{ // debug
+func k_reducemaxvecnorm2_async(x unsafe.Pointer, y unsafe.Pointer, z unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int, cfg *config) {
+	if Synchronous { // debug
 		Sync()
-		timer.Start("reducemaxvecnorm2")
+		timer_old.Start("reducemaxvecnorm2")
 	}
 
 	reducemaxvecnorm2_args.Lock()
 	defer reducemaxvecnorm2_args.Unlock()
 
-	if reducemaxvecnorm2_code == 0{
+	if reducemaxvecnorm2_code == 0 {
 		reducemaxvecnorm2_code = fatbinLoad(reducemaxvecnorm2_map, "reducemaxvecnorm2")
 	}
 
-	 reducemaxvecnorm2_args.arg_x = x
-	 reducemaxvecnorm2_args.arg_y = y
-	 reducemaxvecnorm2_args.arg_z = z
-	 reducemaxvecnorm2_args.arg_dst = dst
-	 reducemaxvecnorm2_args.arg_initVal = initVal
-	 reducemaxvecnorm2_args.arg_n = n
-	
+	reducemaxvecnorm2_args.arg_x = x
+	reducemaxvecnorm2_args.arg_y = y
+	reducemaxvecnorm2_args.arg_z = z
+	reducemaxvecnorm2_args.arg_dst = dst
+	reducemaxvecnorm2_args.arg_initVal = initVal
+	reducemaxvecnorm2_args.arg_n = n
 
 	args := reducemaxvecnorm2_args.argptr[:]
 	cu.LaunchKernel(reducemaxvecnorm2_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous{ // debug
+	if Synchronous { // debug
 		Sync()
-		timer.Stop("reducemaxvecnorm2")
+		timer_old.Stop("reducemaxvecnorm2")
 	}
 }
 
 // maps compute capability on PTX code for reducemaxvecnorm2 kernel.
-var reducemaxvecnorm2_map = map[int]string{ 0: "" ,
-52: reducemaxvecnorm2_ptx_52  }
+var reducemaxvecnorm2_map = map[int]string{0: "",
+	52: reducemaxvecnorm2_ptx_52}
 
 // reducemaxvecnorm2 PTX code for various compute capabilities.
-const(
-  reducemaxvecnorm2_ptx_52 = `
+const (
+	reducemaxvecnorm2_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -207,4 +207,4 @@ BB0_10:
 
 
 `
- )
+)

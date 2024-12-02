@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for pointwise_div kernel
@@ -41,7 +41,7 @@ func init() {
 func k_pointwise_div_async(dst unsafe.Pointer, a unsafe.Pointer, b unsafe.Pointer, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("pointwise_div")
+		timer_old.Start("pointwise_div")
 	}
 
 	pointwise_div_args.Lock()
@@ -61,7 +61,7 @@ func k_pointwise_div_async(dst unsafe.Pointer, a unsafe.Pointer, b unsafe.Pointe
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("pointwise_div")
+		timer_old.Stop("pointwise_div")
 	}
 }
 

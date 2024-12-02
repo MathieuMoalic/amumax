@@ -6,7 +6,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/cuda/cufft"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // 3D single-precission real-to-complex FFT plan.
@@ -27,7 +27,7 @@ func newFFT3DC2R(Nx, Ny, Nz int) fft3DC2RPlan {
 func (p *fft3DC2RPlan) ExecAsync(src, dst *data_old.Slice) {
 	if Synchronous {
 		Sync()
-		timer.Start("fft")
+		timer_old.Start("fft")
 	}
 	oksrclen := p.InputLenFloats()
 	if src.Len() != oksrclen {
@@ -40,7 +40,7 @@ func (p *fft3DC2RPlan) ExecAsync(src, dst *data_old.Slice) {
 	p.handle.ExecC2R(cu.DevicePtr(uintptr(src.DevPtr(0))), cu.DevicePtr(uintptr(dst.DevPtr(0))))
 	if Synchronous {
 		Sync()
-		timer.Stop("fft")
+		timer_old.Stop("fft")
 	}
 }
 

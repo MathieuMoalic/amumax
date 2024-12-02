@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for kernmulRSymm3D kernel
@@ -57,7 +57,7 @@ func init() {
 func k_kernmulRSymm3D_async(fftMx unsafe.Pointer, fftMy unsafe.Pointer, fftMz unsafe.Pointer, fftKxx unsafe.Pointer, fftKyy unsafe.Pointer, fftKzz unsafe.Pointer, fftKyz unsafe.Pointer, fftKxz unsafe.Pointer, fftKxy unsafe.Pointer, Nx int, Ny int, Nz int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("kernmulRSymm3D")
+		timer_old.Start("kernmulRSymm3D")
 	}
 
 	kernmulRSymm3D_args.Lock()
@@ -85,7 +85,7 @@ func k_kernmulRSymm3D_async(fftMx unsafe.Pointer, fftMy unsafe.Pointer, fftMz un
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("kernmulRSymm3D")
+		timer_old.Stop("kernmulRSymm3D")
 	}
 }
 

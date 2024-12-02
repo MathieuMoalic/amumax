@@ -5,97 +5,97 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import(
-	"unsafe"
-	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+import (
 	"sync"
+	"unsafe"
+
+	"github.com/MathieuMoalic/amumax/src/cuda/cu"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for madd5 kernel
 var madd5_code cu.Function
 
 // Stores the arguments for madd5 kernel invocation
-type madd5_args_t struct{
-	 arg_dst unsafe.Pointer
-	 arg_src1 unsafe.Pointer
-	 arg_fac1 float32
-	 arg_src2 unsafe.Pointer
-	 arg_fac2 float32
-	 arg_src3 unsafe.Pointer
-	 arg_fac3 float32
-	 arg_src4 unsafe.Pointer
-	 arg_fac4 float32
-	 arg_src5 unsafe.Pointer
-	 arg_fac5 float32
-	 arg_N int
-	 argptr [12]unsafe.Pointer
+type madd5_args_t struct {
+	arg_dst  unsafe.Pointer
+	arg_src1 unsafe.Pointer
+	arg_fac1 float32
+	arg_src2 unsafe.Pointer
+	arg_fac2 float32
+	arg_src3 unsafe.Pointer
+	arg_fac3 float32
+	arg_src4 unsafe.Pointer
+	arg_fac4 float32
+	arg_src5 unsafe.Pointer
+	arg_fac5 float32
+	arg_N    int
+	argptr   [12]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for madd5 kernel invocation
 var madd5_args madd5_args_t
 
-func init(){
+func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	 madd5_args.argptr[0] = unsafe.Pointer(&madd5_args.arg_dst)
-	 madd5_args.argptr[1] = unsafe.Pointer(&madd5_args.arg_src1)
-	 madd5_args.argptr[2] = unsafe.Pointer(&madd5_args.arg_fac1)
-	 madd5_args.argptr[3] = unsafe.Pointer(&madd5_args.arg_src2)
-	 madd5_args.argptr[4] = unsafe.Pointer(&madd5_args.arg_fac2)
-	 madd5_args.argptr[5] = unsafe.Pointer(&madd5_args.arg_src3)
-	 madd5_args.argptr[6] = unsafe.Pointer(&madd5_args.arg_fac3)
-	 madd5_args.argptr[7] = unsafe.Pointer(&madd5_args.arg_src4)
-	 madd5_args.argptr[8] = unsafe.Pointer(&madd5_args.arg_fac4)
-	 madd5_args.argptr[9] = unsafe.Pointer(&madd5_args.arg_src5)
-	 madd5_args.argptr[10] = unsafe.Pointer(&madd5_args.arg_fac5)
-	 madd5_args.argptr[11] = unsafe.Pointer(&madd5_args.arg_N)
-	 }
+	madd5_args.argptr[0] = unsafe.Pointer(&madd5_args.arg_dst)
+	madd5_args.argptr[1] = unsafe.Pointer(&madd5_args.arg_src1)
+	madd5_args.argptr[2] = unsafe.Pointer(&madd5_args.arg_fac1)
+	madd5_args.argptr[3] = unsafe.Pointer(&madd5_args.arg_src2)
+	madd5_args.argptr[4] = unsafe.Pointer(&madd5_args.arg_fac2)
+	madd5_args.argptr[5] = unsafe.Pointer(&madd5_args.arg_src3)
+	madd5_args.argptr[6] = unsafe.Pointer(&madd5_args.arg_fac3)
+	madd5_args.argptr[7] = unsafe.Pointer(&madd5_args.arg_src4)
+	madd5_args.argptr[8] = unsafe.Pointer(&madd5_args.arg_fac4)
+	madd5_args.argptr[9] = unsafe.Pointer(&madd5_args.arg_src5)
+	madd5_args.argptr[10] = unsafe.Pointer(&madd5_args.arg_fac5)
+	madd5_args.argptr[11] = unsafe.Pointer(&madd5_args.arg_N)
+}
 
 // Wrapper for madd5 CUDA kernel, asynchronous.
-func k_madd5_async ( dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, src4 unsafe.Pointer, fac4 float32, src5 unsafe.Pointer, fac5 float32, N int,  cfg *config) {
-	if Synchronous{ // debug
+func k_madd5_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, src4 unsafe.Pointer, fac4 float32, src5 unsafe.Pointer, fac5 float32, N int, cfg *config) {
+	if Synchronous { // debug
 		Sync()
-		timer.Start("madd5")
+		timer_old.Start("madd5")
 	}
 
 	madd5_args.Lock()
 	defer madd5_args.Unlock()
 
-	if madd5_code == 0{
+	if madd5_code == 0 {
 		madd5_code = fatbinLoad(madd5_map, "madd5")
 	}
 
-	 madd5_args.arg_dst = dst
-	 madd5_args.arg_src1 = src1
-	 madd5_args.arg_fac1 = fac1
-	 madd5_args.arg_src2 = src2
-	 madd5_args.arg_fac2 = fac2
-	 madd5_args.arg_src3 = src3
-	 madd5_args.arg_fac3 = fac3
-	 madd5_args.arg_src4 = src4
-	 madd5_args.arg_fac4 = fac4
-	 madd5_args.arg_src5 = src5
-	 madd5_args.arg_fac5 = fac5
-	 madd5_args.arg_N = N
-	
+	madd5_args.arg_dst = dst
+	madd5_args.arg_src1 = src1
+	madd5_args.arg_fac1 = fac1
+	madd5_args.arg_src2 = src2
+	madd5_args.arg_fac2 = fac2
+	madd5_args.arg_src3 = src3
+	madd5_args.arg_fac3 = fac3
+	madd5_args.arg_src4 = src4
+	madd5_args.arg_fac4 = fac4
+	madd5_args.arg_src5 = src5
+	madd5_args.arg_fac5 = fac5
+	madd5_args.arg_N = N
 
 	args := madd5_args.argptr[:]
 	cu.LaunchKernel(madd5_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous{ // debug
+	if Synchronous { // debug
 		Sync()
-		timer.Stop("madd5")
+		timer_old.Stop("madd5")
 	}
 }
 
 // maps compute capability on PTX code for madd5 kernel.
-var madd5_map = map[int]string{ 0: "" ,
-52: madd5_ptx_52  }
+var madd5_map = map[int]string{0: "",
+	52: madd5_ptx_52}
 
 // madd5 PTX code for various compute capabilities.
-const(
-  madd5_ptx_52 = `
+const (
+	madd5_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -176,4 +176,4 @@ BB0_2:
 
 
 `
- )
+)

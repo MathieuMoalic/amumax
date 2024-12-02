@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for addcubicanisotropy2 kernel
@@ -87,7 +87,7 @@ func init() {
 func k_addcubicanisotropy2_async(Bx unsafe.Pointer, By unsafe.Pointer, Bz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, Ms_ unsafe.Pointer, Ms_mul float32, k1_ unsafe.Pointer, k1_mul float32, k2_ unsafe.Pointer, k2_mul float32, k3_ unsafe.Pointer, k3_mul float32, c1x_ unsafe.Pointer, c1x_mul float32, c1y_ unsafe.Pointer, c1y_mul float32, c1z_ unsafe.Pointer, c1z_mul float32, c2x_ unsafe.Pointer, c2x_mul float32, c2y_ unsafe.Pointer, c2y_mul float32, c2z_ unsafe.Pointer, c2z_mul float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("addcubicanisotropy2")
+		timer_old.Start("addcubicanisotropy2")
 	}
 
 	addcubicanisotropy2_args.Lock()
@@ -130,7 +130,7 @@ func k_addcubicanisotropy2_async(Bx unsafe.Pointer, By unsafe.Pointer, Bz unsafe
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("addcubicanisotropy2")
+		timer_old.Stop("addcubicanisotropy2")
 	}
 }
 

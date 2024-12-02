@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for copyunpad kernel
@@ -49,7 +49,7 @@ func init() {
 func k_copyunpad_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Pointer, Sx int, Sy int, Sz int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("copyunpad")
+		timer_old.Start("copyunpad")
 	}
 
 	copyunpad_args.Lock()
@@ -73,7 +73,7 @@ func k_copyunpad_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Po
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("copyunpad")
+		timer_old.Stop("copyunpad")
 	}
 }
 

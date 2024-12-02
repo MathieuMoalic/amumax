@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for crossproduct kernel
@@ -53,7 +53,7 @@ func init() {
 func k_crossproduct_async(dstx unsafe.Pointer, dsty unsafe.Pointer, dstz unsafe.Pointer, ax unsafe.Pointer, ay unsafe.Pointer, az unsafe.Pointer, bx unsafe.Pointer, by unsafe.Pointer, bz unsafe.Pointer, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("crossproduct")
+		timer_old.Start("crossproduct")
 	}
 
 	crossproduct_args.Lock()
@@ -79,7 +79,7 @@ func k_crossproduct_async(dstx unsafe.Pointer, dsty unsafe.Pointer, dstz unsafe.
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("crossproduct")
+		timer_old.Stop("crossproduct")
 	}
 }
 

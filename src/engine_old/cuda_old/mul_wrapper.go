@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for mul kernel
@@ -41,7 +41,7 @@ func init() {
 func k_mul_async(dst unsafe.Pointer, a unsafe.Pointer, b unsafe.Pointer, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("mul")
+		timer_old.Start("mul")
 	}
 
 	mul_args.Lock()
@@ -61,7 +61,7 @@ func k_mul_async(dst unsafe.Pointer, a unsafe.Pointer, b unsafe.Pointer, N int, 
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("mul")
+		timer_old.Stop("mul")
 	}
 }
 

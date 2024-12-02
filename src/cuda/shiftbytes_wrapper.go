@@ -5,82 +5,82 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import(
-	"unsafe"
-	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+import (
 	"sync"
+	"unsafe"
+
+	"github.com/MathieuMoalic/amumax/src/cuda/cu"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for shiftbytes kernel
 var shiftbytes_code cu.Function
 
 // Stores the arguments for shiftbytes kernel invocation
-type shiftbytes_args_t struct{
-	 arg_dst unsafe.Pointer
-	 arg_src unsafe.Pointer
-	 arg_Nx int
-	 arg_Ny int
-	 arg_Nz int
-	 arg_shx int
-	 arg_clamp byte
-	 argptr [7]unsafe.Pointer
+type shiftbytes_args_t struct {
+	arg_dst   unsafe.Pointer
+	arg_src   unsafe.Pointer
+	arg_Nx    int
+	arg_Ny    int
+	arg_Nz    int
+	arg_shx   int
+	arg_clamp byte
+	argptr    [7]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for shiftbytes kernel invocation
 var shiftbytes_args shiftbytes_args_t
 
-func init(){
+func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	 shiftbytes_args.argptr[0] = unsafe.Pointer(&shiftbytes_args.arg_dst)
-	 shiftbytes_args.argptr[1] = unsafe.Pointer(&shiftbytes_args.arg_src)
-	 shiftbytes_args.argptr[2] = unsafe.Pointer(&shiftbytes_args.arg_Nx)
-	 shiftbytes_args.argptr[3] = unsafe.Pointer(&shiftbytes_args.arg_Ny)
-	 shiftbytes_args.argptr[4] = unsafe.Pointer(&shiftbytes_args.arg_Nz)
-	 shiftbytes_args.argptr[5] = unsafe.Pointer(&shiftbytes_args.arg_shx)
-	 shiftbytes_args.argptr[6] = unsafe.Pointer(&shiftbytes_args.arg_clamp)
-	 }
+	shiftbytes_args.argptr[0] = unsafe.Pointer(&shiftbytes_args.arg_dst)
+	shiftbytes_args.argptr[1] = unsafe.Pointer(&shiftbytes_args.arg_src)
+	shiftbytes_args.argptr[2] = unsafe.Pointer(&shiftbytes_args.arg_Nx)
+	shiftbytes_args.argptr[3] = unsafe.Pointer(&shiftbytes_args.arg_Ny)
+	shiftbytes_args.argptr[4] = unsafe.Pointer(&shiftbytes_args.arg_Nz)
+	shiftbytes_args.argptr[5] = unsafe.Pointer(&shiftbytes_args.arg_shx)
+	shiftbytes_args.argptr[6] = unsafe.Pointer(&shiftbytes_args.arg_clamp)
+}
 
 // Wrapper for shiftbytes CUDA kernel, asynchronous.
-func k_shiftbytes_async ( dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz int, shx int, clamp byte,  cfg *config) {
-	if Synchronous{ // debug
+func k_shiftbytes_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz int, shx int, clamp byte, cfg *config) {
+	if Synchronous { // debug
 		Sync()
-		timer.Start("shiftbytes")
+		timer_old.Start("shiftbytes")
 	}
 
 	shiftbytes_args.Lock()
 	defer shiftbytes_args.Unlock()
 
-	if shiftbytes_code == 0{
+	if shiftbytes_code == 0 {
 		shiftbytes_code = fatbinLoad(shiftbytes_map, "shiftbytes")
 	}
 
-	 shiftbytes_args.arg_dst = dst
-	 shiftbytes_args.arg_src = src
-	 shiftbytes_args.arg_Nx = Nx
-	 shiftbytes_args.arg_Ny = Ny
-	 shiftbytes_args.arg_Nz = Nz
-	 shiftbytes_args.arg_shx = shx
-	 shiftbytes_args.arg_clamp = clamp
-	
+	shiftbytes_args.arg_dst = dst
+	shiftbytes_args.arg_src = src
+	shiftbytes_args.arg_Nx = Nx
+	shiftbytes_args.arg_Ny = Ny
+	shiftbytes_args.arg_Nz = Nz
+	shiftbytes_args.arg_shx = shx
+	shiftbytes_args.arg_clamp = clamp
 
 	args := shiftbytes_args.argptr[:]
 	cu.LaunchKernel(shiftbytes_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous{ // debug
+	if Synchronous { // debug
 		Sync()
-		timer.Stop("shiftbytes")
+		timer_old.Stop("shiftbytes")
 	}
 }
 
 // maps compute capability on PTX code for shiftbytes kernel.
-var shiftbytes_map = map[int]string{ 0: "" ,
-52: shiftbytes_ptx_52  }
+var shiftbytes_map = map[int]string{0: "",
+	52: shiftbytes_ptx_52}
 
 // shiftbytes PTX code for various compute capabilities.
-const(
-  shiftbytes_ptx_52 = `
+const (
+	shiftbytes_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -158,4 +158,4 @@ BB0_4:
 
 
 `
- )
+)

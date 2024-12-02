@@ -10,19 +10,19 @@ import (
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/zarr_old"
 	"github.com/MathieuMoalic/amumax/src/progressbar"
-	"github.com/MathieuMoalic/amumax/src/timer"
 )
 
 // Obtains the demag kernel either from cacheDir/ or by calculating (and then storing in cacheDir for next time).
 // Empty cacheDir disables caching.
 func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cacheDir string, hideProgressBar bool) (kernel [3][3]*data_old.Slice) {
-	timer.Start("kernel_init")
-	timer.Stop("kernel_init") // warm-up
+	timer_old.Start("kernel_init")
+	timer_old.Stop("kernel_init") // warm-up
 
-	timer.Start("kernel_init")
-	defer timer.Stop("kernel_init")
+	timer_old.Start("kernel_init")
+	defer timer_old.Stop("kernel_init")
 
 	sanityCheck(cellsize)
 	// Cache disabled

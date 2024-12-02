@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for minimize kernel
@@ -55,7 +55,7 @@ func init() {
 func k_minimize_async(mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, m0x unsafe.Pointer, m0y unsafe.Pointer, m0z unsafe.Pointer, tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer, dt float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("minimize")
+		timer_old.Start("minimize")
 	}
 
 	minimize_args.Lock()
@@ -82,7 +82,7 @@ func k_minimize_async(mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, m
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("minimize")
+		timer_old.Stop("minimize")
 	}
 }
 

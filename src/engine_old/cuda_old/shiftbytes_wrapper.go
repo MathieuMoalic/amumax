@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for shiftbytes kernel
@@ -47,7 +47,7 @@ func init() {
 func k_shiftbytes_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz int, shx int, clamp byte, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("shiftbytes")
+		timer_old.Start("shiftbytes")
 	}
 
 	shiftbytes_args.Lock()
@@ -70,7 +70,7 @@ func k_shiftbytes_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, 
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("shiftbytes")
+		timer_old.Stop("shiftbytes")
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for addmagnetoelasticfield kernel
@@ -83,7 +83,7 @@ func init() {
 func k_addmagnetoelasticfield_async(Bx unsafe.Pointer, By unsafe.Pointer, Bz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, exx_ unsafe.Pointer, exx_mul float32, eyy_ unsafe.Pointer, eyy_mul float32, ezz_ unsafe.Pointer, ezz_mul float32, exy_ unsafe.Pointer, exy_mul float32, exz_ unsafe.Pointer, exz_mul float32, eyz_ unsafe.Pointer, eyz_mul float32, B1_ unsafe.Pointer, B1_mul float32, B2_ unsafe.Pointer, B2_mul float32, Ms_ unsafe.Pointer, Ms_mul float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("addmagnetoelasticfield")
+		timer_old.Start("addmagnetoelasticfield")
 	}
 
 	addmagnetoelasticfield_args.Lock()
@@ -124,7 +124,7 @@ func k_addmagnetoelasticfield_async(Bx unsafe.Pointer, By unsafe.Pointer, Bz uns
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("addmagnetoelasticfield")
+		timer_old.Stop("addmagnetoelasticfield")
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for adduniaxialanisotropy2 kernel
@@ -71,7 +71,7 @@ func init() {
 func k_adduniaxialanisotropy2_async(Bx unsafe.Pointer, By unsafe.Pointer, Bz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, Ms_ unsafe.Pointer, Ms_mul float32, K1_ unsafe.Pointer, K1_mul float32, K2_ unsafe.Pointer, K2_mul float32, ux_ unsafe.Pointer, ux_mul float32, uy_ unsafe.Pointer, uy_mul float32, uz_ unsafe.Pointer, uz_mul float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("adduniaxialanisotropy2")
+		timer_old.Start("adduniaxialanisotropy2")
 	}
 
 	adduniaxialanisotropy2_args.Lock()
@@ -106,7 +106,7 @@ func k_adduniaxialanisotropy2_async(Bx unsafe.Pointer, By unsafe.Pointer, Bz uns
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("adduniaxialanisotropy2")
+		timer_old.Stop("adduniaxialanisotropy2")
 	}
 }
 
