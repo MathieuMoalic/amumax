@@ -5,7 +5,7 @@ package torque
 
 // 	"github.com/MathieuMoalic/amumax/src/cuda"
 // 	"github.com/MathieuMoalic/amumax/src/data"
-// 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+// 	"github.com/MathieuMoalic/amumax/src/log"
 // )
 
 // var (
@@ -60,7 +60,7 @@ package torque
 // 	if J.isZero() {
 // 		return
 // 	}
-// 	log_old.AssertMsg(!Pol.isZero(), "spin polarization should not be 0")
+// 	log.AssertMsg(!Pol.isZero(), "spin polarization should not be 0")
 // 	jspin, rec := J.Slice()
 // 	if rec {
 // 		defer cuda.Recycle(jspin)

@@ -5,8 +5,8 @@ package cuda
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
 // Output size of R2C FFT with given logic size, expressed in floats.
@@ -23,9 +23,9 @@ func prod(size [3]int) int {
 // In the meanwhile, check if imaginary parts are nearly zero
 // and scale the kernel to compensate for unnormalized FFTs.
 // scale = 1/N, with N the FFT logical size.
-func scaleRealParts(dst, src *data_old.Slice, scale float32) {
-	log_old.AssertMsg(2*dst.Len() == src.Len(), "scaleRealParts: Source length must be twice the destination length")
-	log_old.AssertMsg(dst.NComp() == 1 && src.NComp() == 1, "scaleRealParts: Both destination and source must have a single component")
+func scaleRealParts(dst, src *slice.Slice, scale float32) {
+	log.AssertMsg(2*dst.Len() == src.Len(), "scaleRealParts: Source length must be twice the destination length")
+	log.AssertMsg(dst.NComp() == 1 && src.NComp() == 1, "scaleRealParts: Both destination and source must have a single component")
 
 	srcList := src.Host()[0]
 	dstList := dst.Host()[0]
@@ -44,7 +44,7 @@ func scaleRealParts(dst, src *data_old.Slice, scale float32) {
 	// ...however, we check that the imaginary parts are nearly zero,
 	// just to be sure we did not make a mistake during kernel creation.
 	if maximg > FFT_IMAG_TOLERANCE {
-		log_old.Log.ErrAndExit("FFT kernel imaginary part: %v\n", maximg)
+		log.ErrAndExit("FFT kernel imaginary part: %v\n", maximg)
 	}
 }
 

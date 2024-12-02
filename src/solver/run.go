@@ -5,13 +5,13 @@ import (
 	"math"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/mag_old"
+	"github.com/MathieuMoalic/amumax/src/constants"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/progressbar"
 	"github.com/MathieuMoalic/amumax/src/regions"
+	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
 // START OF TODO
@@ -30,13 +30,13 @@ var Temp Temperature
 var Msat, Aex Temperature
 
 type NormMagInterface interface {
-	Buffer() *data_old.Slice
+	Buffer() *slice.Slice
 	normalize()
 }
 
 var NormMag NormMagInterface
 
-func setTorque(dst *data_old.Slice) {}
+func setTorque(dst *slice.Slice) {}
 
 // TODO: implement saveIfNeeded
 func saveIfNeeded() {}
@@ -63,7 +63,7 @@ type Solver struct {
 	solverType           int         // Identifier for the solver type
 	exchangeLengthWarned bool        // Whether the exchange length warning has been issued
 	mesh                 *mesh.Mesh
-	previousStepBuffer   *data_old.Slice // used by backwardEuler, rk23 and rk45DP
+	previousStepBuffer   *slice.Slice // used by backwardEuler, rk23 and rk45DP
 }
 
 // NewSolver creates a new instance of the solver with default settings.
@@ -103,7 +103,7 @@ func (s *Solver) SetSolver(solverIndex int) {
 }
 
 // write torque to dst and increment NEvals
-func (s *Solver) torqueFn(dst *data_old.Slice) {
+func (s *Solver) torqueFn(dst *slice.Slice) {
 	setTorque(dst)
 	s.nEvals++
 }
@@ -116,8 +116,8 @@ func (s *Solver) setLastErr(err float64) {
 	}
 }
 
-func (s *Solver) setMaxTorque(τ *data_old.Slice) {
-	s.lastTorque = cuda_old.MaxVecNorm(τ)
+func (s *Solver) setMaxTorque(τ *slice.Slice) {
+	s.lastTorque = cuda.MaxVecNorm(τ)
 }
 
 // adapt time step: dt *= corr, but limited to sensible values.
@@ -303,7 +303,7 @@ func (s *Solver) checkExchangeLenght() {
 	for _, region := range existingRegions {
 		Msat_r := Msat.GetRegion(region)
 		Aex_r := Aex.GetRegion(region)
-		lex := math.Sqrt(2 * Aex_r / (mag_old.Mu0 * Msat_r * Msat_r))
+		lex := math.Sqrt(2 * Aex_r / (constants.Mu0 * Msat_r * Msat_r))
 		if !s.exchangeLengthWarned {
 			if s.mesh.Dx > lex {
 				s.log.Warn("Warning: Exchange length (%.3g nm) smaller than dx (%.3g nm) in region %d", lex*1e9, s.mesh.Dx*1e9, region)

@@ -3,12 +3,12 @@ package magnetization
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/geometry"
 	"github.com/MathieuMoalic/amumax/src/mag_config"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/shape"
+	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
 // Special buffered quantity to store Magnetization
@@ -17,7 +17,7 @@ type Magnetization struct {
 	mesh     *mesh.Mesh
 	config   *mag_config.ConfigList
 	geometry *geometry.Geometry
-	Slice    *data_old.Slice
+	Slice    *slice.Slice
 }
 
 func (m *Magnetization) Init(mesh *mesh.Mesh, config *mag_config.ConfigList, geometry *geometry.Geometry) {
@@ -28,19 +28,19 @@ func (m *Magnetization) Init(mesh *mesh.Mesh, config *mag_config.ConfigList, geo
 
 // These methods are defined for the Quantity interface
 
-func (m *Magnetization) Size() [3]int               { return m.Slice.Size() }
-func (m *Magnetization) EvalTo(dst *data_old.Slice) { data_old.Copy(dst, m.Slice) }
-func (m *Magnetization) NComp() int                 { return 3 }
-func (m *Magnetization) Name() string               { return "m" }
-func (m *Magnetization) Unit() string               { return "" }
-func (m *Magnetization) Value() *data_old.Slice     { return m.Slice }
+func (m *Magnetization) Size() [3]int            { return m.Slice.Size() }
+func (m *Magnetization) EvalTo(dst *slice.Slice) { slice.Copy(dst, m.Slice) }
+func (m *Magnetization) NComp() int              { return 3 }
+func (m *Magnetization) Name() string            { return "m" }
+func (m *Magnetization) Unit() string            { return "" }
+func (m *Magnetization) Value() *slice.Slice     { return m.Slice }
 
 func (m *Magnetization) Average() []float64 {
 	s := m.Slice
 	geom := m.geometry.GetOrCreateGpuSlice()
 	avg := make([]float64, s.NComp())
 	for i := range avg {
-		avg[i] = float64(cuda_old.Dot(s.Comp(i), geom)) / float64(cuda_old.Sum(geom))
+		avg[i] = float64(cuda.Dot(s.Comp(i), geom)) / float64(cuda.Sum(geom))
 		if math.IsNaN(avg[i]) {
 			panic("NaN")
 		}
@@ -63,20 +63,20 @@ func (m *Magnetization) Average() []float64 {
 
 // func (m *Magnetization) Average() data.Vector    { return unslice(m.average()) }
 func (m *Magnetization) Normalize() {
-	cuda_old.Normalize(m.Slice, m.geometry.GetOrCreateGpuSlice())
+	cuda.Normalize(m.Slice, m.geometry.GetOrCreateGpuSlice())
 }
 
 // allocate storage (not done by init, as mesh size may not yet be known then)
 func (m *Magnetization) InitializeBuffer() {
-	m.Slice = cuda_old.NewSlice(3, m.mesh.Size())
+	m.Slice = cuda.NewSlice(3, m.mesh.Size())
 	m.set(m.config.RandomMag()) // sane starting config
 }
 
-func (m *Magnetization) setArray(src *data_old.Slice) {
+func (m *Magnetization) setArray(src *slice.Slice) {
 	if src.Size() != m.mesh.Size() {
-		src = data_old.Resample(src, m.mesh.Size())
+		src = slice.Resample(src, m.mesh.Size())
 	}
-	data_old.Copy(m.Slice, src)
+	slice.Copy(m.Slice, src)
 	m.Normalize()
 }
 

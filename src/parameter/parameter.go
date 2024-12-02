@@ -13,7 +13,7 @@ package parameter
 
 // 	"github.com/MathieuMoalic/amumax/src/cuda"
 // 	"github.com/MathieuMoalic/amumax/src/data"
-// 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+// 	"github.com/MathieuMoalic/amumax/src/log"
 // 	"github.com/MathieuMoalic/amumax/src/mesh"
 // 	"github.com/MathieuMoalic/amumax/src/engine_old/script_old"
 // )
@@ -48,7 +48,7 @@ package parameter
 
 // // type inputValue interface{ GetRegionToString(region int) string }
 // func unslice(v []float64) [3]float64 {
-// 	log_old.AssertMsg(len(v) == 3, "Length mismatch: input slice must have exactly 3 elements in unslice")
+// 	log.AssertMsg(len(v) == 3, "Length mismatch: input slice must have exactly 3 elements in unslice")
 // 	return [3]float64{v[0], v[1], v[2]}
 // }
 
@@ -141,7 +141,7 @@ package parameter
 // 		return cuda.MakeMSlice(data.NilSlice(p.NComp(), p.mesh.Size()), p.getRegion(0))
 // 	} else {
 // 		buf, r := p.Slice()
-// 		log_old.AssertMsg(r, "Failed to retrieve slice: invalid state in regionwise.MSlice")
+// 		log.AssertMsg(r, "Failed to retrieve slice: invalid state in regionwise.MSlice")
 // 		return cuda.ToMSlice(buf)
 // 	}
 // }
@@ -184,8 +184,8 @@ package parameter
 
 // // set in regions r1..r2(excl)
 // func (p *parameter) setRegions(r1, r2 int, v []float64) {
-// 	log_old.AssertMsg(len(v) == len(p.cpu_buf), "Size mismatch: the length of v must match the length of p.cpu_buf in setRegions")
-// 	log_old.AssertMsg(r1 < r2, "Invalid region range: r1 must be less than r2 (exclusive upper bound) in setRegions")
+// 	log.AssertMsg(len(v) == len(p.cpu_buf), "Size mismatch: the length of v must match the length of p.cpu_buf in setRegions")
+// 	log.AssertMsg(r1 < r2, "Invalid region range: r1 must be less than r2 (exclusive upper bound) in setRegions")
 
 // 	for r := r1; r < r2; r++ {
 // 		p.upd_reg[r] = nil
@@ -201,7 +201,7 @@ package parameter
 // }
 
 // func (p *parameter) setFunc(r1, r2 int, f func() []float64) {
-// 	log_old.AssertMsg(r1 < r2, "Invalid region range: r1 must be less than r2 (exclusive upper bound) in setFunc")
+// 	log.AssertMsg(r1 < r2, "Invalid region range: r1 must be less than r2 (exclusive upper bound) in setFunc")
 
 // 	for r := r1; r < r2; r++ {
 // 		p.upd_reg[r] = f

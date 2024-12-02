@@ -3,8 +3,8 @@ package cuda
 import (
 	"unsafe"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
 // Add exchange field to Beff.
@@ -14,7 +14,7 @@ import (
 //	Aex_red: Aex / (Msat * 1e18 m2)
 //
 // see exchange.cu
-func AddExchange(B, m *data_old.Slice, Aex_red SymmLUT, Msat MSlice, regions *Bytes, mesh mesh.MeshLike) {
+func AddExchange(B, m *slice.Slice, Aex_red SymmLUT, Msat MSlice, regions *Bytes, mesh mesh.MeshLike) {
 	c := mesh.CellSize()
 	wx := float32(2 / (c[X] * c[X]))
 	wy := float32(2 / (c[Y] * c[Y]))
@@ -30,7 +30,7 @@ func AddExchange(B, m *data_old.Slice, Aex_red SymmLUT, Msat MSlice, regions *By
 }
 
 // Finds the average exchange strength around each cell, for debugging.
-func ExchangeDecode(dst *data_old.Slice, Aex_red SymmLUT, regions *Bytes, mesh mesh.MeshLike) {
+func ExchangeDecode(dst *slice.Slice, Aex_red SymmLUT, regions *Bytes, mesh mesh.MeshLike) {
 	c := mesh.CellSize()
 	wx := float32(2 / (c[X] * c[X]))
 	wy := float32(2 / (c[Y] * c[Y]))

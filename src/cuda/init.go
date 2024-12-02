@@ -6,7 +6,7 @@ import (
 	"runtime"
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 var (
@@ -35,10 +35,10 @@ func Init(gpu int) [6]string {
 		DevName, (TotalMem)/(1024*1024), DriverVersion/1000, (DriverVersion%1000)/10, M, m)
 
 	if M < 5 {
-		log_old.Log.ErrAndExit("GPU has insufficient compute capability, need 5.0 or higher.")
+		log.ErrAndExit("GPU has insufficient compute capability, need 5.0 or higher.")
 	}
 	if Synchronous {
-		log_old.Log.Info("DEBUG: synchronized CUDA calls")
+		log.Info("DEBUG: synchronized CUDA calls")
 	}
 
 	// test PTX load so that we can catch CUDA_ERROR_NO_BINARY_FOR_GPU early
@@ -59,10 +59,10 @@ func tryCuInit() {
 	defer func() {
 		err := recover()
 		if err == cu.ERROR_UNKNOWN {
-			log_old.Log.ErrAndExit("\n CUDA unknown error\n")
+			log.ErrAndExit("\n CUDA unknown error\n")
 		}
 		if err != nil {
-			log_old.Log.PanicIfError(fmt.Errorf("%v", fmt.Sprint(err)))
+			log.PanicIfError(fmt.Errorf("%v", fmt.Sprint(err)))
 		}
 	}()
 	cu.Init(0)

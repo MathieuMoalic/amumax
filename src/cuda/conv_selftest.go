@@ -5,35 +5,35 @@ package cuda
 import (
 	"math/rand"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
 // Compares FFT-accelerated convolution against brute-force on sparse data.
 // This is not really needed but very quickly uncovers newly introduced bugs.
-func testConvolution(c *DemagConvolution, PBC [3]int, realKern [3][3]*data_old.Slice) {
+func testConvolution(c *DemagConvolution, PBC [3]int, realKern [3][3]*slice.Slice) {
 	if PBC != [3]int{0, 0, 0} {
 		// the brute-force method does not work for pbc.
-		log_old.Log.Info("skipping convolution self-test for PBC")
+		log.Info("skipping convolution self-test for PBC")
 		return
 	}
-	log_old.Log.Info("convolution self-test...")
-	inhost := data_old.NewSlice(3, c.inputSize)
+	log.Info("convolution self-test...")
+	inhost := slice.NewSlice(3, c.inputSize)
 	initConvTestInput(inhost.Vectors())
 	gpu := NewSlice(3, c.inputSize)
 	defer gpu.Free()
-	data_old.Copy(gpu, inhost)
+	slice.Copy(gpu, inhost)
 
 	Msat := NewSlice(1, [3]int{1, 1, 256})
 	defer Msat.Free()
 	Memset(Msat, 1)
 
-	vol := data_old.NilSlice(1, c.inputSize)
+	vol := slice.NilSlice(1, c.inputSize)
 	c.Exec(gpu, gpu, vol, ToMSlice(Msat))
 
 	output := gpu.HostCopy()
 
-	brute := data_old.NewSlice(3, c.inputSize)
+	brute := slice.NewSlice(3, c.inputSize)
 	bruteConv(inhost.Vectors(), brute.Vectors(), realKern)
 
 	a, b := output.Host(), brute.Host()
@@ -46,7 +46,7 @@ func testConvolution(c *DemagConvolution, PBC [3]int, realKern [3][3]*data_old.S
 		}
 	}
 	if err > CONV_TOLERANCE {
-		log_old.Log.ErrAndExit("convolution self-test tolerance: %v FAIL", err)
+		log.ErrAndExit("convolution self-test tolerance: %v FAIL", err)
 	}
 }
 
@@ -62,7 +62,7 @@ const CONV_TOLERANCE = 1e-6
 //	(O0)   (K01 K02 K03)   (I0)
 //	(O1) = (K11 K12 K13) * (I1)
 //	(O2)   (K21 K22 K23)   (I2)
-func bruteConv(in, out [3][][][]float32, kernel [3][3]*data_old.Slice) {
+func bruteConv(in, out [3][][][]float32, kernel [3][3]*slice.Slice) {
 
 	var kern [3][3][][][]float32
 	for i := range kern {

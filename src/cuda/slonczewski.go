@@ -1,13 +1,13 @@
 package cuda
 
 import (
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
 // Add Slonczewski ST torque to torque (Tesla).
 // see slonczewski.cu
-func AddSlonczewskiTorque2(torque, m *data_old.Slice, Msat, J, fixedP, alpha, pol, λ, ε_prime MSlice, thickness MSlice, flp float64, mesh mesh.MeshLike) {
+func AddSlonczewskiTorque2(torque, m *slice.Slice, Msat, J, fixedP, alpha, pol, λ, ε_prime MSlice, thickness MSlice, flp float64, mesh mesh.MeshLike) {
 	N := torque.Len()
 	cfg := make1DConf(N)
 	meshThickness := mesh.WorldSize()[Z]

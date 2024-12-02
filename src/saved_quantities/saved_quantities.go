@@ -8,11 +8,11 @@ import (
 	"github.com/DataDog/zstd"
 
 	"github.com/MathieuMoalic/amumax/src/chunk"
-	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/quantity"
+	"github.com/MathieuMoalic/amumax/src/slice"
 	"github.com/MathieuMoalic/amumax/src/solver"
 )
 
@@ -65,9 +65,9 @@ func (sq *SavedQuantity) saveAttrs() {
 func (sq *SavedQuantity) save() {
 	sq.times = append(sq.times, sq.solver.Time)
 	sq.saveAttrs()
-	buffer := cuda_old.Buffer(sq.q.NComp(), sq.q.Size())
+	buffer := cuda.Buffer(sq.q.NComp(), sq.q.Size())
 	sq.q.EvalTo(buffer)
-	defer cuda_old.Recycle(buffer)
+	defer cuda.Recycle(buffer)
 	dataSlice := buffer.HostCopy()
 	sq.fs.QueueOutput(func() {
 		err := sq.syncSave(dataSlice, sq.name, len(sq.times), sq.chunks)
@@ -76,7 +76,7 @@ func (sq *SavedQuantity) save() {
 }
 
 // syncSave writes the data slice into chunked, compressed files compatible with the Zarr format.
-func (sq *SavedQuantity) syncSave(array *data_old.Slice, qname string, step int, chunks chunk.Chunks) error {
+func (sq *SavedQuantity) syncSave(array *slice.Slice, qname string, step int, chunks chunk.Chunks) error {
 	data := array.Tensors()
 	size := array.Size()
 	ncomp := array.NComp()

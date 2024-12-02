@@ -3,9 +3,9 @@ package cuda
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/cuda/cufft"
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
 // 3D single-precission real-to-complex FFT plan.
@@ -23,22 +23,22 @@ func newFFT3DR2C(Nx, Ny, Nz int) fft3DR2CPlan {
 
 // Execute the FFT plan, asynchronous.
 // src and dst are 3D arrays stored as 1D arrays.
-func (p *fft3DR2CPlan) ExecAsync(src, dst *data_old.Slice) {
+func (p *fft3DR2CPlan) ExecAsync(src, dst *slice.Slice) {
 	if Synchronous {
 		Sync()
 		timer_old.Start("fft")
 	}
-	log_old.AssertMsg(src.NComp() == 1 && dst.NComp() == 1,
+	log.AssertMsg(src.NComp() == 1 && dst.NComp() == 1,
 		"Component mismatch: both src and dst must have 1 component in fft3DR2CPlan.ExecAsync")
 
 	oksrclen := p.InputLen()
 	if src.Len() != oksrclen {
-		log_old.Log.ErrAndExit("FFT size mismatch: expected src length %v, but got %v", oksrclen, src.Len())
+		log.ErrAndExit("FFT size mismatch: expected src length %v, but got %v", oksrclen, src.Len())
 	}
 
 	okdstlen := p.OutputLen()
 	if dst.Len() != okdstlen {
-		log_old.Log.ErrAndExit("FFT size mismatch: expected dst length %v, but got %v", okdstlen, dst.Len())
+		log.ErrAndExit("FFT size mismatch: expected dst length %v, but got %v", okdstlen, dst.Len())
 	}
 
 	p.handle.ExecR2C(cu.DevicePtr(uintptr(src.DevPtr(0))), cu.DevicePtr(uintptr(dst.DevPtr(0))))

@@ -3,18 +3,18 @@ package cuda
 import (
 	"unsafe"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
 // Add effective field of Dzyaloshinskii-Moriya interaction to Beff (Tesla).
 // According to Bagdanov and Röβler, PRL 87, 3, 2001. eq.8 (out-of-plane symmetry breaking).
 // See dmi.cu
-func AddDMI(Beff *data_old.Slice, m *data_old.Slice, Aex_red, Dex_red SymmLUT, Msat MSlice, regions *Bytes, mesh mesh.MeshLike, OpenBC bool) {
+func AddDMI(Beff *slice.Slice, m *slice.Slice, Aex_red, Dex_red SymmLUT, Msat MSlice, regions *Bytes, mesh mesh.MeshLike, OpenBC bool) {
 	cellsize := mesh.CellSize()
 	N := Beff.Size()
-	log_old.AssertMsg(m.Size() == N, "Size mismatch: m and Beff must have the same dimensions in AddDMI")
+	log.AssertMsg(m.Size() == N, "Size mismatch: m and Beff must have the same dimensions in AddDMI")
 
 	cfg := make3DConf(N)
 	var openBC byte

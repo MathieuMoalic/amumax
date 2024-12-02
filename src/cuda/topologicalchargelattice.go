@@ -1,16 +1,16 @@
 package cuda
 
 import (
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
 // Topological charge according to Berg and Lüscher
-func SetTopologicalChargeLattice(s *data_old.Slice, m *data_old.Slice, mesh mesh.MeshLike) {
+func SetTopologicalChargeLattice(s *slice.Slice, m *slice.Slice, mesh mesh.MeshLike) {
 	cellsize := mesh.CellSize()
 	N := s.Size()
-	log_old.AssertMsg(m.Size() == N, "Size mismatch: m and s must have the same dimensions in SetTopologicalChargeLattice")
+	log.AssertMsg(m.Size() == N, "Size mismatch: m and s must have the same dimensions in SetTopologicalChargeLattice")
 	cfg := make3DConf(N)
 	icxcy := float32(1.0 / (cellsize[X] * cellsize[Y]))
 

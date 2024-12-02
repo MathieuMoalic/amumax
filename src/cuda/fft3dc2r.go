@@ -5,8 +5,8 @@ import (
 
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/cuda/cufft"
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
 // 3D single-precission real-to-complex FFT plan.
@@ -24,7 +24,7 @@ func newFFT3DC2R(Nx, Ny, Nz int) fft3DC2RPlan {
 
 // Execute the FFT plan, asynchronous.
 // src and dst are 3D arrays stored 1D arrays.
-func (p *fft3DC2RPlan) ExecAsync(src, dst *data_old.Slice) {
+func (p *fft3DC2RPlan) ExecAsync(src, dst *slice.Slice) {
 	if Synchronous {
 		Sync()
 		timer_old.Start("fft")

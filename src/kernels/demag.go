@@ -7,15 +7,15 @@ import (
 	"os"
 
 	"github.com/DataDog/zstd"
-	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/progressbar"
+	"github.com/MathieuMoalic/amumax/src/slice"
 	"github.com/MathieuMoalic/amumax/src/utils"
 )
 
-type kernelSlice [3][3]*data_old.Slice
+type kernelSlice [3][3]*slice.Slice
 
 func emptyKernel() kernelSlice {
 	var kernel kernelSlice
@@ -123,7 +123,7 @@ func kernelToBytes(kernel kernelSlice) (bytes []byte) {
 	return bytes
 }
 
-func sliceToBytes(slice *data_old.Slice) (bytes []byte) {
+func sliceToBytes(slice *slice.Slice) (bytes []byte) {
 	size := slice.Size()
 	if size[X] == 0 && size[Y] == 0 && size[Z] == 0 {
 		return
@@ -139,9 +139,9 @@ func sliceToBytes(slice *data_old.Slice) (bytes []byte) {
 	return bytes
 }
 
-func bytesToSlice(kernelBytes []byte, size [3]int) (slice *data_old.Slice) {
-	slice = data_old.NewSlice(1, size)
-	tensors := slice.Tensors()
+func bytesToSlice(kernelBytes []byte, size [3]int) (sl *slice.Slice) {
+	sl = slice.NewSlice(1, size)
+	tensors := sl.Tensors()
 	count := 0
 	for iz := 0; iz < size[Z]; iz++ {
 		for iy := 0; iy < size[Y]; iy++ {
@@ -215,7 +215,7 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 	var array [3][3][][][]float32
 	for i := 0; i < 3; i++ {
 		for j := i; j < 3; j++ {
-			kernel[i][j] = data_old.NewSlice(1, size)
+			kernel[i][j] = slice.NewSlice(1, size)
 			array[i][j] = kernel[i][j].Scalars()
 		}
 	}

@@ -149,3 +149,28 @@ func (l *Logs) AssertMsg(test bool, msg interface{}) {
 		l.ErrAndExit("%v", msg)
 	}
 }
+
+func AssertMsg(test bool, msg interface{}) {
+	if !test {
+		color.Red(fmt.Sprintf("%v", msg))
+		os.Exit(1)
+	}
+}
+
+func PanicIfError(err error) {
+	if err != nil {
+		_, file, line, _ := runtime.Caller(1)
+		color.Red(fmt.Sprint(file, ":", line, err))
+		panic(err)
+	}
+}
+
+func Info(msg string, args ...interface{}) {
+	formattedMsg := fmt.Sprintf(msg, args...)
+	color.Green(formattedMsg)
+}
+
+func ErrAndExit(msg string, args ...interface{}) {
+	color.Red(fmt.Sprintf(msg, args...))
+	os.Exit(1)
+}

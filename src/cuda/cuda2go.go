@@ -32,7 +32,7 @@ func main() {
 func cuda2go(fname string) {
 	// open cuda file
 	f, err := os.Open(fname)
-	log.Log.PanicIfError(err)
+	log.PanicIfError(err)
 	defer f.Close()
 
 	// read tokens
@@ -112,34 +112,34 @@ func wrapgen(filename, funcname string, argt, argn []string) {
 	// find corresponding .PTX files
 	if ls == nil {
 		dir, errd := os.Open(".")
-		log.Log.PanicIfError(errd)
+		log.PanicIfError(errd)
 		defer dir.Close()
 		var errls error
 		ls, errls = dir.Readdirnames(-1)
-		log.Log.PanicIfError(errls)
+		log.PanicIfError(errls)
 	}
 
 	// basename := log.NoExt(filename)
 	basename := filename[:len(filename)-len(".cu")]
 	for _, f := range ls {
 		match, e := regexp.MatchString("^"+basename+"_*[0-9]..ptx", f)
-		log.Log.PanicIfError(e)
+		log.PanicIfError(e)
 		if match {
 			cc, ei := strconv.Atoi(f[len(f)-len("00.ptx") : len(f)-len(".ptx")])
-			log.Log.PanicIfError(ei)
+			log.PanicIfError(ei)
 			kernel.PTX[cc] = filterptx(f)
 		}
 	}
 
 	if len(kernel.PTX) == 0 {
-		log.Log.ErrAndExit("no PTX files for %v", filename)
+		log.ErrAndExit("no PTX files for %v", filename)
 	}
 
 	wrapfname := basename + "_wrapper.go"
 	wrapout, err := os.OpenFile(wrapfname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
-	log.Log.PanicIfError(err)
+	log.PanicIfError(err)
 	defer wrapout.Close()
-	log.Log.PanicIfError(templ.Execute(wrapout, kernel))
+	log.PanicIfError(templ.Execute(wrapout, kernel))
 }
 
 // wrapper code template text
@@ -227,14 +227,14 @@ func filter(token string) bool {
 // They spoil the git history.
 func filterptx(fname string) string {
 	f, err := os.Open(fname)
-	log.Log.PanicIfError(err)
+	log.PanicIfError(err)
 	defer f.Close()
 	in := bufio.NewReader(f)
 	var out bytes.Buffer
 	out.Write(([]byte)("`"))
 	line, err := in.ReadBytes('\n')
 	for err != io.EOF {
-		log.Log.PanicIfError(err)
+		log.PanicIfError(err)
 		if !bytes.HasPrefix(line, []byte("//")) && !bytes.HasPrefix(line, []byte("	.file")) {
 			out.Write(line)
 		}
