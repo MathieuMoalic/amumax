@@ -27,7 +27,6 @@ func (p *ScriptParser) Execute() error {
 				p.registerUserVariable(strings.ToLower(stmt.Name), value)
 				p.metadata.Add(stmt.Name, value)
 			case "function_call":
-				p.log.Command(scriptLines[stmt.LineNum+p.lineOffset]) // Log the function call
 				fn, ok := p.getFunction(stmt.Name)
 				if !ok {
 					return fmt.Errorf("unsupported function: %s", stmt.Name)
