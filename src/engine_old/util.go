@@ -11,8 +11,8 @@ import (
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/oommf_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/zarr_old"
+	"github.com/MathieuMoalic/amumax/src/oommf"
 )
 
 func regionFromCoordinate(x, y, z int) int {
@@ -78,7 +78,7 @@ func loadOvfFile(fname string) *data_old.Slice {
 	in, err := fsutil_old.Open(fname)
 	log_old.Log.PanicIfError(err)
 	var s *data_old.Slice
-	s, _, err = oommf_old.Read(in)
+	s, _, err = oommf.Read(in)
 	log_old.Log.PanicIfError(err)
 	return s
 }

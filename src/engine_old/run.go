@@ -9,7 +9,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/mag_old"
+	"github.com/MathieuMoalic/amumax/src/mag"
 	"github.com/MathieuMoalic/amumax/src/progressbar"
 )
 
@@ -269,7 +269,7 @@ func checkExchangeLenght() {
 	for _, region := range Regions.GetExistingIndices() {
 		Msat_r := Msat.GetRegion(region)
 		Aex_r := Aex.GetRegion(region)
-		lex := math.Sqrt(2 * Aex_r / (mag_old.Mu0 * Msat_r * Msat_r))
+		lex := math.Sqrt(2 * Aex_r / (mag.Mu0 * Msat_r * Msat_r))
 		if !exchangeLenghtWarned {
 			if Mesh.Dx > lex {
 				log_old.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dx (%.3g nm) in region %d", lex*1e9, Mesh.Dx*1e9, region)
