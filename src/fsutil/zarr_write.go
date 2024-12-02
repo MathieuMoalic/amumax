@@ -69,12 +69,6 @@ func (fs *FileSystem) SaveFileTableZarray(path string, zTableAutoSaveStep int) e
 	return nil
 }
 
-var IsSaving bool
-
-func init() {
-	IsSaving = false
-}
-
 type ZstdCompressor struct {
 	ID    string `json:"id"`
 	Level int    `json:"level"`
@@ -91,8 +85,6 @@ type zarrayFile struct {
 }
 
 func (fs *FileSystem) SaveFileZarray(path string, size [3]int, ncomp int, step int, cz int, cy int, cx int, cc int) error {
-	IsSaving = true
-	defer func() { IsSaving = false }()
 	z := zarrayFile{}
 	z.Compressor = ZstdCompressor{"zstd", 1}
 	z.Dtype = `<f4`

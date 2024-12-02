@@ -6,25 +6,20 @@ import (
 	"errors"
 	"io"
 	"math"
-	"os"
 	"path"
 	"time"
 
 	"github.com/DataDog/zstd"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
 
-func (fs *FileSystem) ReadZarr(binaryPath string, od string) (*data_old.Slice, error) {
-	// Resolve the binary path to an absolute path
-	binaryPath = resolvePath(binaryPath, od)
+func (fs *FileSystem) ReadZarr(binaryPath string, od string, logInfo func(string, ...interface{})) (*data_old.Slice, error) {
 
 	// Wait until all files are saved because we might be reading them now
-	waitForSave()
+	fs.waitForSave(logInfo)
 
 	// Read and parse the .zarray file
-	zarray, err := readZarrayFile(binaryPath)
+	zarray, err := fs.readZarrayFile(binaryPath, logInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -39,13 +34,13 @@ func (fs *FileSystem) ReadZarr(binaryPath string, od string) (*data_old.Slice, e
 	tensors := array.Tensors()
 
 	// Read and decompress data with retries
-	dataBytes, err := readAndDecompressData(binaryPath)
+	dataBytes, err := fs.readAndDecompressData(binaryPath, logInfo)
 	if err != nil {
 		return nil, err
 	}
 
 	// Reconstruct the tensors from the decompressed data
-	err = reconstructTensors(dataBytes, tensors)
+	err = fs.reconstructTensors(dataBytes, tensors)
 	if err != nil {
 		return nil, err
 	}
@@ -53,20 +48,12 @@ func (fs *FileSystem) ReadZarr(binaryPath string, od string) (*data_old.Slice, e
 	return array, nil
 }
 
-// resolvePath resolves the binary path to an absolute path
-func resolvePath(binaryPath string, od string) string {
-	if !path.IsAbs(binaryPath) {
-		binaryPath = path.Join(path.Dir(od), binaryPath)
-	}
-	return path.Clean(binaryPath)
-}
-
 // waitForSave waits until IsSaving is false
-func waitForSave() {
+func (fs *FileSystem) waitForSave(logInfo func(string, ...interface{})) {
 	msg_sent := false
-	for IsSaving {
+	for fs.queLen > 0 {
 		if !msg_sent {
-			log_old.Log.Info("Waiting for all the files to be saved before reading...")
+			logInfo("Waiting for all the files to be saved before reading...")
 			msg_sent = true
 		}
 		time.Sleep(100 * time.Millisecond)
@@ -74,11 +61,11 @@ func waitForSave() {
 }
 
 // readZarrayFile reads and parses the .zarray file
-func readZarrayFile(binaryPath string) (*zarrayFile, error) {
+func (fs *FileSystem) readZarrayFile(binaryPath string, logInfo func(string, ...interface{})) (*zarrayFile, error) {
 	zarrayPath := path.Join(path.Dir(binaryPath), ".zarray")
-	log_old.Log.Info("Reading:  %v", binaryPath)
+	logInfo("Reading:  %v", binaryPath)
 
-	content, err := os.ReadFile(zarrayPath)
+	content, err := fs.Read(zarrayPath)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +80,7 @@ func readZarrayFile(binaryPath string) (*zarrayFile, error) {
 }
 
 // readAndDecompressData reads and decompresses data with retry logic
-func readAndDecompressData(binaryPath string) ([]byte, error) {
+func (fs *FileSystem) readAndDecompressData(binaryPath string, logInfo func(string, ...interface{})) ([]byte, error) {
 	const maxRetries = 5
 	const retryDelay = 1 * time.Second
 
@@ -102,10 +89,10 @@ func readAndDecompressData(binaryPath string) ([]byte, error) {
 
 	for retries := 0; retries < maxRetries; retries++ {
 		// Open the file
-		ioReader, err := fsutil_old.Open(binaryPath)
+		ioReader, err := fs.Open(binaryPath)
 		if err != nil {
 			lastErr = err
-			log_old.Log.Info("Error opening file: %v, retrying in %v...", err, retryDelay)
+			logInfo("Error opening file: %v, retrying in %v...", err, retryDelay)
 			time.Sleep(retryDelay)
 			continue
 		}
@@ -115,7 +102,7 @@ func readAndDecompressData(binaryPath string) ([]byte, error) {
 		ioReader.Close()
 		if err != nil {
 			lastErr = err
-			log_old.Log.Info("Error reading file: %v, retrying in %v...", err, retryDelay)
+			logInfo("Error reading file: %v, retrying in %v...", err, retryDelay)
 			time.Sleep(retryDelay)
 			continue
 		}
@@ -123,7 +110,7 @@ func readAndDecompressData(binaryPath string) ([]byte, error) {
 		// Check if compressedData is empty
 		if len(compressedData) == 0 {
 			lastErr = errors.New("compressed data is empty")
-			log_old.Log.Info("File is empty, retrying in %v...", retryDelay)
+			logInfo("File is empty, retrying in %v...", retryDelay)
 			time.Sleep(retryDelay)
 			continue
 		}
@@ -132,7 +119,7 @@ func readAndDecompressData(binaryPath string) ([]byte, error) {
 		dataBytes, err = zstd.Decompress(nil, compressedData)
 		if err != nil {
 			lastErr = err
-			log_old.Log.Info("Decompression error: %v, retrying in %v...", err, retryDelay)
+			logInfo("Decompression error: %v, retrying in %v...", err, retryDelay)
 			time.Sleep(retryDelay)
 			continue
 		}
@@ -149,7 +136,7 @@ func readAndDecompressData(binaryPath string) ([]byte, error) {
 }
 
 // reconstructTensors reconstructs the tensors from the decompressed data
-func reconstructTensors(dataBytes []byte, tensors [][][][]float32) error {
+func (fs *FileSystem) reconstructTensors(dataBytes []byte, tensors [][][][]float32) error {
 	ncomp := len(tensors)
 	sizez := len(tensors[0])
 	sizey := len(tensors[0][0])
@@ -179,7 +166,8 @@ func reconstructTensors(dataBytes []byte, tensors [][][][]float32) error {
 	return nil
 }
 
-// bytesToFloat32 converts a 4-byte slice to a float32
-func bytesToFloat32(b []byte) float32 {
-	return math.Float32frombits(binary.LittleEndian.Uint32(b))
+func bytesToFloat32(bytes []byte) float32 {
+	bits := binary.LittleEndian.Uint32(bytes)
+	float := math.Float32frombits(bits)
+	return float
 }
