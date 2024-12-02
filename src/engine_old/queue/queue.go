@@ -12,7 +12,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/MathieuMoalic/amumax/src/api"
+	"github.com/MathieuMoalic/amumax/src/engine_old/api_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/flags"
@@ -31,7 +31,7 @@ func RunQueue(files []string, flags *flags.Flags) {
 	if path != "" {
 		log_old.Log.ErrAndExit("Path not supported for queue web UI")
 	}
-	addr, _, err := api.FindAvailablePort(host, port)
+	addr, _, err := api_old.FindAvailablePort(host, port)
 	log_old.Log.PanicIfError(err)
 	log_old.Log.Info("Queue web UI at %v", addr)
 	s.printJobList()

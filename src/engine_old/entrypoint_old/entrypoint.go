@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/api"
 	"github.com/MathieuMoalic/amumax/src/engine_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/api_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
@@ -94,7 +94,7 @@ m = RandomMag()`)
 	if !flags.WebUIDisabled {
 		host, port, path, err := url.ParseAddrPath(flags.WebUIAddress)
 		log_old.Log.PanicIfError(err)
-		go api.Start(host, port, path, flags.Tunnel, flags.Debug)
+		go api_old.Start(host, port, path, flags.Tunnel, flags.Debug)
 	}
 	engine_old.RunInteractive()
 }
@@ -131,7 +131,7 @@ func runFileAndServe(mx3Path string, flags *flags.Flags) {
 	if !flags.WebUIDisabled {
 		host, port, path, err := url.ParseAddrPath(flags.WebUIAddress)
 		log_old.Log.PanicIfError(err)
-		go api.Start(host, port, path, flags.Tunnel, flags.Debug)
+		go api_old.Start(host, port, path, flags.Tunnel, flags.Debug)
 	}
 	// start executing the tree, possibly injecting commands from web gui
 	engine_old.EvalFile(code)
