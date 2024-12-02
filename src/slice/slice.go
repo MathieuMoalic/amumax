@@ -41,7 +41,7 @@ func EnableGPU(free, freeHost func(unsafe.Pointer),
 }
 
 // Make a CPU Slice with nComp components of size length.
-func NewSlice(nComp int, size [3]int) *Slice {
+func NewSlice(nComp int, size [3]int) (*Slice, error) {
 	length := prod(size)
 	ptrs := make([]unsafe.Pointer, nComp)
 	for i := range ptrs {
@@ -50,13 +50,13 @@ func NewSlice(nComp int, size [3]int) *Slice {
 	return SliceFromPtrs(size, CPUMemory, ptrs)
 }
 
-func SliceFromArray(data [][]float32, size [3]int) *Slice {
+func SliceFromArray(data [][]float32, size [3]int) (*Slice, error) {
 	nComp := len(data)
 	length := prod(size)
 	ptrs := make([]unsafe.Pointer, nComp)
 	for i := range ptrs {
 		if len(data[i]) != length {
-			panic("size mismatch")
+			return nil, fmt.Errorf("invalid input: data[%v] has length %v, expected %v", i, len(data[i]), length)
 		}
 		ptrs[i] = unsafe.Pointer(&data[i][0])
 	}
@@ -64,23 +64,24 @@ func SliceFromArray(data [][]float32, size [3]int) *Slice {
 }
 
 // Return a slice without underlying storage. Used to represent a mask containing all 1's.
-func NilSlice(nComp int, size [3]int) *Slice {
+func NilSlice(nComp int, size [3]int) (*Slice, error) {
 	return SliceFromPtrs(size, GPUMemory, make([]unsafe.Pointer, nComp))
 }
 
 // Internal: construct a Slice using bare memory pointers.
-func SliceFromPtrs(size [3]int, memType int8, ptrs []unsafe.Pointer) *Slice {
+func SliceFromPtrs(size [3]int, memType int8, ptrs []unsafe.Pointer) (*Slice, error) {
 	length := prod(size)
 	nComp := len(ptrs)
-	log_old.AssertMsg(nComp > 0 && length > 0,
-		"Invalid input: number of components must be greater than 0 and size product must be greater than 0 in SliceFromPtrs")
+	if nComp > 0 && length > 0 {
+		return nil, fmt.Errorf("invalid input: number of components must be greater than 0 and size product must be greater than 0 in SliceFromPtrs")
+	}
 
 	s := new(Slice)
 	s.ptrs = make([]unsafe.Pointer, nComp)
 	s.size = size
 	copy(s.ptrs, ptrs)
 	s.memType = memType
-	return s
+	return s, nil
 }
 
 // Frees the underlying storage and zeros the Slice header to avoid accidental use.
@@ -198,13 +199,16 @@ func (s *Slice) Host() [][]float32 {
 }
 
 // Returns a copy of the Slice, allocated on CPU.
-func (s *Slice) HostCopy() *Slice {
+func (s *Slice) HostCopy() (*Slice, error) {
 	if s == nil {
 		panic("nil slice")
 	}
-	cpy := NewSlice(s.NComp(), s.Size())
+	cpy, err := NewSlice(s.NComp(), s.Size())
+	if err != nil {
+		return nil, fmt.Errorf("error creating slice copy: %v", err)
+	}
 	Copy(cpy, s)
-	return cpy
+	return cpy, nil
 }
 
 func Copy(dst, src *Slice) {
@@ -335,12 +339,15 @@ func Index(size [3]int, ix, iy, iz int) int {
 
 // Resample returns a slice of new size N,
 // using nearest neighbor interpolation over the input slice.
-func Resample(in *Slice, N [3]int) *Slice {
+func Resample(in *Slice, N [3]int) (*Slice, error) {
 	if in.Size() == N {
-		return in // nothing to do
+		return in, nil // nothing to do
 	}
 	In := in.Tensors()
-	out := NewSlice(in.NComp(), N)
+	out, err := NewSlice(in.NComp(), N)
+	if err != nil {
+		return nil, fmt.Errorf("error creating slice: %v", err)
+	}
 	Out := out.Tensors()
 	size1 := SizeOf(In[0])
 	size2 := SizeOf(Out[0])
@@ -356,19 +363,22 @@ func Resample(in *Slice, N [3]int) *Slice {
 			}
 		}
 	}
-	return out
+	return out, nil
 }
 
 // Downsample returns a slice of new size N, smaller than in.Size().
 // Averaging interpolation over the input slice.
 // in is returned untouched if the sizes are equal.
-func Downsample(In [][][][]float32, N [3]int) [][][][]float32 {
+func Downsample(In [][][][]float32, N [3]int) ([][][][]float32, error) {
 	if SizeOf(In[0]) == N {
-		return In // nothing to do
+		return In, nil // nothing to do
 	}
 
 	nComp := len(In)
-	out := NewSlice(nComp, N)
+	out, err := NewSlice(nComp, N)
+	if err != nil {
+		return nil, fmt.Errorf("error creating slice: %v", err)
+	}
 	Out := out.Tensors()
 
 	srcsize := SizeOf(In[0])
@@ -383,7 +393,9 @@ func Downsample(In [][][][]float32, N [3]int) [][][][]float32 {
 	scalex := Sx / Dx
 	scaley := Sy / Dy
 	scalez := Sz / Dz
-	log_old.AssertMsg(scalex > 0 && scaley > 0, "Scaling factors must be positive in Downsample")
+	if scalex > 0 && scaley > 0 {
+		return nil, fmt.Errorf("scaling factors must be positive in Downsample")
+	}
 
 	for c := range Out {
 
@@ -412,7 +424,7 @@ func Downsample(In [][][][]float32, N [3]int) [][][][]float32 {
 		}
 	}
 
-	return Out
+	return Out, nil
 }
 
 // Returns the 3D size of block
