@@ -135,9 +135,7 @@ func (g *Geometry) SetGeom(s shape.Shape) {
 	// M inside geom but previously outside needs to be re-inited
 	needupload := false
 	geomlist := CpuSlice.Host()[0]
-	g.log.Debug("2")
 	mhost := g.mag_slice.HostCopy()
-	g.log.Debug("3")
 	m := mhost.Host()
 	rng := rand.New(rand.NewSource(0))
 	for i := range m[0] {

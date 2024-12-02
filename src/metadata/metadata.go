@@ -53,7 +53,7 @@ func (m *Metadata) Add(key string, val interface{}) {
 		// ignore functions
 		return
 	default:
-		m.log.Debug("Metadata key %s has invalid type %s: %v", key, valType, val)
+		m.log.Warn("Not adding this metadata key %s  because it has an invalid type %s: %v", key, valType, val)
 	}
 }
 

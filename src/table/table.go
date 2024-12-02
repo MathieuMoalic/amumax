@@ -109,7 +109,6 @@ func (ts *Table) FlushToFile() error {
 	// Check if the table state has changed
 	currentHash := ts.generateHash()
 	if currentHash == ts.lastSavedHash {
-		ts.log.Debug("Table state has not changed, skipping save.")
 		return nil
 	}
 	for i := range ts.columns {
