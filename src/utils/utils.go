@@ -94,3 +94,13 @@ func Float64ToBytes(f float64) []byte {
 	binary.LittleEndian.PutUint64(buf[:], math.Float64bits(f))
 	return buf[:]
 }
+
+func Float32ToBytes(f float32) []byte {
+	var buf [4]byte
+	binary.LittleEndian.PutUint32(buf[:], math.Float32bits(f))
+	return buf[:]
+}
+
+func BytesToFloat32(b []byte) float32 {
+	return math.Float32frombits(binary.LittleEndian.Uint32(b))
+}
