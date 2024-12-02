@@ -9,6 +9,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/shape"
 	"github.com/MathieuMoalic/amumax/src/utils"
+	"github.com/MathieuMoalic/amumax/src/vector"
 )
 
 // stores the region index for each cell
@@ -143,7 +144,7 @@ func (r *Regions) render(f func(x, y, z float64) int) {
 }
 
 // get the region for position R based on the history
-func (r *Regions) get(R data_old.Vector) int {
+func (r *Regions) get(R vector.Vector) int {
 	// reverse order, last one set wins.
 	for i := len(r.hist) - 1; i >= 0; i-- {
 		f := r.hist[i]

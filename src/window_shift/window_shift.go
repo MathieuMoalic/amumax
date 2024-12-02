@@ -7,11 +7,12 @@ import (
 	"github.com/MathieuMoalic/amumax/src/magnetization"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/regions"
+	"github.com/MathieuMoalic/amumax/src/vector"
 )
 
 type WindowShift struct {
 	totalXShift, totalYShift                   float64
-	ShiftMagL, ShiftMagR, ShiftMagU, ShiftMagD data_old.Vector // unused for now
+	ShiftMagL, ShiftMagR, ShiftMagU, ShiftMagD vector.Vector // unused for now
 	shiftM, shiftGeom, shiftRegions            bool
 	edgeCarryShift                             bool
 	mesh                                       *mesh.Mesh
