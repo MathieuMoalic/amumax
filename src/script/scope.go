@@ -19,6 +19,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/solver"
 	"github.com/MathieuMoalic/amumax/src/table"
 	"github.com/MathieuMoalic/amumax/src/utils"
+	"github.com/MathieuMoalic/amumax/src/vector"
 	"github.com/MathieuMoalic/amumax/src/window_shift"
 )
 
@@ -149,7 +150,7 @@ func (p *ScriptParser) AddToScopeAll(
 	// p.RegisterFunction("ExpectV", expectV, "Used for automated tests: checks if a vector is close enough to the expected value")
 	// p.RegisterFunction("Fprintln", fprintln, "Print to file")
 	// p.RegisterFunction("Sign", sign, "Signum function")
-	// p.RegisterFunction("Vector", vector, "Constructs a vector with given components")
+	p.RegisterFunction("Vector", vector.New, "Constructs a vector with given components")
 	p.RegisterFunction("Print", p.Print, "Print to standard output")
 	// p.RegisterFunction("LoadFile", loadFile, "Load a zarr data file")
 	// p.RegisterFunction("LoadOvfFile", loadOvfFile, "Load an ovf data file")

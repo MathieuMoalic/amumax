@@ -2,6 +2,8 @@ package vector
 
 import "math"
 
+func New(x, y, z float64) Vector { return Vector{x, y, z} }
+
 // 3-component vector
 type Vector [3]float64
 

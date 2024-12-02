@@ -29,8 +29,11 @@ type SavedQuantity struct {
 	nextTime float64 // Next time when autosave should trigger
 }
 
-func NewSavedQuantity(log *log.Logs, q quantity.Quantity, name string, rchunks chunk.RequestedChunking, period float64) *SavedQuantity {
+func NewSavedQuantity(log *log.Logs, fs *fsutil.FileSystem, solver *solver.Solver, q quantity.Quantity, name string, rchunks chunk.RequestedChunking, period float64) *SavedQuantity {
 	return &SavedQuantity{
+		log:     log,
+		fs:      fs,
+		solver:  solver,
 		name:    name,
 		q:       q,
 		period:  period,
@@ -69,30 +72,34 @@ func (sq *SavedQuantity) save() {
 	sq.q.EvalTo(buffer)
 	defer cuda.Recycle(buffer)
 	dataSlice := buffer.HostCopy()
+	// Saving the step so that it doesn't change during the save process
+	step := len(sq.times) - 1
 	sq.fs.QueueOutput(func() {
-		err := sq.syncSave(dataSlice, sq.name, len(sq.times), sq.chunks)
+		err := sq.syncSave(dataSlice, sq.name, step, sq.chunks)
 		sq.log.PanicIfError(err)
 	})
 }
 
 // syncSave writes the data slice into chunked, compressed files compatible with the Zarr format.
 func (sq *SavedQuantity) syncSave(array *slice.Slice, qname string, step int, chunks chunk.Chunks) error {
+	path := qname + "/.zarray"
 	data := array.Tensors()
 	size := array.Size()
 	ncomp := array.NComp()
 
 	// Save .zarray metadata
 	err := sq.fs.SaveFileZarray(
-		fmt.Sprintf("%s/.zarray", qname),
+		path,
 		size,
 		ncomp,
 		step,
 		chunks.Z.Len, chunks.Y.Len, chunks.X.Len, chunks.C.Len,
 	)
 	if err != nil {
+		sq.log.Err("Error saving .zarray file: %v", err)
 		return err
 	}
-
+	var compressedData []byte
 	// Iterate over chunks and save data
 	for icx := 0; icx < chunks.X.Count; icx++ {
 		for icy := 0; icy < chunks.Y.Count; icy++ {
@@ -108,7 +115,7 @@ func (sq *SavedQuantity) syncSave(array *slice.Slice, qname string, step int, ch
 								for ic := 0; ic < chunks.C.Len; ic++ {
 									c := icc*chunks.C.Len + ic
 									value := data[c][z][y][x]
-									err := binary.Write(&bdata, binary.LittleEndian, value)
+									err = binary.Write(&bdata, binary.LittleEndian, value)
 									if err != nil {
 										return err
 									}
@@ -116,13 +123,15 @@ func (sq *SavedQuantity) syncSave(array *slice.Slice, qname string, step int, ch
 							}
 						}
 					}
-					compressedData, err := zstd.Compress(nil, bdata.Bytes())
+					compressedData, err = zstd.Compress(nil, bdata.Bytes())
 					if err != nil {
+						sq.log.Err("Error saving .zarray file: %v", err)
 						return err
 					}
-					filename := fmt.Sprintf("%s/%d.%d.%d.%d.%d", qname, step+1, icz, icy, icx, icc)
+					filename := fmt.Sprintf("%s/%d.%d.%d.%d.%d", qname, step, icz, icy, icx, icc)
 					err = sq.fs.Put(filename, compressedData)
 					if err != nil {
+						sq.log.Err("Error saving .zarray file: %v", err)
 						return err
 					}
 				}
@@ -173,7 +182,7 @@ func (sqs *SavedQuantities) createSavedQuantity(q quantity.Quantity, name string
 	}
 	err := sqs.fs.Mkdir(name)
 	sqs.log.PanicIfError(err)
-	sq := NewSavedQuantity(sqs.log, q, name, rchunks, period)
+	sq := NewSavedQuantity(sqs.log, sqs.fs, sqs.solver, q, name, rchunks, period)
 	sqs.Quantities = append(sqs.Quantities, *sq)
 	return sq
 
