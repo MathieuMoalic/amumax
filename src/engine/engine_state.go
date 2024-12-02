@@ -135,7 +135,7 @@ func (s *engineState) readScript(scriptPath string) string {
 
 // fs cannot depend on log, so we need to initialize it here
 func (s *engineState) initFileSystem(scriptPath string) {
-	fs, warn, err := fsutil.NewFileSystem(scriptPath, s.flags.OutputDir, s.flags.SkipExists, s.flags.ForceClean)
+	absScriptPath, fs, warn, err := fsutil.NewFileSystem(scriptPath, s.flags.OutputDir, s.flags.SkipExists, s.flags.ForceClean)
 	if err != nil {
 		s.log.ErrAndExit("Error creating file system: %v", err)
 	}
@@ -151,7 +151,7 @@ func (s *engineState) initFileSystem(scriptPath string) {
 	if scriptPath == "" {
 		s.log.Info("No input files: starting interactive session")
 	} else {
-		s.log.Info("Input path: %s", scriptPath)
+		s.log.Info("Input path: %s", absScriptPath)
 	}
 	s.log.Info("Output directory: %s", s.fs.Wd)
 }
