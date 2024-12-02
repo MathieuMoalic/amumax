@@ -75,7 +75,7 @@ func (s *engineState) init(scriptStr string) {
 	s.solver.Init()
 	s.magnetization.Init(s.mesh, s.config, s.geometry)
 	s.regions.Init(s.mesh, s.log)
-	s.geometry.Init(s.mesh, s.log, s.config, s.magnetization.Value(), s.magnetization.Normalize)
+	s.geometry.Init(s.mesh, s.log, s.config, s.magnetization.Normalize)
 	s.savedQuantities.Init(s.log, s.fs, s.solver)
 	s.grains.Init(s.regions.Voronoi)
 	s.config.Init(s.mesh)
@@ -197,6 +197,7 @@ func (s *engineState) initializeMeshIfReady() {
 		s.mesh.Create()
 		s.magnetization.InitializeBuffer()
 		s.regions.InitializeBuffer()
+		s.geometry.InitializeBuffer(s.magnetization.Slice)
 		s.metadata.AddMesh(s.mesh)
 	}
 }
