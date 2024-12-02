@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for regiondecode kernel
@@ -41,7 +41,7 @@ func init() {
 func k_regiondecode_async(dst unsafe.Pointer, LUT unsafe.Pointer, regions unsafe.Pointer, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("regiondecode")
+		timer_old.Start("regiondecode")
 	}
 
 	regiondecode_args.Lock()
@@ -61,7 +61,7 @@ func k_regiondecode_async(dst unsafe.Pointer, LUT unsafe.Pointer, regions unsafe
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("regiondecode")
+		timer_old.Stop("regiondecode")
 	}
 }
 

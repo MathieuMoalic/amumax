@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for madd3 kernel
@@ -49,7 +49,7 @@ func init() {
 func k_madd3_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("madd3")
+		timer_old.Start("madd3")
 	}
 
 	madd3_args.Lock()
@@ -73,7 +73,7 @@ func k_madd3_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 u
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("madd3")
+		timer_old.Stop("madd3")
 	}
 }
 

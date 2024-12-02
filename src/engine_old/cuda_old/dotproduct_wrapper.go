@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for dotproduct kernel
@@ -51,7 +51,7 @@ func init() {
 func k_dotproduct_async(dst unsafe.Pointer, prefactor float32, ax unsafe.Pointer, ay unsafe.Pointer, az unsafe.Pointer, bx unsafe.Pointer, by unsafe.Pointer, bz unsafe.Pointer, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("dotproduct")
+		timer_old.Start("dotproduct")
 	}
 
 	dotproduct_args.Lock()
@@ -76,7 +76,7 @@ func k_dotproduct_async(dst unsafe.Pointer, prefactor float32, ax unsafe.Pointer
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("dotproduct")
+		timer_old.Stop("dotproduct")
 	}
 }
 

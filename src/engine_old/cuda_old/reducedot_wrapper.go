@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for reducedot kernel
@@ -43,7 +43,7 @@ func init() {
 func k_reducedot_async(x1 unsafe.Pointer, x2 unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("reducedot")
+		timer_old.Start("reducedot")
 	}
 
 	reducedot_args.Lock()
@@ -64,7 +64,7 @@ func k_reducedot_async(x1 unsafe.Pointer, x2 unsafe.Pointer, dst unsafe.Pointer,
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("reducedot")
+		timer_old.Stop("reducedot")
 	}
 }
 

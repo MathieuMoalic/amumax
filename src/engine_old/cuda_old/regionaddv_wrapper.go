@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for regionaddv kernel
@@ -49,7 +49,7 @@ func init() {
 func k_regionaddv_async(dstx unsafe.Pointer, dsty unsafe.Pointer, dstz unsafe.Pointer, LUTx unsafe.Pointer, LUTy unsafe.Pointer, LUTz unsafe.Pointer, regions unsafe.Pointer, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("regionaddv")
+		timer_old.Start("regionaddv")
 	}
 
 	regionaddv_args.Lock()
@@ -73,7 +73,7 @@ func k_regionaddv_async(dstx unsafe.Pointer, dsty unsafe.Pointer, dstz unsafe.Po
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("regionaddv")
+		timer_old.Stop("regionaddv")
 	}
 }
 

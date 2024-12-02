@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for settemperature2 kernel
@@ -53,7 +53,7 @@ func init() {
 func k_settemperature2_async(B unsafe.Pointer, noise unsafe.Pointer, kB2_VgammaDt float32, Ms_ unsafe.Pointer, Ms_mul float32, temp_ unsafe.Pointer, temp_mul float32, alpha_ unsafe.Pointer, alpha_mul float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("settemperature2")
+		timer_old.Start("settemperature2")
 	}
 
 	settemperature2_args.Lock()
@@ -79,7 +79,7 @@ func k_settemperature2_async(B unsafe.Pointer, noise unsafe.Pointer, kB2_VgammaD
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("settemperature2")
+		timer_old.Stop("settemperature2")
 	}
 }
 

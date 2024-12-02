@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for normalize kernel
@@ -43,7 +43,7 @@ func init() {
 func k_normalize_async(vx unsafe.Pointer, vy unsafe.Pointer, vz unsafe.Pointer, vol unsafe.Pointer, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("normalize")
+		timer_old.Start("normalize")
 	}
 
 	normalize_args.Lock()
@@ -64,7 +64,7 @@ func k_normalize_async(vx unsafe.Pointer, vy unsafe.Pointer, vz unsafe.Pointer, 
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("normalize")
+		timer_old.Stop("normalize")
 	}
 }
 

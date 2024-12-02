@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for getmagnetoelasticforce kernel
@@ -67,7 +67,7 @@ func init() {
 func k_getmagnetoelasticforce_async(fx unsafe.Pointer, fy unsafe.Pointer, fz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, B1_ unsafe.Pointer, B1_mul float32, B2_ unsafe.Pointer, B2_mul float32, rcsx float32, rcsy float32, rcsz float32, Nx int, Ny int, Nz int, PBC byte, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("getmagnetoelasticforce")
+		timer_old.Start("getmagnetoelasticforce")
 	}
 
 	getmagnetoelasticforce_args.Lock()
@@ -100,7 +100,7 @@ func k_getmagnetoelasticforce_async(fx unsafe.Pointer, fy unsafe.Pointer, fz uns
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("getmagnetoelasticforce")
+		timer_old.Stop("getmagnetoelasticforce")
 	}
 }
 

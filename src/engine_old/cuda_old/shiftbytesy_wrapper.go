@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for shiftbytesy kernel
@@ -47,7 +47,7 @@ func init() {
 func k_shiftbytesy_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz int, shy int, clamp byte, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("shiftbytesy")
+		timer_old.Start("shiftbytesy")
 	}
 
 	shiftbytesy_args.Lock()
@@ -70,7 +70,7 @@ func k_shiftbytesy_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int,
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("shiftbytesy")
+		timer_old.Stop("shiftbytesy")
 	}
 }
 

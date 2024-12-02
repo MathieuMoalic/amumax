@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for settopologicalchargelattice kernel
@@ -51,7 +51,7 @@ func init() {
 func k_settopologicalchargelattice_async(s unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, icxcy float32, Nx int, Ny int, Nz int, PBC byte, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("settopologicalchargelattice")
+		timer_old.Start("settopologicalchargelattice")
 	}
 
 	settopologicalchargelattice_args.Lock()
@@ -76,7 +76,7 @@ func k_settopologicalchargelattice_async(s unsafe.Pointer, mx unsafe.Pointer, my
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("settopologicalchargelattice")
+		timer_old.Stop("settopologicalchargelattice")
 	}
 }
 

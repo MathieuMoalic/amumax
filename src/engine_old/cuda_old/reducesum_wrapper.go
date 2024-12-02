@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for reducesum kernel
@@ -41,7 +41,7 @@ func init() {
 func k_reducesum_async(src unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("reducesum")
+		timer_old.Start("reducesum")
 	}
 
 	reducesum_args.Lock()
@@ -61,7 +61,7 @@ func k_reducesum_async(src unsafe.Pointer, dst unsafe.Pointer, initVal float32, 
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("reducesum")
+		timer_old.Stop("reducesum")
 	}
 }
 

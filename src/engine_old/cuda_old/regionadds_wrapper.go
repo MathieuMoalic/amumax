@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for regionadds kernel
@@ -41,7 +41,7 @@ func init() {
 func k_regionadds_async(dst unsafe.Pointer, LUT unsafe.Pointer, regions unsafe.Pointer, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("regionadds")
+		timer_old.Start("regionadds")
 	}
 
 	regionadds_args.Lock()
@@ -61,7 +61,7 @@ func k_regionadds_async(dst unsafe.Pointer, LUT unsafe.Pointer, regions unsafe.P
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("regionadds")
+		timer_old.Stop("regionadds")
 	}
 }
 

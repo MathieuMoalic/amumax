@@ -8,10 +8,10 @@ import (
 
 	"github.com/DataDog/zstd"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/progressbar"
-	"github.com/MathieuMoalic/amumax/src/timer"
 	"github.com/MathieuMoalic/amumax/src/utils"
 )
 
@@ -30,11 +30,11 @@ func emptyKernel() kernelSlice {
 // Obtains the demag kernel either from cacheDir/ or by calculating (and then storing in cacheDir for next time).
 // Empty cacheDir disables caching.
 func NewDemagKernel(fs *fsutil.FileSystem, log *log.Logs, gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cacheDir string, hideProgressBar bool) (kernel kernelSlice, err error) {
-	timer.Start("kernel_init")
-	timer.Stop("kernel_init") // warm-up
+	timer_old.Start("kernel_init")
+	timer_old.Stop("kernel_init") // warm-up
 
-	timer.Start("kernel_init")
-	defer timer.Stop("kernel_init")
+	timer_old.Start("kernel_init")
+	defer timer_old.Stop("kernel_init")
 
 	err = sanityCheck(cellsize)
 	if err != nil {

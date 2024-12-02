@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for madd6 kernel
@@ -61,7 +61,7 @@ func init() {
 func k_madd6_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, src4 unsafe.Pointer, fac4 float32, src5 unsafe.Pointer, fac5 float32, src6 unsafe.Pointer, fac6 float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("madd6")
+		timer_old.Start("madd6")
 	}
 
 	madd6_args.Lock()
@@ -91,7 +91,7 @@ func k_madd6_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 u
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("madd6")
+		timer_old.Stop("madd6")
 	}
 }
 

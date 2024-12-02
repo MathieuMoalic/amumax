@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for kernmulC kernel
@@ -41,7 +41,7 @@ func init() {
 func k_kernmulC_async(fftM unsafe.Pointer, fftK unsafe.Pointer, Nx int, Ny int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("kernmulC")
+		timer_old.Start("kernmulC")
 	}
 
 	kernmulC_args.Lock()
@@ -61,7 +61,7 @@ func k_kernmulC_async(fftM unsafe.Pointer, fftK unsafe.Pointer, Nx int, Ny int, 
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("kernmulC")
+		timer_old.Stop("kernmulC")
 	}
 }
 

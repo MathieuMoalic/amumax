@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for resize kernel
@@ -55,7 +55,7 @@ func init() {
 func k_resize_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Pointer, Sx int, Sy int, Sz int, layer int, scalex int, scaley int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("resize")
+		timer_old.Start("resize")
 	}
 
 	resize_args.Lock()
@@ -82,7 +82,7 @@ func k_resize_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Point
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("resize")
+		timer_old.Stop("resize")
 	}
 }
 

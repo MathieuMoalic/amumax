@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for llnoprecess kernel
@@ -53,7 +53,7 @@ func init() {
 func k_llnoprecess_async(tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, hx unsafe.Pointer, hy unsafe.Pointer, hz unsafe.Pointer, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("llnoprecess")
+		timer_old.Start("llnoprecess")
 	}
 
 	llnoprecess_args.Lock()
@@ -79,7 +79,7 @@ func k_llnoprecess_async(tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("llnoprecess")
+		timer_old.Stop("llnoprecess")
 	}
 }
 

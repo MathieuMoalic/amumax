@@ -5,7 +5,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cufft"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // 3D single-precission real-to-complex FFT plan.
@@ -26,7 +26,7 @@ func newFFT3DR2C(Nx, Ny, Nz int) fft3DR2CPlan {
 func (p *fft3DR2CPlan) ExecAsync(src, dst *data_old.Slice) {
 	if Synchronous {
 		Sync()
-		timer.Start("fft")
+		timer_old.Start("fft")
 	}
 	log_old.AssertMsg(src.NComp() == 1 && dst.NComp() == 1,
 		"Component mismatch: both src and dst must have 1 component in fft3DR2CPlan.ExecAsync")
@@ -45,7 +45,7 @@ func (p *fft3DR2CPlan) ExecAsync(src, dst *data_old.Slice) {
 
 	if Synchronous {
 		Sync()
-		timer.Stop("fft")
+		timer_old.Stop("fft")
 	}
 }
 

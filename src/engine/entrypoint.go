@@ -2,10 +2,9 @@ package engine
 
 import (
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/MathieuMoalic/amumax/src/slurm"
-	"github.com/MathieuMoalic/amumax/src/timer"
 	"github.com/MathieuMoalic/amumax/src/update"
 	"github.com/MathieuMoalic/amumax/src/version"
 	"github.com/spf13/cobra"
@@ -24,7 +23,7 @@ func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.Flags) {
 	GpuInfo := cuda_old.Init(givenFlags.Gpu)
 
 	cuda_old.Synchronous = givenFlags.Sync
-	timer.Enabled = givenFlags.Sync
+	timer_old.Enabled = givenFlags.Sync
 
 	// engine.Insecure = givenFlags.Insecure
 
@@ -32,12 +31,10 @@ func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.Flags) {
 		log.PrintVersion(version.VERSION, GpuInfo)
 		log.Err("vet is not implemented yet with the new engine")
 	} else if len(args) == 0 && givenFlags.Interactive {
-		go slurm.SetEndTimerIfSlurm()
 		log.PrintVersion(version.VERSION, GpuInfo)
 		engineState := newEngineState(givenFlags, log)
 		engineState.start("") // interactive
 	} else if len(args) == 1 {
-		go slurm.SetEndTimerIfSlurm()
 		log.PrintVersion(version.VERSION, GpuInfo)
 		engineState := newEngineState(givenFlags, log)
 		engineState.start(args[0])

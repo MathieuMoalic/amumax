@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for setTheta kernel
@@ -43,7 +43,7 @@ func init() {
 func k_setTheta_async(theta unsafe.Pointer, mz unsafe.Pointer, Nx int, Ny int, Nz int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("setTheta")
+		timer_old.Start("setTheta")
 	}
 
 	setTheta_args.Lock()
@@ -64,7 +64,7 @@ func k_setTheta_async(theta unsafe.Pointer, mz unsafe.Pointer, Nx int, Ny int, N
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("setTheta")
+		timer_old.Stop("setTheta")
 	}
 }
 

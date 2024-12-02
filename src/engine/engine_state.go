@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/geometry"
@@ -20,7 +21,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/shape"
 	"github.com/MathieuMoalic/amumax/src/solver"
 	"github.com/MathieuMoalic/amumax/src/table"
-	"github.com/MathieuMoalic/amumax/src/timer"
 	"github.com/MathieuMoalic/amumax/src/window_shift"
 )
 
@@ -179,7 +179,7 @@ func (s *engineState) cleanExit() {
 	s.fs.Drain() // wait for the save queue to finish
 	s.table.Close()
 	if s.flags.Sync {
-		timer.Print(os.Stdout)
+		timer_old.Print(os.Stdout)
 	}
 	s.metadata.Add("steps", s.solver.NSteps)
 	s.metadata.Close()

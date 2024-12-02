@@ -65,6 +65,7 @@ func AverageSlice(s *data_old.Slice) []float64 {
 	}
 	return avg
 }
+
 func Sign(x float64) float64 {
 	switch {
 	case x > 0:

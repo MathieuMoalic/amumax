@@ -5,76 +5,76 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import(
-	"unsafe"
-	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+import (
 	"sync"
+	"unsafe"
+
+	"github.com/MathieuMoalic/amumax/src/cuda/cu"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for setTheta kernel
 var setTheta_code cu.Function
 
 // Stores the arguments for setTheta kernel invocation
-type setTheta_args_t struct{
-	 arg_theta unsafe.Pointer
-	 arg_mz unsafe.Pointer
-	 arg_Nx int
-	 arg_Ny int
-	 arg_Nz int
-	 argptr [5]unsafe.Pointer
+type setTheta_args_t struct {
+	arg_theta unsafe.Pointer
+	arg_mz    unsafe.Pointer
+	arg_Nx    int
+	arg_Ny    int
+	arg_Nz    int
+	argptr    [5]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for setTheta kernel invocation
 var setTheta_args setTheta_args_t
 
-func init(){
+func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	 setTheta_args.argptr[0] = unsafe.Pointer(&setTheta_args.arg_theta)
-	 setTheta_args.argptr[1] = unsafe.Pointer(&setTheta_args.arg_mz)
-	 setTheta_args.argptr[2] = unsafe.Pointer(&setTheta_args.arg_Nx)
-	 setTheta_args.argptr[3] = unsafe.Pointer(&setTheta_args.arg_Ny)
-	 setTheta_args.argptr[4] = unsafe.Pointer(&setTheta_args.arg_Nz)
-	 }
+	setTheta_args.argptr[0] = unsafe.Pointer(&setTheta_args.arg_theta)
+	setTheta_args.argptr[1] = unsafe.Pointer(&setTheta_args.arg_mz)
+	setTheta_args.argptr[2] = unsafe.Pointer(&setTheta_args.arg_Nx)
+	setTheta_args.argptr[3] = unsafe.Pointer(&setTheta_args.arg_Ny)
+	setTheta_args.argptr[4] = unsafe.Pointer(&setTheta_args.arg_Nz)
+}
 
 // Wrapper for setTheta CUDA kernel, asynchronous.
-func k_setTheta_async ( theta unsafe.Pointer, mz unsafe.Pointer, Nx int, Ny int, Nz int,  cfg *config) {
-	if Synchronous{ // debug
+func k_setTheta_async(theta unsafe.Pointer, mz unsafe.Pointer, Nx int, Ny int, Nz int, cfg *config) {
+	if Synchronous { // debug
 		Sync()
-		timer.Start("setTheta")
+		timer_old.Start("setTheta")
 	}
 
 	setTheta_args.Lock()
 	defer setTheta_args.Unlock()
 
-	if setTheta_code == 0{
+	if setTheta_code == 0 {
 		setTheta_code = fatbinLoad(setTheta_map, "setTheta")
 	}
 
-	 setTheta_args.arg_theta = theta
-	 setTheta_args.arg_mz = mz
-	 setTheta_args.arg_Nx = Nx
-	 setTheta_args.arg_Ny = Ny
-	 setTheta_args.arg_Nz = Nz
-	
+	setTheta_args.arg_theta = theta
+	setTheta_args.arg_mz = mz
+	setTheta_args.arg_Nx = Nx
+	setTheta_args.arg_Ny = Ny
+	setTheta_args.arg_Nz = Nz
 
 	args := setTheta_args.argptr[:]
 	cu.LaunchKernel(setTheta_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous{ // debug
+	if Synchronous { // debug
 		Sync()
-		timer.Stop("setTheta")
+		timer_old.Stop("setTheta")
 	}
 }
 
 // maps compute capability on PTX code for setTheta kernel.
-var setTheta_map = map[int]string{ 0: "" ,
-52: setTheta_ptx_52  }
+var setTheta_map = map[int]string{0: "",
+	52: setTheta_ptx_52}
 
 // setTheta PTX code for various compute capabilities.
-const(
-  setTheta_ptx_52 = `
+const (
+	setTheta_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -162,4 +162,4 @@ BB0_2:
 
 
 `
- )
+)

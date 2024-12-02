@@ -5,73 +5,73 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import(
-	"unsafe"
-	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+import (
 	"sync"
+	"unsafe"
+
+	"github.com/MathieuMoalic/amumax/src/cuda/cu"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for regionadds kernel
 var regionadds_code cu.Function
 
 // Stores the arguments for regionadds kernel invocation
-type regionadds_args_t struct{
-	 arg_dst unsafe.Pointer
-	 arg_LUT unsafe.Pointer
-	 arg_regions unsafe.Pointer
-	 arg_N int
-	 argptr [4]unsafe.Pointer
+type regionadds_args_t struct {
+	arg_dst     unsafe.Pointer
+	arg_LUT     unsafe.Pointer
+	arg_regions unsafe.Pointer
+	arg_N       int
+	argptr      [4]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for regionadds kernel invocation
 var regionadds_args regionadds_args_t
 
-func init(){
+func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	 regionadds_args.argptr[0] = unsafe.Pointer(&regionadds_args.arg_dst)
-	 regionadds_args.argptr[1] = unsafe.Pointer(&regionadds_args.arg_LUT)
-	 regionadds_args.argptr[2] = unsafe.Pointer(&regionadds_args.arg_regions)
-	 regionadds_args.argptr[3] = unsafe.Pointer(&regionadds_args.arg_N)
-	 }
+	regionadds_args.argptr[0] = unsafe.Pointer(&regionadds_args.arg_dst)
+	regionadds_args.argptr[1] = unsafe.Pointer(&regionadds_args.arg_LUT)
+	regionadds_args.argptr[2] = unsafe.Pointer(&regionadds_args.arg_regions)
+	regionadds_args.argptr[3] = unsafe.Pointer(&regionadds_args.arg_N)
+}
 
 // Wrapper for regionadds CUDA kernel, asynchronous.
-func k_regionadds_async ( dst unsafe.Pointer, LUT unsafe.Pointer, regions unsafe.Pointer, N int,  cfg *config) {
-	if Synchronous{ // debug
+func k_regionadds_async(dst unsafe.Pointer, LUT unsafe.Pointer, regions unsafe.Pointer, N int, cfg *config) {
+	if Synchronous { // debug
 		Sync()
-		timer.Start("regionadds")
+		timer_old.Start("regionadds")
 	}
 
 	regionadds_args.Lock()
 	defer regionadds_args.Unlock()
 
-	if regionadds_code == 0{
+	if regionadds_code == 0 {
 		regionadds_code = fatbinLoad(regionadds_map, "regionadds")
 	}
 
-	 regionadds_args.arg_dst = dst
-	 regionadds_args.arg_LUT = LUT
-	 regionadds_args.arg_regions = regions
-	 regionadds_args.arg_N = N
-	
+	regionadds_args.arg_dst = dst
+	regionadds_args.arg_LUT = LUT
+	regionadds_args.arg_regions = regions
+	regionadds_args.arg_N = N
 
 	args := regionadds_args.argptr[:]
 	cu.LaunchKernel(regionadds_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous{ // debug
+	if Synchronous { // debug
 		Sync()
-		timer.Stop("regionadds")
+		timer_old.Stop("regionadds")
 	}
 }
 
 // maps compute capability on PTX code for regionadds kernel.
-var regionadds_map = map[int]string{ 0: "" ,
-52: regionadds_ptx_52  }
+var regionadds_map = map[int]string{0: "",
+	52: regionadds_ptx_52}
 
 // regionadds PTX code for various compute capabilities.
-const(
-  regionadds_ptx_52 = `
+const (
+	regionadds_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -129,4 +129,4 @@ BB0_2:
 
 
 `
- )
+)

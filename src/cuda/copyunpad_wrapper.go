@@ -5,85 +5,85 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import(
-	"unsafe"
-	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+import (
 	"sync"
+	"unsafe"
+
+	"github.com/MathieuMoalic/amumax/src/cuda/cu"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for copyunpad kernel
 var copyunpad_code cu.Function
 
 // Stores the arguments for copyunpad kernel invocation
-type copyunpad_args_t struct{
-	 arg_dst unsafe.Pointer
-	 arg_Dx int
-	 arg_Dy int
-	 arg_Dz int
-	 arg_src unsafe.Pointer
-	 arg_Sx int
-	 arg_Sy int
-	 arg_Sz int
-	 argptr [8]unsafe.Pointer
+type copyunpad_args_t struct {
+	arg_dst unsafe.Pointer
+	arg_Dx  int
+	arg_Dy  int
+	arg_Dz  int
+	arg_src unsafe.Pointer
+	arg_Sx  int
+	arg_Sy  int
+	arg_Sz  int
+	argptr  [8]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for copyunpad kernel invocation
 var copyunpad_args copyunpad_args_t
 
-func init(){
+func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	 copyunpad_args.argptr[0] = unsafe.Pointer(&copyunpad_args.arg_dst)
-	 copyunpad_args.argptr[1] = unsafe.Pointer(&copyunpad_args.arg_Dx)
-	 copyunpad_args.argptr[2] = unsafe.Pointer(&copyunpad_args.arg_Dy)
-	 copyunpad_args.argptr[3] = unsafe.Pointer(&copyunpad_args.arg_Dz)
-	 copyunpad_args.argptr[4] = unsafe.Pointer(&copyunpad_args.arg_src)
-	 copyunpad_args.argptr[5] = unsafe.Pointer(&copyunpad_args.arg_Sx)
-	 copyunpad_args.argptr[6] = unsafe.Pointer(&copyunpad_args.arg_Sy)
-	 copyunpad_args.argptr[7] = unsafe.Pointer(&copyunpad_args.arg_Sz)
-	 }
+	copyunpad_args.argptr[0] = unsafe.Pointer(&copyunpad_args.arg_dst)
+	copyunpad_args.argptr[1] = unsafe.Pointer(&copyunpad_args.arg_Dx)
+	copyunpad_args.argptr[2] = unsafe.Pointer(&copyunpad_args.arg_Dy)
+	copyunpad_args.argptr[3] = unsafe.Pointer(&copyunpad_args.arg_Dz)
+	copyunpad_args.argptr[4] = unsafe.Pointer(&copyunpad_args.arg_src)
+	copyunpad_args.argptr[5] = unsafe.Pointer(&copyunpad_args.arg_Sx)
+	copyunpad_args.argptr[6] = unsafe.Pointer(&copyunpad_args.arg_Sy)
+	copyunpad_args.argptr[7] = unsafe.Pointer(&copyunpad_args.arg_Sz)
+}
 
 // Wrapper for copyunpad CUDA kernel, asynchronous.
-func k_copyunpad_async ( dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Pointer, Sx int, Sy int, Sz int,  cfg *config) {
-	if Synchronous{ // debug
+func k_copyunpad_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Pointer, Sx int, Sy int, Sz int, cfg *config) {
+	if Synchronous { // debug
 		Sync()
-		timer.Start("copyunpad")
+		timer_old.Start("copyunpad")
 	}
 
 	copyunpad_args.Lock()
 	defer copyunpad_args.Unlock()
 
-	if copyunpad_code == 0{
+	if copyunpad_code == 0 {
 		copyunpad_code = fatbinLoad(copyunpad_map, "copyunpad")
 	}
 
-	 copyunpad_args.arg_dst = dst
-	 copyunpad_args.arg_Dx = Dx
-	 copyunpad_args.arg_Dy = Dy
-	 copyunpad_args.arg_Dz = Dz
-	 copyunpad_args.arg_src = src
-	 copyunpad_args.arg_Sx = Sx
-	 copyunpad_args.arg_Sy = Sy
-	 copyunpad_args.arg_Sz = Sz
-	
+	copyunpad_args.arg_dst = dst
+	copyunpad_args.arg_Dx = Dx
+	copyunpad_args.arg_Dy = Dy
+	copyunpad_args.arg_Dz = Dz
+	copyunpad_args.arg_src = src
+	copyunpad_args.arg_Sx = Sx
+	copyunpad_args.arg_Sy = Sy
+	copyunpad_args.arg_Sz = Sz
 
 	args := copyunpad_args.argptr[:]
 	cu.LaunchKernel(copyunpad_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous{ // debug
+	if Synchronous { // debug
 		Sync()
-		timer.Stop("copyunpad")
+		timer_old.Stop("copyunpad")
 	}
 }
 
 // maps compute capability on PTX code for copyunpad kernel.
-var copyunpad_map = map[int]string{ 0: "" ,
-52: copyunpad_ptx_52  }
+var copyunpad_map = map[int]string{0: "",
+	52: copyunpad_ptx_52}
 
 // copyunpad PTX code for various compute capabilities.
-const(
-  copyunpad_ptx_52 = `
+const (
+	copyunpad_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -154,4 +154,4 @@ BB0_2:
 
 
 `
- )
+)

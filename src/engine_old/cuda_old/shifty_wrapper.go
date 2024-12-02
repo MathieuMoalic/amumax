@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for shifty kernel
@@ -49,7 +49,7 @@ func init() {
 func k_shifty_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz int, shy int, clampL float32, clampR float32, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("shifty")
+		timer_old.Start("shifty")
 	}
 
 	shifty_args.Lock()
@@ -73,7 +73,7 @@ func k_shifty_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz i
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("shifty")
+		timer_old.Stop("shifty")
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for reducemaxvecnorm2 kernel
@@ -45,7 +45,7 @@ func init() {
 func k_reducemaxvecnorm2_async(x unsafe.Pointer, y unsafe.Pointer, z unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("reducemaxvecnorm2")
+		timer_old.Start("reducemaxvecnorm2")
 	}
 
 	reducemaxvecnorm2_args.Lock()
@@ -67,7 +67,7 @@ func k_reducemaxvecnorm2_async(x unsafe.Pointer, y unsafe.Pointer, z unsafe.Poin
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("reducemaxvecnorm2")
+		timer_old.Stop("reducemaxvecnorm2")
 	}
 }
 

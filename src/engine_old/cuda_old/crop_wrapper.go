@@ -10,7 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/cuda_old/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 // CUDA handle for crop kernel
@@ -55,7 +55,7 @@ func init() {
 func k_crop_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Pointer, Sx int, Sy int, Sz int, Offx int, Offy int, Offz int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
-		timer.Start("crop")
+		timer_old.Start("crop")
 	}
 
 	crop_args.Lock()
@@ -82,7 +82,7 @@ func k_crop_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Pointer
 
 	if Synchronous { // debug
 		Sync()
-		timer.Stop("crop")
+		timer_old.Stop("crop")
 	}
 }
 

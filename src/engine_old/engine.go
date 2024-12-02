@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 )
 
 var StartTime = time.Now()
@@ -33,7 +33,7 @@ func CleanExit() {
 	log_old.Log.Info("**************** Simulation Ended ****************** //")
 	Table.Flush()
 	if SyncAndLog {
-		timer.Print(os.Stdout)
+		timer_old.Print(os.Stdout)
 	}
 	EngineState.Metadata.Add("steps", NSteps)
 	EngineState.Metadata.End()
