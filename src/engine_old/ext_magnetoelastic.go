@@ -3,7 +3,7 @@ package engine_old
 // Mangeto-elastic coupling.
 
 import (
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 )
@@ -64,7 +64,7 @@ func addMagnetoelasticField(dst *data_old.Slice) {
 	ms := Msat.MSlice()
 	defer ms.Recycle()
 
-	cuda.AddMagnetoelasticField(dst, NormMag.Buffer(),
+	cuda_old.AddMagnetoelasticField(dst, NormMag.Buffer(),
 		Exx, Eyy, Ezz,
 		Exy, Exz, Eyz,
 		b1, b2, ms)
@@ -84,7 +84,7 @@ func getMagnetoelasticForceDensity(dst *data_old.Slice) {
 	b2 := B2.MSlice()
 	defer b2.Recycle()
 
-	cuda.GetMagnetoelasticForceDensity(dst, NormMag.Buffer(),
+	cuda_old.GetMagnetoelasticForceDensity(dst, NormMag.Buffer(),
 		b1, b2, NormMag.Mesh())
 }
 
@@ -94,12 +94,12 @@ func addMagnetoelasticEnergyDensity(dst *data_old.Slice) {
 		return
 	}
 
-	buf := cuda.Buffer(B_mel.NComp(), B_mel.Mesh().Size())
-	defer cuda.Recycle(buf)
+	buf := cuda_old.Buffer(B_mel.NComp(), B_mel.Mesh().Size())
+	defer cuda_old.Recycle(buf)
 
 	// unnormalized magnetization:
 	Mf := ValueOf(M_full)
-	defer cuda.Recycle(Mf)
+	defer cuda_old.Recycle(Mf)
 
 	Exx := exx.MSlice()
 	defer Exx.Recycle()
@@ -132,20 +132,20 @@ func addMagnetoelasticEnergyDensity(dst *data_old.Slice) {
 	defer zeromel.Recycle()
 
 	// 1st
-	cuda.Zero(buf)
-	cuda.AddMagnetoelasticField(buf, NormMag.Buffer(),
+	cuda_old.Zero(buf)
+	cuda_old.AddMagnetoelasticField(buf, NormMag.Buffer(),
 		Exx, Eyy, Ezz,
 		Exy, Exz, Eyz,
 		b1, zeromel, ms)
-	cuda.AddDotProduct(dst, -1./2., buf, Mf)
+	cuda_old.AddDotProduct(dst, -1./2., buf, Mf)
 
 	// 1nd
-	cuda.Zero(buf)
-	cuda.AddMagnetoelasticField(buf, NormMag.Buffer(),
+	cuda_old.Zero(buf)
+	cuda_old.AddMagnetoelasticField(buf, NormMag.Buffer(),
 		Exx, Eyy, Ezz,
 		Exy, Exz, Eyz,
 		zeromel, b2, ms)
-	cuda.AddDotProduct(dst, -1./1., buf, Mf)
+	cuda_old.AddDotProduct(dst, -1./1., buf, Mf)
 }
 
 // Returns magneto-ell energy in joules.
@@ -155,10 +155,10 @@ func getMagnetoelasticEnergy() float64 {
 		return float64(0.0)
 	}
 
-	buf := cuda.Buffer(1, GetMesh().Size())
-	defer cuda.Recycle(buf)
+	buf := cuda_old.Buffer(1, GetMesh().Size())
+	defer cuda_old.Recycle(buf)
 
-	cuda.Zero(buf)
+	cuda_old.Zero(buf)
 	addMagnetoelasticEnergyDensity(buf)
-	return cellVolume() * float64(cuda.Sum(buf))
+	return cellVolume() * float64(cuda_old.Sum(buf))
 }

@@ -7,7 +7,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
@@ -88,7 +88,7 @@ func loadOvfFile(fname string) *data_old.Slice {
 func download(q Quantity) *data_old.Slice {
 	// TODO: optimize for Buffer()
 	buf := ValueOf(q)
-	defer cuda.Recycle(buf)
+	defer cuda_old.Recycle(buf)
 	if buf.CPUAccess() {
 		return buf
 	} else {
@@ -155,7 +155,7 @@ func assureGPU(s *data_old.Slice) *data_old.Slice {
 	if s.GPUAccess() {
 		return s
 	} else {
-		return cuda.GPUCopy(s)
+		return cuda_old.GPUCopy(s)
 	}
 }
 

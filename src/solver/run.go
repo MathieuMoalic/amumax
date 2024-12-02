@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag"
@@ -117,7 +117,7 @@ func (s *Solver) setLastErr(err float64) {
 }
 
 func (s *Solver) setMaxTorque(τ *data_old.Slice) {
-	s.lastTorque = cuda.MaxVecNorm(τ)
+	s.lastTorque = cuda_old.MaxVecNorm(τ)
 }
 
 // adapt time step: dt *= corr, but limited to sensible values.

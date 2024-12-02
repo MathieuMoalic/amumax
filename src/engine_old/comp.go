@@ -5,7 +5,7 @@ package engine_old
 import (
 	"fmt"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
@@ -31,14 +31,14 @@ func (q *component) Mesh() *mesh_old.Mesh { return MeshOf(q.parent) }
 func (q *component) Slice() (*data_old.Slice, bool) {
 	p := q.parent
 	src := ValueOf(p)
-	defer cuda.Recycle(src)
-	c := cuda.Buffer(1, src.Size())
+	defer cuda_old.Recycle(src)
+	c := cuda_old.Buffer(1, src.Size())
 	return c, true
 }
 
 func (q *component) EvalTo(dst *data_old.Slice) {
 	src := ValueOf(q.parent)
-	defer cuda.Recycle(src)
+	defer cuda_old.Recycle(src)
 	data_old.Copy(dst, src.Comp(q.comp))
 }
 

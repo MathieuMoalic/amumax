@@ -3,7 +3,7 @@ package engine_old
 import (
 	"fmt"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/mesh_old"
@@ -46,16 +46,16 @@ func (q *oneReg) EvalTo(dst *data_old.Slice) { evalTo(q, dst) }
 // returns a new slice equal to q in the given region, 0 outside.
 func (q *oneReg) Slice() (*data_old.Slice, bool) {
 	src := ValueOf(q.parent)
-	defer cuda.Recycle(src)
-	out := cuda.Buffer(q.NComp(), q.Mesh().Size())
-	cuda.RegionSelect(out, src, Regions.Gpu(), byte(q.region))
+	defer cuda_old.Recycle(src)
+	out := cuda_old.Buffer(q.NComp(), q.Mesh().Size())
+	cuda_old.RegionSelect(out, src, Regions.Gpu(), byte(q.region))
 	return out, true
 }
 
 func (q *oneReg) average() []float64 {
 	slice, r := q.Slice()
 	if r {
-		defer cuda.Recycle(slice)
+		defer cuda_old.Recycle(slice)
 	}
 	avg := sAverageUniverse(slice)
 	sDiv(avg, Regions.volume(q.region))

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/cuda_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/quantity"
 )
@@ -58,7 +58,7 @@ func AverageSlice(s *data_old.Slice) []float64 {
 	nCell := float64(Prod(s.Size()))
 	avg := make([]float64, s.NComp())
 	for i := range avg {
-		avg[i] = float64(cuda.Sum(s.Comp(i))) / nCell
+		avg[i] = float64(cuda_old.Sum(s.Comp(i))) / nCell
 		if math.IsNaN(avg[i]) {
 			panic("NaN")
 		}
