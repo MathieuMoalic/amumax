@@ -7,7 +7,7 @@ import (
 )
 
 // Topological charge according to Berg and Lüscher
-func SetTopologicalChargeLattice(s *slice.Slice, m *slice.Slice, mesh mesh.MeshLike) {
+func SetTopologicalChargeLattice(s *slice.Slice, m *slice.Slice, mesh mesh.Mesh) {
 	cellsize := mesh.CellSize()
 	N := s.Size()
 	log.AssertMsg(m.Size() == N, "Size mismatch: m and s must have the same dimensions in SetTopologicalChargeLattice")
