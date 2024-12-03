@@ -8,6 +8,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/constants"
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/magnetization"
 	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/progressbar"
 	"github.com/MathieuMoalic/amumax/src/regions"
@@ -16,7 +17,6 @@ import (
 
 // START OF TODO
 // TODO: It should be in torque
-var precess bool
 
 // TODO: implement gammaLL in torque
 var gammaLL float64 = 1.7595e11 // Gyromagnetic ratio of spins, in rad/Ts
@@ -29,13 +29,6 @@ type Temperature interface {
 var Temp Temperature
 var Msat, Aex Temperature
 
-type NormMagInterface interface {
-	Buffer() *slice.Slice
-	normalize()
-}
-
-var NormMag NormMagInterface
-
 func setTorque(dst *slice.Slice) {}
 
 // TODO: implement saveIfNeeded
@@ -47,6 +40,7 @@ type Solver struct {
 	regions              *regions.Regions
 	log                  *log.Logs
 	mesh                 *mesh.Mesh
+	magnetization        *magnetization.Magnetization
 	Time                 float64      // Current time in seconds
 	alarm                float64      // End time for the run, dt adaptation must not cross it
 	pause                bool         // Set to true to stop running after the current step
@@ -64,13 +58,15 @@ type Solver struct {
 	solverType           int          // Identifier for the solver type
 	exchangeLengthWarned bool         // Whether the exchange length warning has been issued
 	previousStepBuffer   *slice.Slice // used by backwardEuler, rk23 and rk45DP
+	precess              bool         // Precession of the magnetization
 }
 
 // NewSolver creates a new instance of the solver with default settings.
-func (s *Solver) Init(log *log.Logs, regions *regions.Regions, mesh *mesh.Mesh) {
+func (s *Solver) Init(log *log.Logs, regions *regions.Regions, mesh *mesh.Mesh, magnetization *magnetization.Magnetization) {
 	s.log = log
 	s.regions = regions
 	s.mesh = mesh
+	s.magnetization = magnetization
 	s.Time = 0
 	s.alarm = 0
 	s.pause = true
@@ -90,6 +86,8 @@ func (s *Solver) Init(log *log.Logs, regions *regions.Regions, mesh *mesh.Mesh) 
 	s.FixDt = 0
 	s.solverType = 0
 	s.exchangeLengthWarned = false
+	s.previousStepBuffer = nil
+	s.precess = true
 }
 
 func (s *Solver) SetSolver(solverIndex int) {
@@ -165,9 +163,9 @@ func (s *Solver) adaptDt(corr float64) {
 
 // Run the simulation for a number of seconds.
 func (s *Solver) RunWithoutPrecession(seconds float64) {
-	prevPrecess := precess
+	prevPrecess := s.precess
 	s.Run(seconds)
-	precess = prevPrecess
+	s.precess = prevPrecess
 }
 
 func (s *Solver) freeBuffer() {

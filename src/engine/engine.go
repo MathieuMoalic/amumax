@@ -87,7 +87,6 @@ func newEngineState(givenFlags *flags.Flags, log *log.Logs, gpuInfo *log.GpuInfo
 func (s *engineState) init(scriptStr string) {
 	// initialize empty structs first so we can pass the pointers
 	// to the actual init functions
-
 	s.metadata = &metadata.Metadata{}
 	s.table = &table.Table{}
 	s.solver = &solver.Solver{}
@@ -107,7 +106,7 @@ func (s *engineState) init(scriptStr string) {
 	s.script.Init(&scriptStr, s.log, s.metadata, s.initializeMeshIfReady)
 	s.windowShift.Init()
 	s.table.Init(s.solver, s.log, s.fs)
-	s.solver.Init(s.log, s.regions, s.mesh)
+	s.solver.Init(s.log, s.regions, s.mesh, s.magnetization)
 	s.magnetization.Init(s.mesh, s.config, s.geometry)
 	s.regions.Init(s.mesh, s.log)
 	s.geometry.Init(s.mesh, s.log, s.config, s.magnetization.Normalize)

@@ -8,7 +8,7 @@ import (
 
 // Adaptive Heun method, can be used as solver.Step
 func (s *Solver) heun() {
-	y := NormMag.Buffer()
+	y := s.magnetization.Slice
 	dy0 := cuda.Buffer(3, y.Size())
 	defer cuda.Recycle(dy0)
 
@@ -35,7 +35,7 @@ func (s *Solver) heun() {
 	if err < s.MaxErr || s.dt_si <= s.MinDt || s.FixDt != 0 { // mindt check to avoid infinite loop
 		// step OK
 		cuda.Madd3(y, y, dy, dy0, 1, 0.5*dt, -0.5*dt)
-		NormMag.normalize()
+		s.magnetization.Normalize()
 		s.NSteps++
 		s.adaptDt(math.Pow(s.MaxErr/err, 1./2.))
 		s.setLastErr(err)

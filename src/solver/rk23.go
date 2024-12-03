@@ -18,7 +18,7 @@ import (
 //	k4 = f(tn + h, y{n+1})
 //	z{n+1} = yn + 7/24 h k1 + 1/4 h k2 + 1/3 h k3 + 1/8 h k4 // 2nd order
 func (s *Solver) rk23() {
-	m := NormMag.Buffer()
+	m := s.magnetization.Slice
 	size := m.Size()
 
 	if s.FixDt != 0 {
@@ -59,18 +59,18 @@ func (s *Solver) rk23() {
 	// stage 2
 	s.Time = t0 + (1./2.)*s.dt_si
 	cuda.Madd2(m, m, s.previousStepBuffer, 1, (1./2.)*h) // m = m*1 + k1*h/2
-	NormMag.normalize()
+	s.magnetization.Normalize()
 	s.torqueFn(k2)
 
 	// stage 3
 	s.Time = t0 + (3./4.)*s.dt_si
 	cuda.Madd2(m, m0, k2, 1, (3./4.)*h) // m = m0*1 + k2*3/4
-	NormMag.normalize()
+	s.magnetization.Normalize()
 	s.torqueFn(k3)
 
 	// 3rd order solution
 	cuda.Madd4(m, m0, s.previousStepBuffer, k2, k3, 1, (2./9.)*h, (1./3.)*h, (4./9.)*h)
-	NormMag.normalize()
+	s.magnetization.Normalize()
 
 	// error estimate
 	s.Time = t0 + s.dt_si

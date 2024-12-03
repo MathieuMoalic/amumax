@@ -6,7 +6,7 @@ import (
 
 // Euler method
 func (s *Solver) euler() {
-	y := NormMag.Buffer()
+	y := s.magnetization.Slice
 	dy0 := cuda.Buffer(3, y.Size())
 	defer cuda.Recycle(dy0)
 
@@ -27,7 +27,7 @@ func (s *Solver) euler() {
 	s.setLastErr(float64(dt) * s.lastTorque)
 
 	cuda.Madd2(y, y, dy0, 1, dt) // y = y + dt * dy
-	NormMag.normalize()
+	s.magnetization.Normalize()
 	s.Time += s.dt_si
 	s.NSteps++
 }

@@ -11,7 +11,7 @@ func (s *Solver) backWardEulerStep() {
 
 	t0 := s.Time
 
-	y := NormMag.Buffer()
+	y := s.magnetization.Slice
 
 	y0 := cuda.Buffer(3, y.Size())
 	defer cuda.Recycle(y0)
@@ -34,17 +34,17 @@ func (s *Solver) backWardEulerStep() {
 	// with temperature, previous torque cannot be used as predictor
 	if Temp.isZero() {
 		cuda.Madd2(y, y0, dy1, 1, dt) // predictor euler step with previous torque
-		NormMag.normalize()
+		s.magnetization.Normalize()
 	}
 
 	s.torqueFn(dy0)
 	cuda.Madd2(y, y0, dy0, 1, dt) // y = y0 + dt * dy
-	NormMag.normalize()
+	s.magnetization.Normalize()
 
 	// One iteration
 	s.torqueFn(dy1)
 	cuda.Madd2(y, y0, dy1, 1, dt) // y = y0 + dt * dy1
-	NormMag.normalize()
+	s.magnetization.Normalize()
 
 	s.Time = t0 + s.dt_si
 

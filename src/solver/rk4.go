@@ -9,7 +9,7 @@ import (
 
 // Classical 4th order RK solver.
 func (s *Solver) rk4() {
-	m := NormMag.Buffer()
+	m := s.magnetization.Slice
 	size := m.Size()
 
 	if s.FixDt != 0 {
@@ -37,18 +37,18 @@ func (s *Solver) rk4() {
 	// stage 2
 	s.Time = t0 + (1./2.)*s.dt_si
 	cuda.Madd2(m, m, k1, 1, (1./2.)*h) // m = m*1 + k1*h/2
-	NormMag.normalize()
+	s.magnetization.Normalize()
 	s.torqueFn(k2)
 
 	// stage 3
 	cuda.Madd2(m, m0, k2, 1, (1./2.)*h) // m = m0*1 + k2*1/2
-	NormMag.normalize()
+	s.magnetization.Normalize()
 	s.torqueFn(k3)
 
 	// stage 4
 	s.Time = t0 + s.dt_si
 	cuda.Madd2(m, m0, k3, 1, 1.*h) // m = m0*1 + k3*1
-	NormMag.normalize()
+	s.magnetization.Normalize()
 	s.torqueFn(k4)
 
 	err := cuda.MaxVecDiff(k1, k4) * float64(h)
@@ -58,7 +58,7 @@ func (s *Solver) rk4() {
 		// step OK
 		// 4th order solution
 		cuda.Madd5(m, m0, k1, k2, k3, k4, 1, (1./6.)*h, (1./3.)*h, (1./3.)*h, (1./6.)*h)
-		NormMag.normalize()
+		s.magnetization.Normalize()
 		s.NSteps++
 		s.adaptDt(math.Pow(s.MaxErr/err, 1./4.))
 		s.setLastErr(err)
