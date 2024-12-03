@@ -58,7 +58,10 @@
         buildInputs = basepkgs ++ [pkgs.addDriverRunpath];
 
         buildPhase = ''
+          mkdir -p src/api/static
+          mkdir -p src/engine_old/api_old/static
           cp -r ${frontend} src/api/static
+          cp -r ${frontend} src/engine_old/api_old/static
           go build -v -o $out/bin/amumax -ldflags '-s -w -X github.com/MathieuMoalic/amumax/src/version.VERSION=${version}' .
         '';
 
@@ -89,13 +92,13 @@
       };
 
     #################### RELEASE ########################
-    releaseVersion = "2024.11.26"; # Set the version for the Release build
+    releaseVersion = "2024.12.03"; # Set the version for the Release build
 
     ReleaseSrc = pkgs.fetchFromGitHub {
       owner = "MathieuMoalic";
       repo = "amumax";
       rev = releaseVersion;
-      hash = pkgs.lib.fakeHash;
+      hash = "sha256-Tx/CcXNANik3OzPDIMx/tDqSSKoTQ2T4U90s9lJmq8c=";
     };
 
     ReleaseFrontend = buildFrontend {
