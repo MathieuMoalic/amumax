@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mesh"
@@ -21,13 +20,19 @@ type Metadata struct {
 	lastSavedHash [32]byte // Hash of the last saved Fields
 }
 
-func (m *Metadata) Init(fs *fsutil.FileSystem, log *log.Logs) {
+func (m *Metadata) Init(fs *fsutil.FileSystem, log *log.Logs, gpuInfo *log.GpuInfo) {
 	m.Fields = make(map[string]interface{})
 	m.startTime = time.Now()
 	m.fs = fs
 	m.log = log
 	m.Add("start_time", m.startTime.Format(time.UnixDate))
-	m.Add("gpu", cuda.GPUInfo_old)
+	m.Add("gpu_name", gpuInfo.DevName)
+	m.Add("cuda_version", gpuInfo.CudaVersion)
+	m.Add("driver_version", gpuInfo.DriverVersion)
+	m.Add("cc", gpuInfo.CUDACC)
+	m.Add("cc_ver", gpuInfo.GPUCC)
+	m.Add("total_mem", gpuInfo.TotalMem)
+
 	err := m.FlushToFile()
 	if err != nil {
 		m.log.Err("Failed to save metadata to file: %v", err)

@@ -10,15 +10,15 @@ import (
 )
 
 var (
-	GPUInfo_old string     // Human-readable GPU description
 	Synchronous bool       // for debug: synchronize stream0 at every kernel launch
 	cudaCtx     cu.Context // global CUDA context
 )
 
 // Locks to an OS thread and initializes CUDA for that thread.
-func Init(gpu int) [6]string {
+func Init(gpu int, sync bool) *log.GpuInfo {
+	Synchronous = sync
 	if cudaCtx != 0 {
-		return [6]string{"", "", "", "", "", ""} // needed for tests
+		return &log.GpuInfo{} // needed for tests
 	}
 
 	runtime.LockOSThread()
@@ -31,8 +31,6 @@ func Init(gpu int) [6]string {
 	DriverVersion := cu.Version()
 	DevName := dev.Name()
 	TotalMem := dev.TotalMem()
-	GPUInfo_old = fmt.Sprintf("%s(%dMB), CUDA Driver %d.%d, cc=%d.%d",
-		DevName, (TotalMem)/(1024*1024), DriverVersion/1000, (DriverVersion%1000)/10, M, m)
 
 	if M < 5 {
 		log.ErrAndExit("GPU has insufficient compute capability, need 5.0 or higher.")
@@ -43,15 +41,15 @@ func Init(gpu int) [6]string {
 
 	// test PTX load so that we can catch CUDA_ERROR_NO_BINARY_FOR_GPU early
 	fatbinLoad(madd2_map, "madd2")
-	GpuInfo1 := [6]string{
-		fmt.Sprintf("%d.%d", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10),
-		fmt.Sprintf("%d", UseCC),
-		DevName,
-		fmt.Sprintf("%d", TotalMem/(1024*1024)),
-		fmt.Sprintf("%d.%d", DriverVersion/1000, (DriverVersion%1000)/10),
-		fmt.Sprintf("%d.%d", M, m),
+	GpuInfo1 := log.GpuInfo{
+		CudaVersion:   fmt.Sprintf("%d.%d", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10),
+		CUDACC:        fmt.Sprintf("%d", UseCC),
+		DevName:       DevName,
+		TotalMem:      fmt.Sprintf("%d", TotalMem/(1024*1024)),
+		DriverVersion: fmt.Sprintf("%d.%d", DriverVersion/1000, (DriverVersion%1000)/10),
+		GPUCC:         fmt.Sprintf("%d.%d", M, m),
 	}
-	return GpuInfo1
+	return &GpuInfo1
 }
 
 // cu.Init(), but error is fatal and does not dump stack.

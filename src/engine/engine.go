@@ -37,22 +37,18 @@ func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.Flags) {
 		update.ShowUpdateMenu()
 		return
 	}
-	GpuInfo := cuda.Init(givenFlags.Gpu)
-
-	cuda.Synchronous = givenFlags.Sync
-
-	// engine.Insecure = givenFlags.Insecure
+	GpuInfo := cuda.Init(givenFlags.Gpu, givenFlags.Sync)
 
 	if givenFlags.Vet {
 		log.PrintVersion(version.VERSION, GpuInfo)
 		log.Err("vet is not implemented yet with the new engine")
 	} else if len(args) == 0 && givenFlags.Interactive {
 		log.PrintVersion(version.VERSION, GpuInfo)
-		engineState := newEngineState(givenFlags, log)
+		engineState := newEngineState(givenFlags, log, GpuInfo)
 		engineState.start("") // interactive
 	} else if len(args) == 1 {
 		log.PrintVersion(version.VERSION, GpuInfo)
-		engineState := newEngineState(givenFlags, log)
+		engineState := newEngineState(givenFlags, log, GpuInfo)
 		engineState.start(args[0])
 	} else if len(args) > 1 {
 		log.Err("Queue is not implemented yet with the new engine")
@@ -82,10 +78,11 @@ type engineState struct {
 	script          *script.ScriptParser
 
 	autoFlushInterval time.Duration
+	gpuInfo           *log.GpuInfo
 }
 
-func newEngineState(givenFlags *flags.Flags, log *log.Logs) *engineState {
-	return &engineState{flags: givenFlags, log: log, autoFlushInterval: 5 * time.Second}
+func newEngineState(givenFlags *flags.Flags, log *log.Logs, gpuInfo *log.GpuInfo) *engineState {
+	return &engineState{flags: givenFlags, log: log, autoFlushInterval: 5 * time.Second, gpuInfo: gpuInfo}
 }
 func (s *engineState) init(scriptStr string) {
 	// initialize empty structs first so we can pass the pointers
@@ -105,7 +102,7 @@ func (s *engineState) init(scriptStr string) {
 	s.config = &mag_config.ConfigList{}
 	s.script = &script.ScriptParser{}
 
-	s.metadata.Init(s.fs, s.log)
+	s.metadata.Init(s.fs, s.log, s.gpuInfo)
 	s.mesh.Init(s.log)
 	s.script.Init(&scriptStr, s.log, s.metadata, s.initializeMeshIfReady)
 	s.windowShift.Init()

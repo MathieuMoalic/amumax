@@ -35,13 +35,13 @@ func (l *Logs) InitLogs(fs *fsutil.FileSystem, debug bool) {
 }
 
 // print version to stdout
-func (l *Logs) PrintVersion(version string, cudaInfo [6]string) {
-	cudaVersion, cudaCC, GPUName, GPUMem, DriverVersion, GPUCC := cudaInfo[0], cudaInfo[1], cudaInfo[2], cudaInfo[3], cudaInfo[4], cudaInfo[5]
+func (l *Logs) PrintVersion(version string, cudaInfo *GpuInfo) {
+	// cudaVersion, cudaCC, GPUName, GPUMem, DriverVersion, GPUCC := cudaInfo[0], cudaInfo[1], cudaInfo[2], cudaInfo[3], cudaInfo[4], cudaInfo[5]
 	l.Info("Version:         %s", version)
 	l.Info("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
 	l.Info("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
-	l.Info("CUDA Version:    %s (CC=%s PTX)", cudaVersion, cudaCC)
-	l.Info("GPU Information: %s(%s), CUDA Driver %s, cc=%s", GPUName, GPUMem, DriverVersion, GPUCC)
+	l.Info("CUDA Version:    %s (CC=%s PTX)", cudaInfo.CudaVersion, cudaInfo.CUDACC)
+	l.Info("GPU Information: %s(%s), CUDA Driver %s, cc=%s", cudaInfo.DevName, cudaInfo.TotalMem, cudaInfo.DriverVersion, cudaInfo.GPUCC)
 }
 func (l *Logs) Close() error {
 	err := l.FlushToFile()
