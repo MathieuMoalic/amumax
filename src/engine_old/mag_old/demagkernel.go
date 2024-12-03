@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"time"
 
-	"github.com/DataDog/zstd"
 	"github.com/MathieuMoalic/amumax/src/engine_old/data_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/fsutil_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
@@ -58,11 +58,14 @@ func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, ca
 		return kernel
 	} else {
 		log_old.Log.Info("Calculating kernel and saving to cache")
+		timer := time.Now()
 		kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, hideProgressBar)
 		err := saveKernel(basename, kernel)
 		if err != nil {
 			log_old.Log.Warn("Couldn't save kernel to cache: %v \n %v", basename, err.Error())
 		}
+		time_taken := time.Since(timer)
+		log_old.Log.Info("Saved kernel in %s", time_taken.String())
 		return
 	}
 }
@@ -134,15 +137,11 @@ func kernelName(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cac
 	sSize := fmt.Sprintf("%d_%d_%d", gridsize[X], gridsize[Y], gridsize[Z])
 	sPBC := fmt.Sprintf("%d_%d_%d", pbc[X], pbc[Y], pbc[Z])
 	sCellsize := fmt.Sprintf("%e_%e_%e", cellsize[X], cellsize[Y], cellsize[Z])
-	return fmt.Sprintf("%s/%s_%s_%s_%v.cache", cacheDir, sSize, sPBC, sCellsize, accuracy)
+	return fmt.Sprintf("%s/%s_%s_%s_%v.cache2", cacheDir, sSize, sPBC, sCellsize, accuracy)
 }
 
 func loadKernel(fname string, size [3]int) ([3][3]*data_old.Slice, error) {
-	compressedData, err := fsutil_old.Read(fname)
-	if err != nil {
-		return [3][3]*data_old.Slice{}, err
-	}
-	kernelBytes, err := zstd.Decompress(nil, compressedData)
+	kernelBytes, err := fsutil_old.Read(fname)
 	if err != nil {
 		return [3][3]*data_old.Slice{}, err
 	}
@@ -151,17 +150,14 @@ func loadKernel(fname string, size [3]int) ([3][3]*data_old.Slice, error) {
 
 func saveKernel(fname string, kernel [3][3]*data_old.Slice) error {
 	kernelBytes := kernelToBytes(kernel)
-	compressedData, err := zstd.Compress(nil, kernelBytes)
-	if err != nil {
-		return err
-	}
 	f, err := os.OpenFile(fname, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	out := bufio.NewWriter(f)
 	defer out.Flush()
-	_, err = out.Write(compressedData)
+	_, err = out.Write(kernelBytes)
 	if err != nil {
 		return err
 	}
