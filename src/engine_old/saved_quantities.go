@@ -50,8 +50,9 @@ func (sq *savedQuantity) Save() {
 	buffer := ValueOf(sq.q)
 	defer cuda_old.Recycle(buffer)
 	dataSlice := buffer.HostCopy()
+	tstep := len(sq.times) - 1
 	queOutput(func() {
-		err := syncSave(dataSlice, sq.name, len(sq.times), sq.chunks)
+		err := syncSave(dataSlice, sq.name, tstep, sq.chunks)
 		log_old.Log.PanicIfError(err)
 	})
 }
@@ -225,7 +226,7 @@ func syncSave(array *data_old.Slice, qname string, steps int, chunks chunks) err
 					if err != nil {
 						return err
 					}
-					filename := fmt.Sprintf(OD()+"%s/%d.%d.%d.%d.%d", qname, steps+1, icz, icy, icx, icc)
+					filename := fmt.Sprintf(OD()+"%s/%d.%d.%d.%d.%d", qname, steps, icz, icy, icx, icc)
 					err = fsutil_old.Put(filename, compressedData)
 					if err != nil {
 						return err

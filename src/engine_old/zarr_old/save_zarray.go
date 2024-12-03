@@ -38,7 +38,7 @@ func SaveFileZarray(path string, size [3]int, ncomp int, step int, cz int, cy in
 	z.Order = "C"
 	z.ZarrFormat = 2
 	z.Chunks = [5]int{1, cz, cy, cx, cc}
-	z.Shape = [5]int{step + 1, size[2], size[1], size[0], ncomp}
+	z.Shape = [5]int{step, size[2], size[1], size[0], ncomp}
 
 	f, err := fsutil_old.Create(path)
 	log_old.Log.PanicIfError(err)
