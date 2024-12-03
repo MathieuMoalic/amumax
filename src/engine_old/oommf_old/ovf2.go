@@ -26,7 +26,7 @@ func writeOVF2Header(out io.Writer, q *data_old.Slice, meta Meta) {
 	hdr(out, "Begin", "Header")
 
 	hdr(out, "Title", meta.Name)
-	hdr(out, "data.MeshType", "rectangular")
+	hdr(out, "mesh", "rectangular")
 	hdr(out, "meshunit", "m")
 
 	hdr(out, "xmin", 0)
