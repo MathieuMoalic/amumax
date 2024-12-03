@@ -5,55 +5,54 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import (
-	"sync"
+import(
 	"unsafe"
-
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"sync"
 )
 
 // CUDA handle for minimize kernel
 var minimize_code cu.Function
 
 // Stores the arguments for minimize kernel invocation
-type minimize_args_t struct {
-	arg_mx  unsafe.Pointer
-	arg_my  unsafe.Pointer
-	arg_mz  unsafe.Pointer
-	arg_m0x unsafe.Pointer
-	arg_m0y unsafe.Pointer
-	arg_m0z unsafe.Pointer
-	arg_tx  unsafe.Pointer
-	arg_ty  unsafe.Pointer
-	arg_tz  unsafe.Pointer
-	arg_dt  float32
-	arg_N   int
-	argptr  [11]unsafe.Pointer
+type minimize_args_t struct{
+	 arg_mx unsafe.Pointer
+	 arg_my unsafe.Pointer
+	 arg_mz unsafe.Pointer
+	 arg_m0x unsafe.Pointer
+	 arg_m0y unsafe.Pointer
+	 arg_m0z unsafe.Pointer
+	 arg_tx unsafe.Pointer
+	 arg_ty unsafe.Pointer
+	 arg_tz unsafe.Pointer
+	 arg_dt float32
+	 arg_N int
+	 argptr [11]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for minimize kernel invocation
 var minimize_args minimize_args_t
 
-func init() {
+func init(){
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	minimize_args.argptr[0] = unsafe.Pointer(&minimize_args.arg_mx)
-	minimize_args.argptr[1] = unsafe.Pointer(&minimize_args.arg_my)
-	minimize_args.argptr[2] = unsafe.Pointer(&minimize_args.arg_mz)
-	minimize_args.argptr[3] = unsafe.Pointer(&minimize_args.arg_m0x)
-	minimize_args.argptr[4] = unsafe.Pointer(&minimize_args.arg_m0y)
-	minimize_args.argptr[5] = unsafe.Pointer(&minimize_args.arg_m0z)
-	minimize_args.argptr[6] = unsafe.Pointer(&minimize_args.arg_tx)
-	minimize_args.argptr[7] = unsafe.Pointer(&minimize_args.arg_ty)
-	minimize_args.argptr[8] = unsafe.Pointer(&minimize_args.arg_tz)
-	minimize_args.argptr[9] = unsafe.Pointer(&minimize_args.arg_dt)
-	minimize_args.argptr[10] = unsafe.Pointer(&minimize_args.arg_N)
-}
+	 minimize_args.argptr[0] = unsafe.Pointer(&minimize_args.arg_mx)
+	 minimize_args.argptr[1] = unsafe.Pointer(&minimize_args.arg_my)
+	 minimize_args.argptr[2] = unsafe.Pointer(&minimize_args.arg_mz)
+	 minimize_args.argptr[3] = unsafe.Pointer(&minimize_args.arg_m0x)
+	 minimize_args.argptr[4] = unsafe.Pointer(&minimize_args.arg_m0y)
+	 minimize_args.argptr[5] = unsafe.Pointer(&minimize_args.arg_m0z)
+	 minimize_args.argptr[6] = unsafe.Pointer(&minimize_args.arg_tx)
+	 minimize_args.argptr[7] = unsafe.Pointer(&minimize_args.arg_ty)
+	 minimize_args.argptr[8] = unsafe.Pointer(&minimize_args.arg_tz)
+	 minimize_args.argptr[9] = unsafe.Pointer(&minimize_args.arg_dt)
+	 minimize_args.argptr[10] = unsafe.Pointer(&minimize_args.arg_N)
+	 }
 
 // Wrapper for minimize CUDA kernel, asynchronous.
-func k_minimize_async(mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, m0x unsafe.Pointer, m0y unsafe.Pointer, m0z unsafe.Pointer, tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer, dt float32, N int, cfg *config) {
-	if Synchronous { // debug
+func k_minimize_async ( mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, m0x unsafe.Pointer, m0y unsafe.Pointer, m0z unsafe.Pointer, tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer, dt float32, N int,  cfg *config) {
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Start("minimize")
 	}
@@ -61,38 +60,39 @@ func k_minimize_async(mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, m
 	minimize_args.Lock()
 	defer minimize_args.Unlock()
 
-	if minimize_code == 0 {
+	if minimize_code == 0{
 		minimize_code = fatbinLoad(minimize_map, "minimize")
 	}
 
-	minimize_args.arg_mx = mx
-	minimize_args.arg_my = my
-	minimize_args.arg_mz = mz
-	minimize_args.arg_m0x = m0x
-	minimize_args.arg_m0y = m0y
-	minimize_args.arg_m0z = m0z
-	minimize_args.arg_tx = tx
-	minimize_args.arg_ty = ty
-	minimize_args.arg_tz = tz
-	minimize_args.arg_dt = dt
-	minimize_args.arg_N = N
+	 minimize_args.arg_mx = mx
+	 minimize_args.arg_my = my
+	 minimize_args.arg_mz = mz
+	 minimize_args.arg_m0x = m0x
+	 minimize_args.arg_m0y = m0y
+	 minimize_args.arg_m0z = m0z
+	 minimize_args.arg_tx = tx
+	 minimize_args.arg_ty = ty
+	 minimize_args.arg_tz = tz
+	 minimize_args.arg_dt = dt
+	 minimize_args.arg_N = N
+	
 
 	args := minimize_args.argptr[:]
 	cu.LaunchKernel(minimize_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous { // debug
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Stop("minimize")
 	}
 }
 
 // maps compute capability on PTX code for minimize kernel.
-var minimize_map = map[int]string{0: "",
-	52: minimize_ptx_52}
+var minimize_map = map[int]string{ 0: "" ,
+52: minimize_ptx_52  }
 
 // minimize PTX code for various compute capabilities.
-const (
-	minimize_ptx_52 = `
+const(
+  minimize_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -193,4 +193,4 @@ BB0_2:
 
 
 `
-)
+ )

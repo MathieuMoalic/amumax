@@ -5,41 +5,40 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import (
-	"sync"
+import(
 	"unsafe"
-
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"sync"
 )
 
 // CUDA handle for kernmulRSymm2Dz kernel
 var kernmulRSymm2Dz_code cu.Function
 
 // Stores the arguments for kernmulRSymm2Dz kernel invocation
-type kernmulRSymm2Dz_args_t struct {
-	arg_fftMz  unsafe.Pointer
-	arg_fftKzz unsafe.Pointer
-	arg_Nx     int
-	arg_Ny     int
-	argptr     [4]unsafe.Pointer
+type kernmulRSymm2Dz_args_t struct{
+	 arg_fftMz unsafe.Pointer
+	 arg_fftKzz unsafe.Pointer
+	 arg_Nx int
+	 arg_Ny int
+	 argptr [4]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for kernmulRSymm2Dz kernel invocation
 var kernmulRSymm2Dz_args kernmulRSymm2Dz_args_t
 
-func init() {
+func init(){
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	kernmulRSymm2Dz_args.argptr[0] = unsafe.Pointer(&kernmulRSymm2Dz_args.arg_fftMz)
-	kernmulRSymm2Dz_args.argptr[1] = unsafe.Pointer(&kernmulRSymm2Dz_args.arg_fftKzz)
-	kernmulRSymm2Dz_args.argptr[2] = unsafe.Pointer(&kernmulRSymm2Dz_args.arg_Nx)
-	kernmulRSymm2Dz_args.argptr[3] = unsafe.Pointer(&kernmulRSymm2Dz_args.arg_Ny)
-}
+	 kernmulRSymm2Dz_args.argptr[0] = unsafe.Pointer(&kernmulRSymm2Dz_args.arg_fftMz)
+	 kernmulRSymm2Dz_args.argptr[1] = unsafe.Pointer(&kernmulRSymm2Dz_args.arg_fftKzz)
+	 kernmulRSymm2Dz_args.argptr[2] = unsafe.Pointer(&kernmulRSymm2Dz_args.arg_Nx)
+	 kernmulRSymm2Dz_args.argptr[3] = unsafe.Pointer(&kernmulRSymm2Dz_args.arg_Ny)
+	 }
 
 // Wrapper for kernmulRSymm2Dz CUDA kernel, asynchronous.
-func k_kernmulRSymm2Dz_async(fftMz unsafe.Pointer, fftKzz unsafe.Pointer, Nx int, Ny int, cfg *config) {
-	if Synchronous { // debug
+func k_kernmulRSymm2Dz_async ( fftMz unsafe.Pointer, fftKzz unsafe.Pointer, Nx int, Ny int,  cfg *config) {
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Start("kernmulRSymm2Dz")
 	}
@@ -47,31 +46,32 @@ func k_kernmulRSymm2Dz_async(fftMz unsafe.Pointer, fftKzz unsafe.Pointer, Nx int
 	kernmulRSymm2Dz_args.Lock()
 	defer kernmulRSymm2Dz_args.Unlock()
 
-	if kernmulRSymm2Dz_code == 0 {
+	if kernmulRSymm2Dz_code == 0{
 		kernmulRSymm2Dz_code = fatbinLoad(kernmulRSymm2Dz_map, "kernmulRSymm2Dz")
 	}
 
-	kernmulRSymm2Dz_args.arg_fftMz = fftMz
-	kernmulRSymm2Dz_args.arg_fftKzz = fftKzz
-	kernmulRSymm2Dz_args.arg_Nx = Nx
-	kernmulRSymm2Dz_args.arg_Ny = Ny
+	 kernmulRSymm2Dz_args.arg_fftMz = fftMz
+	 kernmulRSymm2Dz_args.arg_fftKzz = fftKzz
+	 kernmulRSymm2Dz_args.arg_Nx = Nx
+	 kernmulRSymm2Dz_args.arg_Ny = Ny
+	
 
 	args := kernmulRSymm2Dz_args.argptr[:]
 	cu.LaunchKernel(kernmulRSymm2Dz_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous { // debug
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Stop("kernmulRSymm2Dz")
 	}
 }
 
 // maps compute capability on PTX code for kernmulRSymm2Dz kernel.
-var kernmulRSymm2Dz_map = map[int]string{0: "",
-	52: kernmulRSymm2Dz_ptx_52}
+var kernmulRSymm2Dz_map = map[int]string{ 0: "" ,
+52: kernmulRSymm2Dz_ptx_52  }
 
 // kernmulRSymm2Dz PTX code for various compute capabilities.
-const (
-	kernmulRSymm2Dz_ptx_52 = `
+const(
+  kernmulRSymm2Dz_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -137,4 +137,4 @@ BB0_2:
 
 
 `
-)
+ )

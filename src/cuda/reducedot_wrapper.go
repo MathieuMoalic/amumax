@@ -5,43 +5,42 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import (
-	"sync"
+import(
 	"unsafe"
-
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"sync"
 )
 
 // CUDA handle for reducedot kernel
 var reducedot_code cu.Function
 
 // Stores the arguments for reducedot kernel invocation
-type reducedot_args_t struct {
-	arg_x1      unsafe.Pointer
-	arg_x2      unsafe.Pointer
-	arg_dst     unsafe.Pointer
-	arg_initVal float32
-	arg_n       int
-	argptr      [5]unsafe.Pointer
+type reducedot_args_t struct{
+	 arg_x1 unsafe.Pointer
+	 arg_x2 unsafe.Pointer
+	 arg_dst unsafe.Pointer
+	 arg_initVal float32
+	 arg_n int
+	 argptr [5]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for reducedot kernel invocation
 var reducedot_args reducedot_args_t
 
-func init() {
+func init(){
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	reducedot_args.argptr[0] = unsafe.Pointer(&reducedot_args.arg_x1)
-	reducedot_args.argptr[1] = unsafe.Pointer(&reducedot_args.arg_x2)
-	reducedot_args.argptr[2] = unsafe.Pointer(&reducedot_args.arg_dst)
-	reducedot_args.argptr[3] = unsafe.Pointer(&reducedot_args.arg_initVal)
-	reducedot_args.argptr[4] = unsafe.Pointer(&reducedot_args.arg_n)
-}
+	 reducedot_args.argptr[0] = unsafe.Pointer(&reducedot_args.arg_x1)
+	 reducedot_args.argptr[1] = unsafe.Pointer(&reducedot_args.arg_x2)
+	 reducedot_args.argptr[2] = unsafe.Pointer(&reducedot_args.arg_dst)
+	 reducedot_args.argptr[3] = unsafe.Pointer(&reducedot_args.arg_initVal)
+	 reducedot_args.argptr[4] = unsafe.Pointer(&reducedot_args.arg_n)
+	 }
 
 // Wrapper for reducedot CUDA kernel, asynchronous.
-func k_reducedot_async(x1 unsafe.Pointer, x2 unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int, cfg *config) {
-	if Synchronous { // debug
+func k_reducedot_async ( x1 unsafe.Pointer, x2 unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int,  cfg *config) {
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Start("reducedot")
 	}
@@ -49,32 +48,33 @@ func k_reducedot_async(x1 unsafe.Pointer, x2 unsafe.Pointer, dst unsafe.Pointer,
 	reducedot_args.Lock()
 	defer reducedot_args.Unlock()
 
-	if reducedot_code == 0 {
+	if reducedot_code == 0{
 		reducedot_code = fatbinLoad(reducedot_map, "reducedot")
 	}
 
-	reducedot_args.arg_x1 = x1
-	reducedot_args.arg_x2 = x2
-	reducedot_args.arg_dst = dst
-	reducedot_args.arg_initVal = initVal
-	reducedot_args.arg_n = n
+	 reducedot_args.arg_x1 = x1
+	 reducedot_args.arg_x2 = x2
+	 reducedot_args.arg_dst = dst
+	 reducedot_args.arg_initVal = initVal
+	 reducedot_args.arg_n = n
+	
 
 	args := reducedot_args.argptr[:]
 	cu.LaunchKernel(reducedot_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous { // debug
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Stop("reducedot")
 	}
 }
 
 // maps compute capability on PTX code for reducedot kernel.
-var reducedot_map = map[int]string{0: "",
-	52: reducedot_ptx_52}
+var reducedot_map = map[int]string{ 0: "" ,
+52: reducedot_ptx_52  }
 
 // reducedot PTX code for various compute capabilities.
-const (
-	reducedot_ptx_52 = `
+const(
+  reducedot_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -194,4 +194,4 @@ BB0_10:
 
 
 `
-)
+ )

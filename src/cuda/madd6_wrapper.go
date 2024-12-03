@@ -5,61 +5,60 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import (
-	"sync"
+import(
 	"unsafe"
-
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"sync"
 )
 
 // CUDA handle for madd6 kernel
 var madd6_code cu.Function
 
 // Stores the arguments for madd6 kernel invocation
-type madd6_args_t struct {
-	arg_dst  unsafe.Pointer
-	arg_src1 unsafe.Pointer
-	arg_fac1 float32
-	arg_src2 unsafe.Pointer
-	arg_fac2 float32
-	arg_src3 unsafe.Pointer
-	arg_fac3 float32
-	arg_src4 unsafe.Pointer
-	arg_fac4 float32
-	arg_src5 unsafe.Pointer
-	arg_fac5 float32
-	arg_src6 unsafe.Pointer
-	arg_fac6 float32
-	arg_N    int
-	argptr   [14]unsafe.Pointer
+type madd6_args_t struct{
+	 arg_dst unsafe.Pointer
+	 arg_src1 unsafe.Pointer
+	 arg_fac1 float32
+	 arg_src2 unsafe.Pointer
+	 arg_fac2 float32
+	 arg_src3 unsafe.Pointer
+	 arg_fac3 float32
+	 arg_src4 unsafe.Pointer
+	 arg_fac4 float32
+	 arg_src5 unsafe.Pointer
+	 arg_fac5 float32
+	 arg_src6 unsafe.Pointer
+	 arg_fac6 float32
+	 arg_N int
+	 argptr [14]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for madd6 kernel invocation
 var madd6_args madd6_args_t
 
-func init() {
+func init(){
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	madd6_args.argptr[0] = unsafe.Pointer(&madd6_args.arg_dst)
-	madd6_args.argptr[1] = unsafe.Pointer(&madd6_args.arg_src1)
-	madd6_args.argptr[2] = unsafe.Pointer(&madd6_args.arg_fac1)
-	madd6_args.argptr[3] = unsafe.Pointer(&madd6_args.arg_src2)
-	madd6_args.argptr[4] = unsafe.Pointer(&madd6_args.arg_fac2)
-	madd6_args.argptr[5] = unsafe.Pointer(&madd6_args.arg_src3)
-	madd6_args.argptr[6] = unsafe.Pointer(&madd6_args.arg_fac3)
-	madd6_args.argptr[7] = unsafe.Pointer(&madd6_args.arg_src4)
-	madd6_args.argptr[8] = unsafe.Pointer(&madd6_args.arg_fac4)
-	madd6_args.argptr[9] = unsafe.Pointer(&madd6_args.arg_src5)
-	madd6_args.argptr[10] = unsafe.Pointer(&madd6_args.arg_fac5)
-	madd6_args.argptr[11] = unsafe.Pointer(&madd6_args.arg_src6)
-	madd6_args.argptr[12] = unsafe.Pointer(&madd6_args.arg_fac6)
-	madd6_args.argptr[13] = unsafe.Pointer(&madd6_args.arg_N)
-}
+	 madd6_args.argptr[0] = unsafe.Pointer(&madd6_args.arg_dst)
+	 madd6_args.argptr[1] = unsafe.Pointer(&madd6_args.arg_src1)
+	 madd6_args.argptr[2] = unsafe.Pointer(&madd6_args.arg_fac1)
+	 madd6_args.argptr[3] = unsafe.Pointer(&madd6_args.arg_src2)
+	 madd6_args.argptr[4] = unsafe.Pointer(&madd6_args.arg_fac2)
+	 madd6_args.argptr[5] = unsafe.Pointer(&madd6_args.arg_src3)
+	 madd6_args.argptr[6] = unsafe.Pointer(&madd6_args.arg_fac3)
+	 madd6_args.argptr[7] = unsafe.Pointer(&madd6_args.arg_src4)
+	 madd6_args.argptr[8] = unsafe.Pointer(&madd6_args.arg_fac4)
+	 madd6_args.argptr[9] = unsafe.Pointer(&madd6_args.arg_src5)
+	 madd6_args.argptr[10] = unsafe.Pointer(&madd6_args.arg_fac5)
+	 madd6_args.argptr[11] = unsafe.Pointer(&madd6_args.arg_src6)
+	 madd6_args.argptr[12] = unsafe.Pointer(&madd6_args.arg_fac6)
+	 madd6_args.argptr[13] = unsafe.Pointer(&madd6_args.arg_N)
+	 }
 
 // Wrapper for madd6 CUDA kernel, asynchronous.
-func k_madd6_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, src4 unsafe.Pointer, fac4 float32, src5 unsafe.Pointer, fac5 float32, src6 unsafe.Pointer, fac6 float32, N int, cfg *config) {
-	if Synchronous { // debug
+func k_madd6_async ( dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, src4 unsafe.Pointer, fac4 float32, src5 unsafe.Pointer, fac5 float32, src6 unsafe.Pointer, fac6 float32, N int,  cfg *config) {
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Start("madd6")
 	}
@@ -67,41 +66,42 @@ func k_madd6_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 u
 	madd6_args.Lock()
 	defer madd6_args.Unlock()
 
-	if madd6_code == 0 {
+	if madd6_code == 0{
 		madd6_code = fatbinLoad(madd6_map, "madd6")
 	}
 
-	madd6_args.arg_dst = dst
-	madd6_args.arg_src1 = src1
-	madd6_args.arg_fac1 = fac1
-	madd6_args.arg_src2 = src2
-	madd6_args.arg_fac2 = fac2
-	madd6_args.arg_src3 = src3
-	madd6_args.arg_fac3 = fac3
-	madd6_args.arg_src4 = src4
-	madd6_args.arg_fac4 = fac4
-	madd6_args.arg_src5 = src5
-	madd6_args.arg_fac5 = fac5
-	madd6_args.arg_src6 = src6
-	madd6_args.arg_fac6 = fac6
-	madd6_args.arg_N = N
+	 madd6_args.arg_dst = dst
+	 madd6_args.arg_src1 = src1
+	 madd6_args.arg_fac1 = fac1
+	 madd6_args.arg_src2 = src2
+	 madd6_args.arg_fac2 = fac2
+	 madd6_args.arg_src3 = src3
+	 madd6_args.arg_fac3 = fac3
+	 madd6_args.arg_src4 = src4
+	 madd6_args.arg_fac4 = fac4
+	 madd6_args.arg_src5 = src5
+	 madd6_args.arg_fac5 = fac5
+	 madd6_args.arg_src6 = src6
+	 madd6_args.arg_fac6 = fac6
+	 madd6_args.arg_N = N
+	
 
 	args := madd6_args.argptr[:]
 	cu.LaunchKernel(madd6_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous { // debug
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Stop("madd6")
 	}
 }
 
 // maps compute capability on PTX code for madd6 kernel.
-var madd6_map = map[int]string{0: "",
-	52: madd6_ptx_52}
+var madd6_map = map[int]string{ 0: "" ,
+52: madd6_ptx_52  }
 
 // madd6 PTX code for various compute capabilities.
-const (
-	madd6_ptx_52 = `
+const(
+  madd6_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -190,4 +190,4 @@ BB0_2:
 
 
 `
-)
+ )

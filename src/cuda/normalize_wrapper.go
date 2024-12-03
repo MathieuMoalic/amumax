@@ -5,43 +5,42 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import (
-	"sync"
+import(
 	"unsafe"
-
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"sync"
 )
 
 // CUDA handle for normalize kernel
 var normalize_code cu.Function
 
 // Stores the arguments for normalize kernel invocation
-type normalize_args_t struct {
-	arg_vx  unsafe.Pointer
-	arg_vy  unsafe.Pointer
-	arg_vz  unsafe.Pointer
-	arg_vol unsafe.Pointer
-	arg_N   int
-	argptr  [5]unsafe.Pointer
+type normalize_args_t struct{
+	 arg_vx unsafe.Pointer
+	 arg_vy unsafe.Pointer
+	 arg_vz unsafe.Pointer
+	 arg_vol unsafe.Pointer
+	 arg_N int
+	 argptr [5]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for normalize kernel invocation
 var normalize_args normalize_args_t
 
-func init() {
+func init(){
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	normalize_args.argptr[0] = unsafe.Pointer(&normalize_args.arg_vx)
-	normalize_args.argptr[1] = unsafe.Pointer(&normalize_args.arg_vy)
-	normalize_args.argptr[2] = unsafe.Pointer(&normalize_args.arg_vz)
-	normalize_args.argptr[3] = unsafe.Pointer(&normalize_args.arg_vol)
-	normalize_args.argptr[4] = unsafe.Pointer(&normalize_args.arg_N)
-}
+	 normalize_args.argptr[0] = unsafe.Pointer(&normalize_args.arg_vx)
+	 normalize_args.argptr[1] = unsafe.Pointer(&normalize_args.arg_vy)
+	 normalize_args.argptr[2] = unsafe.Pointer(&normalize_args.arg_vz)
+	 normalize_args.argptr[3] = unsafe.Pointer(&normalize_args.arg_vol)
+	 normalize_args.argptr[4] = unsafe.Pointer(&normalize_args.arg_N)
+	 }
 
 // Wrapper for normalize CUDA kernel, asynchronous.
-func k_normalize_async(vx unsafe.Pointer, vy unsafe.Pointer, vz unsafe.Pointer, vol unsafe.Pointer, N int, cfg *config) {
-	if Synchronous { // debug
+func k_normalize_async ( vx unsafe.Pointer, vy unsafe.Pointer, vz unsafe.Pointer, vol unsafe.Pointer, N int,  cfg *config) {
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Start("normalize")
 	}
@@ -49,32 +48,33 @@ func k_normalize_async(vx unsafe.Pointer, vy unsafe.Pointer, vz unsafe.Pointer, 
 	normalize_args.Lock()
 	defer normalize_args.Unlock()
 
-	if normalize_code == 0 {
+	if normalize_code == 0{
 		normalize_code = fatbinLoad(normalize_map, "normalize")
 	}
 
-	normalize_args.arg_vx = vx
-	normalize_args.arg_vy = vy
-	normalize_args.arg_vz = vz
-	normalize_args.arg_vol = vol
-	normalize_args.arg_N = N
+	 normalize_args.arg_vx = vx
+	 normalize_args.arg_vy = vy
+	 normalize_args.arg_vz = vz
+	 normalize_args.arg_vol = vol
+	 normalize_args.arg_N = N
+	
 
 	args := normalize_args.argptr[:]
 	cu.LaunchKernel(normalize_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous { // debug
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Stop("normalize")
 	}
 }
 
 // maps compute capability on PTX code for normalize kernel.
-var normalize_map = map[int]string{0: "",
-	52: normalize_ptx_52}
+var normalize_map = map[int]string{ 0: "" ,
+52: normalize_ptx_52  }
 
 // normalize PTX code for various compute capabilities.
-const (
-	normalize_ptx_52 = `
+const(
+  normalize_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -157,4 +157,4 @@ BB0_6:
 
 
 `
-)
+ )

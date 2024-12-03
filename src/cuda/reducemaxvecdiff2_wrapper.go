@@ -5,51 +5,50 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import (
-	"sync"
+import(
 	"unsafe"
-
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"sync"
 )
 
 // CUDA handle for reducemaxvecdiff2 kernel
 var reducemaxvecdiff2_code cu.Function
 
 // Stores the arguments for reducemaxvecdiff2 kernel invocation
-type reducemaxvecdiff2_args_t struct {
-	arg_x1      unsafe.Pointer
-	arg_y1      unsafe.Pointer
-	arg_z1      unsafe.Pointer
-	arg_x2      unsafe.Pointer
-	arg_y2      unsafe.Pointer
-	arg_z2      unsafe.Pointer
-	arg_dst     unsafe.Pointer
-	arg_initVal float32
-	arg_n       int
-	argptr      [9]unsafe.Pointer
+type reducemaxvecdiff2_args_t struct{
+	 arg_x1 unsafe.Pointer
+	 arg_y1 unsafe.Pointer
+	 arg_z1 unsafe.Pointer
+	 arg_x2 unsafe.Pointer
+	 arg_y2 unsafe.Pointer
+	 arg_z2 unsafe.Pointer
+	 arg_dst unsafe.Pointer
+	 arg_initVal float32
+	 arg_n int
+	 argptr [9]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for reducemaxvecdiff2 kernel invocation
 var reducemaxvecdiff2_args reducemaxvecdiff2_args_t
 
-func init() {
+func init(){
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	reducemaxvecdiff2_args.argptr[0] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_x1)
-	reducemaxvecdiff2_args.argptr[1] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_y1)
-	reducemaxvecdiff2_args.argptr[2] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_z1)
-	reducemaxvecdiff2_args.argptr[3] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_x2)
-	reducemaxvecdiff2_args.argptr[4] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_y2)
-	reducemaxvecdiff2_args.argptr[5] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_z2)
-	reducemaxvecdiff2_args.argptr[6] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_dst)
-	reducemaxvecdiff2_args.argptr[7] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_initVal)
-	reducemaxvecdiff2_args.argptr[8] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_n)
-}
+	 reducemaxvecdiff2_args.argptr[0] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_x1)
+	 reducemaxvecdiff2_args.argptr[1] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_y1)
+	 reducemaxvecdiff2_args.argptr[2] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_z1)
+	 reducemaxvecdiff2_args.argptr[3] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_x2)
+	 reducemaxvecdiff2_args.argptr[4] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_y2)
+	 reducemaxvecdiff2_args.argptr[5] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_z2)
+	 reducemaxvecdiff2_args.argptr[6] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_dst)
+	 reducemaxvecdiff2_args.argptr[7] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_initVal)
+	 reducemaxvecdiff2_args.argptr[8] = unsafe.Pointer(&reducemaxvecdiff2_args.arg_n)
+	 }
 
 // Wrapper for reducemaxvecdiff2 CUDA kernel, asynchronous.
-func k_reducemaxvecdiff2_async(x1 unsafe.Pointer, y1 unsafe.Pointer, z1 unsafe.Pointer, x2 unsafe.Pointer, y2 unsafe.Pointer, z2 unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int, cfg *config) {
-	if Synchronous { // debug
+func k_reducemaxvecdiff2_async ( x1 unsafe.Pointer, y1 unsafe.Pointer, z1 unsafe.Pointer, x2 unsafe.Pointer, y2 unsafe.Pointer, z2 unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int,  cfg *config) {
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Start("reducemaxvecdiff2")
 	}
@@ -57,36 +56,37 @@ func k_reducemaxvecdiff2_async(x1 unsafe.Pointer, y1 unsafe.Pointer, z1 unsafe.P
 	reducemaxvecdiff2_args.Lock()
 	defer reducemaxvecdiff2_args.Unlock()
 
-	if reducemaxvecdiff2_code == 0 {
+	if reducemaxvecdiff2_code == 0{
 		reducemaxvecdiff2_code = fatbinLoad(reducemaxvecdiff2_map, "reducemaxvecdiff2")
 	}
 
-	reducemaxvecdiff2_args.arg_x1 = x1
-	reducemaxvecdiff2_args.arg_y1 = y1
-	reducemaxvecdiff2_args.arg_z1 = z1
-	reducemaxvecdiff2_args.arg_x2 = x2
-	reducemaxvecdiff2_args.arg_y2 = y2
-	reducemaxvecdiff2_args.arg_z2 = z2
-	reducemaxvecdiff2_args.arg_dst = dst
-	reducemaxvecdiff2_args.arg_initVal = initVal
-	reducemaxvecdiff2_args.arg_n = n
+	 reducemaxvecdiff2_args.arg_x1 = x1
+	 reducemaxvecdiff2_args.arg_y1 = y1
+	 reducemaxvecdiff2_args.arg_z1 = z1
+	 reducemaxvecdiff2_args.arg_x2 = x2
+	 reducemaxvecdiff2_args.arg_y2 = y2
+	 reducemaxvecdiff2_args.arg_z2 = z2
+	 reducemaxvecdiff2_args.arg_dst = dst
+	 reducemaxvecdiff2_args.arg_initVal = initVal
+	 reducemaxvecdiff2_args.arg_n = n
+	
 
 	args := reducemaxvecdiff2_args.argptr[:]
 	cu.LaunchKernel(reducemaxvecdiff2_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous { // debug
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Stop("reducemaxvecdiff2")
 	}
 }
 
 // maps compute capability on PTX code for reducemaxvecdiff2 kernel.
-var reducemaxvecdiff2_map = map[int]string{0: "",
-	52: reducemaxvecdiff2_ptx_52}
+var reducemaxvecdiff2_map = map[int]string{ 0: "" ,
+52: reducemaxvecdiff2_ptx_52  }
 
 // reducemaxvecdiff2 PTX code for various compute capabilities.
-const (
-	reducemaxvecdiff2_ptx_52 = `
+const(
+  reducemaxvecdiff2_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -235,4 +235,4 @@ BB0_11:
 
 
 `
-)
+ )
