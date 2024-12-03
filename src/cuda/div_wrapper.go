@@ -5,41 +5,40 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import (
-	"sync"
+import(
 	"unsafe"
-
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"sync"
 )
 
 // CUDA handle for pointwise_div kernel
 var pointwise_div_code cu.Function
 
 // Stores the arguments for pointwise_div kernel invocation
-type pointwise_div_args_t struct {
-	arg_dst unsafe.Pointer
-	arg_a   unsafe.Pointer
-	arg_b   unsafe.Pointer
-	arg_N   int
-	argptr  [4]unsafe.Pointer
+type pointwise_div_args_t struct{
+	 arg_dst unsafe.Pointer
+	 arg_a unsafe.Pointer
+	 arg_b unsafe.Pointer
+	 arg_N int
+	 argptr [4]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for pointwise_div kernel invocation
 var pointwise_div_args pointwise_div_args_t
 
-func init() {
+func init(){
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	pointwise_div_args.argptr[0] = unsafe.Pointer(&pointwise_div_args.arg_dst)
-	pointwise_div_args.argptr[1] = unsafe.Pointer(&pointwise_div_args.arg_a)
-	pointwise_div_args.argptr[2] = unsafe.Pointer(&pointwise_div_args.arg_b)
-	pointwise_div_args.argptr[3] = unsafe.Pointer(&pointwise_div_args.arg_N)
-}
+	 pointwise_div_args.argptr[0] = unsafe.Pointer(&pointwise_div_args.arg_dst)
+	 pointwise_div_args.argptr[1] = unsafe.Pointer(&pointwise_div_args.arg_a)
+	 pointwise_div_args.argptr[2] = unsafe.Pointer(&pointwise_div_args.arg_b)
+	 pointwise_div_args.argptr[3] = unsafe.Pointer(&pointwise_div_args.arg_N)
+	 }
 
 // Wrapper for pointwise_div CUDA kernel, asynchronous.
-func k_pointwise_div_async(dst unsafe.Pointer, a unsafe.Pointer, b unsafe.Pointer, N int, cfg *config) {
-	if Synchronous { // debug
+func k_pointwise_div_async ( dst unsafe.Pointer, a unsafe.Pointer, b unsafe.Pointer, N int,  cfg *config) {
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Start("pointwise_div")
 	}
@@ -47,31 +46,32 @@ func k_pointwise_div_async(dst unsafe.Pointer, a unsafe.Pointer, b unsafe.Pointe
 	pointwise_div_args.Lock()
 	defer pointwise_div_args.Unlock()
 
-	if pointwise_div_code == 0 {
+	if pointwise_div_code == 0{
 		pointwise_div_code = fatbinLoad(pointwise_div_map, "pointwise_div")
 	}
 
-	pointwise_div_args.arg_dst = dst
-	pointwise_div_args.arg_a = a
-	pointwise_div_args.arg_b = b
-	pointwise_div_args.arg_N = N
+	 pointwise_div_args.arg_dst = dst
+	 pointwise_div_args.arg_a = a
+	 pointwise_div_args.arg_b = b
+	 pointwise_div_args.arg_N = N
+	
 
 	args := pointwise_div_args.argptr[:]
 	cu.LaunchKernel(pointwise_div_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous { // debug
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Stop("pointwise_div")
 	}
 }
 
 // maps compute capability on PTX code for pointwise_div kernel.
-var pointwise_div_map = map[int]string{0: "",
-	52: pointwise_div_ptx_52}
+var pointwise_div_map = map[int]string{ 0: "" ,
+52: pointwise_div_ptx_52  }
 
 // pointwise_div PTX code for various compute capabilities.
-const (
-	pointwise_div_ptx_52 = `
+const(
+  pointwise_div_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -133,4 +133,4 @@ BB0_4:
 
 
 `
-)
+ )

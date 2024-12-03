@@ -5,41 +5,40 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import (
-	"sync"
+import(
 	"unsafe"
-
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"sync"
 )
 
 // CUDA handle for mul kernel
 var mul_code cu.Function
 
 // Stores the arguments for mul kernel invocation
-type mul_args_t struct {
-	arg_dst unsafe.Pointer
-	arg_a   unsafe.Pointer
-	arg_b   unsafe.Pointer
-	arg_N   int
-	argptr  [4]unsafe.Pointer
+type mul_args_t struct{
+	 arg_dst unsafe.Pointer
+	 arg_a unsafe.Pointer
+	 arg_b unsafe.Pointer
+	 arg_N int
+	 argptr [4]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for mul kernel invocation
 var mul_args mul_args_t
 
-func init() {
+func init(){
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	mul_args.argptr[0] = unsafe.Pointer(&mul_args.arg_dst)
-	mul_args.argptr[1] = unsafe.Pointer(&mul_args.arg_a)
-	mul_args.argptr[2] = unsafe.Pointer(&mul_args.arg_b)
-	mul_args.argptr[3] = unsafe.Pointer(&mul_args.arg_N)
-}
+	 mul_args.argptr[0] = unsafe.Pointer(&mul_args.arg_dst)
+	 mul_args.argptr[1] = unsafe.Pointer(&mul_args.arg_a)
+	 mul_args.argptr[2] = unsafe.Pointer(&mul_args.arg_b)
+	 mul_args.argptr[3] = unsafe.Pointer(&mul_args.arg_N)
+	 }
 
 // Wrapper for mul CUDA kernel, asynchronous.
-func k_mul_async(dst unsafe.Pointer, a unsafe.Pointer, b unsafe.Pointer, N int, cfg *config) {
-	if Synchronous { // debug
+func k_mul_async ( dst unsafe.Pointer, a unsafe.Pointer, b unsafe.Pointer, N int,  cfg *config) {
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Start("mul")
 	}
@@ -47,31 +46,32 @@ func k_mul_async(dst unsafe.Pointer, a unsafe.Pointer, b unsafe.Pointer, N int, 
 	mul_args.Lock()
 	defer mul_args.Unlock()
 
-	if mul_code == 0 {
+	if mul_code == 0{
 		mul_code = fatbinLoad(mul_map, "mul")
 	}
 
-	mul_args.arg_dst = dst
-	mul_args.arg_a = a
-	mul_args.arg_b = b
-	mul_args.arg_N = N
+	 mul_args.arg_dst = dst
+	 mul_args.arg_a = a
+	 mul_args.arg_b = b
+	 mul_args.arg_N = N
+	
 
 	args := mul_args.argptr[:]
 	cu.LaunchKernel(mul_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous { // debug
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Stop("mul")
 	}
 }
 
 // maps compute capability on PTX code for mul kernel.
-var mul_map = map[int]string{0: "",
-	52: mul_ptx_52}
+var mul_map = map[int]string{ 0: "" ,
+52: mul_ptx_52  }
 
 // mul PTX code for various compute capabilities.
-const (
-	mul_ptx_52 = `
+const(
+  mul_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -123,4 +123,4 @@ BB0_2:
 
 
 `
-)
+ )

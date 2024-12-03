@@ -5,57 +5,56 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import (
-	"sync"
+import(
 	"unsafe"
-
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"sync"
 )
 
 // CUDA handle for lltorque2 kernel
 var lltorque2_code cu.Function
 
 // Stores the arguments for lltorque2 kernel invocation
-type lltorque2_args_t struct {
-	arg_tx        unsafe.Pointer
-	arg_ty        unsafe.Pointer
-	arg_tz        unsafe.Pointer
-	arg_mx        unsafe.Pointer
-	arg_my        unsafe.Pointer
-	arg_mz        unsafe.Pointer
-	arg_hx        unsafe.Pointer
-	arg_hy        unsafe.Pointer
-	arg_hz        unsafe.Pointer
-	arg_alpha_    unsafe.Pointer
-	arg_alpha_mul float32
-	arg_N         int
-	argptr        [12]unsafe.Pointer
+type lltorque2_args_t struct{
+	 arg_tx unsafe.Pointer
+	 arg_ty unsafe.Pointer
+	 arg_tz unsafe.Pointer
+	 arg_mx unsafe.Pointer
+	 arg_my unsafe.Pointer
+	 arg_mz unsafe.Pointer
+	 arg_hx unsafe.Pointer
+	 arg_hy unsafe.Pointer
+	 arg_hz unsafe.Pointer
+	 arg_alpha_ unsafe.Pointer
+	 arg_alpha_mul float32
+	 arg_N int
+	 argptr [12]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for lltorque2 kernel invocation
 var lltorque2_args lltorque2_args_t
 
-func init() {
+func init(){
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	lltorque2_args.argptr[0] = unsafe.Pointer(&lltorque2_args.arg_tx)
-	lltorque2_args.argptr[1] = unsafe.Pointer(&lltorque2_args.arg_ty)
-	lltorque2_args.argptr[2] = unsafe.Pointer(&lltorque2_args.arg_tz)
-	lltorque2_args.argptr[3] = unsafe.Pointer(&lltorque2_args.arg_mx)
-	lltorque2_args.argptr[4] = unsafe.Pointer(&lltorque2_args.arg_my)
-	lltorque2_args.argptr[5] = unsafe.Pointer(&lltorque2_args.arg_mz)
-	lltorque2_args.argptr[6] = unsafe.Pointer(&lltorque2_args.arg_hx)
-	lltorque2_args.argptr[7] = unsafe.Pointer(&lltorque2_args.arg_hy)
-	lltorque2_args.argptr[8] = unsafe.Pointer(&lltorque2_args.arg_hz)
-	lltorque2_args.argptr[9] = unsafe.Pointer(&lltorque2_args.arg_alpha_)
-	lltorque2_args.argptr[10] = unsafe.Pointer(&lltorque2_args.arg_alpha_mul)
-	lltorque2_args.argptr[11] = unsafe.Pointer(&lltorque2_args.arg_N)
-}
+	 lltorque2_args.argptr[0] = unsafe.Pointer(&lltorque2_args.arg_tx)
+	 lltorque2_args.argptr[1] = unsafe.Pointer(&lltorque2_args.arg_ty)
+	 lltorque2_args.argptr[2] = unsafe.Pointer(&lltorque2_args.arg_tz)
+	 lltorque2_args.argptr[3] = unsafe.Pointer(&lltorque2_args.arg_mx)
+	 lltorque2_args.argptr[4] = unsafe.Pointer(&lltorque2_args.arg_my)
+	 lltorque2_args.argptr[5] = unsafe.Pointer(&lltorque2_args.arg_mz)
+	 lltorque2_args.argptr[6] = unsafe.Pointer(&lltorque2_args.arg_hx)
+	 lltorque2_args.argptr[7] = unsafe.Pointer(&lltorque2_args.arg_hy)
+	 lltorque2_args.argptr[8] = unsafe.Pointer(&lltorque2_args.arg_hz)
+	 lltorque2_args.argptr[9] = unsafe.Pointer(&lltorque2_args.arg_alpha_)
+	 lltorque2_args.argptr[10] = unsafe.Pointer(&lltorque2_args.arg_alpha_mul)
+	 lltorque2_args.argptr[11] = unsafe.Pointer(&lltorque2_args.arg_N)
+	 }
 
 // Wrapper for lltorque2 CUDA kernel, asynchronous.
-func k_lltorque2_async(tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, hx unsafe.Pointer, hy unsafe.Pointer, hz unsafe.Pointer, alpha_ unsafe.Pointer, alpha_mul float32, N int, cfg *config) {
-	if Synchronous { // debug
+func k_lltorque2_async ( tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, hx unsafe.Pointer, hy unsafe.Pointer, hz unsafe.Pointer, alpha_ unsafe.Pointer, alpha_mul float32, N int,  cfg *config) {
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Start("lltorque2")
 	}
@@ -63,39 +62,40 @@ func k_lltorque2_async(tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer, 
 	lltorque2_args.Lock()
 	defer lltorque2_args.Unlock()
 
-	if lltorque2_code == 0 {
+	if lltorque2_code == 0{
 		lltorque2_code = fatbinLoad(lltorque2_map, "lltorque2")
 	}
 
-	lltorque2_args.arg_tx = tx
-	lltorque2_args.arg_ty = ty
-	lltorque2_args.arg_tz = tz
-	lltorque2_args.arg_mx = mx
-	lltorque2_args.arg_my = my
-	lltorque2_args.arg_mz = mz
-	lltorque2_args.arg_hx = hx
-	lltorque2_args.arg_hy = hy
-	lltorque2_args.arg_hz = hz
-	lltorque2_args.arg_alpha_ = alpha_
-	lltorque2_args.arg_alpha_mul = alpha_mul
-	lltorque2_args.arg_N = N
+	 lltorque2_args.arg_tx = tx
+	 lltorque2_args.arg_ty = ty
+	 lltorque2_args.arg_tz = tz
+	 lltorque2_args.arg_mx = mx
+	 lltorque2_args.arg_my = my
+	 lltorque2_args.arg_mz = mz
+	 lltorque2_args.arg_hx = hx
+	 lltorque2_args.arg_hy = hy
+	 lltorque2_args.arg_hz = hz
+	 lltorque2_args.arg_alpha_ = alpha_
+	 lltorque2_args.arg_alpha_mul = alpha_mul
+	 lltorque2_args.arg_N = N
+	
 
 	args := lltorque2_args.argptr[:]
 	cu.LaunchKernel(lltorque2_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous { // debug
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Stop("lltorque2")
 	}
 }
 
 // maps compute capability on PTX code for lltorque2 kernel.
-var lltorque2_map = map[int]string{0: "",
-	52: lltorque2_ptx_52}
+var lltorque2_map = map[int]string{ 0: "" ,
+52: lltorque2_ptx_52  }
 
 // lltorque2 PTX code for various compute capabilities.
-const (
-	lltorque2_ptx_52 = `
+const(
+  lltorque2_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -216,4 +216,4 @@ BB0_4:
 
 
 `
-)
+ )

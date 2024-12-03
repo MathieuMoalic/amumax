@@ -5,41 +5,40 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import (
-	"sync"
+import(
 	"unsafe"
-
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"sync"
 )
 
 // CUDA handle for reducemaxabs kernel
 var reducemaxabs_code cu.Function
 
 // Stores the arguments for reducemaxabs kernel invocation
-type reducemaxabs_args_t struct {
-	arg_src     unsafe.Pointer
-	arg_dst     unsafe.Pointer
-	arg_initVal float32
-	arg_n       int
-	argptr      [4]unsafe.Pointer
+type reducemaxabs_args_t struct{
+	 arg_src unsafe.Pointer
+	 arg_dst unsafe.Pointer
+	 arg_initVal float32
+	 arg_n int
+	 argptr [4]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for reducemaxabs kernel invocation
 var reducemaxabs_args reducemaxabs_args_t
 
-func init() {
+func init(){
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	reducemaxabs_args.argptr[0] = unsafe.Pointer(&reducemaxabs_args.arg_src)
-	reducemaxabs_args.argptr[1] = unsafe.Pointer(&reducemaxabs_args.arg_dst)
-	reducemaxabs_args.argptr[2] = unsafe.Pointer(&reducemaxabs_args.arg_initVal)
-	reducemaxabs_args.argptr[3] = unsafe.Pointer(&reducemaxabs_args.arg_n)
-}
+	 reducemaxabs_args.argptr[0] = unsafe.Pointer(&reducemaxabs_args.arg_src)
+	 reducemaxabs_args.argptr[1] = unsafe.Pointer(&reducemaxabs_args.arg_dst)
+	 reducemaxabs_args.argptr[2] = unsafe.Pointer(&reducemaxabs_args.arg_initVal)
+	 reducemaxabs_args.argptr[3] = unsafe.Pointer(&reducemaxabs_args.arg_n)
+	 }
 
 // Wrapper for reducemaxabs CUDA kernel, asynchronous.
-func k_reducemaxabs_async(src unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int, cfg *config) {
-	if Synchronous { // debug
+func k_reducemaxabs_async ( src unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int,  cfg *config) {
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Start("reducemaxabs")
 	}
@@ -47,31 +46,32 @@ func k_reducemaxabs_async(src unsafe.Pointer, dst unsafe.Pointer, initVal float3
 	reducemaxabs_args.Lock()
 	defer reducemaxabs_args.Unlock()
 
-	if reducemaxabs_code == 0 {
+	if reducemaxabs_code == 0{
 		reducemaxabs_code = fatbinLoad(reducemaxabs_map, "reducemaxabs")
 	}
 
-	reducemaxabs_args.arg_src = src
-	reducemaxabs_args.arg_dst = dst
-	reducemaxabs_args.arg_initVal = initVal
-	reducemaxabs_args.arg_n = n
+	 reducemaxabs_args.arg_src = src
+	 reducemaxabs_args.arg_dst = dst
+	 reducemaxabs_args.arg_initVal = initVal
+	 reducemaxabs_args.arg_n = n
+	
 
 	args := reducemaxabs_args.argptr[:]
 	cu.LaunchKernel(reducemaxabs_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous { // debug
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Stop("reducemaxabs")
 	}
 }
 
 // maps compute capability on PTX code for reducemaxabs kernel.
-var reducemaxabs_map = map[int]string{0: "",
-	52: reducemaxabs_ptx_52}
+var reducemaxabs_map = map[int]string{ 0: "" ,
+52: reducemaxabs_ptx_52  }
 
 // reducemaxabs PTX code for various compute capabilities.
-const (
-	reducemaxabs_ptx_52 = `
+const(
+  reducemaxabs_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -189,4 +189,4 @@ BB0_10:
 
 
 `
-)
+ )

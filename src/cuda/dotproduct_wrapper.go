@@ -5,51 +5,50 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import (
-	"sync"
+import(
 	"unsafe"
-
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"sync"
 )
 
 // CUDA handle for dotproduct kernel
 var dotproduct_code cu.Function
 
 // Stores the arguments for dotproduct kernel invocation
-type dotproduct_args_t struct {
-	arg_dst       unsafe.Pointer
-	arg_prefactor float32
-	arg_ax        unsafe.Pointer
-	arg_ay        unsafe.Pointer
-	arg_az        unsafe.Pointer
-	arg_bx        unsafe.Pointer
-	arg_by        unsafe.Pointer
-	arg_bz        unsafe.Pointer
-	arg_N         int
-	argptr        [9]unsafe.Pointer
+type dotproduct_args_t struct{
+	 arg_dst unsafe.Pointer
+	 arg_prefactor float32
+	 arg_ax unsafe.Pointer
+	 arg_ay unsafe.Pointer
+	 arg_az unsafe.Pointer
+	 arg_bx unsafe.Pointer
+	 arg_by unsafe.Pointer
+	 arg_bz unsafe.Pointer
+	 arg_N int
+	 argptr [9]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for dotproduct kernel invocation
 var dotproduct_args dotproduct_args_t
 
-func init() {
+func init(){
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	dotproduct_args.argptr[0] = unsafe.Pointer(&dotproduct_args.arg_dst)
-	dotproduct_args.argptr[1] = unsafe.Pointer(&dotproduct_args.arg_prefactor)
-	dotproduct_args.argptr[2] = unsafe.Pointer(&dotproduct_args.arg_ax)
-	dotproduct_args.argptr[3] = unsafe.Pointer(&dotproduct_args.arg_ay)
-	dotproduct_args.argptr[4] = unsafe.Pointer(&dotproduct_args.arg_az)
-	dotproduct_args.argptr[5] = unsafe.Pointer(&dotproduct_args.arg_bx)
-	dotproduct_args.argptr[6] = unsafe.Pointer(&dotproduct_args.arg_by)
-	dotproduct_args.argptr[7] = unsafe.Pointer(&dotproduct_args.arg_bz)
-	dotproduct_args.argptr[8] = unsafe.Pointer(&dotproduct_args.arg_N)
-}
+	 dotproduct_args.argptr[0] = unsafe.Pointer(&dotproduct_args.arg_dst)
+	 dotproduct_args.argptr[1] = unsafe.Pointer(&dotproduct_args.arg_prefactor)
+	 dotproduct_args.argptr[2] = unsafe.Pointer(&dotproduct_args.arg_ax)
+	 dotproduct_args.argptr[3] = unsafe.Pointer(&dotproduct_args.arg_ay)
+	 dotproduct_args.argptr[4] = unsafe.Pointer(&dotproduct_args.arg_az)
+	 dotproduct_args.argptr[5] = unsafe.Pointer(&dotproduct_args.arg_bx)
+	 dotproduct_args.argptr[6] = unsafe.Pointer(&dotproduct_args.arg_by)
+	 dotproduct_args.argptr[7] = unsafe.Pointer(&dotproduct_args.arg_bz)
+	 dotproduct_args.argptr[8] = unsafe.Pointer(&dotproduct_args.arg_N)
+	 }
 
 // Wrapper for dotproduct CUDA kernel, asynchronous.
-func k_dotproduct_async(dst unsafe.Pointer, prefactor float32, ax unsafe.Pointer, ay unsafe.Pointer, az unsafe.Pointer, bx unsafe.Pointer, by unsafe.Pointer, bz unsafe.Pointer, N int, cfg *config) {
-	if Synchronous { // debug
+func k_dotproduct_async ( dst unsafe.Pointer, prefactor float32, ax unsafe.Pointer, ay unsafe.Pointer, az unsafe.Pointer, bx unsafe.Pointer, by unsafe.Pointer, bz unsafe.Pointer, N int,  cfg *config) {
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Start("dotproduct")
 	}
@@ -57,36 +56,37 @@ func k_dotproduct_async(dst unsafe.Pointer, prefactor float32, ax unsafe.Pointer
 	dotproduct_args.Lock()
 	defer dotproduct_args.Unlock()
 
-	if dotproduct_code == 0 {
+	if dotproduct_code == 0{
 		dotproduct_code = fatbinLoad(dotproduct_map, "dotproduct")
 	}
 
-	dotproduct_args.arg_dst = dst
-	dotproduct_args.arg_prefactor = prefactor
-	dotproduct_args.arg_ax = ax
-	dotproduct_args.arg_ay = ay
-	dotproduct_args.arg_az = az
-	dotproduct_args.arg_bx = bx
-	dotproduct_args.arg_by = by
-	dotproduct_args.arg_bz = bz
-	dotproduct_args.arg_N = N
+	 dotproduct_args.arg_dst = dst
+	 dotproduct_args.arg_prefactor = prefactor
+	 dotproduct_args.arg_ax = ax
+	 dotproduct_args.arg_ay = ay
+	 dotproduct_args.arg_az = az
+	 dotproduct_args.arg_bx = bx
+	 dotproduct_args.arg_by = by
+	 dotproduct_args.arg_bz = bz
+	 dotproduct_args.arg_N = N
+	
 
 	args := dotproduct_args.argptr[:]
 	cu.LaunchKernel(dotproduct_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous { // debug
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Stop("dotproduct")
 	}
 }
 
 // maps compute capability on PTX code for dotproduct kernel.
-var dotproduct_map = map[int]string{0: "",
-	52: dotproduct_ptx_52}
+var dotproduct_map = map[int]string{ 0: "" ,
+52: dotproduct_ptx_52  }
 
 // dotproduct PTX code for various compute capabilities.
-const (
-	dotproduct_ptx_52 = `
+const(
+  dotproduct_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -164,4 +164,4 @@ BB0_2:
 
 
 `
-)
+ )

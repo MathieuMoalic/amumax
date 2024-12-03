@@ -5,45 +5,44 @@ package cuda
  EDITING IS FUTILE.
 */
 
-import (
-	"sync"
+import(
 	"unsafe"
-
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"sync"
 )
 
 // CUDA handle for madd2 kernel
 var madd2_code cu.Function
 
 // Stores the arguments for madd2 kernel invocation
-type madd2_args_t struct {
-	arg_dst  unsafe.Pointer
-	arg_src1 unsafe.Pointer
-	arg_fac1 float32
-	arg_src2 unsafe.Pointer
-	arg_fac2 float32
-	arg_N    int
-	argptr   [6]unsafe.Pointer
+type madd2_args_t struct{
+	 arg_dst unsafe.Pointer
+	 arg_src1 unsafe.Pointer
+	 arg_fac1 float32
+	 arg_src2 unsafe.Pointer
+	 arg_fac2 float32
+	 arg_N int
+	 argptr [6]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for madd2 kernel invocation
 var madd2_args madd2_args_t
 
-func init() {
+func init(){
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	madd2_args.argptr[0] = unsafe.Pointer(&madd2_args.arg_dst)
-	madd2_args.argptr[1] = unsafe.Pointer(&madd2_args.arg_src1)
-	madd2_args.argptr[2] = unsafe.Pointer(&madd2_args.arg_fac1)
-	madd2_args.argptr[3] = unsafe.Pointer(&madd2_args.arg_src2)
-	madd2_args.argptr[4] = unsafe.Pointer(&madd2_args.arg_fac2)
-	madd2_args.argptr[5] = unsafe.Pointer(&madd2_args.arg_N)
-}
+	 madd2_args.argptr[0] = unsafe.Pointer(&madd2_args.arg_dst)
+	 madd2_args.argptr[1] = unsafe.Pointer(&madd2_args.arg_src1)
+	 madd2_args.argptr[2] = unsafe.Pointer(&madd2_args.arg_fac1)
+	 madd2_args.argptr[3] = unsafe.Pointer(&madd2_args.arg_src2)
+	 madd2_args.argptr[4] = unsafe.Pointer(&madd2_args.arg_fac2)
+	 madd2_args.argptr[5] = unsafe.Pointer(&madd2_args.arg_N)
+	 }
 
 // Wrapper for madd2 CUDA kernel, asynchronous.
-func k_madd2_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, N int, cfg *config) {
-	if Synchronous { // debug
+func k_madd2_async ( dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, N int,  cfg *config) {
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Start("madd2")
 	}
@@ -51,33 +50,34 @@ func k_madd2_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 u
 	madd2_args.Lock()
 	defer madd2_args.Unlock()
 
-	if madd2_code == 0 {
+	if madd2_code == 0{
 		madd2_code = fatbinLoad(madd2_map, "madd2")
 	}
 
-	madd2_args.arg_dst = dst
-	madd2_args.arg_src1 = src1
-	madd2_args.arg_fac1 = fac1
-	madd2_args.arg_src2 = src2
-	madd2_args.arg_fac2 = fac2
-	madd2_args.arg_N = N
+	 madd2_args.arg_dst = dst
+	 madd2_args.arg_src1 = src1
+	 madd2_args.arg_fac1 = fac1
+	 madd2_args.arg_src2 = src2
+	 madd2_args.arg_fac2 = fac2
+	 madd2_args.arg_N = N
+	
 
 	args := madd2_args.argptr[:]
 	cu.LaunchKernel(madd2_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
-	if Synchronous { // debug
+	if Synchronous{ // debug
 		Sync()
 		timer_old.Stop("madd2")
 	}
 }
 
 // maps compute capability on PTX code for madd2 kernel.
-var madd2_map = map[int]string{0: "",
-	52: madd2_ptx_52}
+var madd2_map = map[int]string{ 0: "" ,
+52: madd2_ptx_52  }
 
 // madd2 PTX code for various compute capabilities.
-const (
-	madd2_ptx_52 = `
+const(
+  madd2_ptx_52 = `
 .version 7.0
 .target sm_52
 .address_size 64
@@ -134,4 +134,4 @@ BB0_2:
 
 
 `
-)
+ )

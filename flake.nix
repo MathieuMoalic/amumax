@@ -74,7 +74,7 @@
 
     GitFrontend = buildFrontend {
       src = ./frontend;
-      npmDepsHash = "sha256-wD5xGMgpdgVfTMmoIM5ed1Gg4eOkQB7Uo8kA9+ptSKY=";
+      npmDepsHash = "sha256-3xqQ72zsqj2zWJonKnSUi+HH4g8x4gSywF1wefOip/U=";
       version = gitVersion;
     };
     GitBuildAmumax = with pkgs.lib.fileset;
@@ -95,12 +95,12 @@
       owner = "MathieuMoalic";
       repo = "amumax";
       rev = releaseVersion;
-      hash = "sha256-6IcEr4sZRK7/B3JdbM8vSQHWXe21et9WtvqZNMHGwwY=";
+      hash = pkgs.lib.fakeHash;
     };
 
     ReleaseFrontend = buildFrontend {
       src = "${ReleaseSrc}/frontend";
-      npmDepsHash = "sha256-wD5xGMgpdgVfTMmoIM5ed1Gg4eOkQB7Uo8kA9+ptSKY=";
+      npmDepsHash = "sha256-3xqQ72zsqj2zWJonKnSUi+HH4g8x4gSywF1wefOip/U=";
       version = releaseVersion;
     };
 

@@ -45,7 +45,6 @@ release:
 	gh release view $VERSION &>/dev/null && gh release delete $VERSION -y
 	git show-ref --tags $VERSION &>/dev/null && git tag -d $VERSION && git push --tags
 
-	just update-flake-hashes-git
 	just test
 	
 	just image build-cuda build-frontend build
@@ -55,15 +54,19 @@ release:
 	git commit -m "Release of ${VERSION}"
 	git push
 	gh release create $VERSION ./build/* --title $VERSION --notes "Release of ${VERSION}"
-	
-	# We update the flake with the new version based on github
+	just copy-pcss
+	just flake-release
+
+flake-release:
+	#!/usr/bin/env sh
+	set -euxo pipefail
+	VERSION=$(date -u +'%Y.%m.%d')
+	just update-flake-hashes-git
 	just update-flake-gh-hash ${VERSION}
 	nix run . -- -v
 	git add .
 	git commit -m "Update github hash for the release of ${VERSION}"
 	git push
-
-	just copy-pcss
 
 update-flake-hashes-git:
 	#!/usr/bin/env sh

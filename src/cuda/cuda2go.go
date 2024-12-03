@@ -153,7 +153,7 @@ const templText = `package cuda
 import(
 	"unsafe"
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
-	"github.com/MathieuMoalic/amumax/src/timer"
+	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 	"sync"
 )
 
@@ -179,7 +179,7 @@ func init(){
 func k_{{.Name}}_async ( {{range $i, $t := .ArgT}}{{index $.ArgN $i}} {{$t}}, {{end}} cfg *config) {
 	if Synchronous{ // debug
 		Sync()
-		timer.Start("{{.Name}}")
+		timer_old.Start("{{.Name}}")
 	}
 
 	{{.Name}}_args.Lock()
@@ -197,7 +197,7 @@ func k_{{.Name}}_async ( {{range $i, $t := .ArgT}}{{index $.ArgN $i}} {{$t}}, {{
 
 	if Synchronous{ // debug
 		Sync()
-		timer.Stop("{{.Name}}")
+		timer_old.Stop("{{.Name}}")
 	}
 }
 
