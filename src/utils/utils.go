@@ -103,3 +103,14 @@ func Float32ToBytes(f float32) []byte {
 func BytesToFloat32(b []byte) float32 {
 	return math.Float32frombits(binary.LittleEndian.Uint32(b))
 }
+
+func Unslice(v []float64) [3]float64 {
+	if len(v) != 3 {
+		panic(fmt.Errorf("length mismatch: input slice must have exactly 3 elements in unslice"))
+	}
+	return [3]float64{v[0], v[1], v[2]}
+}
+
+func Slice(v [3]float64) []float64 {
+	return v[:]
+}

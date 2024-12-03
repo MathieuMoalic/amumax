@@ -45,7 +45,7 @@ func (s *Solver) rk45() {
 	defer cuda.Recycle(k6)
 	// k2 will be re-used as k7
 
-	h := float32(s.dt_si * gammaLL) // internal time step = Dt * gammaLL
+	h := float32(s.dt_si * s.gammaLL) // internal time step = Dt * gammaLL
 
 	// there is no explicit stage 1: k1 from previous step
 

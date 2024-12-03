@@ -52,7 +52,7 @@ func (s *Solver) rk23() {
 	defer cuda.Recycle(k3)
 	defer cuda.Recycle(k4)
 
-	h := float32(s.dt_si * gammaLL) // internal time step = Dt * gammaLL
+	h := float32(s.dt_si * s.gammaLL) // internal time step = Dt * gammaLL
 
 	// there is no explicit stage 1: k1 from previous step
 

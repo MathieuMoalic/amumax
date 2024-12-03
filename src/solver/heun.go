@@ -16,7 +16,7 @@ func (s *Solver) heun() {
 		s.dt_si = s.FixDt
 	}
 
-	dt := float32(s.dt_si * gammaLL)
+	dt := float32(s.dt_si * s.gammaLL)
 	s.log.AssertMsg(dt > 0, "Invalid time step: dt must be positive in Heun Step")
 
 	// stage 1

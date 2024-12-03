@@ -29,7 +29,7 @@ func (s *Solver) rk4() {
 	defer cuda.Recycle(k3)
 	defer cuda.Recycle(k4)
 
-	h := float32(s.dt_si * gammaLL) // internal time step = Dt * gammaLL
+	h := float32(s.dt_si * s.gammaLL) // internal time step = Dt * gammaLL
 
 	// stage 1
 	s.torqueFn(k1)

@@ -25,7 +25,7 @@ func (s *Solver) backWardEulerStep() {
 	dy1 := s.previousStepBuffer
 
 	s.dt_si = s.FixDt
-	dt := float32(s.dt_si * gammaLL)
+	dt := float32(s.dt_si * s.gammaLL)
 	s.log.AssertMsg(dt > 0, "Backward Euler solver requires fixed time step > 0")
 
 	// Fist guess

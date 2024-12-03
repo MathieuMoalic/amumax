@@ -18,10 +18,10 @@ func (s *Solver) euler() {
 	var dt float32
 	if s.FixDt != 0 {
 		s.dt_si = s.FixDt
-		dt = float32(s.dt_si * gammaLL)
+		dt = float32(s.dt_si * s.gammaLL)
 	} else {
 		dt = float32(s.MaxErr / s.lastTorque)
-		s.dt_si = float64(dt) / gammaLL
+		s.dt_si = float64(dt) / s.gammaLL
 	}
 	s.log.AssertMsg(dt > 0, "Euler solver requires fixed time step > 0")
 	s.setLastErr(float64(dt) * s.lastTorque)

@@ -16,10 +16,6 @@ import (
 )
 
 // START OF TODO
-// TODO: It should be in torque
-
-// TODO: implement gammaLL in torque
-var gammaLL float64 = 1.7595e11 // Gyromagnetic ratio of spins, in rad/Ts
 // TODO: implement temperature
 type Temperature interface {
 	isZero() bool
@@ -27,7 +23,13 @@ type Temperature interface {
 }
 
 var Temp Temperature
+
 var Msat, Aex Temperature
+
+// var Msat = newScalarParam("Msat", "A/m", "Saturation magnetization")
+// var Aex = newScalarParam("Msat", "A/m", "Saturation magnetization")
+
+// Aex    = newScalarParam("Aex", "J/m", "Exchange stiffness", &lex2)
 
 func setTorque(dst *slice.Slice) {}
 
@@ -59,6 +61,7 @@ type Solver struct {
 	exchangeLengthWarned bool         // Whether the exchange length warning has been issued
 	previousStepBuffer   *slice.Slice // used by backwardEuler, rk23 and rk45DP
 	precess              bool         // Precession of the magnetization
+	gammaLL              float64
 }
 
 // NewSolver creates a new instance of the solver with default settings.
@@ -176,7 +179,7 @@ func (s *Solver) freeBuffer() {
 
 // Run the simulation for a number of seconds.
 func (s *Solver) Run(seconds float64) {
-	s.checkExchangeLenght()
+	s.checkExchangeLength()
 	start := s.Time
 	stop := s.Time + seconds
 	s.alarm = stop // don't have dt adapt to go over alarm
@@ -210,7 +213,7 @@ func (s *Solver) Steps(n int) {
 
 // Runs as long as condition returns true, saves output.
 func (s *Solver) RunWhile(condition func() bool) {
-	s.checkExchangeLenght()
+	s.checkExchangeLength()
 	s.sanityCheck()
 	s.pause = false // may be set by <-Inject
 	const output = true
@@ -295,7 +298,7 @@ func (s *Solver) sanityCheck() {
 	}
 }
 
-func (s *Solver) checkExchangeLenght() {
+func (s *Solver) checkExchangeLength() {
 	if s.exchangeLengthWarned {
 		return
 	}

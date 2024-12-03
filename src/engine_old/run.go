@@ -154,7 +154,7 @@ func runWithoutPrecession(seconds float64) {
 
 // run the simulation for a number of seconds.
 func run(seconds float64) {
-	checkExchangeLenght()
+	checkExchangeLength()
 	start := Time
 	stop := Time + seconds
 	alarm = stop // don't have dt adapt to go over alarm
@@ -188,7 +188,7 @@ func steps(n int) {
 
 // Runs as long as condition returns true, saves output.
 func runWhile(condition func() bool) {
-	checkExchangeLenght()
+	checkExchangeLength()
 	sanityCheck()
 	Pause = false // may be set by <-Inject
 	const output = true
@@ -261,7 +261,7 @@ func Exit() {
 	os.Exit(0)
 }
 
-func checkExchangeLenght() {
+func checkExchangeLength() {
 	if exchangeLenghtWarned {
 		return
 	}

@@ -33,7 +33,7 @@ func (s *Solver) rk56() {
 	defer cuda.Recycle(k8)
 	//k2 will be recyled as k9
 
-	h := float32(s.dt_si * gammaLL) // internal time step = Dt * gammaLL
+	h := float32(s.dt_si * s.gammaLL) // internal time step = Dt * gammaLL
 
 	// stage 1
 	s.torqueFn(k1)

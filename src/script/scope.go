@@ -104,7 +104,7 @@ func (p *ScriptParser) AddToScopeAll(
 	// p.RegisterFunction("DefRegionCell", DefRegionCell, "Set a material region (first argument) in one cell "+
 	// 	"by the index of the cell (last three arguments)")
 	// p.RegisterFunction("Relax", relax, "Try to minimize the total energy")
-	// p.RegisterFunction("Run", run, "Run the simulation for a time in seconds")
+	p.RegisterFunction("Run", solver.Run, "Run the simulation for a time in seconds")
 	// p.RegisterFunction("RunWithoutPrecession", runWithoutPrecession, "Run the simulation for a time in seconds with precession disabled")
 	// p.RegisterFunction("Steps", steps, "Run the simulation for a number of time steps")
 	// p.RegisterFunction("RunWhile", runWhile, "Run while condition function is true")

@@ -16,7 +16,7 @@ var relaxTorqueThreshold float64 = -1.
 var relaxing = false
 
 func relax() {
-	checkExchangeLenght()
+	checkExchangeLength()
 	sanityCheck()
 	Pause = false
 

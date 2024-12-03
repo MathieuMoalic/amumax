@@ -124,7 +124,7 @@ var (
 )
 
 func minimize() {
-	checkExchangeLenght()
+	checkExchangeLength()
 	MinimizeStartTime = time.Now()
 	MinimizeTimeoutStep = NSteps + minimizeMaxSteps
 	sanityCheck()
