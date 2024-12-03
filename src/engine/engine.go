@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
+	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/geometry"
@@ -21,8 +21,47 @@ import (
 	"github.com/MathieuMoalic/amumax/src/shape"
 	"github.com/MathieuMoalic/amumax/src/solver"
 	"github.com/MathieuMoalic/amumax/src/table"
+	"github.com/MathieuMoalic/amumax/src/update"
+	"github.com/MathieuMoalic/amumax/src/version"
 	"github.com/MathieuMoalic/amumax/src/window_shift"
+	"github.com/spf13/cobra"
 )
+
+// Entrypoint is the entrypoint for the new engine which is not very functional yet
+// the cuda code still relies on global variables
+func Entrypoint(cmd *cobra.Command, args []string, givenFlags *flags.Flags) {
+	// we create the log as early as possible to catch all messages
+	log := log.NewLogs(givenFlags.Debug)
+
+	if givenFlags.Update {
+		update.ShowUpdateMenu()
+		return
+	}
+	GpuInfo := cuda.Init(givenFlags.Gpu)
+
+	cuda.Synchronous = givenFlags.Sync
+
+	// engine.Insecure = givenFlags.Insecure
+
+	if givenFlags.Vet {
+		log.PrintVersion(version.VERSION, GpuInfo)
+		log.Err("vet is not implemented yet with the new engine")
+	} else if len(args) == 0 && givenFlags.Interactive {
+		log.PrintVersion(version.VERSION, GpuInfo)
+		engineState := newEngineState(givenFlags, log)
+		engineState.start("") // interactive
+	} else if len(args) == 1 {
+		log.PrintVersion(version.VERSION, GpuInfo)
+		engineState := newEngineState(givenFlags, log)
+		engineState.start(args[0])
+	} else if len(args) > 1 {
+		log.Err("Queue is not implemented yet with the new engine")
+	} else if givenFlags.Version {
+		log.PrintVersion(version.VERSION, GpuInfo)
+	} else {
+		_ = cmd.Help()
+	}
+}
 
 type engineState struct {
 	flags           *flags.Flags
@@ -178,9 +217,6 @@ func (s *engineState) autoFlush() {
 func (s *engineState) cleanExit() {
 	s.fs.Drain() // wait for the save queue to finish
 	s.table.Close()
-	if s.flags.Sync {
-		timer_old.Print(os.Stdout)
-	}
 	s.metadata.Add("steps", s.solver.NSteps)
 	s.metadata.Close()
 	s.log.Info("**************** Simulation Ended ****************** //")
