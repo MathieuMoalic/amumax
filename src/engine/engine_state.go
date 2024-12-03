@@ -70,14 +70,14 @@ func (s *engineState) init(scriptStr string) {
 	s.mesh.Init(s.log)
 	s.script.Init(&scriptStr, s.log, s.metadata, s.initializeMeshIfReady)
 	s.windowShift.Init()
-	s.shape.Init(s.mesh, s.log, s.fs, s.grains)
 	s.table.Init(s.solver, s.log, s.fs)
-	s.solver.Init()
+	s.solver.Init(s.log, s.regions, s.mesh)
 	s.magnetization.Init(s.mesh, s.config, s.geometry)
 	s.regions.Init(s.mesh, s.log)
 	s.geometry.Init(s.mesh, s.log, s.config, s.magnetization.Normalize)
 	s.savedQuantities.Init(s.log, s.fs, s.solver)
 	s.grains.Init(s.regions.Voronoi)
+	s.shape.Init(s.mesh, s.log, s.fs, s.grains)
 	s.config.Init(s.mesh)
 }
 

@@ -4,7 +4,6 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Adaptive Heun method, can be used as solver.Step
@@ -18,7 +17,7 @@ func (s *Solver) heun() {
 	}
 
 	dt := float32(s.dt_si * gammaLL)
-	log.AssertMsg(dt > 0, "Invalid time step: dt must be positive in Heun Step")
+	s.log.AssertMsg(dt > 0, "Invalid time step: dt must be positive in Heun Step")
 
 	// stage 1
 	s.torqueFn(dy0)
@@ -43,7 +42,7 @@ func (s *Solver) heun() {
 		s.setMaxTorque(dy)
 	} else {
 		// undo bad step
-		log.AssertMsg(s.FixDt == 0, "Invalid step: cannot undo step when s.fixDt is set in Heun Step")
+		s.log.AssertMsg(s.FixDt == 0, "Invalid step: cannot undo step when s.fixDt is set in Heun Step")
 		s.Time -= s.dt_si
 		cuda.Madd2(y, y, dy0, 1, -dt)
 		s.nUndone++

@@ -4,7 +4,6 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
@@ -66,7 +65,7 @@ func (s *Solver) rk4() {
 		s.setMaxTorque(k4)
 	} else {
 		// undo bad step
-		log.AssertMsg(s.FixDt == 0, "Invalid step: cannot undo step when s.fixDt is set")
+		s.log.AssertMsg(s.FixDt == 0, "Invalid step: cannot undo step when s.fixDt is set")
 		s.Time = t0
 		slice.Copy(m, m0)
 		s.nUndone++

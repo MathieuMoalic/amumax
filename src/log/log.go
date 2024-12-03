@@ -150,6 +150,7 @@ func (l *Logs) AssertMsg(test bool, msg interface{}) {
 	}
 }
 
+// The following functions are to be removed in the future
 func AssertMsg(test bool, msg interface{}) {
 	if !test {
 		color.Red(fmt.Sprintf("%v", msg))

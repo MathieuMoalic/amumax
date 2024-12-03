@@ -46,28 +46,31 @@ func saveIfNeeded() {}
 type Solver struct {
 	regions              *regions.Regions
 	log                  *log.Logs
-	Time                 float64     // Current time in seconds
-	alarm                float64     // End time for the run, dt adaptation must not cross it
-	pause                bool        // Set to true to stop running after the current step
-	postStep             []func()    // Functions to call after every full time step
-	inject               chan func() // Injects code between time steps
-	dt_si                float64     //s.time step in seconds
-	MinDt, MaxDt         float64     // Minimum and maximum time steps
-	MaxErr               float64     // Maximum error per step
-	headroom             float64     // Solver headroom, (Gustafsson, 1992)
-	lastErr, peakErr     float64     // Error of last step, highest error ever
-	lastTorque           float64     // Maximum torque of last time step
-	NSteps, nUndone      int         // Number of successful steps and undone steps
-	nEvals               int         // Number of evaluations
-	FixDt                float64     // Fixed time step (if any)
-	solverType           int         // Identifier for the solver type
-	exchangeLengthWarned bool        // Whether the exchange length warning has been issued
 	mesh                 *mesh.Mesh
+	Time                 float64      // Current time in seconds
+	alarm                float64      // End time for the run, dt adaptation must not cross it
+	pause                bool         // Set to true to stop running after the current step
+	postStep             []func()     // Functions to call after every full time step
+	inject               chan func()  // Injects code between time steps
+	dt_si                float64      //s.time step in seconds
+	MinDt, MaxDt         float64      // Minimum and maximum time steps
+	MaxErr               float64      // Maximum error per step
+	headroom             float64      // Solver headroom, (Gustafsson, 1992)
+	lastErr, peakErr     float64      // Error of last step, highest error ever
+	lastTorque           float64      // Maximum torque of last time step
+	NSteps, nUndone      int          // Number of successful steps and undone steps
+	nEvals               int          // Number of evaluations
+	FixDt                float64      // Fixed time step (if any)
+	solverType           int          // Identifier for the solver type
+	exchangeLengthWarned bool         // Whether the exchange length warning has been issued
 	previousStepBuffer   *slice.Slice // used by backwardEuler, rk23 and rk45DP
 }
 
 // NewSolver creates a new instance of the solver with default settings.
-func (s *Solver) Init() {
+func (s *Solver) Init(log *log.Logs, regions *regions.Regions, mesh *mesh.Mesh) {
+	s.log = log
+	s.regions = regions
+	s.mesh = mesh
 	s.Time = 0
 	s.alarm = 0
 	s.pause = true
