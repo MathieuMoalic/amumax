@@ -107,7 +107,7 @@ func readHeader(in io.Reader) *Info {
 		default:
 			panic("Unknown key: " + key)
 			// ignored
-		case "oommf", "segment count", "begin", "mesh", "xbase", "ybase", "zbase", "xmin", "ymin", "zmin", "xmax", "ymax", "zmax", "valuerangeminmag", "valuerangemaxmag", "end": // ignored (OVF1)
+		case "oommf", "segment count", "begin", "meshtype", "xbase", "ybase", "zbase", "xmin", "ymin", "zmin", "xmax", "ymax", "zmax", "valuerangeminmag", "valuerangemaxmag", "end": // ignored (OVF1)
 		case "", "valuelabels": // ignored (OVF2)
 		case "title":
 			info.Title = value
