@@ -2,13 +2,12 @@ package solver
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/slice"
 )
 
 // Backward Euler method
 func (s *Solver) backWardEulerStep() {
-	log.AssertMsg(s.MaxErr > 0, "Backward euler solver requires s.maxErr > 0")
+	s.log.AssertMsg(s.MaxErr > 0, "Backward euler solver requires s.maxErr > 0")
 
 	t0 := s.Time
 
@@ -27,7 +26,7 @@ func (s *Solver) backWardEulerStep() {
 
 	s.dt_si = s.FixDt
 	dt := float32(s.dt_si * gammaLL)
-	log.AssertMsg(dt > 0, "Backward Euler solver requires fixed time step > 0")
+	s.log.AssertMsg(dt > 0, "Backward Euler solver requires fixed time step > 0")
 
 	// Fist guess
 	s.Time = t0 + 0.5*s.dt_si // 0.5 dt makes it implicit midpoint method

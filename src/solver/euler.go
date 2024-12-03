@@ -2,7 +2,6 @@ package solver
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
-	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Euler method
@@ -24,7 +23,7 @@ func (s *Solver) euler() {
 		dt = float32(s.MaxErr / s.lastTorque)
 		s.dt_si = float64(dt) / gammaLL
 	}
-	log.AssertMsg(dt > 0, "Euler solver requires fixed time step > 0")
+	s.log.AssertMsg(dt > 0, "Euler solver requires fixed time step > 0")
 	s.setLastErr(float64(dt) * s.lastTorque)
 
 	cuda.Madd2(y, y, dy0, 1, dt) // y = y + dt * dy
