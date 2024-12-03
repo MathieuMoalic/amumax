@@ -2,8 +2,12 @@ package torque
 
 import (
 	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/demag"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
+	"github.com/MathieuMoalic/amumax/src/geometry"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/magnetization"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/parameter"
 	"github.com/MathieuMoalic/amumax/src/quantity"
 	"github.com/MathieuMoalic/amumax/src/slice"
@@ -62,9 +66,12 @@ const (
 
 // TODO END
 
-type Torque1 struct {
+type Torque struct {
 	mag                      *magnetization.Magnetization
 	log                      *log.Logs
+	geom                     *geometry.Geometry
+	mesh                     *mesh.Mesh
+	fs                       *fsutil.FileSystem
 	Alpha                    *parameter.ScalarParam
 	Xi                       *parameter.ScalarParam
 	Pol                      *parameter.ScalarParam
@@ -83,11 +90,16 @@ type Torque1 struct {
 	disableZhangLiTorque     bool
 	disableSlonczewskiTorque bool
 	fixedLayerPosition       fixedLayerPositionType
+	demag                    *demag.Demag
 }
 
-func (t *Torque1) Init(log *log.Logs, mag *magnetization.Magnetization) {
+func (t *Torque) Init(log *log.Logs, mag *magnetization.Magnetization, geom *geometry.Geometry, mesh *mesh.Mesh, fs *fsutil.FileSystem) {
 	t.log = log
 	t.mag = mag
+	t.geom = geom
+	t.mesh = mesh
+	t.fs = fs
+
 	t.Alpha = parameter.NewScalarParam("alpha", "", "Landau-Lifshitz damping constant")
 	t.Xi = parameter.NewScalarParam("xi", "", "Non-adiabaticity of spin-transfer-torque")
 	t.Pol = parameter.NewScalarParam("Pol", "", "Electrical current polarization")
@@ -96,7 +108,7 @@ func (t *Torque1) Init(log *log.Logs, mag *magnetization.Magnetization) {
 	t.FrozenSpins = parameter.NewScalarParam("frozenspins", "", "Defines spins that should be fixed") // 1 - frozen, 0 - free. TODO: check if it only contains 0/1 values
 	t.FreeLayerThickness = parameter.NewScalarParam("FreeLayerThickness", "m", "Slonczewski free layer thickness")
 	t.FixedLayer = newExcitation("FixedLayer", "", "Slonczewski fixed layer polarization")
-	t.Torque = newVectorField("torque", "T", "Total torque/γ0", t.setTorque)
+	t.Torque = newVectorField("torque", "T", "Total torque/γ0", t.SetTorque)
 	t.LLTorque = newVectorField("LLtorque", "T", "Landau-Lifshitz torque/γ0", t.setLLTorque)
 	// t.STTorque = newVectorField("STTorque", "T", "Spin-transfer torque/γ0", t.addSTTorque)
 	t.J = newExcitation("J", "A/m2", "Electrical current density")
@@ -114,15 +126,16 @@ func (t *Torque1) Init(log *log.Logs, mag *magnetization.Magnetization) {
 }
 
 // Sets dst to the current total torque
-func (t *Torque1) setTorque(dst *slice.Slice) {
+func (t *Torque) SetTorque(dst *slice.Slice) {
 	t.setLLTorque(dst)
 	// t.addSTTorque(dst)
 	// t.freezeSpins(dst)
 }
 
 // Sets dst to the current Landau-Lifshitz torque
-func (t *Torque1) setLLTorque(dst *slice.Slice) {
-	// setEffectiveField(dst) // calc and store B_eff
+func (t *Torque) setLLTorque(dst *slice.Slice) {
+	// demag.SetEffectiveField(dst) // calc and store B_eff
+	t.demag = demag.New(t.mag, t.geom, t.mesh, t.fs, t.log)
 	alpha := t.Alpha.MSlice()
 	defer alpha.Recycle()
 	if t.precess {
@@ -190,6 +203,6 @@ func (t *Torque1) setLLTorque(dst *slice.Slice) {
 // 	}
 // }
 
-func (t *Torque1) getMaxTorque() float64 {
+func (t *Torque) getMaxTorque() float64 {
 	return cuda.MaxVecNorm(t.Torque.Value())
 }

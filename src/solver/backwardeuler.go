@@ -37,12 +37,12 @@ func (s *Solver) backWardEulerStep() {
 		s.magnetization.Normalize()
 	}
 
-	s.torqueFn(dy0)
+	s.calculateTorqueAndIncrementEvals(dy0)
 	cuda.Madd2(y, y0, dy0, 1, dt) // y = y0 + dt * dy
 	s.magnetization.Normalize()
 
 	// One iteration
-	s.torqueFn(dy1)
+	s.calculateTorqueAndIncrementEvals(dy1)
 	cuda.Madd2(y, y0, dy1, 1, dt) // y = y0 + dt * dy1
 	s.magnetization.Normalize()
 

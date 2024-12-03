@@ -21,6 +21,7 @@ type ScriptParser struct {
 	// scope holds the state of the script execution environment.
 	functionsScope        map[string]interface{}
 	variablesScope        map[string]interface{}
+	constantsScope        map[string]float64
 	initializeMeshIfReady func()
 }
 
@@ -34,6 +35,7 @@ func (p *ScriptParser) Init(script *string, log *log.Logs, metadata *metadata.Me
 	p.lineOffset = -3
 	p.functionsScope = make(map[string]interface{})
 	p.variablesScope = make(map[string]interface{})
+	p.constantsScope = make(map[string]float64)
 }
 
 // Parse parses a script, wrapping it in a main function to process each statement.

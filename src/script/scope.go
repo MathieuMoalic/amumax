@@ -2,10 +2,13 @@ package script
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/MathieuMoalic/amumax/src/chunk"
+	"github.com/MathieuMoalic/amumax/src/constants"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/geometry"
 	"github.com/MathieuMoalic/amumax/src/grains"
@@ -38,22 +41,21 @@ func (p *ScriptParser) AddToScopeAll(
 	window_shift *window_shift.WindowShift,
 	shape *shape.ShapeList,
 ) {
+	p.addStdMathToScope()
+	p.addMagConfigToScope(mag_config)
+	p.addMeshToScope(mesh)
+	p.addShapeToScope(shape)
+	p.addConstantsToScope()
+	p.addSavedQToScope(saved_quantities)
+	p.addWindowShiftToScope(window_shift)
+	p.addTableToScope(table)
+	p.addSolverToScope(solver)
+
 	p.RegisterFunction("Flush", fs.Drain, "Flush all pending output to disk.")
 	// p.RegisterFunction("AutoSaveOvf", autoSaveOVF, "Auto save space-dependent quantity every period (s).")
 	// p.RegisterFunction("AutoSnapshot", autoSnapshot, "Auto save image of quantity every period (s).")
 	p.RegisterFunction("Chunk", chunk.CreateRequestedChunk, "")
-	p.RegisterFunction("Uniform", mag_config.Uniform, "Uniform magnetization in given direction")
-	p.RegisterFunction("Vortex", mag_config.Vortex, "Vortex magnetization with given circulation and core polarization")
-	p.RegisterFunction("Antivortex", mag_config.AntiVortex, "Antivortex magnetization with given circulation and core polarization")
-	p.RegisterFunction("Radial", mag_config.Radial, "Radial magnetization with given charge and core polarization")
-	p.RegisterFunction("NeelSkyrmion", mag_config.NeelSkyrmion, "Néél skyrmion magnetization with given charge and core polarization")
-	p.RegisterFunction("BlochSkyrmion", mag_config.BlochSkyrmion, "Bloch skyrmion magnetization with given chirality and core polarization")
-	p.RegisterFunction("TwoDomain", mag_config.TwoDomain, "Twodomain magnetization with with given magnetization in left domain, wall, and right domain")
-	p.RegisterFunction("VortexWall", mag_config.VortexWall, "Vortex wall magnetization with given mx in left and right domain and core circulation and polarization")
-	p.RegisterFunction("RandomMag", mag_config.RandomMag, "Random magnetization")
-	p.RegisterFunction("RandomMagSeed", mag_config.RandomMagSeed, "Random magnetization with given seed")
-	p.RegisterFunction("Conical", mag_config.Conical, "Conical state for given wave vector, cone direction, and cone angle")
-	p.RegisterFunction("Helical", mag_config.Helical, "Helical state for given wave vector")
+
 	// p.RegisterFunction("Crop", crop, "Crops a quantity to cell ranges [x1,x2[, [y1,y2[, [z1,z2[")
 	// p.RegisterFunction("CropX", cropX, "Crops a quantity to cell ranges [x1,x2[")
 	// p.RegisterFunction("CropY", cropY, "Crops a quantity to cell ranges [y1,y2[")
@@ -90,14 +92,6 @@ func (p *ScriptParser) AddToScopeAll(
 	p.RegisterFunction("SetGeom", geometry.SetGeom, "Sets the geometry to a given shape")
 	// p.RegisterFunction("Minimize", minimize, "Use steepest conjugate gradient method to minimize the total energy")
 
-	// p.RegisterFunction("ReCreateMesh", ReCreateMesh, "")
-	p.RegisterFunction("SmoothMesh", mesh.SmoothMesh, "")
-	p.RegisterFunction("SetMesh", mesh.SetMesh, "")
-	p.RegisterFunction("SetGridSize", mesh.SetGridSize, "")
-	p.RegisterFunction("SetCellSize", mesh.SetCellSize, "")
-	p.RegisterFunction("SetPBC", mesh.SetPBC, "")
-	p.RegisterFunction("SetTotalSize", mesh.SetTotalSize, "")
-
 	// p.RegisterFunction("DefRegion", DefRegion, "Define a material region with given index (0-255) and shape")
 	// p.RegisterFunction("RedefRegion", RedefRegion, "Reassign all cells with a given region (first argument) to a new region (second argument)")
 	// p.RegisterFunction("ShapeFromRegion", ShapeFromRegion, "")
@@ -117,6 +111,89 @@ func (p *ScriptParser) AddToScopeAll(
 	// p.RegisterFunction("Snapshot", snapshot, "Save image of quantity")
 	// p.RegisterFunction("SnapshotAs", snapshotAs, "Save image of quantity with custom filename")
 
+	p.RegisterFunction("Shift", window_shift.ShiftX, "Shifts the simulation by +1/-1 cells along X")
+	p.RegisterFunction("ShiftY", window_shift.ShiftY, "Shifts the simulation by +1/-1 cells along Y")
+	// p.RegisterFunction("ThermSeed", thermSeed, "Set a random seed for thermal noise")
+
+	// p.RegisterFunction("Expect", expect, "Used for automated tests: checks if a value is close enough to the expected value")
+	// p.RegisterFunction("ExpectV", expectV, "Used for automated tests: checks if a vector is close enough to the expected value")
+	// p.RegisterFunction("Fprintln", fprintln, "Print to file")
+	// p.RegisterFunction("Sign", sign, "Signum function")
+	p.RegisterFunction("Vector", vector.New, "Constructs a vector with given components")
+	p.RegisterFunction("Print", p.Print, "Print to standard output")
+	// p.RegisterFunction("LoadFile", loadFile, "Load a zarr data file")
+	// p.RegisterFunction("LoadOvfFile", loadOvfFile, "Load an ovf data file")
+	p.RegisterFunction("Index2Coord", mesh.Index2Coord, "Convert cell index to x,y,z coordinate in meter")
+	// p.RegisterFunction("NewSlice", newSlice, "Makes a 4D array with a specified number of components (first argument) "+
+	// 	"and a specified size nx,ny,nz (remaining arguments)")
+	// p.RegisterFunction("NewVectorMask", newVectorMask, "Makes a 3D array of vectors")
+	// p.RegisterFunction("NewScalarMask", newScalarMask, "Makes a 3D array of scalars")
+	// p.RegisterFunction("RegionFromCoordinate", regionFromCoordinate, "RegionFromCoordinate")
+
+	p.RegisterVariable("geom", geometry, "")
+	p.RegisterVariable("m", magnetization, "")
+	p.RegisterVariable("t", &solver.Time, "Total simulated time (s)")
+
+	// p.RegisterVariable("EnableDemag", &EnableDemag, "Enables/disables demag (default=true)")
+	// p.RegisterVariable("DemagAccuracy", &DemagAccuracy, "Controls accuracy of demag kernel")
+
+	// p.RegisterVariable("OpenBC", &OpenBC, "Use open boundary conditions (default=false)")
+	// p.RegisterVariable("ext_BubbleMz", &BubbleMz, "Center magnetization 1.0 or -1.0  (default = 1.0)")
+
+	// p.RegisterVariable("MinimizerStop", &stopMaxDm, "Stopping max dM for Minimize")
+	// p.RegisterVariable("MinimizerSamples", &dmSamples, "Number of max dM to collect for Minimize convergence check.")
+	// p.RegisterVariable("MinimizeMaxSteps", &minimizeMaxSteps, "")
+	// p.RegisterVariable("MinimizeMaxTimeSeconds", &minimizeMaxTimeSeconds, "")
+	// p.RegisterVariable("RelaxTorqueThreshold", &relaxTorqueThreshold, "MaxTorque threshold for relax(). If set to -1 (default), relax() will stop when the average torque is steady or increasing.")
+	// p.RegisterVariable("SnapshotFormat", &snapshotFormat, "Image format for snapshots: jpg, png or gif.")
+
+	// p.RegisterVariable("GammaLL", &gammaLL, "Gyromagnetic ratio in rad/Ts")
+	// p.RegisterVariable("DisableZhangLiTorque", &disableZhangLiTorque, "Disables Zhang-Li torque (default=false)")
+	// p.RegisterVariable("DisableSlonczewskiTorque", &disableSlonczewskiTorque, "Disables Slonczewski torque (default=false)")
+	// p.RegisterVariable("DoPrecess", &precess, "Enables LL precession (default=true)")
+
+	// p.RegisterVariable("PreviewXDataPoints", &PreviewXDataPoints, "Number of data points in the x direction for the 2D/3D preview")
+	// p.RegisterVariable("PreviewYDataPoints", &PreviewYDataPoints, "Number of data points in the y direction for the 2D/3D preview")
+	p.RegisterVariable("EdgeSmooth", &geometry.EdgeSmooth, "Geometry edge smoothing with edgeSmooth^3 samples per cell, 0=staircase, ~8=very smooth")
+}
+
+func (p *ScriptParser) addMagConfigToScope(mag_config *mag_config.ConfigList) {
+	p.RegisterFunction("Uniform", mag_config.Uniform, "Uniform magnetization in given direction")
+	p.RegisterFunction("Vortex", mag_config.Vortex, "Vortex magnetization with given circulation and core polarization")
+	p.RegisterFunction("Antivortex", mag_config.AntiVortex, "Antivortex magnetization with given circulation and core polarization")
+	p.RegisterFunction("Radial", mag_config.Radial, "Radial magnetization with given charge and core polarization")
+	p.RegisterFunction("NeelSkyrmion", mag_config.NeelSkyrmion, "Néél skyrmion magnetization with given charge and core polarization")
+	p.RegisterFunction("BlochSkyrmion", mag_config.BlochSkyrmion, "Bloch skyrmion magnetization with given chirality and core polarization")
+	p.RegisterFunction("TwoDomain", mag_config.TwoDomain, "Twodomain magnetization with with given magnetization in left domain, wall, and right domain")
+	p.RegisterFunction("VortexWall", mag_config.VortexWall, "Vortex wall magnetization with given mx in left and right domain and core circulation and polarization")
+	p.RegisterFunction("RandomMag", mag_config.RandomMag, "Random magnetization")
+	p.RegisterFunction("RandomMagSeed", mag_config.RandomMagSeed, "Random magnetization with given seed")
+	p.RegisterFunction("Conical", mag_config.Conical, "Conical state for given wave vector, cone direction, and cone angle")
+	p.RegisterFunction("Helical", mag_config.Helical, "Helical state for given wave vector")
+}
+func (p *ScriptParser) addMeshToScope(mesh *mesh.Mesh) {
+	p.RegisterVariable("Nx", &mesh.Nx, "Number of cells in x direction")
+	p.RegisterVariable("Ny", &mesh.Ny, "Number of cells in y direction")
+	p.RegisterVariable("Nz", &mesh.Nz, "Number of cells in z direction")
+	p.RegisterVariable("dx", &mesh.Dx, "Cell size in x direction")
+	p.RegisterVariable("dy", &mesh.Dy, "Cell size in y direction")
+	p.RegisterVariable("dz", &mesh.Dz, "Cell size in z direction")
+	p.RegisterVariable("Tx", &mesh.Tx, "Total size in x direction")
+	p.RegisterVariable("Ty", &mesh.Ty, "Total size in y direction")
+	p.RegisterVariable("Tz", &mesh.Tz, "Total size in z direction")
+	p.RegisterVariable("PBCx", &mesh.PBCx, "Periodic boundary condition in x direction")
+	p.RegisterVariable("PBCy", &mesh.PBCy, "Periodic boundary condition in y direction")
+	p.RegisterVariable("PBCz", &mesh.PBCz, "Periodic boundary condition in z direction")
+
+	// p.RegisterFunction("ReCreateMesh", ReCreateMesh, "")
+	p.RegisterFunction("SmoothMesh", mesh.SmoothMesh, "Smooths the mesh, potentially making the simulations faster")
+	p.RegisterFunction("SetMesh", mesh.SetMesh, "Sets GridSize, CellSize and PBC at the same time ")
+	p.RegisterFunction("SetGridSize", mesh.SetGridSize, "Sets the number of cells in each direction")
+	p.RegisterFunction("SetCellSize", mesh.SetCellSize, "Sets the size of each cell in each direction")
+	p.RegisterFunction("SetPBC", mesh.SetPBC, "Sets the periodic boundary conditions")
+	p.RegisterFunction("SetTotalSize", mesh.SetTotalSize, "Sets the total size of the mesh")
+}
+func (p *ScriptParser) addShapeToScope(shape *shape.ShapeList) {
 	p.RegisterFunction("Ellipsoid", shape.Ellipsoid, "3D Ellipsoid with axes in meter")
 	p.RegisterFunction("Ellipse", shape.Ellipse, "2D Ellipse with axes in meter")
 	p.RegisterFunction("Cone", shape.Cone, "3D Cone with diameter and height in meter. The base is at z=0. If the height is positive, the tip points in the +z direction.")
@@ -142,93 +219,50 @@ func (p *ScriptParser) AddToScopeAll(
 	p.RegisterFunction("GrainRoughness", shape.GrainRoughness, "Grainy surface with different heights per grain "+
 		"with a typical grain size (first argument), minimal height (second argument), and maximal "+
 		"height (third argument). The last argument is a seed for the random number generator.")
-	p.RegisterFunction("Shift", window_shift.ShiftX, "Shifts the simulation by +1/-1 cells along X")
-	p.RegisterFunction("ShiftY", window_shift.ShiftY, "Shifts the simulation by +1/-1 cells along Y")
-	// p.RegisterFunction("ThermSeed", thermSeed, "Set a random seed for thermal noise")
-
-	// p.RegisterFunction("Expect", expect, "Used for automated tests: checks if a value is close enough to the expected value")
-	// p.RegisterFunction("ExpectV", expectV, "Used for automated tests: checks if a vector is close enough to the expected value")
-	// p.RegisterFunction("Fprintln", fprintln, "Print to file")
-	// p.RegisterFunction("Sign", sign, "Signum function")
-	p.RegisterFunction("Vector", vector.New, "Constructs a vector with given components")
-	p.RegisterFunction("Print", p.Print, "Print to standard output")
-	// p.RegisterFunction("LoadFile", loadFile, "Load a zarr data file")
-	// p.RegisterFunction("LoadOvfFile", loadOvfFile, "Load an ovf data file")
-	p.RegisterFunction("Index2Coord", mesh.Index2Coord, "Convert cell index to x,y,z coordinate in meter")
-	// p.RegisterFunction("NewSlice", newSlice, "Makes a 4D array with a specified number of components (first argument) "+
-	// 	"and a specified size nx,ny,nz (remaining arguments)")
-	// p.RegisterFunction("NewVectorMask", newVectorMask, "Makes a 3D array of vectors")
-	// p.RegisterFunction("NewScalarMask", newScalarMask, "Makes a 3D array of scalars")
-	// p.RegisterFunction("RegionFromCoordinate", regionFromCoordinate, "RegionFromCoordinate")
-
+}
+func (p *ScriptParser) addConstantsToScope() {
+	p.registerConstant("Pi", constants.Pi)
+	p.registerConstant("Mu0", constants.Mu0)
+	p.registerConstant("MuB", constants.MuB)
+	p.registerConstant("Kb", constants.Kb)
+	p.registerConstant("Qe", constants.Qe)
+	p.registerConstant("Inf", constants.Inf)
+}
+func (p *ScriptParser) addSavedQToScope(saved_quantities *saved_quantities.SavedQuantities) {
 	p.RegisterFunction("AutoSaveAs", saved_quantities.AutoSaveAs, "Auto save space-dependent quantity every period (s) as the zarr standard.")
 	p.RegisterFunction("AutoSaveAsChunk", saved_quantities.AutoSaveAsChunk, "Auto save space-dependent quantity every period (s) as the zarr standard.")
 	p.RegisterFunction("AutoSave", saved_quantities.AutoSave, "Auto save space-dependent quantity every period (s) as the zarr standard.")
 	p.RegisterFunction("SaveAs", saved_quantities.SaveAs, "Save space-dependent quantity as the zarr standard.")
 	p.RegisterFunction("SaveAsChunk", saved_quantities.SaveAsChunk, "")
 	p.RegisterFunction("Save", saved_quantities.Save, "Save space-dependent quantity as the zarr standard.")
-
+}
+func (p *ScriptParser) addWindowShiftToScope(window_shift *window_shift.WindowShift) {
+	// p.RegisterVariable("ShiftM", &shiftM, "Whether Shift() acts on magnetization")
+	// p.RegisterVariable("ShiftGeom", &shiftGeom, "Whether Shift() acts on geometry")
+	// p.RegisterVariable("ShiftRegions", &shiftRegions, "Whether Shift() acts on regions")
+	// p.RegisterVariable("TotalShift", &totalShift, "Amount by which the simulation has been shifted (m).")
+	// p.RegisterVariable("EdgeCarryShift", &EdgeCarryShift, "Whether to use the current magnetization at the border for the cells inserted by Shift")
+	p.RegisterVariable("ShiftMagL", &window_shift.ShiftMagL, "Upon shift, insert this magnetization from the left")
+	p.RegisterVariable("ShiftMagR", &window_shift.ShiftMagR, "Upon shift, insert this magnetization from the right")
+	p.RegisterVariable("ShiftMagU", &window_shift.ShiftMagU, "Upon shift, insert this magnetization from the top")
+	p.RegisterVariable("ShiftMagD", &window_shift.ShiftMagD, "Upon shift, insert this magnetization from the bottom")
+}
+func (p *ScriptParser) addTableToScope(table *table.Table) {
 	p.RegisterFunction("TableSave", table.Save, "Save the data table right now.")
 	p.RegisterFunction("TableAdd", table.Add, "Save the data table periodically.")
 	// p.RegisterFunction("TableAddVar", tableAddVar, "Save the data table periodically.")
 	p.RegisterFunction("TableAddAs", table.AddAs, "Save the data table periodically.")
 	p.RegisterFunction("TableAutoSave", table.AutoSave, "Save the data table periodically.")
-
-	p.RegisterVariable("Nx", &mesh.Nx, "")
-	p.RegisterVariable("Ny", &mesh.Ny, "")
-	p.RegisterVariable("Nz", &mesh.Nz, "")
-	p.RegisterVariable("dx", &mesh.Dx, "")
-	p.RegisterVariable("dy", &mesh.Dy, "")
-	p.RegisterVariable("dz", &mesh.Dz, "")
-	p.RegisterVariable("Tx", &mesh.Tx, "")
-	p.RegisterVariable("Ty", &mesh.Ty, "")
-	p.RegisterVariable("Tz", &mesh.Tz, "")
-	p.RegisterVariable("PBCx", &mesh.PBCx, "")
-	p.RegisterVariable("PBCy", &mesh.PBCy, "")
-	p.RegisterVariable("PBCz", &mesh.PBCz, "")
-
-	p.RegisterVariable("geom", geometry, "")
-	p.RegisterVariable("m", magnetization, "")
-	p.RegisterVariable("t", &solver.Time, "Total simulated time (s)")
-
-	// p.RegisterVariable("EnableDemag", &EnableDemag, "Enables/disables demag (default=true)")
-	// p.RegisterVariable("DemagAccuracy", &DemagAccuracy, "Controls accuracy of demag kernel")
-
+}
+func (p *ScriptParser) addSolverToScope(solver *solver.Solver) {
 	p.RegisterVariable("step", &solver.NSteps, "Total number of time steps taken")
 	p.RegisterVariable("MinDt", &solver.MinDt, "Minimum time step the solver can take (s)")
 	p.RegisterVariable("MaxDt", &solver.MaxDt, "Maximum time step the solver can take (s)")
 	p.RegisterVariable("MaxErr", &solver.MaxErr, "Maximum error per step the solver can tolerate (default = 1e-5)")
 	// p.RegisterVariable("Headroom", &Headroom, "Solver headroom (default = 0.8)")
 	p.RegisterVariable("FixDt", &solver.FixDt, "Set a fixed time step, 0 disables fixed step (which is the default)")
-	// p.RegisterVariable("OpenBC", &OpenBC, "Use open boundary conditions (default=false)")
-	// p.RegisterVariable("ext_BubbleMz", &BubbleMz, "Center magnetization 1.0 or -1.0  (default = 1.0)")
-	p.RegisterVariable("EdgeSmooth", &geometry.EdgeSmooth, "Geometry edge smoothing with edgeSmooth^3 samples per cell, 0=staircase, ~8=very smooth")
-
-	// p.RegisterVariable("MinimizerStop", &stopMaxDm, "Stopping max dM for Minimize")
-	// p.RegisterVariable("MinimizerSamples", &dmSamples, "Number of max dM to collect for Minimize convergence check.")
-	// p.RegisterVariable("MinimizeMaxSteps", &minimizeMaxSteps, "")
-	// p.RegisterVariable("MinimizeMaxTimeSeconds", &minimizeMaxTimeSeconds, "")
-	// p.RegisterVariable("RelaxTorqueThreshold", &relaxTorqueThreshold, "MaxTorque threshold for relax(). If set to -1 (default), relax() will stop when the average torque is steady or increasing.")
-	// p.RegisterVariable("SnapshotFormat", &snapshotFormat, "Image format for snapshots: jpg, png or gif.")
-
-	p.RegisterVariable("ShiftMagL", &window_shift.ShiftMagL, "Upon shift, insert this magnetization from the left")
-	p.RegisterVariable("ShiftMagR", &window_shift.ShiftMagR, "Upon shift, insert this magnetization from the right")
-	p.RegisterVariable("ShiftMagU", &window_shift.ShiftMagU, "Upon shift, insert this magnetization from the top")
-	p.RegisterVariable("ShiftMagD", &window_shift.ShiftMagD, "Upon shift, insert this magnetization from the bottom")
-	// p.RegisterVariable("ShiftM", &shiftM, "Whether Shift() acts on magnetization")
-	// p.RegisterVariable("ShiftGeom", &shiftGeom, "Whether Shift() acts on geometry")
-	// p.RegisterVariable("ShiftRegions", &shiftRegions, "Whether Shift() acts on regions")
-	// p.RegisterVariable("TotalShift", &totalShift, "Amount by which the simulation has been shifted (m).")
-	// p.RegisterVariable("EdgeCarryShift", &EdgeCarryShift, "Whether to use the current magnetization at the border for the cells inserted by Shift")
-
-	// p.RegisterVariable("GammaLL", &gammaLL, "Gyromagnetic ratio in rad/Ts")
-	// p.RegisterVariable("DisableZhangLiTorque", &disableZhangLiTorque, "Disables Zhang-Li torque (default=false)")
-	// p.RegisterVariable("DisableSlonczewskiTorque", &disableSlonczewskiTorque, "Disables Slonczewski torque (default=false)")
-	// p.RegisterVariable("DoPrecess", &precess, "Enables LL precession (default=true)")
-
-	// p.RegisterVariable("PreviewXDataPoints", &PreviewXDataPoints, "Number of data points in the x direction for the 2D/3D preview")
-	// p.RegisterVariable("PreviewYDataPoints", &PreviewYDataPoints, "Number of data points in the y direction for the 2D/3D preview")
 }
+
 func (p *ScriptParser) Print(msg ...interface{}) {
 	p.log.Info("%v", utils.CustomFmt(msg))
 }
@@ -248,9 +282,18 @@ func (p *ScriptParser) RegisterVariable(name string, value interface{}, doc stri
 	p.variablesScope[name] = value
 }
 
+func (p *ScriptParser) registerConstant(name string, value float64) {
+	name = strings.ToLower(name)
+	p.constantsScope[name] = value
+}
+
 // registerUserVariable registers a user-defined variable in the world.
 func (p *ScriptParser) registerUserVariable(name string, value interface{}) {
 	name = strings.ToLower(name)
+	// check if it is defined as a constant
+	if _, ok := p.constantsScope[name]; ok {
+		p.log.ErrAndExit("Variable name %s is already defined as a constant", name)
+	}
 	if existingValue, ok := p.variablesScope[name]; ok {
 		switch ptr := existingValue.(type) {
 		case *int:
@@ -475,4 +518,71 @@ func (p *ScriptParser) getFunction(name string) (interface{}, bool) {
 	name = strings.ToLower(name)
 	value, ok := p.functionsScope[name]
 	return value, ok
+}
+
+func (p *ScriptParser) addStdMathToScope() {
+	p.RegisterFunction("round", math.Round, "Round to nearest integer")
+	p.RegisterFunction("abs", math.Abs, "Absolute value")
+	p.RegisterFunction("acos", math.Acos, "Arc cosine")
+	p.RegisterFunction("acosh", math.Acosh, "Inverse hyperbolic cosine")
+	p.RegisterFunction("asin", math.Asin, "Arc sine")
+	p.RegisterFunction("asinh", math.Asinh, "Inverse hyperbolic sine")
+	p.RegisterFunction("atan", math.Atan, "Arc tangent")
+	p.RegisterFunction("atanh", math.Atanh, "Inverse hyperbolic tangent")
+	p.RegisterFunction("cbrt", math.Cbrt, "Cube root")
+	p.RegisterFunction("ceil", math.Ceil, "Ceiling")
+	p.RegisterFunction("cos", math.Cos, "Cosine")
+	p.RegisterFunction("cosh", math.Cosh, "Hyperbolic cosine")
+	p.RegisterFunction("erf", math.Erf, "Error function")
+	p.RegisterFunction("erfc", math.Erfc, "Complementary error function")
+	p.RegisterFunction("exp", math.Exp, "Exponential")
+	p.RegisterFunction("exp2", math.Exp2, "Exponential base 2")
+	p.RegisterFunction("expm1", math.Expm1, "Exponential minus 1")
+	p.RegisterFunction("floor", math.Floor, "Floor")
+	p.RegisterFunction("gamma", math.Gamma, "Gamma function")
+	p.RegisterFunction("j0", math.J0, "Bessel function of the first kind of order 0")
+	p.RegisterFunction("j1", math.J1, "Bessel function of the first kind of order 1")
+	p.RegisterFunction("log", math.Log, "Natural logarithm")
+	p.RegisterFunction("log10", math.Log10, "Base 10 logarithm")
+	p.RegisterFunction("log1p", math.Log1p, "Natural logarithm of 1+x")
+	p.RegisterFunction("log2", math.Log2, "Base 2 logarithm")
+	p.RegisterFunction("logb", math.Logb, "Exponent of the radix")
+	p.RegisterFunction("sin", math.Sin, "Sine")
+	p.RegisterFunction("sinh", math.Sinh, "Hyperbolic sine")
+	p.RegisterFunction("sqrt", math.Sqrt, "Square root")
+	p.RegisterFunction("tan", math.Tan, "Tangent")
+	p.RegisterFunction("tanh", math.Tanh, "Hyperbolic tangent")
+	p.RegisterFunction("trunc", math.Trunc, "Truncate")
+	p.RegisterFunction("y0", math.Y0, "Bessel function of the second kind of order 0")
+	p.RegisterFunction("y1", math.Y1, "Bessel function of the second kind of order 1")
+	p.RegisterFunction("ilogb", math.Ilogb, "Integer logarithm of x")
+	p.RegisterFunction("pow10", math.Pow10, "Power of 10")
+	p.RegisterFunction("atan2", math.Atan2, "Arc tangent of y/x")
+	p.RegisterFunction("hypot", math.Hypot, "Square root of sum of squares")
+	p.RegisterFunction("remainder", math.Remainder, "Remainder of x/y")
+	p.RegisterFunction("max", math.Max, "Maximum")
+	p.RegisterFunction("min", math.Min, "Minimum")
+	p.RegisterFunction("mod", math.Mod, "Modulo")
+	p.RegisterFunction("pow", math.Pow, "Power")
+	p.RegisterFunction("yn", math.Yn, "Bessel function of the second kind of order n")
+	p.RegisterFunction("jn", math.Jn, "Bessel function of the first kind of order n")
+	p.RegisterFunction("ldexp", math.Ldexp, "x * 2**exp")
+	p.RegisterFunction("isInf", math.IsInf, "Is x infinite")
+	p.RegisterFunction("isNaN", math.IsNaN, "Is x not a number")
+	p.RegisterFunction("sinc", utils.Sinc, "Sinc returns sin(x)/x. If x=0, then Sinc(x) returns 0.")
+	// p.RegisterFunction("norm", norm, "Standard normal distribution")
+	// p.RegisterFunction("heaviside", heaviside, "Returns 1 if x>0, 0 if x<0, and 0.5 if x==0")
+	// p.RegisterFunction("randSeed", intseed, "Sets the random number seed")
+	// p.RegisterFunction("rand", rng.Float64, "Random number between 0 and 1")
+	// p.RegisterFunction("randExp", rng.ExpFloat64, "Exponentially distributed random number between 0 and +inf, mean=1")
+	// p.RegisterFunction("randNorm", rng.NormFloat64, "Standard normal random number")
+	// p.RegisterFunction("randInt", randInt, "Random non-negative integer")
+
+	//string
+	p.RegisterFunction("sprint", fmt.Sprint, "Print all arguments to string with automatic formatting")
+	p.RegisterFunction("sprintf", fmt.Sprintf, "Print to string with C-style formatting.")
+
+	//time
+	p.RegisterFunction("now", time.Now, "Returns the current time")
+	p.RegisterFunction("since", time.Since, "Returns the time elapsed since argument")
 }

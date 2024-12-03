@@ -21,6 +21,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/shape"
 	"github.com/MathieuMoalic/amumax/src/solver"
 	"github.com/MathieuMoalic/amumax/src/table"
+	"github.com/MathieuMoalic/amumax/src/torque"
 	"github.com/MathieuMoalic/amumax/src/update"
 	"github.com/MathieuMoalic/amumax/src/version"
 	"github.com/MathieuMoalic/amumax/src/window_shift"
@@ -76,6 +77,7 @@ type engineState struct {
 	grains          *grains.Grains
 	config          *mag_config.ConfigList
 	script          *script.ScriptParser
+	torque          *torque.Torque
 
 	autoFlushInterval time.Duration
 	gpuInfo           *log.GpuInfo
@@ -100,13 +102,14 @@ func (s *engineState) init(scriptStr string) {
 	s.grains = &grains.Grains{}
 	s.config = &mag_config.ConfigList{}
 	s.script = &script.ScriptParser{}
+	s.torque = &torque.Torque{}
 
 	s.metadata.Init(s.fs, s.log, s.gpuInfo)
 	s.mesh.Init(s.log)
 	s.script.Init(&scriptStr, s.log, s.metadata, s.initializeMeshIfReady)
 	s.windowShift.Init()
 	s.table.Init(s.solver, s.log, s.fs)
-	s.solver.Init(s.log, s.regions, s.mesh, s.magnetization)
+	s.solver.Init(s.log, s.regions, s.mesh, s.magnetization, s.torque)
 	s.magnetization.Init(s.mesh, s.config, s.geometry)
 	s.regions.Init(s.mesh, s.log)
 	s.geometry.Init(s.mesh, s.log, s.config, s.magnetization.Normalize)
@@ -114,6 +117,7 @@ func (s *engineState) init(scriptStr string) {
 	s.grains.Init(s.regions.Voronoi)
 	s.shape.Init(s.mesh, s.log, s.fs, s.grains)
 	s.config.Init(s.mesh)
+	s.torque.Init(s.log, s.magnetization, s.geometry, s.mesh, s.fs)
 }
 
 func (s *engineState) start(scriptPath string) {

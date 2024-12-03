@@ -128,6 +128,7 @@ func (p *Parameter) init(nComp int, name, unit string, children []derived) {
 }
 
 func (p *Parameter) MSlice() cuda.MSlice {
+	p.log.Debug("mesh: %v", p.mesh)
 	if p.IsUniform() {
 		return cuda.MakeMSlice(slice.NilSlice(p.NComp(), p.mesh.Size()), p.getRegion(0))
 	} else {

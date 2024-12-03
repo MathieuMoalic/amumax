@@ -20,14 +20,14 @@ func (s *Solver) heun() {
 	s.log.AssertMsg(dt > 0, "Invalid time step: dt must be positive in Heun Step")
 
 	// stage 1
-	s.torqueFn(dy0)
+	s.calculateTorqueAndIncrementEvals(dy0)
 	cuda.Madd2(y, y, dy0, 1, dt) // y = y + dt * dy
 
 	// stage 2
 	dy := cuda.Buffer(3, y.Size())
 	defer cuda.Recycle(dy)
 	s.Time += s.dt_si
-	s.torqueFn(dy)
+	s.calculateTorqueAndIncrementEvals(dy)
 
 	err := cuda.MaxVecDiff(dy0, dy) * float64(dt)
 

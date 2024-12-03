@@ -8,4 +8,9 @@ const (
 	MuB = 9.2740091523e-24   // Bohr magneton in J/T
 	Kb  = 1.380650424e-23    // Boltzmann's constant in J/K
 	Qe  = 1.60217646e-19     // Electron charge in C
+	Pi  = math.Pi            // Pi
+)
+
+var (
+	Inf = math.Inf(1) // Infinity
 )

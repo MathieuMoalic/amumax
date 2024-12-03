@@ -5,7 +5,6 @@ import (
 	"math"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/constants"
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/magnetization"
@@ -13,6 +12,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/progressbar"
 	"github.com/MathieuMoalic/amumax/src/regions"
 	"github.com/MathieuMoalic/amumax/src/slice"
+	"github.com/MathieuMoalic/amumax/src/torque"
 )
 
 // START OF TODO
@@ -31,8 +31,6 @@ var Msat, Aex Temperature
 
 // Aex    = newScalarParam("Aex", "J/m", "Exchange stiffness", &lex2)
 
-func setTorque(dst *slice.Slice) {}
-
 // TODO: implement saveIfNeeded
 func saveIfNeeded() {}
 
@@ -43,6 +41,7 @@ type Solver struct {
 	log                  *log.Logs
 	mesh                 *mesh.Mesh
 	magnetization        *magnetization.Magnetization
+	torque               *torque.Torque
 	Time                 float64      // Current time in seconds
 	alarm                float64      // End time for the run, dt adaptation must not cross it
 	pause                bool         // Set to true to stop running after the current step
@@ -65,11 +64,12 @@ type Solver struct {
 }
 
 // NewSolver creates a new instance of the solver with default settings.
-func (s *Solver) Init(log *log.Logs, regions *regions.Regions, mesh *mesh.Mesh, magnetization *magnetization.Magnetization) {
+func (s *Solver) Init(log *log.Logs, regions *regions.Regions, mesh *mesh.Mesh, magnetization *magnetization.Magnetization, torque *torque.Torque) {
 	s.log = log
 	s.regions = regions
 	s.mesh = mesh
 	s.magnetization = magnetization
+	s.torque = torque
 	s.Time = 0
 	s.alarm = 0
 	s.pause = true
@@ -87,7 +87,7 @@ func (s *Solver) Init(log *log.Logs, regions *regions.Regions, mesh *mesh.Mesh, 
 	s.nUndone = 0
 	s.nEvals = 0
 	s.FixDt = 0
-	s.solverType = 0
+	s.solverType = 1
 	s.exchangeLengthWarned = false
 	s.previousStepBuffer = nil
 	s.precess = true
@@ -107,8 +107,8 @@ func (s *Solver) SetSolver(solverIndex int) {
 }
 
 // write torque to dst and increment NEvals
-func (s *Solver) torqueFn(dst *slice.Slice) {
-	setTorque(dst)
+func (s *Solver) calculateTorqueAndIncrementEvals(dst *slice.Slice) {
+	s.torque.SetTorque(dst)
 	s.nEvals++
 }
 
@@ -179,7 +179,7 @@ func (s *Solver) freeBuffer() {
 
 // Run the simulation for a number of seconds.
 func (s *Solver) Run(seconds float64) {
-	s.checkExchangeLength()
+	// s.checkExchangeLength()
 	start := s.Time
 	stop := s.Time + seconds
 	s.alarm = stop // don't have dt adapt to go over alarm
@@ -213,7 +213,7 @@ func (s *Solver) Steps(n int) {
 
 // Runs as long as condition returns true, saves output.
 func (s *Solver) RunWhile(condition func() bool) {
-	s.checkExchangeLength()
+	// s.checkExchangeLength()
 	s.sanityCheck()
 	s.pause = false // may be set by <-Inject
 	const output = true
@@ -290,39 +290,39 @@ func (s *Solver) InjectAndWait(task func()) {
 }
 
 func (s *Solver) sanityCheck() {
-	if Msat.isZero() {
-		s.log.Info("Note: Msat = 0")
-	}
-	if Aex.isZero() {
-		s.log.Info("Note: Aex = 0")
-	}
+	// if Msat.isZero() {
+	// 	s.log.Info("Note: Msat = 0")
+	// }
+	// if Aex.isZero() {
+	// 	s.log.Info("Note: Aex = 0")
+	// }
 }
 
-func (s *Solver) checkExchangeLength() {
-	if s.exchangeLengthWarned {
-		return
-	}
-	existingRegions := s.regions.GetExistingIndices()
-	// iterate over all of the quantities
-	for _, region := range existingRegions {
-		Msat_r := Msat.GetRegion(region)
-		Aex_r := Aex.GetRegion(region)
-		lex := math.Sqrt(2 * Aex_r / (constants.Mu0 * Msat_r * Msat_r))
-		if !s.exchangeLengthWarned {
-			if s.mesh.Dx > lex {
-				s.log.Warn("Warning: Exchange length (%.3g nm) smaller than dx (%.3g nm) in region %d", lex*1e9, s.mesh.Dx*1e9, region)
-				s.exchangeLengthWarned = true
-			}
-			if s.mesh.Dy > lex {
-				s.log.Warn("Warning: Exchange length (%.3g nm) smaller than dy (%.3g nm) in region %d", lex*1e9, s.mesh.Dy*1e9, region)
-				s.exchangeLengthWarned = true
-			}
-			if s.mesh.Dz > lex && s.mesh.Nz > 1 {
-				s.log.Warn("Warning: Exchange length (%.3g nm) smaller than dz (%.3g nm) in region %d", lex*1e9, s.mesh.Dz*1e9, region)
-				s.exchangeLengthWarned = true
-			}
-		}
+// func (s *Solver) checkExchangeLength() {
+// 	if s.exchangeLengthWarned {
+// 		return
+// 	}
+// 	existingRegions := s.regions.GetExistingIndices()
+// 	// iterate over all of the quantities
+// 	for _, region := range existingRegions {
+// 		Msat_r := Msat.GetRegion(region)
+// 		Aex_r := Aex.GetRegion(region)
+// 		lex := math.Sqrt(2 * Aex_r / (constants.Mu0 * Msat_r * Msat_r))
+// 		if !s.exchangeLengthWarned {
+// 			if s.mesh.Dx > lex {
+// 				s.log.Warn("Warning: Exchange length (%.3g nm) smaller than dx (%.3g nm) in region %d", lex*1e9, s.mesh.Dx*1e9, region)
+// 				s.exchangeLengthWarned = true
+// 			}
+// 			if s.mesh.Dy > lex {
+// 				s.log.Warn("Warning: Exchange length (%.3g nm) smaller than dy (%.3g nm) in region %d", lex*1e9, s.mesh.Dy*1e9, region)
+// 				s.exchangeLengthWarned = true
+// 			}
+// 			if s.mesh.Dz > lex && s.mesh.Nz > 1 {
+// 				s.log.Warn("Warning: Exchange length (%.3g nm) smaller than dz (%.3g nm) in region %d", lex*1e9, s.mesh.Dz*1e9, region)
+// 				s.exchangeLengthWarned = true
+// 			}
+// 		}
 
-	}
+// 	}
 
-}
+// }

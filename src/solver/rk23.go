@@ -33,12 +33,12 @@ func (s *Solver) rk23() {
 	// first step ever: one-time k1 init and eval
 	if s.previousStepBuffer == nil {
 		s.previousStepBuffer = cuda.NewSlice(3, size)
-		s.torqueFn(s.previousStepBuffer)
+		s.calculateTorqueAndIncrementEvals(s.previousStepBuffer)
 	}
 
 	// FSAL cannot be used with temperature
 	if !Temp.isZero() {
-		s.torqueFn(s.previousStepBuffer)
+		s.calculateTorqueAndIncrementEvals(s.previousStepBuffer)
 	}
 
 	t0 := s.Time
@@ -60,13 +60,13 @@ func (s *Solver) rk23() {
 	s.Time = t0 + (1./2.)*s.dt_si
 	cuda.Madd2(m, m, s.previousStepBuffer, 1, (1./2.)*h) // m = m*1 + k1*h/2
 	s.magnetization.Normalize()
-	s.torqueFn(k2)
+	s.calculateTorqueAndIncrementEvals(k2)
 
 	// stage 3
 	s.Time = t0 + (3./4.)*s.dt_si
 	cuda.Madd2(m, m0, k2, 1, (3./4.)*h) // m = m0*1 + k2*3/4
 	s.magnetization.Normalize()
-	s.torqueFn(k3)
+	s.calculateTorqueAndIncrementEvals(k3)
 
 	// 3rd order solution
 	cuda.Madd4(m, m0, s.previousStepBuffer, k2, k3, 1, (2./9.)*h, (1./3.)*h, (4./9.)*h)
@@ -74,7 +74,7 @@ func (s *Solver) rk23() {
 
 	// error estimate
 	s.Time = t0 + s.dt_si
-	s.torqueFn(k4)
+	s.calculateTorqueAndIncrementEvals(k4)
 	Err := k2 // re-use k2 as error
 	// difference of 3rd and 2nd order torque without explicitly storing them first
 	cuda.Madd4(Err, s.previousStepBuffer, k2, k3, k4, (7./24.)-(2./9.), (1./4.)-(1./3.), (1./3.)-(4./9.), (1. / 8.))

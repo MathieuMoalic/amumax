@@ -10,7 +10,7 @@ func (s *Solver) euler() {
 	dy0 := cuda.Buffer(3, y.Size())
 	defer cuda.Recycle(dy0)
 
-	s.torqueFn(dy0)
+	s.calculateTorqueAndIncrementEvals(dy0)
 	s.setMaxTorque(dy0)
 
 	// Adaptive time stepping: treat s.maxErr as the maximum magnetization delta

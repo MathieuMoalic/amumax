@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 	"github.com/MathieuMoalic/amumax/src/progressbar"
 	"github.com/MathieuMoalic/amumax/src/slice"
 	"github.com/MathieuMoalic/amumax/src/utils"
@@ -29,12 +29,10 @@ func emptyKernel() kernelSlice {
 
 // Obtains the demag kernel either from cacheDir/ or by calculating (and then storing in cacheDir for next time).
 // Empty cacheDir disables caching.
-func NewDemagKernel(fs *fsutil.FileSystem, log *log.Logs, gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cacheDir string, hideProgressBar bool) (kernel kernelSlice, err error) {
-	timer_old.Start("kernel_init")
-	timer_old.Stop("kernel_init") // warm-up
-
-	timer_old.Start("kernel_init")
-	defer timer_old.Stop("kernel_init")
+func NewDemagKernel(fs *fsutil.FileSystem, log *log.Logs, mesh *mesh.Mesh, accuracy float64, cacheDir string, hideProgressBar bool) (kernel kernelSlice, err error) {
+	gridsize := mesh.Size()
+	pbc := mesh.PBC()
+	cellsize := mesh.CellSize()
 
 	err = sanityCheck(cellsize)
 	if err != nil {

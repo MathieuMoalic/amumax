@@ -114,3 +114,11 @@ func Unslice(v []float64) [3]float64 {
 func Slice(v [3]float64) []float64 {
 	return v[:]
 }
+
+func Sinc(x float64) float64 {
+	if x == 0 {
+		return 1
+	} else {
+		return math.Sin(x) / x
+	}
+}
