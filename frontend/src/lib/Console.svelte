@@ -63,6 +63,7 @@
 		border: 1px solid #929290;
 		width: 100%;
 		padding: 5px;
+		font: monospace;
 	}
 	input {
 		padding: 5px;
