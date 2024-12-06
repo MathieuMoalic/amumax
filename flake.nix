@@ -16,7 +16,7 @@
     CGO_LDFLAGS = ["-lcuda -lcurand -lcufft -Wl,-rpath -Wl,\$ORIGIN"];
     CGO_CFLAGS_ALLOW = "(-fno-schedule-insns|-malign-double|-ffast-math)";
 
-    cuda = pkgs.cudaPackages_11;
+    cuda = pkgs.cudaPackages_12;
     basepkgs = [
       cuda.cuda_nvcc
       cuda.cuda_cudart

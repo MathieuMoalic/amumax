@@ -20,10 +20,6 @@ type lut struct {
 	source  updater            // updates cpu slice
 }
 
-// func newLUT(log *log.Logs, mesh *mesh.Mesh, source updater) *lut {
-// 	return &lut{log: log, mesh: mesh, source: source}
-// }
-
 type updater interface {
 	update() // updates cpu lookup table
 }
