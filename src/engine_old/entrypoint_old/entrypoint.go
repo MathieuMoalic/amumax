@@ -70,72 +70,49 @@ type Release struct {
 
 func runInteractive(flags *flags.Flags) {
 	log_old.Log.Info("No input files: starting interactive session")
-	// setup outut dir
 	now := time.Now()
 	outdir := fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
-
 	engine_old.InitIO(outdir, outdir, flags.CacheDir, flags.SkipExists, flags.ForceClean, flags.HideProgressBar, flags.SelfTest, flags.Sync)
 	log_old.Log.Info("Input file: %s", "none")
 	log_old.Log.Info("Output directory: %s", engine_old.OD())
 	log_old.Log.Init(engine_old.OD())
+	go log_old.Log.AutoFlushToFile()
 
-	// set up some sensible start configuration
-	engine_old.Eval(`
-Nx = 128
-Ny = 64
-Nz = 1
-dx = 3e-9
-dy = 3e-9
-dz = 3e-9
-Msat = 1e6
-Aex = 10e-12
-alpha = 1
-m = RandomMag()`)
 	if !flags.WebUIDisabled {
 		host, port, path, err := url.ParseAddrPath(flags.WebUIAddress)
 		log_old.Log.PanicIfError(err)
 		go api.Start(host, port, path, flags.Tunnel, flags.Debug)
 	}
+
+	// Compile the hardcoded script and evaluate it
+	script := `
+        Nx = 128
+        Ny = 64
+        Nz = 1
+        dx = 3e-9
+        dy = 3e-9
+        dz = 3e-9
+        Msat = 1e6
+        Aex = 10e-12
+        m = RandomMag()
+    `
+	code, err := engine_old.World.Compile(script)
+	log_old.Log.PanicIfError(err)
+	engine_old.EvalFile(code)
+
 	engine_old.RunInteractive()
 }
 
 func runFileAndServe(mx3Path string, flags *flags.Flags) {
-	if _, err := os.Stat(mx3Path); errors.Is(err, os.ErrNotExist) {
-		log_old.Log.ErrAndExit("Error: File `%s` does not exist", mx3Path)
-	}
-	outputdir := strings.TrimSuffix(mx3Path, ".mx3") + ".zarr"
-
-	if flags.OutputDir != "" {
-		outputdir = flags.OutputDir
-	}
-	engine_old.InitIO(mx3Path, outputdir, flags.CacheDir, flags.SkipExists, flags.ForceClean, flags.HideProgressBar, flags.SelfTest, flags.Sync)
-	log_old.Log.Info("Input file: %s", mx3Path)
-	log_old.Log.Info("Output directory: %s", engine_old.OD())
-
-	log_old.Log.Init(engine_old.OD())
-	go log_old.Log.AutoFlushToFile()
-
-	mx3Path = engine_old.InputFile
-
-	var code *script_old.BlockStmt
-	var err2 error
-	if mx3Path != "" {
-		// first we compile the entire file into an executable tree
-		code, err2 = engine_old.CompileFile(mx3Path)
-		if err2 != nil {
-			log_old.Log.ErrAndExit("Error while parsing `%s`: %v", mx3Path, err2)
-		}
-		log_old.Log.PanicIfError(err2)
-	}
-	// now the parser is not used anymore so it can handle web requests
-	if !flags.WebUIDisabled {
-		host, port, path, err := url.ParseAddrPath(flags.WebUIAddress)
+	code, err := setupAndServe(flags, mx3Path, false)
+	if err != nil {
 		log_old.Log.PanicIfError(err)
-		go api.Start(host, port, path, flags.Tunnel, flags.Debug)
 	}
-	// start executing the tree, possibly injecting commands from web gui
+
+	// Execute the compiled input file
 	engine_old.EvalFile(code)
 
+	// Enter interactive mode if requested
 	if flags.Interactive {
 		engine_old.RunInteractive()
 	}
@@ -148,4 +125,50 @@ func printVersion() {
 	log_old.Log.Info("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
 	log_old.Log.Info("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda_old.UseCC)
 	log_old.Log.Info("GPU Information: %s", cuda_old.GPUInfo_old)
+}
+
+func setupAndServe(flags *flags.Flags, mx3Path string, isInteractive bool) (*script_old.BlockStmt, error) {
+	var code *script_old.BlockStmt
+	var err error
+
+	// Initialize input/output directories
+	var inputPath, outputPath string
+	if isInteractive {
+		now := time.Now()
+		outputPath = fmt.Sprintf("/tmp/amumax-%v-%02d-%02d_%02dh%02d.zarr", now.Year(), int(now.Month()), now.Day(), now.Hour(), now.Minute())
+		inputPath = outputPath // No input file for interactive mode
+		log_old.Log.Info("Input file: %s", "none")
+	} else {
+		if _, err = os.Stat(mx3Path); errors.Is(err, os.ErrNotExist) {
+			log_old.Log.ErrAndExit("Error: File `%s` does not exist", mx3Path)
+		}
+		inputPath = mx3Path
+		outputPath = flags.OutputDir
+		if outputPath == "" {
+			outputPath = strings.TrimSuffix(mx3Path, ".mx3") + ".zarr"
+		}
+		log_old.Log.Info("Input file: %s", mx3Path)
+	}
+
+	engine_old.InitIO(inputPath, outputPath, flags.CacheDir, flags.SkipExists, flags.ForceClean, flags.HideProgressBar, flags.SelfTest, flags.Sync)
+	log_old.Log.Info("Output directory: %s", engine_old.OD())
+	log_old.Log.Init(engine_old.OD())
+	go log_old.Log.AutoFlushToFile()
+
+	// Web UI setup
+	if !flags.WebUIDisabled {
+		host, port, path, err1 := url.ParseAddrPath(flags.WebUIAddress)
+		log_old.Log.PanicIfError(err1)
+		go api.Start(host, port, path, flags.Tunnel, flags.Debug)
+	}
+
+	// Compile input file if in non-interactive mode
+	if !isInteractive && mx3Path != "" {
+		code, err = engine_old.CompileFile(mx3Path)
+		if err != nil {
+			log_old.Log.ErrAndExit("Error while parsing `%s`: %v", mx3Path, err)
+		}
+	}
+
+	return code, err
 }
