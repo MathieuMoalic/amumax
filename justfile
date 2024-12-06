@@ -51,7 +51,11 @@ release:
 
 	# We need to commit before the release
 	git add .
-	git commit -m "Release of ${VERSION}"
+	if git diff-index --quiet HEAD --; then
+		echo "No changes to commit. Skipping commit step."
+	else
+		git commit -m "Release of $VERSION"
+	fi
 	git push
 	gh release create $VERSION ./build/* --title $VERSION --notes "Release of ${VERSION}"
 	just copy-pcss
