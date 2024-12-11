@@ -31,9 +31,6 @@ func (m Mesh) prettyPrint() {
 }
 
 func (m *Mesh) Size() [3]int {
-	if !m.created {
-		panic("Mesh not created yet")
-	}
 	return [3]int{m.Nx, m.Ny, m.Nz}
 }
 func (m *Mesh) GetNi() (int, int, int) {
