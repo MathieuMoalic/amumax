@@ -59,9 +59,7 @@
 
         buildPhase = ''
           mkdir -p src/api/static
-          mkdir -p src/engine_old/api_old/static
-          cp -r ${frontend} src/api/static
-          cp -r ${frontend} src/engine_old/api_old/static
+          cp -r ${frontend}/* src/api/static
           go build -v -o $out/bin/amumax -ldflags '-s -w -X github.com/MathieuMoalic/amumax/src/version.VERSION=${version}' .
         '';
 
