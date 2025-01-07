@@ -27,6 +27,7 @@ func CompileFile(fname string) (*script_old.BlockStmt, error) {
 	if err != nil {
 		return nil, err
 	}
+	script_old.AddMetadata = EngineState.Metadata.Add
 	return World.Compile(string(bytes))
 }
 
