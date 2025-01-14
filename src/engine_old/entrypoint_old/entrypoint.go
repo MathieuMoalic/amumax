@@ -15,7 +15,6 @@ import (
 	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/queue"
 	"github.com/MathieuMoalic/amumax/src/engine_old/script_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/slurm_old"
 	"github.com/MathieuMoalic/amumax/src/engine_old/timer_old"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/update"
@@ -33,7 +32,7 @@ func Entrypoint(cmd *cobra.Command, args []string, flags *flags.Flags) {
 		return
 	}
 
-	go slurm_old.SetEndTimerIfSlurm()
+	// go slurm_old.SetEndTimerIfSlurm()
 	cuda_old.Init(flags.Gpu)
 
 	cuda_old.Synchronous = flags.Sync
