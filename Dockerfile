@@ -1,5 +1,5 @@
 # Legacy ubuntu version to be compatible with PCSS
-FROM nvidia/cuda:11.0.3-devel-ubuntu16.04
+FROM docker.io/nvidia/cuda:11.0.3-devel-ubuntu16.04
 RUN apt-get update
 RUN apt-get install -y wget git
 
