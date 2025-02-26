@@ -90,12 +90,13 @@ func (sqs *savedQuantitiesType) createSavedQuantity(q Quantity, name string, rch
 	err := fsutil_old.Mkdir(OD() + name)
 	log_old.Log.PanicIfError(err)
 	newZArray := &savedQuantity{
-		name:    name,
-		q:       q,
-		period:  period,
-		times:   []float64{},
-		chunks:  newChunks(q, rchunks),
-		rchunks: rchunks,
+		name:     name,
+		q:        q,
+		period:   period,
+		times:    []float64{},
+		chunks:   newChunks(q, rchunks),
+		rchunks:  rchunks,
+		nextTime: Time + period,
 	}
 	sqs.Quantities = append(sqs.Quantities, *newZArray)
 	return newZArray
