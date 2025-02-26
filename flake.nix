@@ -90,13 +90,13 @@
       };
 
     #################### RELEASE ########################
-    releaseVersion = "2025.01.14"; # Set the version for the Release build
+    releaseVersion = "2025.02.26"; # Set the version for the Release build
 
     ReleaseSrc = pkgs.fetchFromGitHub {
       owner = "MathieuMoalic";
       repo = "amumax";
       rev = releaseVersion;
-      hash = "sha256-Eo9Gp5aLhx59jlxTzfxLShA7MZnJ5B7V6QyU0evmhOw=";
+      hash = "sha256-E4EtLEtXmc4QeC6amBd0SnLBnzF7QZxiYhidZwh4VF8=";
     };
 
     ReleaseFrontend = buildFrontend {
