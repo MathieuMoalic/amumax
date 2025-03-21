@@ -4,6 +4,12 @@ Fork of [mumax3](https://github.com/mumax/3) aimed at enhancing Python workflow 
 
 Solvers and results are unchanged, but there are many quality-of-life improvements for data handling. Note that `.mx3` file compatibility is not 100%—see changes below.
 
+![App Preview](./screenshots/1.png)
+---
+![App Preview](./screenshots/2.png)
+--- 
+![App Preview](./screenshots/3.png)
+
 - [Installation](#installation)
 - [Usage](#usage)
 - [Differences from mumax3](#differences-from-mumax3)
