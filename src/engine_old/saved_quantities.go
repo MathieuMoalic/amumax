@@ -96,7 +96,7 @@ func (sqs *savedQuantitiesType) createSavedQuantity(q Quantity, name string, rch
 		times:    []float64{},
 		chunks:   newChunks(q, rchunks),
 		rchunks:  rchunks,
-		nextTime: Time + period,
+		nextTime: Time,
 	}
 	sqs.Quantities = append(sqs.Quantities, *newZArray)
 	return newZArray
