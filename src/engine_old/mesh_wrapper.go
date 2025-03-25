@@ -21,6 +21,7 @@ func SmoothMesh(smoothx, smoothy, smoothz bool) {
 	Mesh.SmoothMesh(smoothx, smoothy, smoothz)
 	NormMag.Alloc()
 	Regions.Alloc()
+	EngineState.Metadata.AddMesh(&Mesh)
 }
 
 // buggy and unused for now
