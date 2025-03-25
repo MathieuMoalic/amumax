@@ -108,7 +108,7 @@
     ReleaseBuildAmumax = buildAmumax {
       src = ReleaseSrc;
       frontend = ReleaseFrontend;
-      vendorHash = "sha256-tmjoUliSrev1aLBHBiwPNl4chURZ6drqRQ6M2Xz0Ilc=";
+      vendorHash = "sha256-o7Qzh3pVqDwNbsjmva1UJJkiXr7XGy5UArwHpjPI8gI=";
       version = releaseVersion;
     };
 
