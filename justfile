@@ -74,7 +74,7 @@ flake-release:
 
 update-flake-hashes-git:
 	#!/usr/bin/env sh
-	set -euo pipefail
+	set -euxo pipefail
 
 	echo "Resetting npmDepsHash and vendorHash to placeholder values..."
 	sed -i 's/npmDepsHash = "sha256-[^\"]*";/npmDepsHash = pkgs.lib.fakeHash;/' flake.nix
