@@ -303,6 +303,42 @@ amumax template template.mx3
 
 `Tx` is the total size along the x-axis. `Nx` is the number of cells along the x-axis. `dx` is the size of each cell along the x-axis. Keep in mind that variables in mx3 script files aren't case-sensitive, so `tx` is like `Tx`, for example.
 
+Meshes can dictate how fast a simulation can be, a smooth mesh can sometimes result in simulations that are twice as fast. This is due to the way the FFT accelerated convolution demag is calculated. I wrote a function that will smooth your mesh while keeping the total size of your system unchanged: `SmoothMesh(bool_x, bool_y, bool_z)` for example, if you want to smooth `Nx` and `Ny`: `SmoothMesh(True, True, False)`, you can see the changes made in the terminal output:
+
+```go
+Nx = 128
+Ny = 129
+Nz = 129
+dx = 1e-9
+dy = 1e-9
+dz = 1e-9
+// +----------------+------------+------------+------------+
+// | Axis           |     X      |     Y      |     Z      |
+// | Gridsize       |        128 |        129 |        129 |
+// | CellSize       |  1.000e-09 |  1.000e-09 |  1.000e-09 |
+// | TotalSize      |  1.280e-07 |  1.290e-07 |  1.290e-07 |
+// | PBC            |          0 |          0 |          0 |
+// +----------------+------------+------------+------------+
+SmoothMesh(True, True, False)
+// Smoothed mesh:
+// +----------------+------------+------------+------------+
+// | Axis           |     X      |     Y      |     Z      |
+// | Gridsize       |        128 |        128 |        129 |
+// | CellSize       |  1.000e-09 |  1.008e-09 |  1.000e-09 |
+// | TotalSize      |  1.280e-07 |  1.290e-07 |  1.290e-07 |
+// | PBC            |          0 |          0 |          0 |
+// +----------------+------------+------------+------------+
+```
+
+Here Nx is 128, which is 2×2×2×2×2×2×2. FFT algorithms perform optimally on such sizes because they can recursively split the data in efficient radix-2 stages.
+
+In contrast, Ny was originally 129, which is a composite number with prime factors 3 × 43. Although not prime, 129 is still a poor choice for FFT performance because it lacks small prime factors like 2, making it incompatible with fast radix-2 or radix-4 FFT algorithms. This leads to slower and more computationally expensive transforms.
+
+By applying SmoothMesh(True, True, False), the function reduces Ny from 129 to 128 and slightly increases the cell size dy to keep the total physical size unchanged. The result is a smoother, more FFT-friendly mesh in the Y direction, accelerating the demagnetizing field calculations while preserving the physical dimensions of the system.
+Nz was not optimized in this case as we requested.
+
+Notes: the mesh cannot be calculated if you choose a number of cell that is a prime number larger than 127. 
+
 **Old:**
 
 ```go
@@ -487,7 +523,6 @@ my_top_layer = job.m_chunked[0, -1,:,:,1]
 - Reordered GUI elements.
 - Dark mode GUI.
 - Checks and warns the user for unoptimized mesh.
-- `AutoMeshx = True`, `AutoMeshy = True`, and `AutoMeshz = True` will optimize the corresponding mesh axis for you (this function slightly changes the size and number of cells while keeping the total size of the system constant).
 - Added chunking support as per the [Zarr](https://zarr.readthedocs.io/en/stable/) documentation with the functions:
   - `SaveAsChunk(q Quantity, name string, rchunks RequestedChunking)`
   - `AutoSaveAsChunk(q Quantity, name string, period float64, rchunks RequestedChunking)`
