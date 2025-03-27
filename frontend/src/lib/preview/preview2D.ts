@@ -66,7 +66,6 @@ function init() {
 	let ps = get(previewState);
 	let dims = [ps.xChosenSize, ps.yChosenSize];
 	let mesh = get(meshState);
-	// console.log(mesh.Nx/ps.xChosenSize);
 	let xData = Array.from({ length: dims[0] }, (_, i) => i * mesh.dx * 1e9 * mesh.Nx/ps.xChosenSize);
 	let yData = Array.from({ length: dims[1] }, (_, i) => i * mesh.dy * 1e9* mesh.Ny/ps.yChosenSize);
 

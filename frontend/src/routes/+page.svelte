@@ -7,8 +7,16 @@
 	import Mesh from '$lib/Mesh.svelte';
 	import Parameters from '$lib/Parameters.svelte';
 	import Metrics from '$lib/Metrics.svelte';
+
+	import '../app.css';
+	import Alert from '$lib/alerts/Alert.svelte';
+	import { onMount } from 'svelte';
+	import { initializeWebSocket } from '$api/websocket';
+
+	onMount(initializeWebSocket);
 </script>
 
+<Alert />
 <Header />
 <div class="grid-container">
 	<Display />
@@ -21,6 +29,11 @@
 </div>
 
 <style>
+	:global(:root) {
+		--accent-color: #3d1999;
+		--accent-color-hover: #2f0e6e;
+		color-scheme: dark;
+	}
 	.grid-container {
 		display: grid;
 		grid-template-areas:

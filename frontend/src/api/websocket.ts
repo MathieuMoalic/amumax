@@ -1,4 +1,4 @@
-import msgpack from 'msgpack-lite';
+import { decode } from '@msgpack/msgpack';
 
 import { type Preview, previewState } from './incoming/preview';
 import { type Header, headerState } from './incoming/header';
@@ -11,7 +11,7 @@ import { get, writable } from 'svelte/store';
 import { preview3D } from '$lib/preview/preview3D';
 import { preview2D } from '$lib/preview/preview2D';
 import { plotTable } from '$lib/table-plot/table-plot';
-import { metricsState } from './incoming/metrics';
+import { metricsState, type Metrics } from './incoming/metrics';
 
 export let connected = writable(false);
 
@@ -71,7 +71,16 @@ export function initializeWebSocket() {
 }
 
 export function parseMsgpack(data: ArrayBuffer) {
-	const msg = msgpack.decode(new Uint8Array(data));
+	const msg = decode(new Uint8Array(data)) as {
+		console: Console;
+		header: Header;
+		mesh: Mesh;
+		parameters: Parameters;
+		solver: Solver;
+		tablePlot: TablePlot;
+		preview: Preview;
+		metrics: Metrics;
+	};
 	consoleState.set(msg.console as Console);
 
 	headerState.set(msg.header as Header);

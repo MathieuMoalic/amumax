@@ -45,3 +45,4 @@ node_modules
 **/.svelte-kit
 src/engine_old/api_old/static
 src/api/static
+frontend/dist
