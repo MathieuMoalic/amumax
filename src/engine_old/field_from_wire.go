@@ -10,8 +10,12 @@ func init() {
 	DeclFunc("fieldFromWireVectorMask", fieldFromWireVectorMask, "fieldFromWireVectorMask")
 	DeclFunc("magModulatedByMask", magModulatedByMask, "magModulatedByMask")
 	DeclFunc("cpwVectorMask", cpwVectorMask, "cpwVectorMask")
+	DeclFunc("fieldFromWire", fieldFromWire, "fieldFromWire")
 }
 
+// fieldFromWire computes the magnetic field at a point (x, z) due to a wire carrying a current I.
+// The wire is centered at the origin and has a rectangular cross-section of width 2a and height 2b.
+// The wire is oriented along the y-axis.
 func fieldFromWire(I, x, z, a, b float64) (float64, float64, float64) {
 	const eps = 1e-12
 	const mu0 = 4 * math.Pi * 1e-7
@@ -59,6 +63,9 @@ func fieldFromWire(I, x, z, a, b float64) (float64, float64, float64) {
 	return Bx, 0, Bz
 }
 
+// fieldFromWireVectorMask creates a vector mask of the magnetic field created by a wire carrying a current I.
+// The wire is centered on xcenter, zcenter and has a rectangular cross-section of the given width and height.
+// The mask is normalized to the maximum value of the magnetic field.
 func fieldFromWireVectorMask(I, width, height, xcenter, zcenter float64) *data_old.Slice {
 	Nx := GetMesh().Nx
 	Nz := GetMesh().Nz
@@ -86,6 +93,9 @@ func fieldFromWireVectorMask(I, width, height, xcenter, zcenter float64) *data_o
 	return maskSlice
 }
 
+// cpwVectorMask creates a vector mask of the magnetic field created by a coplanar waveguide (CPW).
+// The CPW is centered on xoffset, zoffset and has a rectangular cross-section of the given width and height.
+// The mask is normalized to the maximum value of the magnetic field.
 func cpwVectorMask(I, width, height, distance, xoffset, zoffset float64) *data_old.Slice {
 	Nx, _, Nz := Mesh.GetNi()
 	maskSlice := newVectorMask(Nx, 1, Nz)
@@ -120,6 +130,7 @@ func cpwVectorMask(I, width, height, distance, xoffset, zoffset float64) *data_o
 	return maskSlice
 }
 
+// magModulatedByMask computes the signal of the magnetic field modulated by a mask.
 func magModulatedByMask(mask_slice *data_old.Slice) float64 {
 	Nx, Ny, Nz := Mesh.GetNi()
 	var signal float32
