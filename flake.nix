@@ -75,7 +75,7 @@
 
     GitFrontend = buildFrontend {
       src = ./frontend;
-      npmDepsHash = "sha256-jPLrI9J5jXbtFwWZIPUw5ZhxkcWwZ3S+0yBXhqCHEfM=";
+      npmDepsHash = "sha256-yIVe337Qp1mBTMCw+ElHlcKKDYIPklqQbYbr2yLQWBI=";
       version = gitVersion;
     };
     GitBuildAmumax = with pkgs.lib.fileset;
@@ -90,18 +90,18 @@
       };
 
     #################### RELEASE ########################
-    releaseVersion = "2025.04.01"; # Set the version for the Release build
+    releaseVersion = "2025.04.02"; # Set the version for the Release build
 
     ReleaseSrc = pkgs.fetchFromGitHub {
       owner = "MathieuMoalic";
       repo = "amumax";
       rev = releaseVersion;
-      hash = "sha256-OvxTg9EzYmbWubErGY97Zw4kOtMAKdi8bYV1iNnOmK8=";
+      hash = "sha256-5nQaPz6LZpDuII1AHGGg7eFDCELXXyc3YiF9ZIAX0Oc=";
     };
 
     ReleaseFrontend = buildFrontend {
       src = "${ReleaseSrc}/frontend";
-      npmDepsHash = "sha256-jPLrI9J5jXbtFwWZIPUw5ZhxkcWwZ3S+0yBXhqCHEfM=";
+      npmDepsHash = "sha256-yIVe337Qp1mBTMCw+ElHlcKKDYIPklqQbYbr2yLQWBI=";
       version = releaseVersion;
     };
 
