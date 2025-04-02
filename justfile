@@ -41,6 +41,12 @@ release:
 	#!/usr/bin/env sh
 	set -euxo pipefail
 	git checkout main
+
+		if [ -n "$(git status --porcelain)" ]; then
+		echo "Working directory is not clean. Please commit or stash your changes."
+		exit 1
+	fi
+	
 	git pull
 	VERSION=$(date -u +'%Y.%m.%d')
 	gh release view $VERSION &>/dev/null && gh release delete $VERSION -y
