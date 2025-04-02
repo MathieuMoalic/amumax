@@ -69,24 +69,15 @@ func fieldFromWireVectorMask(I, width, height, xcenter, zcenter float64) *data_o
 	Nx := GetMesh().Nx
 	Nz := GetMesh().Nz
 	maskSlice := newVectorMask(Nx, 1, Nz)
-	B_max := 0.0
 	for ix := range Nx {
 		for iz := range Nz {
 			r := index2Coord(ix, 0, iz)
 			x := r[0] - xcenter
 			z := r[2] - zcenter
 			Bx, By, Bz := fieldFromWire(I, x, z, width/2, height/2)
-			B_max = math.Max(B_max, math.Abs(Bx))
-			B_max = math.Max(B_max, math.Abs(Bz))
 			maskSlice.Set(0, ix, 0, iz, Bx)
 			maskSlice.Set(1, ix, 0, iz, By)
 			maskSlice.Set(2, ix, 0, iz, Bz)
-		}
-	}
-	for ix := range Nx {
-		for iz := range Nz {
-			maskSlice.Set(0, ix, 0, iz, maskSlice.Get(0, ix, 0, iz)/B_max)
-			maskSlice.Set(2, ix, 0, iz, maskSlice.Get(2, ix, 0, iz)/B_max)
 		}
 	}
 	return maskSlice
@@ -98,7 +89,6 @@ func fieldFromWireVectorMask(I, width, height, xcenter, zcenter float64) *data_o
 func cpwVectorMask(I, width, height, distance, xoffset, zoffset float64) *data_old.Slice {
 	Nx, _, Nz := Mesh.GetNi()
 	maskSlice := newVectorMask(Nx, 1, Nz)
-	B_max := 0.0
 	for ix := range Nx {
 		for iz := range Nz {
 			r := index2Coord(ix, 0, iz)
@@ -111,19 +101,9 @@ func cpwVectorMask(I, width, height, distance, xoffset, zoffset float64) *data_o
 			By := by1 + by2 + by3
 			Bz := bz1 + bz2 + bz3
 
-			B_max = math.Max(B_max, math.Abs(Bx))
-			B_max = math.Max(B_max, math.Abs(Bz))
 			maskSlice.Set(0, ix, 0, iz, Bx)
 			maskSlice.Set(1, ix, 0, iz, By)
 			maskSlice.Set(2, ix, 0, iz, Bz)
-		}
-	}
-	if B_max > 0 {
-		for ix := range Nx {
-			for iz := range Nz {
-				maskSlice.Set(0, ix, 0, iz, maskSlice.Get(0, ix, 0, iz)/B_max)
-				maskSlice.Set(2, ix, 0, iz, maskSlice.Get(2, ix, 0, iz)/B_max)
-			}
 		}
 	}
 	return maskSlice
