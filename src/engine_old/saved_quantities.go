@@ -201,18 +201,18 @@ func syncSave(array *data_old.Slice, qname string, steps int, chunks chunks) err
 	)
 
 	// Iterate over chunks and save data
-	for icx := 0; icx < chunks.x.nb; icx++ {
-		for icy := 0; icy < chunks.y.nb; icy++ {
-			for icz := 0; icz < chunks.z.nb; icz++ {
-				for icc := 0; icc < chunks.c.nb; icc++ {
+	for icx := range chunks.x.nb {
+		for icy := range chunks.y.nb {
+			for icz := range chunks.z.nb {
+				for icc := range chunks.c.nb {
 					var bdata bytes.Buffer
-					for iz := 0; iz < chunks.z.len; iz++ {
+					for iz := range chunks.z.len {
 						z := icz*chunks.z.len + iz
-						for iy := 0; iy < chunks.y.len; iy++ {
+						for iy := range chunks.y.len {
 							y := icy*chunks.y.len + iy
-							for ix := 0; ix < chunks.x.len; ix++ {
+							for ix := range chunks.x.len {
 								x := icx*chunks.x.len + ix
-								for ic := 0; ic < chunks.c.len; ic++ {
+								for ic := range chunks.c.len {
 									c := icc*chunks.c.len + ic
 									value := data[c][z][y][x]
 									err := binary.Write(&bdata, binary.LittleEndian, value)
