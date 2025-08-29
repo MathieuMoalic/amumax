@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old"
+	"github.com/MathieuMoalic/amumax/src/engine"
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,16 +26,16 @@ type SolverState struct {
 func initSolverAPI(e *echo.Group, ws *WebSocketManager) *SolverState {
 	solverState := SolverState{
 		ws:         ws,
-		Type:       getSolverName(engine_old.Solvertype),
-		Steps:      &engine_old.NSteps,
-		Time:       &engine_old.Time,
-		Dt:         &engine_old.Dt_si,
-		ErrPerStep: &engine_old.LastErr,
-		MaxTorque:  &engine_old.LastTorque,
-		Fixdt:      &engine_old.FixDt,
-		Mindt:      &engine_old.MinDt,
-		Maxdt:      &engine_old.MaxDt,
-		Maxerr:     &engine_old.MaxErr,
+		Type:       getSolverName(engine.Solvertype),
+		Steps:      &engine.NSteps,
+		Time:       &engine.Time,
+		Dt:         &engine.Dt_si,
+		ErrPerStep: &engine.LastErr,
+		MaxTorque:  &engine.LastTorque,
+		Fixdt:      &engine.FixDt,
+		Mindt:      &engine.MinDt,
+		Maxdt:      &engine.MaxDt,
+		Maxerr:     &engine.MaxErr,
 	}
 
 	e.POST("/api/solver/type", solverState.postSolverType)
@@ -52,7 +52,7 @@ func initSolverAPI(e *echo.Group, ws *WebSocketManager) *SolverState {
 }
 
 func (s *SolverState) Update() {
-	s.Type = getSolverName(engine_old.Solvertype)
+	s.Type = getSolverName(engine.Solvertype)
 }
 
 func getSolverType(typeStr string) int {
@@ -80,22 +80,22 @@ func (s SolverState) postSolverType(c echo.Context) error {
 	if err := c.Bind(res); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
-	engine_old.InjectAndWait(func() {
+	engine.InjectAndWait(func() {
 		solver := getSolverType(res.Type)
 
 		// euler must have fixed time step
-		if solver == engine_old.EULER && engine_old.FixDt == 0 {
-			engine_old.EvalTryRecover("FixDt = 1e-15")
+		if solver == engine.EULER && engine.FixDt == 0 {
+			engine.EvalTryRecover("FixDt = 1e-15")
 		}
-		if solver == engine_old.BACKWARD_EULER && engine_old.FixDt == 0 {
-			engine_old.EvalTryRecover("FixDt = 1e-13")
+		if solver == engine.BACKWARD_EULER && engine.FixDt == 0 {
+			engine.EvalTryRecover("FixDt = 1e-13")
 		}
 
-		engine_old.EvalTryRecover(fmt.Sprint("SetSolver(", solver, ")"))
+		engine.EvalTryRecover(fmt.Sprint("SetSolver(", solver, ")"))
 	})
 
 	s.ws.broadcastEngineState()
-	return c.JSON(http.StatusOK, engine_old.Solvertype)
+	return c.JSON(http.StatusOK, engine.Solvertype)
 }
 
 func (s SolverState) postSolverRun(c echo.Context) error {
@@ -109,8 +109,8 @@ func (s SolverState) postSolverRun(c echo.Context) error {
 			"error": "Invalid request payload: " + err.Error(),
 		})
 	}
-	engine_old.Break()
-	engine_old.InjectAndWait(func() { engine_old.EvalTryRecover("Run(" + req.Runtime + ")") })
+	engine.Break()
+	engine.InjectAndWait(func() { engine.EvalTryRecover("Run(" + req.Runtime + ")") })
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, "")
 }
@@ -125,28 +125,28 @@ func (s SolverState) postSolverSteps(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 
-	engine_old.Break()
-	engine_old.InjectAndWait(func() { engine_old.EvalTryRecover("Steps(" + req.Steps + ")") })
+	engine.Break()
+	engine.InjectAndWait(func() { engine.EvalTryRecover("Steps(" + req.Steps + ")") })
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, "")
 }
 
 func (s SolverState) postSolverRelax(c echo.Context) error {
-	engine_old.Break()
-	engine_old.InjectAndWait(func() { engine_old.EvalTryRecover("Relax()") })
+	engine.Break()
+	engine.InjectAndWait(func() { engine.EvalTryRecover("Relax()") })
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, "")
 }
 
 func (s SolverState) postSolverMinimize(c echo.Context) error {
-	engine_old.Break()
-	engine_old.InjectAndWait(func() { engine_old.EvalTryRecover("Minimize()") })
+	engine.Break()
+	engine.InjectAndWait(func() { engine.EvalTryRecover("Minimize()") })
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, "")
 }
 
 func (s SolverState) postSolverBreak(c echo.Context) error {
-	engine_old.Break()
+	engine.Break()
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, "")
 }
@@ -161,7 +161,7 @@ func (s SolverState) postSolverFixDt(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 
-	engine_old.InjectAndWait(func() { engine_old.EvalTryRecover("FixDt = " + strconv.FormatFloat(req.Fixdt, 'f', -1, 64)) })
+	engine.InjectAndWait(func() { engine.EvalTryRecover("FixDt = " + strconv.FormatFloat(req.Fixdt, 'f', -1, 64)) })
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, "")
 }
@@ -176,7 +176,7 @@ func (s SolverState) postSolverMinDt(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 
-	engine_old.InjectAndWait(func() { engine_old.EvalTryRecover("MinDt = " + strconv.FormatFloat(req.Mindt, 'f', -1, 64)) })
+	engine.InjectAndWait(func() { engine.EvalTryRecover("MinDt = " + strconv.FormatFloat(req.Mindt, 'f', -1, 64)) })
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, "")
 }
@@ -191,7 +191,7 @@ func (s SolverState) postSolverMaxDt(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 
-	engine_old.InjectAndWait(func() { engine_old.EvalTryRecover("MaxDt = " + strconv.FormatFloat(req.Maxdt, 'f', -1, 64)) })
+	engine.InjectAndWait(func() { engine.EvalTryRecover("MaxDt = " + strconv.FormatFloat(req.Maxdt, 'f', -1, 64)) })
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, "")
 }
@@ -206,7 +206,7 @@ func (s SolverState) postSolverMaxErr(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 
-	engine_old.InjectAndWait(func() { engine_old.EvalTryRecover("MaxErr = " + strconv.FormatFloat(req.Maxerr, 'f', -1, 64)) })
+	engine.InjectAndWait(func() { engine.EvalTryRecover("MaxErr = " + strconv.FormatFloat(req.Maxerr, 'f', -1, 64)) })
 	s.ws.broadcastEngineState()
 	return c.JSON(http.StatusOK, "")
 }

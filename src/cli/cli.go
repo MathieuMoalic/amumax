@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/engine_old/entrypoint_old"
+	"github.com/MathieuMoalic/amumax/src/engine/entrypoint"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/template"
 	"github.com/MathieuMoalic/amumax/src/version"
@@ -46,12 +45,7 @@ func Entrypoint() {
 }
 
 func cliEntrypoint(cmd *cobra.Command, args []string, flags *flags.Flags) {
-	if flags.NewEngine {
-		engine.Entrypoint(cmd, args, flags)
-		return
-	} else {
-		entrypoint_old.Entrypoint(cmd, args, flags)
-	}
+	entrypoint.Entrypoint(cmd, args, flags)
 }
 
 func templateEntrypoint(templatePath string, flags *flags.TemplateFlags) {

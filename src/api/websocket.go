@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/engine/log"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/vmihailenco/msgpack/v5"
@@ -43,14 +43,14 @@ func newWebSocketManager() *WebSocketManager {
 }
 
 func (cm *connectionManager) add(ws *websocket.Conn) {
-	log_old.Log.Debug("Websocket connection added")
+	log.Log.Debug("Websocket connection added")
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	cm.conns[ws] = struct{}{}
 }
 
 func (cm *connectionManager) remove(ws *websocket.Conn) {
-	log_old.Log.Debug("Websocket connection removed")
+	log.Log.Debug("Websocket connection removed")
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	delete(cm.conns, ws)
@@ -62,7 +62,7 @@ func (cm *connectionManager) broadcast(msg []byte) {
 	for ws := range cm.conns {
 		err := ws.WriteMessage(websocket.BinaryMessage, msg)
 		if err != nil {
-			log_old.Log.Err("Error sending message via WebSocket: %v", err)
+			log.Log.Err("Error sending message via WebSocket: %v", err)
 			ws.Close()
 			delete(cm.conns, ws)
 		}
@@ -70,11 +70,11 @@ func (cm *connectionManager) broadcast(msg []byte) {
 }
 
 func (wsManager *WebSocketManager) websocketEntrypoint(c echo.Context) error {
-	log_old.Log.Debug("New WebSocket connection, upgrading...")
+	log.Log.Debug("New WebSocket connection, upgrading...")
 	ws, err := wsManager.upgrader.Upgrade(c.Response(), c.Request(), nil)
-	log_old.Log.Debug("New WebSocket connection upgraded")
+	log.Log.Debug("New WebSocket connection upgraded")
 	if err != nil {
-		log_old.Log.Err("Error upgrading connection to WebSocket: %v", err)
+		log.Log.Err("Error upgrading connection to WebSocket: %v", err)
 		return err
 	}
 	defer ws.Close()
@@ -99,7 +99,7 @@ func (wsManager *WebSocketManager) websocketEntrypoint(c echo.Context) error {
 
 	select {
 	case <-done:
-		log_old.Log.Debug("Connection closed by client")
+		log.Log.Debug("Connection closed by client")
 		return nil
 	case <-wsManager.broadcastStop:
 		return nil
@@ -110,7 +110,7 @@ func (wsManager *WebSocketManager) broadcastEngineState() {
 	wsManager.engineState.Update()
 	msg, err := msgpack.Marshal(wsManager.engineState)
 	if err != nil {
-		log_old.Log.Err("Error marshaling combined message: %v", err)
+		log.Log.Err("Error marshaling combined message: %v", err)
 		return
 	}
 	wsManager.connections.broadcast(msg)
@@ -126,10 +126,10 @@ func (wsManager *WebSocketManager) startBroadcastLoop() {
 				case <-wsManager.broadcastStop:
 					return
 				default:
-					if engine_old.NSteps != wsManager.lastStep {
+					if engine.NSteps != wsManager.lastStep {
 						if len(wsManager.connections.conns) > 0 {
 							wsManager.broadcastEngineState()
-							wsManager.lastStep = engine_old.NSteps
+							wsManager.lastStep = engine.NSteps
 						}
 					}
 					time.Sleep(1 * time.Second)

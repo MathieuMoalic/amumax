@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/engine/log"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,7 +19,7 @@ func (s ConsoleState) Update() {}
 func initConsoleAPI(e *echo.Group, ws *WebSocketManager) *ConsoleState {
 	state := &ConsoleState{
 		ws:   ws,
-		Hist: &log_old.Log.Hist,
+		Hist: &log.Log.Hist,
 	}
 	e.POST("/api/console/command", state.postConsoleCommand)
 	return state
@@ -42,7 +42,7 @@ func (s ConsoleState) postConsoleCommand(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "RunShell command not allowed through the WebUI"})
 	}
 
-	engine_old.InjectAndWait(func() { engine_old.EvalTryRecover(req.Command) })
+	engine.InjectAndWait(func() { engine.EvalTryRecover(req.Command) })
 	s.ws.broadcastEngineState() // Use the instance to call the method
 	return c.JSON(http.StatusOK, "")
 }

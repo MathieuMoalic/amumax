@@ -7,7 +7,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/vector"
 )
 
-// for compatibility between mesh_old and mesh
+// for compatibility between mesh and mesh
 type MeshLike interface {
 	Size() [3]int
 	PBC() [3]int
@@ -15,6 +15,11 @@ type MeshLike interface {
 	PBC_code() byte
 	WorldSize() [3]float64
 }
+
+// NewMesh creates an empty new mesh.
+// func NewMesh(nx, ny, nz int, dx, dy, dz float64, pbcx, pbcy, pbcz int) *Mesh {
+// 	return &Mesh{nx, ny, nz, dx, dy, dz, 0, 0, 0, pbcx, pbcy, pbcz, false}
+// }
 
 // Mesh stores info of a finite-difference mesh.
 type Mesh struct {

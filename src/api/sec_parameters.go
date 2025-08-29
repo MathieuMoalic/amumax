@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/MathieuMoalic/amumax/src/engine_old"
-	"github.com/MathieuMoalic/amumax/src/engine_old/log_old"
+	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/engine/log"
 	"github.com/labstack/echo/v4"
 )
 
@@ -29,7 +29,7 @@ type ParametersState struct {
 func initParameterAPI(e *echo.Group, ws *WebSocketManager) *ParametersState {
 	parametersState := ParametersState{
 		ws:             ws,
-		Regions:        engine_old.Regions.GetExistingIndices(),
+		Regions:        engine.Regions.GetExistingIndices(),
 		SelectedRegion: 0,
 	}
 	parametersState.getFields()
@@ -42,12 +42,12 @@ func (s *ParametersState) Update() {
 
 func (s *ParametersState) getFields() {
 	fields := make([]Field, 0)
-	for _, param := range engine_old.Params {
+	for _, param := range engine.Params {
 		field := Field{
 			Name:        param.Name,
 			Value:       param.Value(s.SelectedRegion),
 			Description: param.Description,
-			Changed:     engine_old.QuantityChanged[param.Name],
+			Changed:     engine.QuantityChanged[param.Name],
 		}
 		fields = append(fields, field)
 	}
@@ -60,7 +60,7 @@ func (s *ParametersState) postSelectParameterRegion(c echo.Context) error {
 	}
 	req := new(Request)
 	if err := c.Bind(req); err != nil {
-		log_old.Log.Err("%v", err)
+		log.Log.Err("%v", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
 	}
 
