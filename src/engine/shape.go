@@ -6,8 +6,8 @@ import (
 	_ "image/png"
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/engine/fsutil"
-	"github.com/MathieuMoalic/amumax/src/engine/log"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // geometrical shape for setting sample geometry

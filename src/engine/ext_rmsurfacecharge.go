@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/engine/data"
-	"github.com/MathieuMoalic/amumax/src/engine/log"
-	"github.com/MathieuMoalic/amumax/src/engine/mag"
-	"github.com/MathieuMoalic/amumax/src/engine/mesh"
+	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mag"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 // For a nanowire magnetized in-plane, with mx = mxLeft on the left end and

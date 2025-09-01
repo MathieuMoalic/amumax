@@ -3,105 +3,80 @@ package log
 // Logging and error reporting utility functions
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"runtime"
-	"strings"
+	"time"
 
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/fatih/color"
 )
 
+var Log Logs
+
 type Logs struct {
-	Hist   string // console history for GUI
-	debug  bool
-	writer *bufio.Writer
-	file   *os.File
+	Hist    string                   // console history for GUI
+	logfile fsutil.WriteCloseFlusher // saves history of input commands +  output
+	debug   bool
+	path    string
 }
 
-func NewLogs(debug bool) *Logs {
-	return &Logs{debug: debug}
-}
-
-func (l *Logs) InitLogs(fs *fsutil.FileSystem, debug bool) {
-	writer, file, err := fs.Create("log.txt")
-	if err != nil {
-		color.Red(fmt.Sprintf("Error creating the log file: %v", err))
+func (l *Logs) AutoFlushToFile() {
+	for {
+		l.FlushToFile()
+		time.Sleep(5 * time.Second)
 	}
-	l.writer = writer
-	l.file = file
+}
+
+func (l *Logs) FlushToFile() {
+	if l.logfile != nil {
+		l.logfile.Flush()
+
+	}
+}
+
+func (l *Logs) SetDebug(debug bool) {
 	l.debug = debug
 }
 
-// print version to stdout
-func (l *Logs) PrintVersion(version string, cudaInfo *GpuInfo) {
-	// cudaVersion, cudaCC, GPUName, GPUMem, DriverVersion, GPUCC := cudaInfo[0], cudaInfo[1], cudaInfo[2], cudaInfo[3], cudaInfo[4], cudaInfo[5]
-	l.Info("Version:         %s", version)
-	l.Info("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
-	l.Info("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
-	l.Info("CUDA Version:    %s (CC=%s PTX)", cudaInfo.CudaVersion, cudaInfo.CUDACC)
-	l.Info("GPU Information: %s(%s), CUDA Driver %s, cc=%s", cudaInfo.DevName, cudaInfo.TotalMem, cudaInfo.DriverVersion, cudaInfo.GPUCC)
-}
-func (l *Logs) Close() error {
-	err := l.FlushToFile()
-	if err != nil {
-		return fmt.Errorf("error flushing the log file: %v", err)
-	}
-	l.file.Close()
-	return nil
+func (l *Logs) Init(zarrPath string) {
+	l.path = zarrPath + "/log.txt"
+	l.createLogFile()
+	l.writeToFile(l.Hist)
 }
 
-func (l *Logs) FlushToFile() error {
-	if l.writer == nil {
-		return nil
-	}
-	err := l.writer.Flush()
+func (l *Logs) createLogFile() {
+	var err error
+	l.logfile, err = fsutil.Create(l.path)
 	if err != nil {
-		return fmt.Errorf("error flushing the log file: %v", err)
+		color.Red(fmt.Sprintf("Error creating the log file: %v", err))
 	}
-	return nil
 }
 
 func (l *Logs) writeToFile(msg string) {
-	n, err := l.writer.WriteString(msg)
-	if err != nil {
-		color.Red(fmt.Sprintf("Error writing to the log file: %v", err))
+	if l.logfile == nil {
+		return
 	}
-	if n != len(msg) {
-		color.Red(fmt.Sprintf("Error writing to the log file: %v", err))
+	_, err := l.logfile.Write([]byte(msg))
+	if err != nil {
+		if err.Error() == "short write" {
+			color.Yellow("Error writing to log file, trying to recreate it...")
+			l.createLogFile()
+			_, _ = l.logfile.Write([]byte(msg))
+		} else {
+			color.Red(fmt.Sprintf("Error writing to log file: %v", err))
+		}
 	}
 }
 
 func (l *Logs) addAndWrite(msg string) {
 	l.Hist += msg
-	// We can write logs before the writer is initialized
-	if l.writer != nil {
-		l.writeToFile(msg)
-	}
+	l.writeToFile(msg)
 }
 
-func (l *Logs) Command(cmd string) {
-	// Find the position of the comment marker "//"
-	commentIndex := strings.Index(cmd, "//")
-
-	if commentIndex != -1 {
-		// Split the string into command and comment parts
-		commandPart := cmd[:commentIndex]
-		commentPart := cmd[commentIndex:]
-
-		// Print the command part normally
-		fmt.Print(commandPart)
-
-		// Print the comment part in green
-		color.Green(commentPart)
-	} else {
-		// Print the whole command if no comment exists
-		fmt.Println(cmd)
-	}
-
-	// Log the full command
-	l.addAndWrite(cmd + "\n")
+func (l *Logs) Command(msg ...interface{}) {
+	fmt.Println(fmt.Sprint(msg...))
+	l.addAndWrite(fmt.Sprint(msg...) + "\n")
 }
 
 func (l *Logs) Info(msg string, args ...interface{}) {
@@ -150,28 +125,9 @@ func (l *Logs) AssertMsg(test bool, msg interface{}) {
 	}
 }
 
-// The following functions are to be removed in the future
+// Panics with msg if test is false
 func AssertMsg(test bool, msg interface{}) {
 	if !test {
-		color.Red(fmt.Sprintf("%v", msg))
-		os.Exit(1)
+		Log.ErrAndExit("%v", msg)
 	}
-}
-
-func PanicIfError(err error) {
-	if err != nil {
-		_, file, line, _ := runtime.Caller(1)
-		color.Red(fmt.Sprint(file, ":", line, err))
-		panic(err)
-	}
-}
-
-func Info(msg string, args ...interface{}) {
-	formattedMsg := fmt.Sprintf(msg, args...)
-	color.Green(formattedMsg)
-}
-
-func ErrAndExit(msg string, args ...interface{}) {
-	color.Red(fmt.Sprintf(msg, args...))
-	os.Exit(1)
 }

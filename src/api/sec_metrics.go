@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MathieuMoalic/amumax/src/engine/log"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/labstack/echo/v4"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"

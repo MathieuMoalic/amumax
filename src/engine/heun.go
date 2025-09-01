@@ -3,8 +3,8 @@ package engine
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/engine/cuda"
-	"github.com/MathieuMoalic/amumax/src/engine/log"
+	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Adaptive heun solver.

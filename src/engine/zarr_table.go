@@ -4,12 +4,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/engine/cuda"
-	"github.com/MathieuMoalic/amumax/src/engine/data"
-	"github.com/MathieuMoalic/amumax/src/engine/fsutil"
-	"github.com/MathieuMoalic/amumax/src/engine/log"
-	"github.com/MathieuMoalic/amumax/src/engine/script"
-	"github.com/MathieuMoalic/amumax/src/engine/zarr"
+	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/script"
+	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
 func init() {

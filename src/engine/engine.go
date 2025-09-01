@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/engine/log"
-	"github.com/MathieuMoalic/amumax/src/engine/timer"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/timer"
 )
 
 var StartTime = time.Now()

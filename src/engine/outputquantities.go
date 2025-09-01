@@ -11,9 +11,9 @@ in objects that provide:
 import (
 	"fmt"
 
-	"github.com/MathieuMoalic/amumax/src/engine/cuda"
-	"github.com/MathieuMoalic/amumax/src/engine/data"
-	"github.com/MathieuMoalic/amumax/src/engine/mesh"
+	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 // info provides an Info implementation intended for embedding in other types.

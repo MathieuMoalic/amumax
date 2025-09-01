@@ -3,8 +3,8 @@ package engine
 // Magnetocrystalline anisotropy.
 
 import (
-	"github.com/MathieuMoalic/amumax/src/engine/cuda"
-	"github.com/MathieuMoalic/amumax/src/engine/data"
+	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/data"
 )
 
 // Anisotropy variables

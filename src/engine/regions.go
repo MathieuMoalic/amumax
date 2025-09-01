@@ -3,10 +3,10 @@ package engine
 import (
 	"sort"
 
-	"github.com/MathieuMoalic/amumax/src/engine/cuda"
-	"github.com/MathieuMoalic/amumax/src/engine/data"
-	"github.com/MathieuMoalic/amumax/src/engine/log"
-	"github.com/MathieuMoalic/amumax/src/engine/mesh"
+	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 var Regions = RegionsState{info: info{1, "regions", ""}, Indices: make(map[int]bool)} // global regions map

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/engine/log"
+	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/labstack/echo/v4"
 )
 

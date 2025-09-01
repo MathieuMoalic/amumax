@@ -3,7 +3,7 @@ package engine
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/engine/data"
+	"github.com/MathieuMoalic/amumax/src/data"
 )
 
 func centerBubbleInner() {

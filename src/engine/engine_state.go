@@ -1,7 +1,7 @@
 package engine
 
 import (
-	"github.com/MathieuMoalic/amumax/src/engine/zarr"
+	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
 type EngineStateStruct struct {

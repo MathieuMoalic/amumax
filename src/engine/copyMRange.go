@@ -1,7 +1,7 @@
 // engine/ext_copymrange.go
 package engine
 
-import "github.com/MathieuMoalic/amumax/src/engine/cuda"
+import "github.com/MathieuMoalic/amumax/src/cuda"
 
 func init() {
 	DeclFunc("CopyMRange", CopyMRange,

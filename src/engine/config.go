@@ -6,7 +6,7 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/MathieuMoalic/amumax/src/engine/data"
+	"github.com/MathieuMoalic/amumax/src/data"
 )
 
 // Magnetic configuration returns m vector for position (x,y,z)

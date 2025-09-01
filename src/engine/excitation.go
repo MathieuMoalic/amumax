@@ -5,11 +5,11 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/MathieuMoalic/amumax/src/engine/cuda"
-	"github.com/MathieuMoalic/amumax/src/engine/data"
-	"github.com/MathieuMoalic/amumax/src/engine/log"
-	"github.com/MathieuMoalic/amumax/src/engine/mesh"
-	"github.com/MathieuMoalic/amumax/src/engine/script"
+	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/script"
 )
 
 // An excitation, typically field or current,

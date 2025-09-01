@@ -3,9 +3,9 @@ package engine
 import (
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/engine/cuda"
-	"github.com/MathieuMoalic/amumax/src/engine/data"
-	"github.com/MathieuMoalic/amumax/src/engine/log"
+	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // Bogacki-Shampine solver. 3rd order, 3 evaluations per step, adaptive step.

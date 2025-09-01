@@ -3,7 +3,7 @@ package engine
 import (
 	"fmt"
 
-	"github.com/MathieuMoalic/amumax/src/engine/data"
+	"github.com/MathieuMoalic/amumax/src/data"
 )
 
 var (

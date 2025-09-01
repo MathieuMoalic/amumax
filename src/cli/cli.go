@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/MathieuMoalic/amumax/src/engine/entrypoint"
+	"github.com/MathieuMoalic/amumax/src/entrypoint"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/template"
 	"github.com/MathieuMoalic/amumax/src/version"

@@ -7,12 +7,12 @@ import (
 	"path"
 	"strings"
 
-	"github.com/MathieuMoalic/amumax/src/engine/cuda"
-	"github.com/MathieuMoalic/amumax/src/engine/data"
-	"github.com/MathieuMoalic/amumax/src/engine/fsutil"
-	"github.com/MathieuMoalic/amumax/src/engine/log"
-	"github.com/MathieuMoalic/amumax/src/engine/oommf"
-	"github.com/MathieuMoalic/amumax/src/engine/zarr"
+	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/oommf"
+	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
 func regionFromCoordinate(x, y, z int) int {

@@ -1,6 +1,6 @@
 package engine
 
-import "github.com/MathieuMoalic/amumax/src/engine/mag"
+import "github.com/MathieuMoalic/amumax/src/mag"
 
 // Add a constant to the script world
 func declConst(name string, value float64, doc string) {

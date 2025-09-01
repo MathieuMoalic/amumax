@@ -1,8 +1,8 @@
 package engine
 
 import (
-	"github.com/MathieuMoalic/amumax/src/engine/cuda"
-	"github.com/MathieuMoalic/amumax/src/engine/mag"
+	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/mag"
 )
 
 // This package is a wrapper around data.Mesh, to allow for engine initialization during Mesh creation.

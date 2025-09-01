@@ -6,11 +6,11 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/MathieuMoalic/amumax/src/engine/cuda"
-	"github.com/MathieuMoalic/amumax/src/engine/fsutil"
-	"github.com/MathieuMoalic/amumax/src/engine/log"
-	"github.com/MathieuMoalic/amumax/src/engine/mesh"
-	"github.com/MathieuMoalic/amumax/src/engine/script"
+	"github.com/MathieuMoalic/amumax/src/cuda"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/mesh"
+	"github.com/MathieuMoalic/amumax/src/script"
 )
 
 var Mesh mesh.Mesh

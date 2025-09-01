@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MathieuMoalic/amumax/src/engine/fsutil"
-	"github.com/MathieuMoalic/amumax/src/engine/log"
-	"github.com/MathieuMoalic/amumax/src/engine/zarr"
+	"github.com/MathieuMoalic/amumax/src/fsutil"
+	"github.com/MathieuMoalic/amumax/src/log"
+	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
 var (
