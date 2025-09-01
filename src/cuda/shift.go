@@ -3,7 +3,7 @@ package cuda
 import (
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/MathieuMoalic/amumax/src/mesh2"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 // shift dst by shx cells (positive or negative) along X-axis.
@@ -63,13 +63,13 @@ func ShiftZ(dst, src *data.Slice, shiftZ int, clampL, clampR float32) {
 }
 
 // Like Shift, but for bytes
-func ShiftBytes(dst, src *Bytes, m mesh2.MeshLike, shiftX int, clamp byte) {
+func ShiftBytes(dst, src *Bytes, m mesh.MeshLike, shiftX int, clamp byte) {
 	N := m.Size()
 	cfg := make3DConf(N)
 	k_shiftbytes_async(dst.Ptr, src.Ptr, N[X], N[Y], N[Z], shiftX, clamp, cfg)
 }
 
-func ShiftBytesY(dst, src *Bytes, m mesh2.MeshLike, shiftY int, clamp byte) {
+func ShiftBytesY(dst, src *Bytes, m mesh.MeshLike, shiftY int, clamp byte) {
 	N := m.Size()
 	cfg := make3DConf(N)
 	k_shiftbytesy_async(dst.Ptr, src.Ptr, N[X], N[Y], N[Z], shiftY, clamp, cfg)

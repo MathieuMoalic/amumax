@@ -5,7 +5,7 @@ package cuda
 import (
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/mag"
-	"github.com/MathieuMoalic/amumax/src/mesh2"
+	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
 // Stores the necessary state to perform FFT-accelerated convolution
@@ -19,7 +19,7 @@ type MFMConvolution struct {
 	fwPlan      fft3DR2CPlan   // Forward FFT (1 component)
 	bwPlan      fft3DC2RPlan   // Backward FFT (1 component)
 	kern        [3]*data.Slice // Real-space kernel (host)
-	mesh        mesh2.MeshLike
+	mesh        mesh.MeshLike
 }
 
 func (c *MFMConvolution) Free() {
@@ -95,7 +95,7 @@ func (c *MFMConvolution) Reinit(lift, tipsize float64, cachedir string) {
 }
 
 // Initializes a convolution to evaluate the demag field for the given mesh geometry.
-func NewMFM(mesh mesh2.MeshLike, lift, tipsize float64, cachedir string) *MFMConvolution {
+func NewMFM(mesh mesh.MeshLike, lift, tipsize float64, cachedir string) *MFMConvolution {
 	k := mag.MFMKernel(mesh, lift, tipsize, cachedir)
 	size := mesh.Size()
 	c := new(MFMConvolution)

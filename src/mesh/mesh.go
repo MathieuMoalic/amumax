@@ -6,6 +6,14 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
+type MeshLike interface {
+	Size() [3]int
+	PBC() [3]int
+	CellSize() [3]float64
+	PBC_code() byte
+	WorldSize() [3]float64
+}
+
 // Mesh stores info of a finite-difference mesh.
 type Mesh struct {
 	Nx, Ny, Nz       int
