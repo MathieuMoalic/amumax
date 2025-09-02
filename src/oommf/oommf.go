@@ -68,7 +68,7 @@ func MustReadFile(fname string) (*data.Slice, Meta) {
 // TODO: add Err to return error status
 // Perhaps CheckErr() func
 type Info struct {
-	Desc            map[string]interface{}
+	Desc            map[string]any
 	Title           string
 	NComp           int
 	Size            [3]int
@@ -85,7 +85,7 @@ type Info struct {
 
 // Parses the header part of the OVF1/OVF2 file
 func readHeader(in io.Reader) *Info {
-	desc := make(map[string]interface{})
+	desc := make(map[string]any)
 	info := new(Info)
 	info.Desc = desc
 
@@ -238,13 +238,13 @@ func writeOVFText(out io.Writer, tens *data.Slice) (err error) {
 
 // Writes a header key/value pair to out:
 // # Key: Value
-func hdr(out io.Writer, key string, value ...interface{}) {
+func hdr(out io.Writer, key string, value ...any) {
 	_, err := fmt.Fprint(out, "# ", key, ": ")
 	log.Log.PanicIfError(err)
 	_, err = fmt.Fprintln(out, value...)
 	log.Log.PanicIfError(err)
 }
 
-func dsc(out io.Writer, k, v interface{}) {
+func dsc(out io.Writer, k, v any) {
 	hdr(out, "Desc", k, ": ", v)
 }

@@ -67,9 +67,9 @@ func export(q interface {
 
 // lValue is settable
 type lValue interface {
-	SetValue(interface{}) // assigns a new value
-	Eval() interface{}    // evaluate and return result (nil for void)
-	Type() reflect.Type   // type that can be assigned and will be returned by Eval
+	SetValue(any)       // assigns a new value
+	Eval() any          // evaluate and return result (nil for void)
+	Type() reflect.Type // type that can be assigned and will be returned by Eval
 }
 
 // evaluate code, exit on error (behavior for input files)
@@ -128,7 +128,7 @@ type lValueWrapper struct {
 func newLValueWrapper(name string, lv lValue) script.LValue {
 	return &lValueWrapper{name: name, lValue: lv}
 }
-func (w *lValueWrapper) SetValue(val interface{}) {
+func (w *lValueWrapper) SetValue(val any) {
 	w.lValue.SetValue(val)
 	QuantityChanged[w.name] = true
 }

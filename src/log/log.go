@@ -74,24 +74,24 @@ func (l *Logs) addAndWrite(msg string) {
 	l.writeToFile(msg)
 }
 
-func (l *Logs) Command(msg ...interface{}) {
+func (l *Logs) Command(msg ...any) {
 	fmt.Println(fmt.Sprint(msg...))
 	l.addAndWrite(fmt.Sprint(msg...) + "\n")
 }
 
-func (l *Logs) Info(msg string, args ...interface{}) {
+func (l *Logs) Info(msg string, args ...any) {
 	formattedMsg := "// " + fmt.Sprintf(msg, args...) + "\n"
 	color.Green(formattedMsg)
 	l.addAndWrite(formattedMsg)
 }
 
-func (l *Logs) Warn(msg string, args ...interface{}) {
+func (l *Logs) Warn(msg string, args ...any) {
 	formattedMsg := "// " + fmt.Sprintf(msg, args...) + "\n"
 	color.Yellow(formattedMsg)
 	l.addAndWrite(formattedMsg)
 }
 
-func (l *Logs) Debug(msg string, args ...interface{}) {
+func (l *Logs) Debug(msg string, args ...any) {
 	if l.debug {
 		formattedMsg := "// " + fmt.Sprintf(msg, args...) + "\n"
 		color.Blue(formattedMsg)
@@ -99,7 +99,7 @@ func (l *Logs) Debug(msg string, args ...interface{}) {
 	}
 }
 
-func (l *Logs) Err(msg string, args ...interface{}) {
+func (l *Logs) Err(msg string, args ...any) {
 	formattedMsg := "// " + fmt.Sprintf(msg, args...) + "\n"
 	color.Red(formattedMsg)
 	l.addAndWrite(formattedMsg)
@@ -113,20 +113,20 @@ func (l *Logs) PanicIfError(err error) {
 	}
 }
 
-func (l *Logs) ErrAndExit(msg string, args ...interface{}) {
+func (l *Logs) ErrAndExit(msg string, args ...any) {
 	l.Err(msg, args...)
 	os.Exit(1)
 }
 
 // Panics with msg if test is false
-func (l *Logs) AssertMsg(test bool, msg interface{}) {
+func (l *Logs) AssertMsg(test bool, msg any) {
 	if !test {
 		l.ErrAndExit("%v", msg)
 	}
 }
 
 // Panics with msg if test is false
-func AssertMsg(test bool, msg interface{}) {
+func AssertMsg(test bool, msg any) {
 	if !test {
 		Log.ErrAndExit("%v", msg)
 	}

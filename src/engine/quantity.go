@@ -16,7 +16,7 @@ type Quantity interface {
 	EvalTo(dst *data.Slice)
 }
 
-func addQuantity(name string, value interface{}, doc string) {
+func addQuantity(name string, value any, doc string) {
 	_ = doc
 	if v, ok := value.(Quantity); ok {
 		Quantities[name] = v

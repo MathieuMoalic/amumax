@@ -2,7 +2,7 @@ package engine
 
 // Add a read-only variable to the script world.
 // It can be changed, but not by the user.
-func declROnly(name string, value interface{}, doc string) {
+func declROnly(name string, value any, doc string) {
 	World.ROnly(name, value, doc)
 	addQuantity(name, value, doc)
 }

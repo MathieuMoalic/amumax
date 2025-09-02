@@ -16,7 +16,7 @@ func init() {
 	loopNestingCount = 0
 }
 
-func (b *forStmt) Eval() interface{} {
+func (b *forStmt) Eval() any {
 	loopNestingCount++
 	defer func() { loopNestingCount-- }() // Reset the flag after the loop
 
@@ -50,9 +50,9 @@ func (w *World) compileForStmt(n *ast.ForStmt) *forStmt {
 
 type nop struct{ void }
 
-func (e *nop) Child() []Expr     { return nil }
-func (e *nop) Eval() interface{} { return nil }
-func (e *nop) Fix() Expr         { return e }
+func (e *nop) Child() []Expr { return nil }
+func (e *nop) Eval() any     { return nil }
+func (e *nop) Fix() Expr     { return e }
 
 func (e *forStmt) Child() []Expr {
 	return []Expr{e.init, e.cond, e.post, e.body}

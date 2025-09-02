@@ -103,8 +103,8 @@ func (e *scalarExcitation) AddGo(mask *data.Slice, mul func() float64) {
 func (e *scalarExcitation) SetRegion(region int, f script.ScalarFunction) {
 	e.perRegion.SetRegion(region, f)
 }
-func (e *scalarExcitation) SetValue(v interface{}) { e.perRegion.SetValue(v) }
-func (e *scalarExcitation) Set(v float64)          { e.perRegion.setRegions(0, NREGION, []float64{v}) }
+func (e *scalarExcitation) SetValue(v any) { e.perRegion.SetValue(v) }
+func (e *scalarExcitation) Set(v float64)  { e.perRegion.setRegions(0, NREGION, []float64{v}) }
 
 func (e *scalarExcitation) SetRegionFn(region int, f func() [3]float64) {
 	e.perRegion.setFunc(region, region+1, func() []float64 {
@@ -121,7 +121,7 @@ func (e *scalarExcitation) NComp() int              { return e.perRegion.NComp()
 func (e *scalarExcitation) Mesh() *mesh.Mesh        { return GetMesh() }
 func (e *scalarExcitation) Region(r int) *vOneReg   { return vOneRegion(e, r) }
 func (e *scalarExcitation) Comp(c int) ScalarField  { return comp(e, c) }
-func (e *scalarExcitation) Eval() interface{}       { return e }
+func (e *scalarExcitation) Eval() any               { return e }
 func (e *scalarExcitation) Type() reflect.Type      { return reflect.TypeOf(new(scalarExcitation)) }
 func (e *scalarExcitation) InputType() reflect.Type { return script.ScalarFunction_t }
 func (e *scalarExcitation) EvalTo(dst *data.Slice)  { evalTo(e, dst) }

@@ -12,7 +12,7 @@ import (
 )
 
 type Metadata struct {
-	Fields    map[string]interface{}
+	Fields    map[string]any
 	Path      string
 	startTime time.Time
 	lastSave  time.Time
@@ -20,7 +20,7 @@ type Metadata struct {
 
 func (m *Metadata) Init(currentDir string, StartTime time.Time, GPUInfo string) {
 	if m.Fields == nil {
-		m.Fields = make(map[string]interface{})
+		m.Fields = make(map[string]any)
 	}
 	m.Add("start_time", StartTime.Format(time.UnixDate))
 	m.Add("gpu", GPUInfo)
@@ -30,9 +30,9 @@ func (m *Metadata) Init(currentDir string, StartTime time.Time, GPUInfo string) 
 	m.lastSave = time.Now()
 }
 
-func (m *Metadata) Add(key string, val interface{}) {
+func (m *Metadata) Add(key string, val any) {
 	if m.Fields == nil {
-		m.Fields = make(map[string]interface{})
+		m.Fields = make(map[string]any)
 	}
 	val_type := reflect.TypeOf(val).Kind()
 	switch val_type {
@@ -53,7 +53,7 @@ func (m *Metadata) Add(key string, val interface{}) {
 	}
 }
 
-func (m *Metadata) Get(key string) interface{} {
+func (m *Metadata) Get(key string) any {
 	return m.Fields[key]
 }
 

@@ -1,7 +1,7 @@
 package engine
 
 // Add a (pointer to) variable to the script world
-func declVar(name string, value interface{}, doc string) {
+func declVar(name string, value any, doc string) {
 	World.Var(name, value, doc)
 	if v, ok := value.(Quantity); ok {
 		Quantities[name] = v
@@ -9,7 +9,7 @@ func declVar(name string, value interface{}, doc string) {
 }
 
 // // Add a (pointer to) variable to the script world
-// func declVarWithCallback(name string, value interface{}, doc string, callback func()) {
+// func declVarWithCallback(name string, value any, doc string, callback func()) {
 // 	World.Var(name, value, doc)
 // 	addQuantity(name, value, doc)
 // 	callback()
@@ -17,7 +17,7 @@ func declVar(name string, value interface{}, doc string) {
 
 // Hack for fixing the closure caveat:
 // Defines "t", the time variable, handled specially by Fix()
-func declTVar(name string, value interface{}, doc string) {
+func declTVar(name string, value any, doc string) {
 	World.TVar(name, value, doc)
 	addQuantity(name, value, doc)
 }

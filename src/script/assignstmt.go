@@ -55,9 +55,9 @@ type assignStmt struct {
 	void
 }
 
-var AddMetadata = func(key string, val interface{}) {}
+var AddMetadata = func(key string, val any) {}
 
-func (a *assignStmt) Eval() interface{} {
+func (a *assignStmt) Eval() any {
 	if loopNestingCount == 0 {
 		AddMetadata(a.name, a.rhs.Eval())
 	}

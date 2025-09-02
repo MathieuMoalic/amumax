@@ -39,7 +39,7 @@ type field struct {
 	Description string           `json:"description"`
 }
 
-func addParameter(name string, value interface{}, doc string) {
+func addParameter(name string, value any, doc string) {
 	if Params == nil {
 		Params = make(map[string]field)
 	}
@@ -224,7 +224,7 @@ func (p *regionwiseScalar) SetRegion(region int, f script.ScalarFunction) {
 	}
 }
 
-func (p *regionwiseScalar) SetValue(v interface{}) {
+func (p *regionwiseScalar) SetValue(v any) {
 	f := v.(script.ScalarFunction)
 	p.setRegionsFunc(0, NREGION, f)
 }
@@ -252,7 +252,7 @@ func (p *regionwiseScalar) GetRegionToString(region int) string {
 	return fmt.Sprintf("%g", v)
 }
 
-func (p *regionwiseScalar) Eval() interface{}       { return p }
+func (p *regionwiseScalar) Eval() any               { return p }
 func (p *regionwiseScalar) Type() reflect.Type      { return reflect.TypeOf(new(regionwiseScalar)) }
 func (p *regionwiseScalar) InputType() reflect.Type { return script.ScalarFunction_t }
 func (p *regionwiseScalar) Average() float64        { return qAverageUniverse(p)[0] }
@@ -316,7 +316,7 @@ func (p *regionwiseVector) SetRegion(region int, f script.VectorFunction) {
 	}
 }
 
-func (p *regionwiseVector) SetValue(v interface{}) {
+func (p *regionwiseVector) SetValue(v any) {
 	f := v.(script.VectorFunction)
 	p.setRegionsFunc(0, NREGION, f)
 }
@@ -346,7 +346,7 @@ func (p *regionwiseVector) GetRegionToString(region int) string {
 	v := unslice(p.getRegion(region))
 	return fmt.Sprintf("(%g,%g,%g)", v[0], v[1], v[2])
 }
-func (p *regionwiseVector) Eval() interface{}       { return p }
+func (p *regionwiseVector) Eval() any               { return p }
 func (p *regionwiseVector) Type() reflect.Type      { return reflect.TypeOf(new(regionwiseVector)) }
 func (p *regionwiseVector) InputType() reflect.Type { return script.VectorFunction_t }
 func (p *regionwiseVector) Region(r int) *vOneReg   { return vOneRegion(p, r) }

@@ -138,6 +138,6 @@ func init() {
 }
 
 // Add a function to the script world
-func DeclFunc(name string, f interface{}, doc string) {
+func DeclFunc(name string, f any, doc string) {
 	World.Func(name, f, doc)
 }
