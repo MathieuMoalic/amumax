@@ -189,10 +189,10 @@ func universeInner(x, y, z float64) bool {
 
 func imageShape(fname string) shape {
 	r, err1 := fsutil.Open(fname)
-	checkRecoverable(err1)
+	log.Log.PanicIfError(err1)
 	defer r.Close()
 	img, _, err2 := image.Decode(r)
-	checkRecoverable(err2)
+	log.Log.PanicIfError(err2)
 
 	width := img.Bounds().Max.X
 	height := img.Bounds().Max.Y

@@ -34,11 +34,7 @@ func CompileFile(fname string) (*script.BlockStmt, error) {
 func EvalTryRecover(code string) {
 	defer func() {
 		if err := recover(); err != nil {
-			if userErr, ok := err.(UserErr); ok {
-				log.Log.Err("%v", userErr)
-			} else {
-				panic(err)
-			}
+			log.Log.Err("%v", err)
 		}
 	}()
 	Eval(code)

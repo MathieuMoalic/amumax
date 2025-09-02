@@ -2,6 +2,7 @@ package engine
 
 import (
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // register in the scripting API (optional, but handy)
@@ -19,7 +20,7 @@ func FeedbackLoop(input_mask, output_mask *data.Slice, multiplier float64) {
 	Nx, Ny, Nz := Mesh.GetNi()
 
 	if input_mask.NComp() != 3 || output_mask.NComp() != 3 {
-		panic(UserErr("FeedbackLoop expects vector masks (3 components)"))
+		log.Log.Err("%s", "FeedbackLoop expects vector masks (3 components)")
 	}
 
 	// Ensure the drive slice matches the mesh. If input_mask has Ny=1 (typical mask),
@@ -47,7 +48,7 @@ func FeedbackLoop(input_mask, output_mask *data.Slice, multiplier float64) {
 			}
 		}
 	default:
-		panic(UserErr("FeedbackLoop: input_mask must be sized (Nx,Ny,Nz) or (Nx,1,Nz)"))
+		log.Log.Err("%s", "FeedbackLoop: input_mask must be sized (Nx,Ny,Nz) or (Nx,1,Nz)")
 	}
 
 	// Add a dynamic external-field term: drive * gain, where gain is re-evaluated
