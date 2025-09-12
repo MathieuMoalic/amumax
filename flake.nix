@@ -75,7 +75,7 @@
 
     GitFrontend = buildFrontend {
       src = ./frontend;
-      npmDepsHash = "sha256-yIVe337Qp1mBTMCw+ElHlcKKDYIPklqQbYbr2yLQWBI=";
+      npmDepsHash = "sha256-0H7fcPivfjjztjzNOztFustsCN6ugZ1yXe3zRDCq+4E=";
       version = gitVersion;
     };
     GitBuildAmumax = with pkgs.lib.fileset;
@@ -85,7 +85,7 @@
           fileset = unions [./src ./go.mod ./go.sum ./main.go];
         };
         frontend = GitFrontend;
-        vendorHash = "sha256-tmjoUliSrev1aLBHBiwPNl4chURZ6drqRQ6M2Xz0Ilc=";
+        vendorHash = "sha256-hSGqek8I59AiLKUrE82Rgc8e8vT5w5TDEXzdxCYQOXY=";
         version = gitVersion;
       };
 
@@ -101,14 +101,14 @@
 
     ReleaseFrontend = buildFrontend {
       src = "${ReleaseSrc}/frontend";
-      npmDepsHash = "sha256-yIVe337Qp1mBTMCw+ElHlcKKDYIPklqQbYbr2yLQWBI=";
+      npmDepsHash = "sha256-0H7fcPivfjjztjzNOztFustsCN6ugZ1yXe3zRDCq+4E=";
       version = releaseVersion;
     };
 
     ReleaseBuildAmumax = buildAmumax {
       src = ReleaseSrc;
       frontend = ReleaseFrontend;
-      vendorHash = "sha256-tmjoUliSrev1aLBHBiwPNl4chURZ6drqRQ6M2Xz0Ilc=";
+      vendorHash = "sha256-hSGqek8I59AiLKUrE82Rgc8e8vT5w5TDEXzdxCYQOXY=";
       version = releaseVersion;
     };
 
