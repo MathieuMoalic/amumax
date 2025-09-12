@@ -110,21 +110,29 @@ func cpwVectorMask(I, width, height, distance, xoffset, zoffset float64) *data.S
 }
 
 // magModulatedByMask computes the signal of the magnetic field modulated by a mask.
+// Works for masks with Ny == 1 (typical) or full Ny.
 func magModulatedByMask(mask_slice *data.Slice) float64 {
 	Nx, Ny, Nz := Mesh.GetNi()
-	var signal float32
+
 	mag_slice, _ := NormMag.Slice()
 	mag := mag_slice.HostCopy().Tensors() // [c][z][y][x]
 	mask := mask_slice.Tensors()          // [c][z][y][x]
 
-	for iz := range Nz {
-		for iy := range Ny {
-			for ix := range Nx {
-				for ic := range 3 {
-					signal += mask[ic][iz][0][ix] * mag[ic][iz][iy][ix]
+	yDimMask := len(mask[0][0]) // mask Ny (1 or Ny)
+	var signal float64
+
+	for iz := 0; iz < Nz; iz++ {
+		for iy := 0; iy < Ny; iy++ {
+			my := 0
+			if yDimMask > 1 {
+				my = iy
+			}
+			for ix := 0; ix < Nx; ix++ {
+				for ic := 0; ic < 3; ic++ {
+					signal += float64(mask[ic][iz][my][ix]) * float64(mag[ic][iz][iy][ix])
 				}
 			}
 		}
 	}
-	return float64(signal)
+	return signal
 }

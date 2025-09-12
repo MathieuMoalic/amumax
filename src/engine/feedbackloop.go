@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"sync"
+
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log"
 )
@@ -25,7 +27,7 @@ func FeedbackLoop(input_mask, output_mask *data.Slice, multiplier float64) {
 
 	// Ensure the drive slice matches the mesh. If input_mask has Ny=1 (typical mask),
 	// broadcast it along y so B_ext.AddGo can use it directly.
-	inT := input_mask.Tensors() // shape: [c][z][y][x]
+	inT := input_mask.Tensors() // [c][z][y][x]
 	xDim := len(inT[0][0][0])
 	yDim := len(inT[0][0])
 	zDim := len(inT[0])
@@ -33,14 +35,12 @@ func FeedbackLoop(input_mask, output_mask *data.Slice, multiplier float64) {
 	var drive *data.Slice
 	switch {
 	case xDim == Nx && yDim == Ny && zDim == Nz:
-		// full-size mask already
 		drive = input_mask
 	case xDim == Nx && yDim == 1 && zDim == Nz:
-		// broadcast along y to build a full-size drive slice once
 		drive = data.NewSlice(3, [3]int{Nx, Ny, Nz})
-		for iz := range Nz {
-			for iy := range Ny {
-				for ix := range Nx {
+		for iz := 0; iz < Nz; iz++ {
+			for iy := 0; iy < Ny; iy++ {
+				for ix := 0; ix < Nx; ix++ {
 					drive.Set(0, ix, iy, iz, float64(inT[0][iz][0][ix]))
 					drive.Set(1, ix, iy, iz, float64(inT[1][iz][0][ix]))
 					drive.Set(2, ix, iy, iz, float64(inT[2][iz][0][ix]))
@@ -51,12 +51,13 @@ func FeedbackLoop(input_mask, output_mask *data.Slice, multiplier float64) {
 		log.Log.Err("%s", "FeedbackLoop: input_mask must be sized (Nx,Ny,Nz) or (Nx,1,Nz)")
 	}
 
-	// Add a dynamic external-field term: drive * gain, where gain is re-evaluated
-	// whenever B_ext is assembled.
+	// Auto-zero: capture the initial pickup as baseline and subtract it forever after.
+	var once sync.Once
+	var baseline float64
+
 	B_ext.AddGo(drive, func() float64 {
-		// "Measured current" from the output antenna:
-		// this uses normalized magnetization (unitless) and the mask as weights.
-		signal := magModulatedByMask(output_mask)
-		return multiplier * signal
+		s := magModulatedByMask(output_mask)
+		once.Do(func() { baseline = s }) // set on first call
+		return multiplier * (s - baseline)
 	})
 }
