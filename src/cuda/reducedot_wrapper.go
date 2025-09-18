@@ -69,8 +69,10 @@ func k_reducedot_async(x1 unsafe.Pointer, x2 unsafe.Pointer, dst unsafe.Pointer,
 }
 
 // maps compute capability on PTX code for reducedot kernel.
-var reducedot_map = map[int]string{0: "",
-	52: reducedot_ptx_52}
+var reducedot_map = map[int]string{
+	0:  "",
+	52: reducedot_ptx_52,
+}
 
 // reducedot PTX code for various compute capabilities.
 const (

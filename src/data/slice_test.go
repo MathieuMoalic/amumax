@@ -9,7 +9,7 @@ func TestIndex(t *testing.T) {
 	slice := NewSlice(7, mesh)
 	data := slice.Tensors()
 
-	if len(data) != 7 { //c
+	if len(data) != 7 { // c
 		t.Fail()
 	}
 	if len(data[0]) != 4 { // z

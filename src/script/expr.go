@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-// an expression can be evaluated
+// Expr an expression can be evaluated
 type Expr interface {
 	Eval() any          // evaluate and return result (nil for void)
 	Type() reflect.Type // return type, nil for void

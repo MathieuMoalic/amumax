@@ -37,7 +37,7 @@ func (w *World) compileStmt(st ast.Stmt) Expr {
 	case *ast.BlockStmt:
 		w.EnterScope()
 		defer w.ExitScope()
-		return w.compileBlockStmt_noScope(st)
+		return w.compileBlockStmtNoScopeST(st)
 	}
 }
 
@@ -45,11 +45,11 @@ func (w *World) compileStmt(st ast.Stmt) Expr {
 type void struct{}
 
 func (v *void) Type() reflect.Type { return nil }
-func (v *void) Fix() Expr          { panic(invalid_closure) }
+func (v *void) Fix() Expr          { panic(invalidClosure) }
 
 type emptyStmt struct{ void }
 
 func (*emptyStmt) Child() []Expr { return nil }
 func (*emptyStmt) Eval() any     { return nil }
 
-const invalid_closure = "illegal statement in closure"
+const invalidClosure = "illegal statement in closure"

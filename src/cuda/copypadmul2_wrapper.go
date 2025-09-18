@@ -87,8 +87,10 @@ func k_copypadmul2_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.
 }
 
 // maps compute capability on PTX code for copypadmul2 kernel.
-var copypadmul2_map = map[int]string{0: "",
-	52: copypadmul2_ptx_52}
+var copypadmul2_map = map[int]string{
+	0:  "",
+	52: copypadmul2_ptx_52,
+}
 
 // copypadmul2 PTX code for various compute capabilities.
 const (

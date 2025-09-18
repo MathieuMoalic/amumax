@@ -84,8 +84,10 @@ func k_exchangedecode_async(dst unsafe.Pointer, aLUT2d unsafe.Pointer, regions u
 }
 
 // maps compute capability on PTX code for exchangedecode kernel.
-var exchangedecode_map = map[int]string{0: "",
-	52: exchangedecode_ptx_52}
+var exchangedecode_map = map[int]string{
+	0:  "",
+	52: exchangedecode_ptx_52,
+}
 
 // exchangedecode PTX code for various compute capabilities.
 const (

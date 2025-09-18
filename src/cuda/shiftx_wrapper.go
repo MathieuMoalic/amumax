@@ -78,8 +78,10 @@ func k_shiftx_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz i
 }
 
 // maps compute capability on PTX code for shiftx kernel.
-var shiftx_map = map[int]string{0: "",
-	52: shiftx_ptx_52}
+var shiftx_map = map[int]string{
+	0:  "",
+	52: shiftx_ptx_52,
+}
 
 // shiftx PTX code for various compute capabilities.
 const (

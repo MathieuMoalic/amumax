@@ -49,4 +49,5 @@ var resultString map[Result]string = map[Result]string{
 	INCOMPLETE_PARAMETER_LIST: "CUFFT_INCOMPLETE_PARAMETER_LIST",
 	INVALID_DEVICE:            "CUFFT_INVALID_DEVICE",
 	PARSE_ERROR:               "CUFFT_PARSE_ERROR",
-	NO_WORKSPACE:              "CUFFT_NO_WORKSPACE"}
+	NO_WORKSPACE:              "CUFFT_NO_WORKSPACE",
+}

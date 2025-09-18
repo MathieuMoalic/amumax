@@ -26,8 +26,9 @@ func (w *World) compileIfStmt(n *ast.IfStmt) *ifStmt {
 	defer w.ExitScope()
 
 	stmt := &ifStmt{
-		cond: typeConv(n.Cond.Pos(), w.compileExpr(n.Cond), bool_t),
-		body: w.compileBlockStmt_noScope(n.Body)}
+		cond: typeConv(n.Cond.Pos(), w.compileExpr(n.Cond), boolt),
+		body: w.compileBlockStmtNoScopeST(n.Body),
+	}
 	if n.Else != nil {
 		stmt.else_ = w.compileStmt(n.Else)
 	}
@@ -35,9 +36,9 @@ func (w *World) compileIfStmt(n *ast.IfStmt) *ifStmt {
 	return stmt
 }
 
-func (e *ifStmt) Child() []Expr {
-	child := []Expr{e.cond, e.body, e.else_}
-	if e.else_ == nil {
+func (b *ifStmt) Child() []Expr {
+	child := []Expr{b.cond, b.body, b.else_}
+	if b.else_ == nil {
 		child = child[:2]
 	}
 	return child

@@ -24,8 +24,8 @@ type tesselation3d struct {
 	maxRegion   int
 	rnd         *rand.Rand
 	startRegion int
-	shape       shape      //Shape of the tesselated region
-	centers     []center3d //List of Voronoi centers
+	shape       shape      // Shape of the tesselated region
+	centers     []center3d // List of Voronoi centers
 }
 
 // Stores location of each Voronoi center
@@ -39,12 +39,14 @@ type cellLocs struct{ x, y, z float64 }
 
 // nRegion exclusive
 func newTesselation3d(grainsize float64, nRegion int, seed int64, startRegion int, inputShape shape) *tesselation3d {
-	t := tesselation3d{grainsize,
+	t := tesselation3d{
+		grainsize,
 		nRegion,
 		rand.New(rand.NewSource(seed)),
 		startRegion,
 		inputShape,
-		make([]center3d, 0)}
+		make([]center3d, 0),
+	}
 
 	t.makeRandomCenters()
 	return &t
@@ -62,17 +64,17 @@ func shuffleCells(src []cellLocs) []cellLocs {
 }
 
 func (t *tesselation3d) makeRandomCenters() {
-	//Make a list of all the cells in the shape.
+	// Make a list of all the cells in the shape.
 	cells := t.tabulateCells()
 	cells = shuffleCells(cells)
 
-	//Choose number of grains to make. Assume volume of grain is given by (4/3)*pi*r^3
+	// Choose number of grains to make. Assume volume of grain is given by (4/3)*pi*r^3
 	shapeVolume := cellVolume() * float64(len(cells))
 	grainVolume := (float64(1) / 6) * math.Pi * t.grainsize * t.grainsize * t.grainsize
 	nAvgGrains := shapeVolume / grainVolume
 	nGrains := t.truncNorm(nAvgGrains)
 
-	//TODO: same cell can be chosen twice by random chance
+	// TODO: same cell can be chosen twice by random chance
 	t.centers = make([]center3d, nGrains)
 	for p := 0; p < nGrains; p++ {
 		rndCell := cells[t.rnd.Intn(nGrains)]
@@ -86,13 +88,13 @@ func (t *tesselation3d) makeRandomCenters() {
 
 // Creates a slice of all cells which fall in the shape specified in the constructor.
 func (t *tesselation3d) tabulateCells() []cellLocs {
-	//Initialze array of cells
+	// Initialze array of cells
 	cells := make([]cellLocs, 0)
 
-	//Get the mesh size
+	// Get the mesh size
 	meshSize := meshSize()
 
-	//Iterate across all cells in the mesh, and append those that are inside the shape
+	// Iterate across all cells in the mesh, and append those that are inside the shape
 	for ix := 0; ix < meshSize[0]; ix++ {
 		for iy := 0; iy < meshSize[1]; iy++ {
 			for iz := 0; iz < meshSize[2]; iz++ {
@@ -154,5 +156,4 @@ func (t *tesselation3d) truncNorm(lambda float64) int {
 	} else {
 		return int(ret + 0.5)
 	}
-
 }

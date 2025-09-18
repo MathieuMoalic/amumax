@@ -69,8 +69,10 @@ func k_normalize_async(vx unsafe.Pointer, vy unsafe.Pointer, vz unsafe.Pointer, 
 }
 
 // maps compute capability on PTX code for normalize kernel.
-var normalize_map = map[int]string{0: "",
-	52: normalize_ptx_52}
+var normalize_map = map[int]string{
+	0:  "",
+	52: normalize_ptx_52,
+}
 
 // normalize PTX code for various compute capabilities.
 const (

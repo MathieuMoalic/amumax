@@ -1,15 +1,17 @@
+// Package cli provides the command line interface for amumax.
 package cli
 
 import (
 	"fmt"
 	"os"
 
+	"github.com/fatih/color"
+	"github.com/spf13/cobra"
+
 	"github.com/MathieuMoalic/amumax/src/entrypoint"
 	"github.com/MathieuMoalic/amumax/src/flags"
 	"github.com/MathieuMoalic/amumax/src/template"
 	"github.com/MathieuMoalic/amumax/src/version"
-	"github.com/fatih/color"
-	"github.com/spf13/cobra"
 )
 
 func Entrypoint() {

@@ -1,4 +1,4 @@
-// package oommf provides the OVF data format as used by OOMMF.
+// Package oommf provides the OVF data format as used by OOMMF.
 package oommf
 
 import (
@@ -22,7 +22,7 @@ type Meta struct {
 
 // Read any OOMMF file, autodetect OVF1/OVF2 format
 func Read(in io.Reader) (s *data.Slice, meta Meta, err error) {
-	//in := fullReader{bufio.NewReader(in_)}
+	// in := fullReader{bufio.NewReader(in_)}
 	info := readHeader(in)
 
 	n := info.Size
@@ -64,7 +64,7 @@ func MustReadFile(fname string) (*data.Slice, Meta) {
 	return s, t
 }
 
-// omf.Info represents the header part of an omf file.
+// Info represents the header part of an omf file.
 // TODO: add Err to return error status
 // Perhaps CheckErr() func
 type Info struct {
@@ -133,14 +133,14 @@ func readHeader(in io.Reader) *Info {
 		// desc tags: parse further and add to metadata table
 		case "desc":
 			strs := strings.SplitN(value, ":", 2)
-			desc_key := strings.Trim(strs[0], "# ")
+			descKey := strings.Trim(strs[0], "# ")
 			// Desc tag does not necessarily have a key:value layout.
 			// If not, we use an empty value string.
-			desc_value := ""
+			descValue := ""
 			if len(strs) > 1 {
-				desc_value = strings.Trim(strs[1], "# ")
+				descValue = strings.Trim(strs[1], "# ")
 			}
-			desc[desc_key] = desc_value
+			desc[descKey] = descValue
 		}
 
 		line, eof = readLine(in)
@@ -190,12 +190,14 @@ func parseHeaderLine(str string) (key, value string) {
 // INTERNAL: true if line starts with "# begin:data"
 func isHeaderEnd(str string) bool {
 	str = strings.ToLower(strings.Trim(str, "# "))
-	str = strings.Replace(str, " ", "", -1)
+	str = strings.ReplaceAll(str, " ", "")
 	return strings.HasPrefix(str, "begin:data")
 }
 
-const OVF_CONTROL_NUMBER_4 = 1234567.0 // The omf format requires the first encoded number in the binary data section to be this control number
-const OVF_CONTROL_NUMBER_8 = 123456789012345.0
+const (
+	OvfControlNumber4 = 1234567.0 // The omf format requires the first encoded number in the binary data section to be this control number
+	OvfControlNumber8 = 123456789012345.0
+)
 
 // read data block in text format, for OVF1 and OVF2
 func readOVFDataText(in io.Reader, t *data.Slice) {

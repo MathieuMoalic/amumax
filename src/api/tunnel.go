@@ -5,24 +5,24 @@ import (
 	"io"
 	"net"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
-	"path/filepath"
-
-	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/kevinburke/ssh_config"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
+
+	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 func init() {
 	engine.DeclFunc("Tunnel", startTunnel, "Tunnel the web interface through SSH using the given host from your ssh config, empty string disables tunneling")
 }
 
-// SSH Tunnel Configuration
+// SSHTunnel SSH Tunnel Configuration
 type SSHTunnel struct {
 	localIP    string // Worker WebUI address (localhost)
 	localPort  uint16 // This will be dynamically assigned by the SSH server
@@ -190,7 +190,7 @@ func getLocalPortWithRetry(maxRetries int, retryInterval time.Duration) (uint16,
 	var localPort uint16
 	var err error
 
-	for i := 0; i < maxRetries; i++ {
+	for range maxRetries {
 		port, ok := engine.EngineState.Metadata.Get("port").(string)
 		if ok {
 			localPort, err = stringToUint16(port)

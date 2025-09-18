@@ -5,11 +5,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/vmihailenco/msgpack/v5"
+
+	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 // WebSocketManager holds state previously stored in global variables.

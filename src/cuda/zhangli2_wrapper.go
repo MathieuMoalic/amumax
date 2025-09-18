@@ -135,8 +135,10 @@ func k_addzhanglitorque2_async(tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.P
 }
 
 // maps compute capability on PTX code for addzhanglitorque2 kernel.
-var addzhanglitorque2_map = map[int]string{0: "",
-	52: addzhanglitorque2_ptx_52}
+var addzhanglitorque2_map = map[int]string{
+	0:  "",
+	52: addzhanglitorque2_ptx_52,
+}
 
 // addzhanglitorque2 PTX code for various compute capabilities.
 const (

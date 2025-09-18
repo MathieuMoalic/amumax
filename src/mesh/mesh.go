@@ -1,3 +1,4 @@
+// Package mesh provides the Mesh struct and related functions.
 package mesh
 
 import (
@@ -10,7 +11,7 @@ type MeshLike interface {
 	Size() [3]int
 	PBC() [3]int
 	CellSize() [3]float64
-	PBC_code() byte
+	PBCCode() byte
 	WorldSize() [3]float64
 }
 
@@ -41,6 +42,7 @@ func (m Mesh) prettyPrint() {
 func (m *Mesh) Size() [3]int {
 	return [3]int{m.Nx, m.Ny, m.Nz}
 }
+
 func (m *Mesh) GetNi() (int, int, int) {
 	if !m.created {
 		panic("Mesh not created yet")
@@ -54,6 +56,7 @@ func (m *Mesh) CellSize() [3]float64 {
 	}
 	return [3]float64{m.Dx, m.Dy, m.Dz}
 }
+
 func (m *Mesh) GetDi() (float64, float64, float64) {
 	if !m.created {
 		panic("Mesh not created yet")
@@ -61,7 +64,7 @@ func (m *Mesh) GetDi() (float64, float64, float64) {
 	return m.Dx, m.Dy, m.Dz
 }
 
-// Returns pbc (periodic boundary conditions), as passed to constructor.
+// PBC Returns pbc (periodic boundary conditions), as passed to constructor.
 func (m *Mesh) PBC() [3]int {
 	if !m.created {
 		panic("Mesh not created yet")
@@ -69,7 +72,7 @@ func (m *Mesh) PBC() [3]int {
 	return [3]int{m.PBCx, m.PBCy, m.PBCz}
 }
 
-// Total number of cells, not taking into account PBCs.
+// NCell Total number of cells, not taking into account PBCs.
 func (m *Mesh) NCell() int {
 	if !m.created {
 		panic("Mesh not created yet")
@@ -85,9 +88,9 @@ func (m *Mesh) WorldSize() [3]float64 {
 	return [3]float64{m.Tx, m.Ty, m.Tz}
 }
 
-// 3 bools, packed in one byte, indicating whether there are periodic boundary conditions in
+// PBCCode is 3 bools, packed in one byte, indicating whether there are periodic boundary conditions in
 // X (LSB), Y(LSB<<1), Z(LSB<<2)
-func (m *Mesh) PBC_code() byte {
+func (m *Mesh) PBCCode() byte {
 	if !m.created {
 		panic("Mesh not created yet")
 	}
@@ -192,17 +195,17 @@ func (m *Mesh) SetMesh(Nx, Ny, Nz int, Dx, Dy, Dz float64, PBCx, PBCy, PBCz int)
 }
 
 func (m *Mesh) validateGridSize() {
-	max_threshold := 1000000
-	Ni_list := []string{"m.Nx", "m.Ny", "m.Nz"}
+	maxThreshold := 1000000
+	NiList := []string{"m.Nx", "m.Ny", "m.Nz"}
 	for i, N := range []int{m.Nx, m.Ny, m.Nz} {
 		if N == 0.0 {
-			log.Log.ErrAndExit("Error: You have to specify  %v", Ni_list[i])
-		} else if N > max_threshold {
-			log.Log.ErrAndExit("Error: %s shouldn't be more than %d", Ni_list[i], max_threshold)
+			log.Log.ErrAndExit("Error: You have to specify  %v", NiList[i])
+		} else if N > maxThreshold {
+			log.Log.ErrAndExit("Error: %s shouldn't be more than %d", NiList[i], maxThreshold)
 		} else if N < 0 {
 			Ti := []float64{m.Tx, m.Ty, m.Tz}[i]
 			di := []float64{m.Dx, m.Dy, m.Dz}[i]
-			log.Log.ErrAndExit("Error: %s=%d shouldn't be negative, Ti: %e m, di: %e m", Ni_list[i], N, Ti, di)
+			log.Log.ErrAndExit("Error: %s=%d shouldn't be negative, Ti: %e m, di: %e m", NiList[i], N, Ti, di)
 		}
 	}
 }
@@ -216,16 +219,16 @@ func (m *Mesh) checkLargestPrimeFactor(N int, axisName string) {
 }
 
 func (m *Mesh) validateCellSize() {
-	min_threshold := 0.25e-9
-	max_threshold := 500e-9
+	minThreshold := 0.25e-9
+	maxThreshold := 500e-9
 	names := []string{"dx", "dy", "dz"}
 	for i, d := range []float64{m.Dx, m.Dy, m.Dz} {
 		if d == 0.0 {
 			log.Log.ErrAndExit("Error: You have to specify  %v", names[i])
-		} else if d < min_threshold {
-			log.Log.Warn("Warning: %s shouldn't be less than %f", names[i], min_threshold)
-		} else if d > max_threshold {
-			log.Log.Warn("Warning: %s shouldn't be more than %f", names[i], max_threshold)
+		} else if d < minThreshold {
+			log.Log.Warn("Warning: %s shouldn't be less than %f", names[i], minThreshold)
+		} else if d > maxThreshold {
+			log.Log.Warn("Warning: %s shouldn't be more than %f", names[i], maxThreshold)
 		}
 	}
 	m.checkLargestPrimeFactor(m.Nx, "m.Nx")
@@ -262,7 +265,7 @@ func (m *Mesh) setTiDiNi(Ti, di *float64, Ni *int, comp string) {
 	}
 }
 
-// check if mesh is set, otherwise, it creates it
+// Create checks if mesh is set, otherwise, it creates it
 func (m *Mesh) Create() {
 	if !m.created {
 		m.setTiDiNi(&m.Tx, &m.Dx, &m.Nx, "x")
@@ -287,5 +290,4 @@ func (m *Mesh) ReCreate(Nx, Ny, Nz int, dx, dy, dz float64, PBCx, PBCy, PBCz int
 	m.setTiDiNi(&m.Tz, &m.Dz, &m.Nz, "z")
 	m.validateGridSize()
 	m.validateCellSize()
-
 }

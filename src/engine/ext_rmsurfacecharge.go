@@ -56,7 +56,8 @@ func compensateLRSurfaceCharges(m *mesh.Mesh, mxLeft, mxRight float64, bsat floa
 						dst := [3]float64{ // destination coordinate
 							(float64(ix) + 0.5) * cell[X],
 							(float64(iy) + 0.5) * cell[Y],
-							(float64(iz) + 0.5) * cell[Z]}
+							(float64(iz) + 0.5) * cell[Z],
+						}
 
 						h1 := hfield(q1, source1, dst)
 						h2 := hfield(q2, source2, dst)

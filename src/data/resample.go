@@ -57,7 +57,6 @@ func Downsample(In [][][][]float32, N [3]int) [][][][]float32 {
 	log.AssertMsg(scalex > 0 && scaley > 0, "Scaling factors must be positive in Downsample")
 
 	for c := range Out {
-
 		for iz := 0; iz < Dz; iz++ {
 			for iy := 0; iy < Dy; iy++ {
 				for ix := 0; ix < Dx; ix++ {
@@ -86,7 +85,7 @@ func Downsample(In [][][][]float32, N [3]int) [][][][]float32 {
 	return Out
 }
 
-// Returns the 3D size of block
+// SizeOf Returns the 3D size of block
 func SizeOf(block [][][]float32) [3]int {
 	return [3]int{len(block[0][0]), len(block[0]), len(block)}
 }

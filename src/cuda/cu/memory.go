@@ -233,7 +233,8 @@ var memorytype = map[MemoryType]string{
 	MemoryTypeHost:    "MemoryTypeHost",
 	MemoryTypeDevice:  "MemoryTypeDevice",
 	MemoryTypeArray:   "MemoryTypeArray",
-	MemoryTypeUnified: "MemoryTypeUnified"}
+	MemoryTypeUnified: "MemoryTypeUnified",
+}
 
 func (t MemoryType) String() string {
 	if s, ok := memorytype[t]; ok {

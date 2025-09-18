@@ -11,9 +11,7 @@ import (
 
 var StartTime = time.Now()
 
-var (
-	busyLock sync.Mutex
-)
+var busyLock sync.Mutex
 
 // We set setBusy(true) when the simulation is too busy too accept GUI input on Inject channel.
 // E.g. during kernel init.

@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-// left-hand value in (single) assign statement
+// LValue left-hand value in (single) assign statement
 type LValue interface {
 	Expr
 	SetValue(any) // assigns a new value
@@ -28,7 +28,7 @@ type reflectLvalue struct {
 	elem reflect.Value
 }
 
-// general lvalue implementation using reflect.
+// newReflectLvalue general lvalue implementation using reflect.
 // lhs must be settable, e.g. address of something:
 //
 //	var x float64

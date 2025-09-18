@@ -54,5 +54,4 @@ var _ones = [4]float64{1, 1, 1, 1}
 
 func ones(n int) []float64 {
 	return _ones[:n]
-
 }

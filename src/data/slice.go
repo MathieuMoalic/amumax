@@ -1,3 +1,4 @@
+// Package data provides functions to manipulate and analyze data slices.
 package data
 
 // Slice stores N-component GPU or host data.
@@ -30,16 +31,17 @@ func prod(size [3]int) int {
 	return size[0] * size[1] * size[2]
 }
 
-// Internal: enables slices on GPU. Called upon cuda init.
+// EnableGPU Internal: enables slices on GPU. Called upon cuda init.
 func EnableGPU(free, freeHost func(unsafe.Pointer),
-	cpy, cpyDtoH, cpyHtoD func(dst, src unsafe.Pointer, bytes int64)) {
+	cpy, cpyDtoH, cpyHtoD func(dst, src unsafe.Pointer, bytes int64),
+) {
 	memFree = free
 	memCpy = cpy
 	memCpyDtoH = cpyDtoH
 	memCpyHtoD = cpyHtoD
 }
 
-// Make a CPU Slice with nComp components of size length.
+// NewSlice Make a CPU Slice with nComp components of size length.
 func NewSlice(nComp int, size [3]int) *Slice {
 	length := prod(size)
 	ptrs := make([]unsafe.Pointer, nComp)
@@ -62,12 +64,12 @@ func SliceFromArray(data [][]float32, size [3]int) *Slice {
 	return SliceFromPtrs(size, CPUMemory, ptrs)
 }
 
-// Return a slice without underlying storage. Used to represent a mask containing all 1's.
+// NilSlice Return a slice without underlying storage. Used to represent a mask containing all 1's.
 func NilSlice(nComp int, size [3]int) *Slice {
 	return SliceFromPtrs(size, GPUMemory, make([]unsafe.Pointer, nComp))
 }
 
-// Internal: construct a Slice using bare memory pointers.
+// SliceFromPtrs Internal: construct a Slice using bare memory pointers.
 func SliceFromPtrs(size [3]int, memType int8, ptrs []unsafe.Pointer) *Slice {
 	length := prod(size)
 	nComp := len(ptrs)
@@ -82,7 +84,7 @@ func SliceFromPtrs(size [3]int, memType int8, ptrs []unsafe.Pointer) *Slice {
 	return s
 }
 
-// Frees the underlying storage and zeros the Slice header to avoid accidental use.
+// Free Frees the underlying storage and zeros the Slice header to avoid accidental use.
 // Slices sharing storage will be invalid after Free. Double free is OK.
 func (s *Slice) Free() {
 	if s == nil {
@@ -96,7 +98,7 @@ func (s *Slice) Free() {
 		for _, ptr := range s.ptrs {
 			memFree(ptr)
 		}
-	//case UnifiedMemory:
+	// case UnifiedMemory:
 	//	for _, ptr := range s.ptrs {
 	//		memFreeHost(ptr)
 	//	}
@@ -108,7 +110,7 @@ func (s *Slice) Free() {
 	s.Disable()
 }
 
-// INTERNAL. Overwrite struct fields with zeros to avoid
+// Disable INTERNAL. Overwrite struct fields with zeros to avoid
 // accidental use after Free.
 func (s *Slice) Disable() {
 	s.ptrs = s.ptrs[:0]
@@ -120,7 +122,7 @@ func (s *Slice) Disable() {
 const (
 	CPUMemory = 1 << 0
 	GPUMemory = 1 << 1
-	//UnifiedMemory = CPUMemory | GPUMemory
+	// UnifiedMemory = CPUMemory | GPUMemory
 )
 
 // MemType returns the memory type of the underlying storage:
@@ -181,7 +183,7 @@ func (s *Slice) DevPtr(component int) unsafe.Pointer {
 	return s.ptrs[component]
 }
 
-const SIZEOF_FLOAT32 = 4
+const SizeOfF32 = 4
 
 // Host returns the Slice as a [][]float32 indexed by component, cell number.
 // It should have CPUAccess() == true.
@@ -196,7 +198,7 @@ func (s *Slice) Host() [][]float32 {
 	return list
 }
 
-// Returns a copy of the Slice, allocated on CPU.
+// HostCopy Returns a copy of the Slice, allocated on CPU.
 func (s *Slice) HostCopy() *Slice {
 	if s == nil {
 		panic("nil slice")
@@ -211,7 +213,7 @@ func Copy(dst, src *Slice) {
 		panic(fmt.Sprintf("slice copy: illegal sizes: dst: %vx%v, src: %vx%v", dst.NComp(), dst.Len(), src.NComp(), src.Len()))
 	}
 	dstIsGpu, srcIsGpu := dst.GPUAccess(), src.GPUAccess()
-	bytes := SIZEOF_FLOAT32 * int64(dst.Len())
+	bytes := SizeOfF32 * int64(dst.Len())
 	switch {
 	default:
 		panic("bug")
@@ -235,13 +237,13 @@ func Copy(dst, src *Slice) {
 	}
 }
 
-// Floats returns the data as 3D array,
+// Scalars Floats returns the data as 3D array,
 // indexed by cell position. Data should be
 // scalar (1 component) and have CPUAccess() == true.
-func (f *Slice) Scalars() [][][]float32 {
-	x := f.Tensors()
+func (s *Slice) Scalars() [][][]float32 {
+	x := s.Tensors()
 	if len(x) != 1 {
-		panic(fmt.Sprintf("expecting 1 component, got %v", f.NComp()))
+		panic(fmt.Sprintf("expecting 1 component, got %v", s.NComp()))
 	}
 	return x[0]
 }
@@ -249,10 +251,10 @@ func (f *Slice) Scalars() [][][]float32 {
 // Vectors returns the data as 4D array,
 // indexed by component, cell position. Data should have
 // 3 components and have CPUAccess() == true.
-func (f *Slice) Vectors() [3][][][]float32 {
-	x := f.Tensors()
+func (s *Slice) Vectors() [3][][][]float32 {
+	x := s.Tensors()
 	if len(x) != 3 {
-		panic(fmt.Sprintf("expecting 3 components, got %v", f.NComp()))
+		panic(fmt.Sprintf("expecting 3 components, got %v", s.NComp()))
 	}
 	return [3][][][]float32{x[0], x[1], x[2]}
 }
@@ -260,11 +262,11 @@ func (f *Slice) Vectors() [3][][][]float32 {
 // Tensors returns the data as 4D array,
 // indexed by component, cell position.
 // Requires CPUAccess() == true.
-func (f *Slice) Tensors() [][][][]float32 {
-	tensors := make([][][][]float32, f.NComp())
-	host := f.Host()
+func (s *Slice) Tensors() [][][][]float32 {
+	tensors := make([][][][]float32, s.NComp())
+	host := s.Host()
 	for i := range tensors {
-		tensors[i] = reshape(host[i], f.Size())
+		tensors[i] = reshape(host[i], s.Size())
 	}
 	return tensors
 }

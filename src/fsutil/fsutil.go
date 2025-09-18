@@ -1,3 +1,4 @@
+// Package fsutil provides utility functions for file system operations.
 package fsutil
 
 import (
@@ -11,8 +12,8 @@ import (
 var wd = "" // Working directory set by SetWD
 
 const (
-	DirPerm  = 0755             // Permissions for new directories
-	FilePerm = 0644             // Permissions for new files
+	DirPerm  = 0o755            // Permissions for new directories
+	FilePerm = 0o644            // Permissions for new files
 	BUFSIZE  = 16 * 1024 * 1024 // Buffer size for buffered writer
 )
 

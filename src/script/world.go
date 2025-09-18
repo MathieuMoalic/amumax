@@ -1,4 +1,4 @@
-// package script provides a script interpreter for input files and GUI commands.
+// Package script provides a script interpreter for input files and GUI commands.
 package script
 
 import (
@@ -147,11 +147,11 @@ func (w *scope) document(ident string, doc ...string) {
 func (w *World) EnterScope() {
 	par := w.scope
 	w.scope = new(scope)
-	w.scope.parent = par
+	w.parent = par
 }
 
 func (w *World) ExitScope() {
-	w.scope = w.scope.parent
+	w.scope = w.parent
 	if w.scope == nil { // went above toplevel
 		panic("bug")
 	}

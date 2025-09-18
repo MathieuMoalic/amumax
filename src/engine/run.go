@@ -35,7 +35,6 @@ var (
 )
 
 func init() {
-
 	setSolver(DORMANDPRINCE)
 	_ = newScalarValue("dt", "s", "Time Step", func() float64 { return Dt_si })
 	_ = newScalarValue("LastErr", "", "Error of last step", func() float64 { return LastErr })
@@ -286,5 +285,4 @@ func checkExchangeLength() {
 		}
 
 	}
-
 }

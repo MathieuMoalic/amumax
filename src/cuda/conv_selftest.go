@@ -63,7 +63,6 @@ const CONV_TOLERANCE = 1e-6
 //	(O1) = (K11 K12 K13) * (I1)
 //	(O2)   (K21 K22 K23)   (I2)
 func bruteConv(in, out [3][][][]float32, kernel [3][3]*data.Slice) {
-
 	var kern [3][3][][][]float32
 	for i := range kern {
 		for j := range kern[i] {
@@ -87,7 +86,6 @@ func bruteConv(in, out [3][][][]float32, kernel [3][3]*data.Slice) {
 	}
 
 	for sc := 0; sc < 3; sc++ {
-
 		for sz := 0; sz < size[Z]; sz++ {
 			for sy := 0; sy < size[Y]; sy++ {
 				for sx := 0; sx < size[X]; sx++ {

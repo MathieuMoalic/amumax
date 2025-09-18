@@ -110,7 +110,6 @@ func tableInit() {
 	Table.AddColumn("t", "s")
 	tableAdd(&NormMag)
 	go tablesAutoFlush()
-
 }
 
 func tablesAutoFlush() {

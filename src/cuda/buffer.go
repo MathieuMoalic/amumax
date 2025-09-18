@@ -67,7 +67,6 @@ func Recycle(s *data.Slice) {
 		}
 		if _, ok := buf_check[ptr]; !ok {
 			log.Log.PanicIfError(fmt.Errorf("recyle: was not obtained with getbuffer"))
-
 		}
 		pool = append(pool, ptr)
 	}

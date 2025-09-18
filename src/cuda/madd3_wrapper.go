@@ -78,8 +78,10 @@ func k_madd3_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 u
 }
 
 // maps compute capability on PTX code for madd3 kernel.
-var madd3_map = map[int]string{0: "",
-	52: madd3_ptx_52}
+var madd3_map = map[int]string{
+	0:  "",
+	52: madd3_ptx_52,
+}
 
 // madd3 PTX code for various compute capabilities.
 const (

@@ -6,7 +6,7 @@ import (
 	"go/parser"
 )
 
-// Compiles an expression, which can then be evaluated. E.g.:
+// CompileExpr Compiles an expression, which can then be evaluated. E.g.:
 //
 //	expr, err := world.CompileExpr("1+1")
 //	expr.Eval()   // returns 2
@@ -38,7 +38,7 @@ func (w *World) CompileExpr(src string) (code Expr, e error) {
 	return w.compile(tree), nil
 }
 
-// CompileExpr with panic on error.
+// MustCompileExpr CompileExpr with panic on error.
 func (w *World) MustCompileExpr(src string) Expr {
 	code, err := w.CompileExpr(src)
 	if err != nil {
@@ -47,7 +47,7 @@ func (w *World) MustCompileExpr(src string) Expr {
 	return code
 }
 
-// compiles source consisting of a number of statements. E.g.:
+// Compile compiles source consisting of a number of statements. E.g.:
 //
 //	src = "a = 1; b = sin(x)"
 //	code, err := world.Compile(src)
@@ -88,7 +88,7 @@ func (w *World) Compile(src string) (code *BlockStmt, e error) {
 	return block, nil
 }
 
-// Like Compile but panics on error
+// MustCompile Like Compile but panics on error
 func (w *World) MustCompile(src string) Expr {
 	code, err := w.Compile(src)
 	if err != nil {

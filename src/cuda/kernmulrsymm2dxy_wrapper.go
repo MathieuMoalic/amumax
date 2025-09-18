@@ -75,8 +75,10 @@ func k_kernmulRSymm2Dxy_async(fftMx unsafe.Pointer, fftMy unsafe.Pointer, fftKxx
 }
 
 // maps compute capability on PTX code for kernmulRSymm2Dxy kernel.
-var kernmulRSymm2Dxy_map = map[int]string{0: "",
-	52: kernmulRSymm2Dxy_ptx_52}
+var kernmulRSymm2Dxy_map = map[int]string{
+	0:  "",
+	52: kernmulRSymm2Dxy_ptx_52,
+}
 
 // kernmulRSymm2Dxy PTX code for various compute capabilities.
 const (

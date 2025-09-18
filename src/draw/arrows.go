@@ -5,9 +5,10 @@ import (
 	"image/color"
 	"math"
 
-	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/golang/freetype/raster"
 	"golang.org/x/image/math/fixed"
+
+	"github.com/MathieuMoalic/amumax/src/data"
 )
 
 func drawArrows(img *image.RGBA, arr [3][][][]float32, sub int) {
@@ -56,7 +57,6 @@ func newCanvas(img *image.RGBA) *canvas {
 }
 
 func (c *canvas) Arrow(x, y, mx, my, mz, size float32) {
-
 	arrlen := 0.4 * size
 	arrw := 0.2 * size
 

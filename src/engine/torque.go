@@ -126,12 +126,10 @@ const (
 	FIXEDLAYER_BOTTOM
 )
 
-var (
-	currentSignFromFixedLayerPosition = map[fixedLayerPositionType]float64{
-		FIXEDLAYER_TOP:    1.0,
-		FIXEDLAYER_BOTTOM: -1.0,
-	}
-)
+var currentSignFromFixedLayerPosition = map[fixedLayerPositionType]float64{
+	FIXEDLAYER_TOP:    1.0,
+	FIXEDLAYER_BOTTOM: -1.0,
+}
 
 type flposition struct{}
 

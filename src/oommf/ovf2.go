@@ -59,7 +59,7 @@ func writeOVF2Header(out io.Writer, q *data.Slice, meta Meta) {
 	}
 
 	// We don't really have stages
-	//fmt.Fprintln(out, "# Desc: Stage simulation time: ", meta.TimeStep, " s") // TODO
+	// fmt.Fprintln(out, "# Desc: Stage simulation time: ", meta.TimeStep, " s") // TODO
 	hdr(out, "Desc", "Total simulation time: ", meta.Time, " s")
 
 	hdr(out, "xbase", cellsize[X]/2)
@@ -92,8 +92,7 @@ func writeOVF2Data(out io.Writer, q *data.Slice, dataformat string) {
 }
 
 func writeOVF2DataBinary4(out io.Writer, array *data.Slice) {
-
-	//w.count(w.out.Write((*(*[1<<31 - 1]byte)(unsafe.Pointer(&list[0])))[0 : 4*len(list)])) // (shortcut)
+	// w.count(w.out.Write((*(*[1<<31 - 1]byte)(unsafe.Pointer(&list[0])))[0 : 4*len(list)])) // (shortcut)
 
 	data := array.Tensors()
 	size := array.Size()
@@ -101,7 +100,7 @@ func writeOVF2DataBinary4(out io.Writer, array *data.Slice) {
 	var bytes []byte
 
 	// OOMMF requires this number to be first to check the format
-	var controlnumber float32 = OVF_CONTROL_NUMBER_4
+	var controlnumber float32 = OvfControlNumber4
 	bytes = (*[4]byte)(unsafe.Pointer(&controlnumber))[:]
 	_, err := out.Write(bytes)
 	log.Log.PanicIfError(err)
@@ -126,7 +125,7 @@ func readOVF2DataBinary4(in io.Reader, array *data.Slice) {
 
 	// OOMMF requires this number to be first to check the format
 	controlnumber := readFloat32(in)
-	if controlnumber != OVF_CONTROL_NUMBER_4 {
+	if controlnumber != OvfControlNumber4 {
 		panic("invalid OVF2 control number: " + fmt.Sprint(controlnumber))
 	}
 
@@ -172,7 +171,7 @@ func readOVF2DataBinary8(in io.Reader, array *data.Slice) {
 
 	// OOMMF requires this number to be first to check the format
 	controlnumber := readFloat64(in)
-	if controlnumber != OVF_CONTROL_NUMBER_8 {
+	if controlnumber != OvfControlNumber8 {
 		panic("invalid OVF2 control number: " + fmt.Sprint(controlnumber))
 	}
 

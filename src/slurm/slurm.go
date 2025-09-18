@@ -1,3 +1,4 @@
+// Package slurm provides utilities for integrating with SLURM job scheduler.
 package slurm
 
 import (

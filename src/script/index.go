@@ -8,10 +8,10 @@ import (
 func (w *World) compileIndexExpr(n *ast.IndexExpr) Expr {
 	x := w.compileExpr(n.X)
 	kind := x.Type().Kind()
-	if !(kind == reflect.Array || kind == reflect.Slice) {
+	if kind != reflect.Array && kind != reflect.Slice {
 		panic(err(n.Pos(), "can not index", x.Type()))
 	}
-	i := typeConv(n.Index.Pos(), w.compileExpr(n.Index), int_t)
+	i := typeConv(n.Index.Pos(), w.compileExpr(n.Index), intt)
 	return &index{x, i}
 }
 
@@ -22,6 +22,7 @@ type index struct {
 func (e *index) Type() reflect.Type {
 	return e.x.Type().Elem()
 }
+
 func (e *index) Eval() any {
 	x := reflect.ValueOf(e.x.Eval())
 	i := e.index.Eval().(int)

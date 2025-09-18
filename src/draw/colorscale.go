@@ -57,7 +57,6 @@ func colorMap(min, max, value float32, colormap ...color.RGBA) color.RGBA {
 	a := (1-x)*float64(c1.A) + x*float64(c2.A)
 
 	return color.RGBA{bte(r), bte(g), bte(b), bte(a)}
-
 }
 
 func bte(x float64) uint8 {

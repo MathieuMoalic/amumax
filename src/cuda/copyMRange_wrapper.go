@@ -99,8 +99,10 @@ func k_copyMRange_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, 
 }
 
 // maps compute capability on PTX code for copyMRange kernel.
-var copyMRange_map = map[int]string{0: "",
-	52: copyMRange_ptx_52}
+var copyMRange_map = map[int]string{
+	0:  "",
+	52: copyMRange_ptx_52,
+}
 
 // copyMRange PTX code for various compute capabilities.
 const (

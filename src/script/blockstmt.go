@@ -12,14 +12,14 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-// block statement is a list of statements.
+// BlockStmt block statement is a list of statements.
 type BlockStmt struct {
 	Children []Expr
 	Node     []ast.Node
 }
 
-// does not enter scope because it does not necessarily needs to (e.g. for, if).
-func (w *World) compileBlockStmt_noScope(n *ast.BlockStmt) *BlockStmt {
+// compileBlockStmtNoScopeST does not enter scope because it does not necessarily needs to (e.g. for, if).
+func (w *World) compileBlockStmtNoScopeST(n *ast.BlockStmt) *BlockStmt {
 	b := &BlockStmt{}
 	for _, s := range n.List {
 		b.append(w.compileStmt(s), s)

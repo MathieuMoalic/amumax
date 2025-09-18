@@ -5,11 +5,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/labstack/echo/v4"
+
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/engine"
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/labstack/echo/v4"
 )
 
 type PreviewState struct {
@@ -107,29 +108,29 @@ func (s *PreviewState) UpdateQuantityBuffer() {
 	if s.Type == "3D" {
 		componentCount = 3
 	}
-	GPU_in := engine.ValueOf(s.getQuantity())
-	defer cuda.Recycle(GPU_in)
+	GPUIn := engine.ValueOf(s.getQuantity())
+	defer cuda.Recycle(GPUIn)
 
-	CPU_out := data.NewSlice(componentCount, [3]int{s.XChosenSize, s.YChosenSize, 1})
-	GPU_out := cuda.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
-	defer GPU_out.Free()
+	CPUOut := data.NewSlice(componentCount, [3]int{s.XChosenSize, s.YChosenSize, 1})
+	GPUOut := cuda.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
+	defer GPUOut.Free()
 
 	if s.Type == "3D" {
 		for c := 0; c < componentCount; c++ {
-			cuda.Resize(GPU_out, GPU_in.Comp(c), s.Layer)
-			data.Copy(CPU_out.Comp(c), GPU_out)
+			cuda.Resize(GPUOut, GPUIn.Comp(c), s.Layer)
+			data.Copy(CPUOut.Comp(c), GPUOut)
 		}
-		s.normalizeVectors(CPU_out)
-		s.UpdateVectorField(CPU_out.Vectors())
+		s.normalizeVectors(CPUOut)
+		s.UpdateVectorField(CPUOut.Vectors())
 	} else {
 		if s.getQuantity().NComp() > 1 {
-			cuda.Resize(GPU_out, GPU_in.Comp(s.getComponent()), s.Layer)
-			data.Copy(CPU_out.Comp(0), GPU_out)
+			cuda.Resize(GPUOut, GPUIn.Comp(s.getComponent()), s.Layer)
+			data.Copy(CPUOut.Comp(0), GPUOut)
 		} else {
-			cuda.Resize(GPU_out, GPU_in.Comp(0), s.Layer)
-			data.Copy(CPU_out.Comp(0), GPU_out)
+			cuda.Resize(GPUOut, GPUIn.Comp(0), s.Layer)
+			data.Copy(CPUOut.Comp(0), GPUOut)
 		}
-		s.UpdateScalarField(CPU_out.Scalars())
+		s.UpdateScalarField(CPUOut.Scalars())
 	}
 }
 
@@ -253,22 +254,22 @@ func (s *PreviewState) updateMask() {
 	}
 	// cuda full size geom
 	geom := engine.Geometry
-	GPU_fullsize := cuda.Buffer(geom.NComp(), geom.Buffer.Size())
-	geom.EvalTo(GPU_fullsize)
-	defer cuda.Recycle(GPU_fullsize)
+	GPUFullsize := cuda.Buffer(geom.NComp(), geom.Buffer.Size())
+	geom.EvalTo(GPUFullsize)
+	defer cuda.Recycle(GPUFullsize)
 
 	// resize geom in GPU
-	GPU_resized := cuda.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
-	defer GPU_resized.Free()
-	cuda.Resize(GPU_resized, GPU_fullsize.Comp(0), s.Layer)
+	GPUResized := cuda.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
+	defer GPUResized.Free()
+	cuda.Resize(GPUResized, GPUFullsize.Comp(0), s.Layer)
 
 	// copy resized geom from GPU to CPU
-	CPU_out := data.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
-	defer CPU_out.Free()
-	data.Copy(CPU_out.Comp(0), GPU_resized)
+	CPUOut := data.NewSlice(1, [3]int{s.XChosenSize, s.YChosenSize, 1})
+	defer CPUOut.Free()
+	data.Copy(CPUOut.Comp(0), GPUResized)
 
 	// extract mask from CPU slice
-	s.layerMask = CPU_out.Scalars()[0]
+	s.layerMask = CPUOut.Scalars()[0]
 }
 
 func contains(arr []string, val string) bool {

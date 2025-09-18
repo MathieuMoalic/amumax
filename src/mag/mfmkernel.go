@@ -11,13 +11,11 @@ import (
 
 func MFMKernel(mesh mesh.MeshLike, lift, tipsize float64, cacheDir string) (kernel [3]*data.Slice) {
 	return CalcMFMKernel(mesh, lift, tipsize)
-
 }
 
-// Kernel for the vertical derivative of the force on an MFM tip due to mx, my, mz.
+// CalcMFMKernel Kernel for the vertical derivative of the force on an MFM tip due to mx, my, mz.
 // This is the 2nd derivative of the energy w.r.t. z.
 func CalcMFMKernel(kernelMesh mesh.MeshLike, lift, tipsize float64) (kernel [3]*data.Slice) {
-
 	const TipCharge = 1 / Mu0 // tip charge
 	const Δ = 1e-9            // tip oscillation, take 2nd derivative over this distance
 	log.AssertMsg(lift > 0, "MFM tip crashed into sample, please lift the new one higher")
@@ -87,9 +85,9 @@ func CalcMFMKernel(kernelMesh mesh.MeshLike, lift, tipsize float64) (kernel [3]*
 						E[i+1] = B.Dot(m) * volume // i=-1 stored in  E[0]
 					}
 
-					dFdz_tip := ((E[0] - E[1]) + (E[2] - E[1])) / (Δ * Δ) // dFz/dz = d2E/dz2
+					dFdzTip := ((E[0] - E[1]) + (E[2] - E[1])) / (Δ * Δ) // dFz/dz = d2E/dz2
 
-					K[s][zw][yw][xw] += float32(dFdz_tip) // += needed in case of PBC
+					K[s][zw][yw][xw] += float32(dFdzTip) // += needed in case of PBC
 				}
 			}
 		}

@@ -76,5 +76,7 @@ func init() {
 	declVar("PreviewYDataPoints", &PreviewYDataPoints, "Number of data points in the y direction for the 2D/3D preview")
 }
 
-var PreviewXDataPoints = 100
-var PreviewYDataPoints = 100
+var (
+	PreviewXDataPoints = 100
+	PreviewYDataPoints = 100
+)

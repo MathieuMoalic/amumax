@@ -247,6 +247,7 @@ func (p *regionwiseScalar) setRegionsFunc(r1, r2 int, f script.ScalarFunction) {
 func (p *regionwiseScalar) GetRegion(region int) float64 {
 	return float64(p.getRegion(region)[0])
 }
+
 func (p *regionwiseScalar) GetRegionToString(region int) string {
 	v := float64(p.getRegion(region)[0])
 	return fmt.Sprintf("%g", v)
@@ -254,7 +255,7 @@ func (p *regionwiseScalar) GetRegionToString(region int) string {
 
 func (p *regionwiseScalar) Eval() any               { return p }
 func (p *regionwiseScalar) Type() reflect.Type      { return reflect.TypeOf(new(regionwiseScalar)) }
-func (p *regionwiseScalar) InputType() reflect.Type { return script.ScalarFunction_t }
+func (p *regionwiseScalar) InputType() reflect.Type { return script.ScalarFunctiont }
 func (p *regionwiseScalar) Average() float64        { return qAverageUniverse(p)[0] }
 func (p *regionwiseScalar) Region(r int) *sOneReg   { return sOneRegion(p, r) }
 
@@ -301,8 +302,8 @@ type regionwiseVector struct {
 
 func newVectorParam(name, unit, desc string) *regionwiseVector {
 	p := new(regionwiseVector)
-	p.regionwise.init(VECTOR, name, unit, nil) // no vec param has children (yet)
-	if !strings.HasPrefix(name, "_") {         // don't export names beginning with "_" (e.g. from exciation)
+	p.init(VECTOR, name, unit, nil)    // no vec param has children (yet)
+	if !strings.HasPrefix(name, "_") { // don't export names beginning with "_" (e.g. from exciation)
 		declLValue(name, p, cat(desc, unit))
 	}
 	return p
@@ -310,7 +311,7 @@ func newVectorParam(name, unit, desc string) *regionwiseVector {
 
 func (p *regionwiseVector) SetRegion(region int, f script.VectorFunction) {
 	if region == -1 {
-		p.setRegionsFunc(0, NREGION, f) //uniform
+		p.setRegionsFunc(0, NREGION, f) // uniform
 	} else {
 		p.setRegionsFunc(region, region+1, f)
 	}
@@ -342,13 +343,14 @@ func (p *regionwiseVector) GetRegion(region int) [3]float64 {
 	v := p.getRegion(region)
 	return unslice(v)
 }
+
 func (p *regionwiseVector) GetRegionToString(region int) string {
 	v := unslice(p.getRegion(region))
 	return fmt.Sprintf("(%g,%g,%g)", v[0], v[1], v[2])
 }
 func (p *regionwiseVector) Eval() any               { return p }
 func (p *regionwiseVector) Type() reflect.Type      { return reflect.TypeOf(new(regionwiseVector)) }
-func (p *regionwiseVector) InputType() reflect.Type { return script.VectorFunction_t }
+func (p *regionwiseVector) InputType() reflect.Type { return script.VectorFunctiont }
 func (p *regionwiseVector) Region(r int) *vOneReg   { return vOneRegion(p, r) }
 func (p *regionwiseVector) Average() data.Vector    { return unslice(qAverageUniverse(p)) }
 func (p *regionwiseVector) Comp(c int) ScalarField  { return comp(p, c) }

@@ -9,8 +9,7 @@ import (
 )
 
 // Classical 4th order RK solver.
-type rk4 struct {
-}
+type rk4 struct{}
 
 func (rk *rk4) Step() {
 	m := NormMag.Buffer()

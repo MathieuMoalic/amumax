@@ -66,8 +66,10 @@ func k_regionadds_async(dst unsafe.Pointer, LUT unsafe.Pointer, regions unsafe.P
 }
 
 // maps compute capability on PTX code for regionadds kernel.
-var regionadds_map = map[int]string{0: "",
-	52: regionadds_ptx_52}
+var regionadds_map = map[int]string{
+	0:  "",
+	52: regionadds_ptx_52,
+}
 
 // regionadds PTX code for various compute capabilities.
 const (

@@ -66,8 +66,10 @@ func k_pointwise_div_async(dst unsafe.Pointer, a unsafe.Pointer, b unsafe.Pointe
 }
 
 // maps compute capability on PTX code for pointwise_div kernel.
-var pointwise_div_map = map[int]string{0: "",
-	52: pointwise_div_ptx_52}
+var pointwise_div_map = map[int]string{
+	0:  "",
+	52: pointwise_div_ptx_52,
+}
 
 // pointwise_div PTX code for various compute capabilities.
 const (

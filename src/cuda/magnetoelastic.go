@@ -47,5 +47,5 @@ func GetMagnetoelasticForceDensity(out, m *data.Slice, B1, B2 MSlice, mesh mesh.
 		B1.DevPtr(0), B1.Mul(0), B2.DevPtr(0), B2.Mul(0),
 		rcsx, rcsy, rcsz,
 		N[X], N[Y], N[Z],
-		mesh.PBC_code(), cfg)
+		mesh.PBCCode(), cfg)
 }

@@ -69,8 +69,10 @@ func k_setTheta_async(theta unsafe.Pointer, mz unsafe.Pointer, Nx int, Ny int, N
 }
 
 // maps compute capability on PTX code for setTheta kernel.
-var setTheta_map = map[int]string{0: "",
-	52: setTheta_ptx_52}
+var setTheta_map = map[int]string{
+	0:  "",
+	52: setTheta_ptx_52,
+}
 
 // setTheta PTX code for various compute capabilities.
 const (

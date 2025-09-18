@@ -90,8 +90,10 @@ func k_kernmulRSymm3D_async(fftMx unsafe.Pointer, fftMy unsafe.Pointer, fftMz un
 }
 
 // maps compute capability on PTX code for kernmulRSymm3D kernel.
-var kernmulRSymm3D_map = map[int]string{0: "",
-	52: kernmulRSymm3D_ptx_52}
+var kernmulRSymm3D_map = map[int]string{
+	0:  "",
+	52: kernmulRSymm3D_ptx_52,
+}
 
 // kernmulRSymm3D PTX code for various compute capabilities.
 const (

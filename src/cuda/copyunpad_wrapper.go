@@ -78,8 +78,10 @@ func k_copyunpad_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Po
 }
 
 // maps compute capability on PTX code for copyunpad kernel.
-var copyunpad_map = map[int]string{0: "",
-	52: copyunpad_ptx_52}
+var copyunpad_map = map[int]string{
+	0:  "",
+	52: copyunpad_ptx_52,
+}
 
 // copyunpad PTX code for various compute capabilities.
 const (

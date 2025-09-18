@@ -1,14 +1,14 @@
 package engine
 
 import (
+	"math"
+
 	"github.com/MathieuMoalic/amumax/src/cuda"
 	"github.com/MathieuMoalic/amumax/src/cuda/curand"
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/MathieuMoalic/amumax/src/mag"
 	"github.com/MathieuMoalic/amumax/src/mesh"
-
-	"math"
 )
 
 var (

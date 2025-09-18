@@ -3,9 +3,10 @@ package api
 import (
 	"net/http"
 
+	"github.com/labstack/echo/v4"
+
 	"github.com/MathieuMoalic/amumax/src/engine"
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/labstack/echo/v4"
 )
 
 type TablePlotState struct {

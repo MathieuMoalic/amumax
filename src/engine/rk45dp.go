@@ -93,7 +93,7 @@ func (rk *rk45DP) Step() {
 	torqueFn(k7) // next torque if OK
 
 	// error estimate
-	Err := cuda.Buffer(3, size) //k3 // re-use k3 as error estimate
+	Err := cuda.Buffer(3, size) // k3 // re-use k3 as error estimate
 	defer cuda.Recycle(Err)
 	cuda.Madd6(Err, rk.k1, k3, k4, k5, k6, k7, (35./384.)-(5179./57600.), (500./1113.)-(7571./16695.), (125./192.)-(393./640.), (-2187./6784.)-(-92097./339200.), (11./84.)-(187./2100.), (0.)-(1./40.))
 
@@ -111,7 +111,7 @@ func (rk *rk45DP) Step() {
 		data.Copy(rk.k1, k7) // FSAL
 	} else {
 		// undo bad step
-		//log.Println("Bad step at t=", t0, ", err=", err)
+		// log.Println("Bad step at t=", t0, ", err=", err)
 		log.AssertMsg(FixDt == 0, "Invalid step: cannot undo step when FixDt is set")
 		Time = t0
 		data.Copy(m, m0)

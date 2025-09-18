@@ -1,3 +1,4 @@
+// Package url provides utilities for URL parsing.
 package url
 
 import (
@@ -7,7 +8,7 @@ import (
 	"strings"
 )
 
-// parse the --webui-host flag into host, port, and path
+// ParseAddrPath parse the --webui-host flag into host, port, and path
 func ParseAddrPath(URI string) (host string, port int, path string, err error) {
 	// Define the valid address format message
 	validFormatMsg := "Valid address format: `host:port`, `host`, `host:port/path`, `host/path`, `:port`, `:port/path`"

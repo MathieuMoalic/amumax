@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/labstack/echo/v4"
+
 	"github.com/MathieuMoalic/amumax/src/engine"
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/labstack/echo/v4"
 )
 
 type ConsoleState struct {
@@ -23,7 +24,6 @@ func initConsoleAPI(e *echo.Group, ws *WebSocketManager) *ConsoleState {
 	}
 	e.POST("/api/console/command", state.postConsoleCommand)
 	return state
-
 }
 
 func (s ConsoleState) postConsoleCommand(c echo.Context) error {

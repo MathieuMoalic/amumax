@@ -20,7 +20,7 @@ func AddExchange(B, m *data.Slice, Aex_red SymmLUT, Msat MSlice, regions *Bytes,
 	wy := float32(2 / (c[Y] * c[Y]))
 	wz := float32(2 / (c[Z] * c[Z]))
 	N := mesh.Size()
-	pbc := mesh.PBC_code()
+	pbc := mesh.PBCCode()
 	cfg := make3DConf(N)
 	k_addexchange_async(B.DevPtr(X), B.DevPtr(Y), B.DevPtr(Z),
 		m.DevPtr(X), m.DevPtr(Y), m.DevPtr(Z),
@@ -36,7 +36,7 @@ func ExchangeDecode(dst *data.Slice, Aex_red SymmLUT, regions *Bytes, mesh mesh.
 	wy := float32(2 / (c[Y] * c[Y]))
 	wz := float32(2 / (c[Z] * c[Z]))
 	N := mesh.Size()
-	pbc := mesh.PBC_code()
+	pbc := mesh.PBCCode()
 	cfg := make3DConf(N)
 	k_exchangedecode_async(dst.DevPtr(0), unsafe.Pointer(Aex_red), regions.Ptr, wx, wy, wz, N[X], N[Y], N[Z], pbc, cfg)
 }

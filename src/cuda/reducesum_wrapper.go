@@ -66,8 +66,10 @@ func k_reducesum_async(src unsafe.Pointer, dst unsafe.Pointer, initVal float32, 
 }
 
 // maps compute capability on PTX code for reducesum kernel.
-var reducesum_map = map[int]string{0: "",
-	52: reducesum_ptx_52}
+var reducesum_map = map[int]string{
+	0:  "",
+	52: reducesum_ptx_52,
+}
 
 // reducesum PTX code for various compute capabilities.
 const (

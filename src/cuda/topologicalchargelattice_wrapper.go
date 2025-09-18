@@ -81,8 +81,10 @@ func k_settopologicalchargelattice_async(s unsafe.Pointer, mx unsafe.Pointer, my
 }
 
 // maps compute capability on PTX code for settopologicalchargelattice kernel.
-var settopologicalchargelattice_map = map[int]string{0: "",
-	52: settopologicalchargelattice_ptx_52}
+var settopologicalchargelattice_map = map[int]string{
+	0:  "",
+	52: settopologicalchargelattice_ptx_52,
+}
 
 // settopologicalchargelattice PTX code for various compute capabilities.
 const (

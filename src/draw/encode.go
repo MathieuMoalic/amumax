@@ -15,7 +15,7 @@ import (
 )
 
 func RenderFormat(out io.Writer, f *data.Slice, min, max string, arrowSize int, format string, colormap ...ColorMapSpec) error {
-	var codecs = map[string]codec{".png": pngfull, ".jpg": jpeg100, ".gif": gif256}
+	codecs := map[string]codec{".png": pngfull, ".jpg": jpeg100, ".gif": gif256}
 	ext := strings.ToLower(path.Ext(format))
 	enc := codecs[ext]
 	if enc == nil {

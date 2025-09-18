@@ -87,8 +87,10 @@ func k_minimize_async(mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, m
 }
 
 // maps compute capability on PTX code for minimize kernel.
-var minimize_map = map[int]string{0: "",
-	52: minimize_ptx_52}
+var minimize_map = map[int]string{
+	0:  "",
+	52: minimize_ptx_52,
+}
 
 // minimize PTX code for various compute capabilities.
 const (

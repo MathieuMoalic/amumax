@@ -119,9 +119,12 @@
         basepkgs
         ++ [
           pkgs.go
+          pkgs.golint
+          pkgs.go-tools
           pkgs.gopls
           pkgs.golangci-lint
-          pkgs.gcc11
+          pkgs.revive
+          pkgs.gcc13
           pkgs.nodejs_22
           pkgs.nix-prefetch-github
           pkgs.prefetch-npm-deps
@@ -136,7 +139,7 @@
       LD_LIBRARY_PATH = "${cuda.libcufft}/lib:${cuda.libcurand}/lib:/run/opengl-driver/lib/";
 
       shellHook = ''
-        export PATH="${pkgs.gcc11}/bin:$PATH"
+        export PATH="${pkgs.gcc13}/bin:$PATH"
         export GOPATH=$(pwd)/.go/path
         export GOCACHE=$(pwd)/.go/cache
         export GOENV=$(pwd)/.go/env

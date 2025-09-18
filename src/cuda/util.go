@@ -66,7 +66,8 @@ func checkSize(a interface {
 	Size() [3]int
 }, b ...interface {
 	Size() [3]int
-}) {
+},
+) {
 	sa := a.Size()
 	for _, b := range b {
 		if b.Size() != sa {

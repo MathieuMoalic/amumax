@@ -24,6 +24,6 @@ func newFunction(fn any) *function {
 func (f *function) Type() reflect.Type    { return f.Value.Type() }
 func (f *function) NumIn() int            { return f.Type().NumIn() }
 func (f *function) In(i int) reflect.Type { return f.Type().In(i) }
-func (f *function) Eval() any             { return f.Value.Interface() }
+func (f *function) Eval() any             { return f.Interface() }
 func (f *function) Child() []Expr         { return nil }
 func (f *function) Fix() Expr             { return f }

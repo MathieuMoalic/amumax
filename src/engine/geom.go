@@ -218,7 +218,6 @@ func (g *geom) shift(dx int) {
 			}
 		}
 	}
-
 }
 
 func (g *geom) shiftY(dy int) {
@@ -248,7 +247,6 @@ func (g *geom) shiftY(dy int) {
 			}
 		}
 	}
-
 }
 
 // x range that needs to be refreshed after shift over dx

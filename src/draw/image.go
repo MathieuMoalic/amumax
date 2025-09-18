@@ -1,3 +1,4 @@
+// Package draw provides functions to render data.Slice as image.RGBA
 package draw
 
 import (
@@ -114,7 +115,6 @@ func extrema(data []float32) (min, max float32) {
 // Draws rank 3 tensor (3D scalar field) as image
 // averages data over X (usually thickness of thin film)
 func drawFloats(img *image.RGBA, arr [][][]float32, min, max float32, colormap ...color.RGBA) {
-
 	w, h := len(arr[0][0]), len(arr[0])
 	d := len(arr)
 	*img = *recycle(img, w, h)
@@ -124,7 +124,6 @@ func drawFloats(img *image.RGBA, arr [][][]float32, min, max float32, colormap .
 			var v float32 = 0.
 			for iz := 0; iz < d; iz++ {
 				v += arr[iz][iy][ix]
-
 			}
 			v /= float32(d)
 			img.Set(ix, (h-1)-iy, colorMap(min, max, v, colormap...))

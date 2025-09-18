@@ -1,3 +1,4 @@
+// Package update provides functionality to update the application to the latest version.
 package update
 
 import (
@@ -6,10 +7,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/MathieuMoalic/amumax/src/version"
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
 	"github.com/minio/selfupdate"
+
+	"github.com/MathieuMoalic/amumax/src/version"
 )
 
 func doUpdate(tag string) {

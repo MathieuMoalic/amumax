@@ -8,11 +8,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/labstack/echo/v4"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/shirou/gopsutil/v3/process"
+
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 type MetricsState struct {
@@ -20,19 +21,19 @@ type MetricsState struct {
 
 	PID             int     `msgpack:"pid"`
 	Error           string  `msgpack:"error"`
-	CpuPercent      float64 `msgpack:"cpuPercent"`
-	CpuPercentTotal float64 `msgpack:"cpuPercentTotal"`
-	RamPercent      float32 `msgpack:"ramPercent"`
-	RamPercentTotal float64 `msgpack:"ramPercentTotal"`
+	CPUPercent      float64 `msgpack:"cpuPercent"`
+	CPUPercentTotal float64 `msgpack:"cpuPercentTotal"`
+	RAMPercent      float32 `msgpack:"ramPercent"`
+	RAMPercentTotal float64 `msgpack:"ramPercentTotal"`
 
-	GpuName               string  `msgpack:"gpuName"`
-	GpuUUID               string  `msgpack:"gpuUUID"`
-	GpuUtilizationPercent int     `msgpack:"gpuUtilizationPercent"`
-	GpuTemperature        int     `msgpack:"gpuTemperature"`
-	GpuPowerDraw          float64 `msgpack:"gpuPowerDraw"`
-	GpuPowerLimit         float64 `msgpack:"gpuPowerLimit"`
-	GpuVramUsed           int     `msgpack:"gpuVramUsed"`
-	GpuVramTotal          int     `msgpack:"gpuVramTotal"`
+	GPUName               string  `msgpack:"gpuName"`
+	GPUUUID               string  `msgpack:"gpuUUID"`
+	GPUUtilizationPercent int     `msgpack:"gpuUtilizationPercent"`
+	GPUTemperature        int     `msgpack:"gpuTemperature"`
+	GPUPowerDraw          float64 `msgpack:"gpuPowerDraw"`
+	GPUPowerLimit         float64 `msgpack:"gpuPowerLimit"`
+	GPUVramUsed           int     `msgpack:"gpuVramUsed"`
+	GPUVramTotal          int     `msgpack:"gpuVramTotal"`
 }
 
 func initMetricsAPI(e *echo.Group, ws *WebSocketManager) *MetricsState {
@@ -68,10 +69,10 @@ func (m *MetricsState) getGPUStats1() {
 		log.Log.Warn("%s", m.Error)
 		return
 	}
-	var pid_fields []string
+	var pidFields []string
 	// find the line with the pid
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		fields := strings.Split(line, ", ")
 		// the last line is empty
 		if line == "" {
@@ -85,7 +86,7 @@ func (m *MetricsState) getGPUStats1() {
 				return
 			}
 			if pid == m.PID {
-				pid_fields = fields
+				pidFields = fields
 			}
 		} else {
 			m.Error = fmt.Sprintf("Expected %d fields in nvidia-smi output, got %v: %s", expectedFields, len(fields), output)
@@ -93,23 +94,23 @@ func (m *MetricsState) getGPUStats1() {
 			return
 		}
 	}
-	if pid_fields == nil {
+	if pidFields == nil {
 		m.Error = "Couldn't find the process ID in nvidia-smi output, this is normal if running inside a container"
 		log.Log.Warn("%s", m.Error)
 		return
 	}
-	m.GpuVramUsed, err = strconv.Atoi(pid_fields[1])
+	m.GPUVramUsed, err = strconv.Atoi(pidFields[1])
 	if err != nil {
 		m.Error = "Error parsing vram used"
 		log.Log.Warn("%s", m.Error)
 		return
 	}
-	m.GpuName = pid_fields[2]
-	m.GpuUUID = pid_fields[3]
+	m.GPUName = pidFields[2]
+	m.GPUUUID = pidFields[3]
 }
 
 func (m *MetricsState) getGPUStats2() {
-	if m.GpuUUID == "" {
+	if m.GPUUUID == "" {
 		return
 	}
 	// filter using the gpu uuid
@@ -124,18 +125,18 @@ func (m *MetricsState) getGPUStats2() {
 		log.Log.Warn("%s", m.Error)
 		return
 	}
-	var uuid_fields []string
+	var UUIDFields []string
 	// find the line with the uuid
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		// the last line is empty
 		if line == "" {
 			continue
 		}
 		fields := strings.Split(line, ", ")
 		if len(fields) == expectedFields {
-			if fields[0] == m.GpuUUID {
-				uuid_fields = fields
+			if fields[0] == m.GPUUUID {
+				UUIDFields = fields
 			}
 		} else {
 			m.Error = fmt.Sprintf("Expected %d fields in nvidia-smi output, got %v: %s", expectedFields, len(fields), output)
@@ -143,36 +144,36 @@ func (m *MetricsState) getGPUStats2() {
 			return
 		}
 	}
-	if uuid_fields == nil {
+	if UUIDFields == nil {
 		m.Error = "No correct UUID found in nvidia-smi output"
 		log.Log.Warn("%s", m.Error)
 		return
 	}
-	m.GpuTemperature, err = strconv.Atoi(uuid_fields[1]) // temperature in C
+	m.GPUTemperature, err = strconv.Atoi(UUIDFields[1]) // temperature in C
 	if err != nil {
 		m.Error = fmt.Sprintf("Error parsing GPU temperature: %v", err)
 		log.Log.Warn("%s", m.Error)
 		return
 	}
-	m.GpuPowerDraw, err = strconv.ParseFloat(uuid_fields[2], 32) // power draw in W
+	m.GPUPowerDraw, err = strconv.ParseFloat(UUIDFields[2], 32) // power draw in W
 	if err != nil {
 		m.Error = fmt.Sprintf("Error parsing power draw: %v", err)
 		log.Log.Warn("%s", m.Error)
 		return
 	}
-	m.GpuVramTotal, err = strconv.Atoi(uuid_fields[3]) // vram total in MiB
+	m.GPUVramTotal, err = strconv.Atoi(UUIDFields[3]) // vram total in MiB
 	if err != nil {
 		m.Error = fmt.Sprintf("Error parsing vram total: %v", err)
 		log.Log.Warn("%s", m.Error)
 		return
 	}
-	m.GpuUtilizationPercent, err = strconv.Atoi(uuid_fields[4]) // gpu utilization in %
+	m.GPUUtilizationPercent, err = strconv.Atoi(UUIDFields[4]) // gpu utilization in %
 	if err != nil {
 		m.Error = fmt.Sprintf("Error parsing gpu utilization: %v", err)
 		log.Log.Warn("%s", m.Error)
 		return
 	}
-	m.GpuPowerLimit, err = strconv.ParseFloat(uuid_fields[5], 32) // power limit in W
+	m.GPUPowerLimit, err = strconv.ParseFloat(UUIDFields[5], 32) // power limit in W
 	if err != nil {
 		m.Error = fmt.Sprintf("Error parsing power limit: %v", err)
 		log.Log.Warn("%s", m.Error)
@@ -188,7 +189,7 @@ func (m *MetricsState) getTotalCPUUsage() {
 		log.Log.Warn("%s", m.Error)
 		return
 	}
-	m.CpuPercentTotal = totalCPUArray[0]
+	m.CPUPercentTotal = totalCPUArray[0]
 }
 
 // Get program-specific CPU usage
@@ -212,9 +213,9 @@ func (m *MetricsState) getProgramCPUUsage() {
 		log.Log.Warn("%s", m.Error)
 		return
 	}
-	m.CpuPercent = cpuPercent / float64(numCPU)
+	m.CPUPercent = cpuPercent / float64(numCPU)
 
-	m.RamPercent, err = proc.MemoryPercent()
+	m.RAMPercent, err = proc.MemoryPercent()
 	if err != nil {
 		m.Error = fmt.Sprintf("error getting program RAM usage: %v", err)
 		log.Log.Warn("%s", m.Error)
@@ -230,7 +231,7 @@ func (m *MetricsState) getTotalRAMUsage() {
 		log.Log.Warn("%s", m.Error)
 		return
 	}
-	m.RamPercentTotal = vmStat.UsedPercent
+	m.RAMPercentTotal = vmStat.UsedPercent
 }
 
 func (m *MetricsState) postMetricsReset(c echo.Context) error {

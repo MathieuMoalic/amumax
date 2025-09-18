@@ -22,14 +22,13 @@ func centerBubbleInner() {
 		shiftMagU[Z] = -BubbleMz
 	}
 
-	//put bubble to center
+	// put bubble to center
 	if centerIdx[X] != 0 {
 		shift(-centerIdx[X])
 	}
 	if centerIdx[Y] != 0 {
 		yShift(-centerIdx[Y])
 	}
-
 }
 
 // This post-step function centers the simulation window on a bubble

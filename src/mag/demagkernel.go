@@ -15,7 +15,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/zarr"
 )
 
-// Obtains the demag kernel either from cacheDir/ or by calculating (and then storing in cacheDir for next time).
+// DemagKernel Obtains the demag kernel either from cacheDir/ or by calculating (and then storing in cacheDir for next time).
 // Empty cacheDir disables caching.
 func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, cacheDir string, hideProgressBar bool) (kernel [3][3]*data.Slice) {
 	timer.Start("kernel_init")
@@ -64,8 +64,8 @@ func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, ca
 		if err != nil {
 			log.Log.Warn("Couldn't save kernel to cache: %v \n %v", basename, err.Error())
 		}
-		time_taken := time.Since(timer)
-		log.Log.Info("Saved kernel in %s", time_taken.String())
+		timeTaken := time.Since(timer)
+		log.Log.Info("Saved kernel in %s", timeTaken.String())
 		return
 	}
 }
@@ -73,7 +73,7 @@ func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, ca
 func bytesToKernel(kernelBytes []byte, size [3]int) (kernel [3][3]*data.Slice) {
 	offset := 0
 	sliceLength := size[X] * size[Y] * size[Z] * 4
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		for j := i; j < 3; j++ {
 			// if Nz is 1, we have a 2D simulation and these elements are zero
 			if size[Z] == 1 {
@@ -150,7 +150,7 @@ func loadKernel(fname string, size [3]int) ([3][3]*data.Slice, error) {
 
 func saveKernel(fname string, kernel [3][3]*data.Slice) error {
 	kernelBytes := kernelToBytes(kernel)
-	f, err := os.OpenFile(fname, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
+	f, err := os.OpenFile(fname, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0o666)
 	if err != nil {
 		return err
 	}
@@ -180,7 +180,7 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 
 	// Allocate only upper diagonal part. The rest is symmetric due to reciprocity.
 	var array [3][3][][][]float32
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		for j := i; j < 3; j++ {
 			kernel[i][j] = data.NewSlice(1, size)
 			array[i][j] = kernel[i][j].Scalars()
@@ -208,7 +208,7 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 	// 9 nested loops, does that stress you out?
 	// Fortunately, the 5 inner ones usually loop over just one element.
 
-	for s := 0; s < 3; s++ { // source index Ksdxyz (parallelized over)
+	for s := range 3 { // source index Ksdxyz (parallelized over)
 		go func(s int) {
 			u, v, w := s, (s+1)%3, (s+2)%3 // u = direction of source (s), v & w are the orthogonal directions
 			var (
@@ -285,14 +285,14 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 								pole[w] = pw
 
 								// Do volume integral over destination cell
-								for α := 0; α < nx; α++ {
-									rx := R[X] - cellsize[X]/2 + cellsize[X]/float64(2*nx) + (cellsize[X]/float64(nx))*float64(α)
+								for nxi := range nx {
+									rx := R[X] - cellsize[X]/2 + cellsize[X]/float64(2*nx) + (cellsize[X]/float64(nx))*float64(nxi)
 
-									for β := 0; β < ny; β++ {
-										ry := R[Y] - cellsize[Y]/2 + cellsize[Y]/float64(2*ny) + (cellsize[Y]/float64(ny))*float64(β)
+									for nyi := range ny {
+										ry := R[Y] - cellsize[Y]/2 + cellsize[Y]/float64(2*ny) + (cellsize[Y]/float64(ny))*float64(nyi)
 
-										for γ := 0; γ < nz; γ++ {
-											rz := R[Z] - cellsize[Z]/2 + cellsize[Z]/float64(2*nz) + (cellsize[Z]/float64(nz))*float64(γ)
+										for nzi := range nz {
+											rz := R[Z] - cellsize[Z]/2 + cellsize[Z]/float64(2*nz) + (cellsize[Z]/float64(nz))*float64(nzi)
 											points++
 
 											pole[u] = pu1
@@ -392,7 +392,7 @@ func calcDemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64
 
 // integration ranges for kernel. size=kernelsize, so padded for no PBC, not padded for PBC
 func kernelRanges(size, pbc [3]int) (r1, r2 [3]int) {
-	for c := 0; c < 3; c++ {
+	for c := range 3 {
 		if pbc[c] == 0 {
 			r1[c], r2[c] = -(size[c]-1)/2, (size[c]-1)/2
 		} else {
@@ -463,7 +463,7 @@ func padSize(gridsize, pbc [3]int) [3]int {
 			padded[i] = gridsize[i]
 			continue
 		}
-		if i != Z || gridsize[i] > SMALL_N { // for some reason it only works for Z, perhaps we assume even FFT size elsewhere?
+		if i != Z || gridsize[i] > SmallN { // for some reason it only works for Z, perhaps we assume even FFT size elsewhere?
 			// large N: zero pad * 2 for FFT performance
 			padded[i] = gridsize[i] * 2
 		} else {
@@ -474,11 +474,11 @@ func padSize(gridsize, pbc [3]int) [3]int {
 	return padded
 }
 
-// Use 2N-1 padding instead of 2N for sizes up to SMALL_N.
+// SmallN Use 2N-1 padding instead of 2N for sizes up to SmallN.
 // 5 seems a good choice since for all n<=5, 2*n-1 only has
 // prime factors 2,3,5,7 (good CUFFT performance).
 // starting from 6 it becomes problematic so we use 2*n.
-const SMALL_N = 5
+const SmallN = 5
 
 // "If brute force doesn't solve your problem,
 // you're not using enough of it."

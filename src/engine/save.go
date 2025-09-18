@@ -50,7 +50,6 @@ func saveOVF(q Quantity) {
 
 // Save under given file name (transparent async I/O).
 func saveAsOVF(q Quantity, fname string) {
-
 	if !strings.HasPrefix(fname, OD()) {
 		fname = OD() + fname // don't clean, turns http:// in http:/
 	}
@@ -120,7 +119,6 @@ func saveAs_sync(fname string, s *data.Slice, info oommf.Meta, format outputForm
 	default:
 		panic("invalid output format")
 	}
-
 }
 
 type outputFormatType int
@@ -133,11 +131,10 @@ const (
 	DUMP
 )
 
-var (
-	StringFromOutputFormat = map[outputFormatType]string{
-		OVF1_TEXT:   "ovf",
-		OVF1_BINARY: "ovf",
-		OVF2_TEXT:   "ovf",
-		OVF2_BINARY: "ovf",
-		DUMP:        "dump"}
-)
+var StringFromOutputFormat = map[outputFormatType]string{
+	OVF1_TEXT:   "ovf",
+	OVF1_BINARY: "ovf",
+	OVF2_TEXT:   "ovf",
+	OVF2_BINARY: "ovf",
+	DUMP:        "dump",
+}

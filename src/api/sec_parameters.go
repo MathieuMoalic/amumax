@@ -3,9 +3,10 @@ package api
 import (
 	"net/http"
 
+	"github.com/labstack/echo/v4"
+
 	"github.com/MathieuMoalic/amumax/src/engine"
 	"github.com/MathieuMoalic/amumax/src/log"
-	"github.com/labstack/echo/v4"
 )
 
 type Field struct {
@@ -36,6 +37,7 @@ func initParameterAPI(e *echo.Group, ws *WebSocketManager) *ParametersState {
 	e.POST("/api/parameter/selected-region", parametersState.postSelectParameterRegion)
 	return &parametersState
 }
+
 func (s *ParametersState) Update() {
 	s.getFields()
 }

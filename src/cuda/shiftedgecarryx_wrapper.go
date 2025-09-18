@@ -84,8 +84,10 @@ func k_shiftedgecarryX_async(dst unsafe.Pointer, src unsafe.Pointer, othercomp u
 }
 
 // maps compute capability on PTX code for shiftedgecarryX kernel.
-var shiftedgecarryX_map = map[int]string{0: "",
-	52: shiftedgecarryX_ptx_52}
+var shiftedgecarryX_map = map[int]string{
+	0:  "",
+	52: shiftedgecarryX_ptx_52,
+}
 
 // shiftedgecarryX PTX code for various compute capabilities.
 const (

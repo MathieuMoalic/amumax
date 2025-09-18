@@ -1,6 +1,5 @@
+// Package queue implements a job queue for amumax, running multiple input files
 package queue
-
-// File que for distributing multiple input files over GPUs.
 
 import (
 	"fmt"

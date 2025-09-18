@@ -111,8 +111,10 @@ func k_adddmi_async(Hx unsafe.Pointer, Hy unsafe.Pointer, Hz unsafe.Pointer, mx 
 }
 
 // maps compute capability on PTX code for adddmi kernel.
-var adddmi_map = map[int]string{0: "",
-	52: adddmi_ptx_52}
+var adddmi_map = map[int]string{
+	0:  "",
+	52: adddmi_ptx_52,
+}
 
 // adddmi PTX code for various compute capabilities.
 const (

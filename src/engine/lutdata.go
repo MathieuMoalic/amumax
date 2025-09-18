@@ -44,7 +44,7 @@ func (p *lut) gpuLUT() cuda.LUTPtrs {
 			cuda.MemCpyHtoD(p.gpu_buf[c], unsafe.Pointer(&p.cpu_buf[c][0]), cu.SIZEOF_FLOAT32*NREGION)
 		}
 		p.gpu_ok = true
-		cuda.Sync() //sync upload
+		cuda.Sync() // sync upload
 	}
 	return p.gpu_buf
 }

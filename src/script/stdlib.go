@@ -7,9 +7,8 @@ import (
 	"time"
 )
 
-// Loads standard functions into the world.
+// LoadStdlib Loads standard functions into the world.
 func (w *World) LoadStdlib() {
-
 	// literals
 	w.declare("true", boolLit(true))
 	w.declare("false", boolLit(false))
@@ -75,11 +74,11 @@ func (w *World) LoadStdlib() {
 	w.declare("pi", floatLit(math.Pi))
 	w.declare("inf", floatLit(math.Inf(1)))
 
-	//string
+	// string
 	w.Func("sprint", fmt.Sprint, "Print all arguments to string with automatic formatting")
 	w.Func("sprintf", fmt.Sprintf, "Print to string with C-style formatting.")
 
-	//time
+	// time
 	w.Func("now", time.Now, "Returns the current time")
 	w.Func("since", time.Since, "Returns the time elapsed since argument")
 }

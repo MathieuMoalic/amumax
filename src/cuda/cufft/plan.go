@@ -59,7 +59,7 @@ func Plan3d(nx, ny, nz int, typ Type) Handle {
 	return Handle(handle)
 }
 
-//cufftPlanMany(
+// cufftPlanMany(
 //    cufftHandle *plan, int rank, int *n, int *inembed,
 //    int istride, int idist, int *onembed, int ostride,
 //    int odist, cufftType type, int batch );

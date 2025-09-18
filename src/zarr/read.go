@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/DataDog/zstd"
+
 	"github.com/MathieuMoalic/amumax/src/data"
 	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/MathieuMoalic/amumax/src/log"
@@ -63,11 +64,11 @@ func resolvePath(binaryPath string, od string) string {
 
 // waitForSave waits until IsSaving is false
 func waitForSave() {
-	msg_sent := false
+	msgSent := false
 	for IsSaving {
-		if !msg_sent {
+		if !msgSent {
 			log.Log.Info("Waiting for all the files to be saved before reading...")
-			msg_sent = true
+			msgSent = true
 		}
 		time.Sleep(100 * time.Millisecond)
 	}

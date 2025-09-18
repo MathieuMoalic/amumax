@@ -23,9 +23,7 @@ var (
 	E_mel     = newScalarValue("E_mel", "J", "Magneto-elastic energy", getMagnetoelasticEnergy)
 )
 
-var (
-	zeroMel = newScalarParam("_zeroMel", "", "utility zero parameter")
-)
+var zeroMel = newScalarParam("_zeroMel", "", "utility zero parameter")
 
 func init() {
 	registerEnergy(getMagnetoelasticEnergy, addMagnetoelasticEnergyDensity)

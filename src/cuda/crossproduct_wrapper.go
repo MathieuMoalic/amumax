@@ -84,8 +84,10 @@ func k_crossproduct_async(dstx unsafe.Pointer, dsty unsafe.Pointer, dstz unsafe.
 }
 
 // maps compute capability on PTX code for crossproduct kernel.
-var crossproduct_map = map[int]string{0: "",
-	52: crossproduct_ptx_52}
+var crossproduct_map = map[int]string{
+	0:  "",
+	52: crossproduct_ptx_52,
+}
 
 // crossproduct PTX code for various compute capabilities.
 const (

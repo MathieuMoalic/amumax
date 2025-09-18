@@ -66,8 +66,10 @@ func k_mul_async(dst unsafe.Pointer, a unsafe.Pointer, b unsafe.Pointer, N int, 
 }
 
 // maps compute capability on PTX code for mul kernel.
-var mul_map = map[int]string{0: "",
-	52: mul_ptx_52}
+var mul_map = map[int]string{
+	0:  "",
+	52: mul_ptx_52,
+}
 
 // mul PTX code for various compute capabilities.
 const (

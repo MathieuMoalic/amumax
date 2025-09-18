@@ -1,3 +1,4 @@
+// Package zarr provides utilities to create zarr files.
 package zarr
 
 import (

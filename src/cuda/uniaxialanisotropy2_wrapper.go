@@ -111,8 +111,10 @@ func k_adduniaxialanisotropy2_async(Bx unsafe.Pointer, By unsafe.Pointer, Bz uns
 }
 
 // maps compute capability on PTX code for adduniaxialanisotropy2 kernel.
-var adduniaxialanisotropy2_map = map[int]string{0: "",
-	52: adduniaxialanisotropy2_ptx_52}
+var adduniaxialanisotropy2_map = map[int]string{
+	0:  "",
+	52: adduniaxialanisotropy2_ptx_52,
+}
 
 // adduniaxialanisotropy2 PTX code for various compute capabilities.
 const (

@@ -136,7 +136,7 @@ func wrapgen(filename, funcname string, argt, argn []string) {
 	}
 
 	wrapfname := basename + "_wrapper.go"
-	wrapout, err := os.OpenFile(wrapfname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	wrapout, err := os.OpenFile(wrapfname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o666)
 	log.Log.PanicIfError(err)
 	defer wrapout.Close()
 	log.Log.PanicIfError(templ.Execute(wrapout, kernel))

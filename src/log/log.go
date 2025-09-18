@@ -1,6 +1,5 @@
+// Package log provides logging and error reporting utility functions.
 package log
-
-// Logging and error reporting utility functions
 
 import (
 	"fmt"
@@ -8,8 +7,9 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/fsutil"
 	"github.com/fatih/color"
+
+	"github.com/MathieuMoalic/amumax/src/fsutil"
 )
 
 var Log Logs
@@ -31,7 +31,6 @@ func (l *Logs) AutoFlushToFile() {
 func (l *Logs) FlushToFile() {
 	if l.logfile != nil {
 		l.logfile.Flush()
-
 	}
 }
 
@@ -118,14 +117,14 @@ func (l *Logs) ErrAndExit(msg string, args ...any) {
 	os.Exit(1)
 }
 
-// Panics with msg if test is false
+// AssertMsg Panics with msg if test is false
 func (l *Logs) AssertMsg(test bool, msg any) {
 	if !test {
 		l.ErrAndExit("%v", msg)
 	}
 }
 
-// Panics with msg if test is false
+// AssertMsg Panics with msg if test is false
 func AssertMsg(test bool, msg any) {
 	if !test {
 		Log.ErrAndExit("%v", msg)

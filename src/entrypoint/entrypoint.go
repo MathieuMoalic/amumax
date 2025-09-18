@@ -1,3 +1,4 @@
+// Package entrypoint handles the main entry point of the application.
 package entrypoint
 
 import (
@@ -7,6 +8,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/spf13/cobra"
 
 	"github.com/MathieuMoalic/amumax/src/api"
 	"github.com/MathieuMoalic/amumax/src/cuda"
@@ -20,11 +23,9 @@ import (
 	"github.com/MathieuMoalic/amumax/src/update"
 	"github.com/MathieuMoalic/amumax/src/url"
 	"github.com/MathieuMoalic/amumax/src/version"
-	"github.com/spf13/cobra"
 )
 
 func Entrypoint(cmd *cobra.Command, args []string, flags *flags.Flags) {
-
 	log.Log.SetDebug(flags.Debug)
 
 	if flags.Update {

@@ -18,6 +18,7 @@ var Mesh mesh.Mesh
 func init() {
 	// Mesh = data.MeshType{Nx: 0, Ny: 0, Nz: 0, Dx: 0, Dy: 0, Dz: 0, Tx: 0, Ty: 0, Tz: 0, PBCx: 0, PBCy: 0, PBCz: 0, AutoMeshx: false, AutoMeshy: false, AutoMeshz: false}
 }
+
 func GetMesh() *mesh.Mesh {
 	return &Mesh
 }
@@ -57,7 +58,8 @@ var World = script.NewWorld()
 func export(q interface {
 	Name() string
 	Unit() string
-}, doc string) {
+}, doc string,
+) {
 	declROnly(q.Name(), q, cat(doc, q.Unit()))
 }
 
@@ -124,6 +126,7 @@ type lValueWrapper struct {
 func newLValueWrapper(name string, lv lValue) script.LValue {
 	return &lValueWrapper{name: name, lValue: lv}
 }
+
 func (w *lValueWrapper) SetValue(val any) {
 	w.lValue.SetValue(val)
 	QuantityChanged[w.name] = true

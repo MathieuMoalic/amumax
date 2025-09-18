@@ -10,13 +10,13 @@ func (w *World) Exec(src string) error {
 	return nil
 }
 
-// Exec with panic on error.
+// MustExec Exec with panic on error.
 func (w *World) MustExec(src string) {
 	code := w.MustCompile(src)
 	code.Eval()
 }
 
-// Eval with panic on error.
+// MustEval Eval with panic on error.
 func (w *World) MustEval(src string) any {
 	Exprr := w.MustCompileExpr(src)
 	return Exprr.Eval()

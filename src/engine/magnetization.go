@@ -58,6 +58,7 @@ func (m *magnetization) Set(c config) {
 func (m *magnetization) LoadFile(fname string) {
 	m.SetArray(loadFile(fname))
 }
+
 func (m *magnetization) LoadOvfFile(fname string) {
 	m.SetArray(loadOvfFile(fname))
 }

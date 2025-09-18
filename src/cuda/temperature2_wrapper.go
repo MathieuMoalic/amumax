@@ -84,8 +84,10 @@ func k_settemperature2_async(B unsafe.Pointer, noise unsafe.Pointer, kB2_VgammaD
 }
 
 // maps compute capability on PTX code for settemperature2 kernel.
-var settemperature2_map = map[int]string{0: "",
-	52: settemperature2_ptx_52}
+var settemperature2_map = map[int]string{
+	0:  "",
+	52: settemperature2_ptx_52,
+}
 
 // settemperature2 PTX code for various compute capabilities.
 const (

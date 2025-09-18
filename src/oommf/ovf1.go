@@ -83,7 +83,7 @@ func writeOVF1Binary4(out io.Writer, array *data.Slice) (err error) {
 	var bytes []byte
 
 	// OOMMF requires this number to be first to check the format
-	var controlnumber float32 = OVF_CONTROL_NUMBER_4
+	var controlnumber float32 = OvfControlNumber4
 	// Conversion form float32 [4]byte in big-endian
 	// Inlined for performance, terabytes of data will pass here...
 	bytes = (*[4]byte)(unsafe.Pointer(&controlnumber))[:]
@@ -115,7 +115,7 @@ func readOVF1DataBinary4(in io.Reader, t *data.Slice) {
 	var controlnumber float32
 	// OVF 1.0 is network byte order (MSB)
 	log.Log.PanicIfError(binary.Read(in, binary.BigEndian, &controlnumber))
-	if controlnumber != OVF_CONTROL_NUMBER_4 {
+	if controlnumber != OvfControlNumber4 {
 		panic("invalid OVF1 control number: " + fmt.Sprint(controlnumber))
 	}
 
@@ -144,7 +144,7 @@ func readOVF1DataBinary8(in io.Reader, t *data.Slice) {
 	// OVF 1.0 is network byte order (MSB)
 	log.Log.PanicIfError(binary.Read(in, binary.BigEndian, &controlnumber))
 
-	if controlnumber != OVF_CONTROL_NUMBER_8 {
+	if controlnumber != OvfControlNumber8 {
 		panic("invalid OVF1 control number: " + fmt.Sprint(controlnumber))
 	}
 

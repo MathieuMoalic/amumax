@@ -71,16 +71,16 @@ func (a *assignStmt) Child() []Expr {
 
 func (w *World) compileAddAssign(a *ast.AssignStmt, lhs ast.Expr, r Expr) Expr {
 	l := w.compileLvalue(lhs)
-	x := typeConv(a.Pos(), l, float64_t)
-	y := typeConv(a.Pos(), r, float64_t)
+	x := typeConv(a.Pos(), l, float64t)
+	y := typeConv(a.Pos(), r, float64t)
 	sum := &add{binaryExpr{x, y}}
 	return &assignStmt{lhs: l, rhs: typeConv(a.Pos(), sum, inputType(l))}
 }
 
 func (w *World) compileSubAssign(a *ast.AssignStmt, lhs ast.Expr, r Expr) Expr {
 	l := w.compileLvalue(lhs)
-	x := typeConv(a.Pos(), l, float64_t)
-	y := typeConv(a.Pos(), r, float64_t)
+	x := typeConv(a.Pos(), l, float64t)
+	y := typeConv(a.Pos(), r, float64t)
 	sub := &sub{binaryExpr{x, y}}
 	return &assignStmt{lhs: l, rhs: typeConv(a.Pos(), sub, inputType(l))}
 }

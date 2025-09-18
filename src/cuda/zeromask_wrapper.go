@@ -66,8 +66,10 @@ func k_zeromask_async(dst unsafe.Pointer, maskLUT unsafe.Pointer, regions unsafe
 }
 
 // maps compute capability on PTX code for zeromask kernel.
-var zeromask_map = map[int]string{0: "",
-	52: zeromask_ptx_52}
+var zeromask_map = map[int]string{
+	0:  "",
+	52: zeromask_ptx_52,
+}
 
 // zeromask PTX code for various compute capabilities.
 const (

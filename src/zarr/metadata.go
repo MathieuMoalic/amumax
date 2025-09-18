@@ -34,22 +34,22 @@ func (m *Metadata) Add(key string, val any) {
 	if m.Fields == nil {
 		m.Fields = make(map[string]any)
 	}
-	val_type := reflect.TypeOf(val).Kind()
-	switch val_type {
+	valType := reflect.TypeOf(val).Kind()
+	switch valType {
 	case reflect.Float64, reflect.Int, reflect.String, reflect.Bool:
 		m.Fields[key] = val
 	case reflect.Pointer:
-		ptr_val := reflect.ValueOf(val).Elem()
-		val_str := fmt.Sprintf("%v", ptr_val)
-		val_str = val_str[1 : len(val_str)-1]
-		m.Fields[key] = val_str
+		ptrVal := reflect.ValueOf(val).Elem()
+		valStr := fmt.Sprintf("%v", ptrVal)
+		valStr = valStr[1 : len(valStr)-1]
+		m.Fields[key] = valStr
 	case reflect.Array:
 		m.Fields[key] = fmt.Sprintf("%v", val)
 	case reflect.Func:
 		// ignore functions
 		return
 	default:
-		log.Log.Debug("Metadata key %s has invalid type %s: %v", key, val_type, val)
+		log.Log.Debug("Metadata key %s has invalid type %s: %v", key, valType, val)
 	}
 }
 
@@ -72,14 +72,15 @@ func (m *Metadata) NeedSave() bool {
 		return false
 	}
 }
+
 func (m *Metadata) Save() {
 	if m.Path != "" {
 		zattrs, err := fsutil.Create(m.Path)
 		log.Log.PanicIfError(err)
 		defer zattrs.Close()
-		json_meta, err := json.MarshalIndent(m.Fields, "", "\t")
+		jsonMeta, err := json.MarshalIndent(m.Fields, "", "\t")
 		log.Log.PanicIfError(err)
-		_, err = zattrs.Write([]byte(json_meta))
+		_, err = zattrs.Write([]byte(jsonMeta))
 		log.Log.PanicIfError(err)
 	}
 }

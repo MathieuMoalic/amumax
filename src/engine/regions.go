@@ -24,6 +24,7 @@ type RegionsState struct {
 func (r *RegionsState) AddIndex(i int) {
 	r.Indices[i] = true
 }
+
 func (r *RegionsState) GetExistingIndices() []int {
 	indices := make([]int, 0, len(r.Indices))
 	for i := range r.Indices {

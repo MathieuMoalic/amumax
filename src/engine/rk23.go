@@ -98,7 +98,7 @@ func (rk *rk23) Step() {
 		data.Copy(rk.k1, k4) // FSAL
 	} else {
 		// undo bad step
-		//log.Println("Bad step at t=", t0, ", err=", err)
+		// log.Println("Bad step at t=", t0, ", err=", err)
 		log.AssertMsg(FixDt == 0, "Invalid step: cannot undo step when FixDt is set")
 		Time = t0
 		data.Copy(m, m0)

@@ -1,3 +1,4 @@
+// Package timer provides simple timing utilities for profiling code sections.
 package timer
 
 import (

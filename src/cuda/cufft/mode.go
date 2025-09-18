@@ -22,4 +22,5 @@ func (t CompatibilityMode) String() string {
 }
 
 var compatibilityModeString map[CompatibilityMode]string = map[CompatibilityMode]string{
-	COMPATIBILITY_FFTW_PADDING: "CUFFT_COMPATIBILITY_FFTW_PADDING"}
+	COMPATIBILITY_FFTW_PADDING: "CUFFT_COMPATIBILITY_FFTW_PADDING",
+}

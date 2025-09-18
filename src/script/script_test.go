@@ -96,8 +96,7 @@ func TestLoop(t *testing.T) {
 	}
 }
 
-type test struct {
-}
+type test struct{}
 
 func (t *test) A() int { return 41 }
 func (t *test) B() int { return 42 }
@@ -187,7 +186,8 @@ func TestMany(test *testing.T) {
 		{"2<=1", false},
 		{"1>=1", true},
 		{"2>=1", true},
-		{"1>=2", false}}
+		{"1>=2", false},
+	}
 
 	w := NewWorld()
 	for _, t := range tests {

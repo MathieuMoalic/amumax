@@ -16,5 +16,5 @@ func SetTopologicalChargeLattice(s *data.Slice, m *data.Slice, mesh mesh.MeshLik
 
 	k_settopologicalchargelattice_async(s.DevPtr(X),
 		m.DevPtr(X), m.DevPtr(Y), m.DevPtr(Z),
-		icxcy, N[X], N[Y], N[Z], mesh.PBC_code(), cfg)
+		icxcy, N[X], N[Y], N[Z], mesh.PBCCode(), cfg)
 }

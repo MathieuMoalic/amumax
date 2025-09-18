@@ -26,6 +26,7 @@ func newScalarExcitation(name, unit, desc string) *scalarExcitation {
 	declLValue(name, e, cat(desc, unit))
 	return e
 }
+
 func (e *scalarExcitation) GetRegionToString(region int) string {
 	return fmt.Sprintf("%g", e.perRegion.GetRegion(region))
 }
@@ -123,5 +124,5 @@ func (e *scalarExcitation) Region(r int) *vOneReg   { return vOneRegion(e, r) }
 func (e *scalarExcitation) Comp(c int) ScalarField  { return comp(e, c) }
 func (e *scalarExcitation) Eval() any               { return e }
 func (e *scalarExcitation) Type() reflect.Type      { return reflect.TypeOf(new(scalarExcitation)) }
-func (e *scalarExcitation) InputType() reflect.Type { return script.ScalarFunction_t }
+func (e *scalarExcitation) InputType() reflect.Type { return script.ScalarFunctiont }
 func (e *scalarExcitation) EvalTo(dst *data.Slice)  { evalTo(e, dst) }

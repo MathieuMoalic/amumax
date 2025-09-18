@@ -22,9 +22,7 @@ var (
 	E_anis     = newScalarValue("E_anis", "J", "Total anisotropy energy", getAnisotropyEnergy)
 )
 
-var (
-	sZero = newScalarParam("_zero", "", "utility zero parameter")
-)
+var sZero = newScalarParam("_zero", "", "utility zero parameter")
 
 func init() {
 	registerEnergy(getAnisotropyEnergy, addAnisotropyEnergyDensity)

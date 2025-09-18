@@ -102,8 +102,10 @@ func k_madd7_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 u
 }
 
 // maps compute capability on PTX code for madd7 kernel.
-var madd7_map = map[int]string{0: "",
-	52: madd7_ptx_52}
+var madd7_map = map[int]string{
+	0:  "",
+	52: madd7_ptx_52,
+}
 
 // madd7 PTX code for various compute capabilities.
 const (

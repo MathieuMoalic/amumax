@@ -16,12 +16,12 @@ func init() {
 	loopNestingCount = 0
 }
 
-func (b *forStmt) Eval() any {
+func (p *forStmt) Eval() any {
 	loopNestingCount++
 	defer func() { loopNestingCount-- }() // Reset the flag after the loop
 
-	for b.init.Eval(); b.cond.Eval().(bool); b.post.Eval() {
-		b.body.Eval()
+	for p.init.Eval(); p.cond.Eval().(bool); p.post.Eval() {
+		p.body.Eval()
 	}
 	return nil // void
 }
@@ -35,7 +35,7 @@ func (w *World) compileForStmt(n *ast.ForStmt) *forStmt {
 		stmt.init = w.compileStmt(n.Init)
 	}
 	if n.Cond != nil {
-		stmt.cond = typeConv(n.Cond.Pos(), w.compileExpr(n.Cond), bool_t)
+		stmt.cond = typeConv(n.Cond.Pos(), w.compileExpr(n.Cond), boolt)
 	} else {
 		stmt.cond = boolLit(true)
 	}
@@ -43,7 +43,7 @@ func (w *World) compileForStmt(n *ast.ForStmt) *forStmt {
 		stmt.post = w.compileStmt(n.Post)
 	}
 	if n.Body != nil {
-		stmt.body = w.compileBlockStmt_noScope(n.Body)
+		stmt.body = w.compileBlockStmtNoScopeST(n.Body)
 	}
 	return stmt
 }
@@ -54,6 +54,6 @@ func (e *nop) Child() []Expr { return nil }
 func (e *nop) Eval() any     { return nil }
 func (e *nop) Fix() Expr     { return e }
 
-func (e *forStmt) Child() []Expr {
-	return []Expr{e.init, e.cond, e.post, e.body}
+func (p *forStmt) Child() []Expr {
+	return []Expr{p.init, p.cond, p.post, p.body}
 }

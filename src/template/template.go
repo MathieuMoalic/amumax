@@ -1,3 +1,4 @@
+// Package template provides functionality to process mx3 template files.
 package template
 
 import (
@@ -349,7 +350,7 @@ func generateFiles(parentDir, mx3 string, expressions []Expression, flat bool) e
 		}
 
 		// Write the new file
-		err := os.WriteFile(fullPath, []byte(newMx3), 0644)
+		err := os.WriteFile(fullPath, []byte(newMx3), 0o644)
 		if err != nil {
 			return fmt.Errorf("error writing file %s: %v", fullPath, err)
 		}
@@ -367,7 +368,7 @@ func generateFiles(parentDir, mx3 string, expressions []Expression, flat bool) e
 	return nil
 }
 
-// Main function for handling the Template logic
+// Template Main function for handling the Template logic
 func Template(path string, templateFlags *flags.TemplateFlags) (err error) {
 	path, err = filepath.Abs(path)
 	if err != nil {

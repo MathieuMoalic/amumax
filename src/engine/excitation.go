@@ -34,8 +34,8 @@ func newExcitation(name, unit, desc string) *excitation {
 	return e
 }
 
-func (p *excitation) MSlice() cuda.MSlice {
-	buf, r := p.Slice()
+func (e *excitation) MSlice() cuda.MSlice {
+	buf, r := e.Slice()
 	log.AssertMsg(r, "Failed to retrieve slice: invalid state in excitation.MSlice")
 	return cuda.ToMSlice(buf)
 }
@@ -131,7 +131,7 @@ func (e *excitation) Region(r int) *vOneReg   { return vOneRegion(e, r) }
 func (e *excitation) Comp(c int) ScalarField  { return comp(e, c) }
 func (e *excitation) Eval() any               { return e }
 func (e *excitation) Type() reflect.Type      { return reflect.TypeOf(new(excitation)) }
-func (e *excitation) InputType() reflect.Type { return script.VectorFunction_t }
+func (e *excitation) InputType() reflect.Type { return script.VectorFunctiont }
 func (e *excitation) EvalTo(dst *data.Slice)  { evalTo(e, dst) }
 
 func (e *excitation) GetRegionToString(region int) string {

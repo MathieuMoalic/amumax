@@ -63,7 +63,7 @@ func fprintln(filename string, msg ...any) {
 	}
 	err := fsutil.Touch(filename)
 	log.Log.PanicIfError(err)
-	err = fsutil.Append(filename, []byte(fmt.Sprintln(customFmt(msg))))
+	err = fsutil.Append(filename, fmt.Appendln(nil, customFmt(msg)))
 	log.Log.PanicIfError(err)
 }
 

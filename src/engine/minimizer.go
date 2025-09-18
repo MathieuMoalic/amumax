@@ -156,7 +156,8 @@ func minimize() {
 	mini := Minimizer{
 		h:      1e-4,
 		k:      nil,
-		lastDm: createFifoRing(dmSamples)}
+		lastDm: createFifoRing(dmSamples),
+	}
 	stepper = &mini
 
 	cond := func() bool {

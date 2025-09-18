@@ -1,3 +1,4 @@
+// Package api provides the web API and web UI for amumax.
 package api
 
 import (
@@ -7,10 +8,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/MathieuMoalic/amumax/src/engine"
-	"github.com/MathieuMoalic/amumax/src/log"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
+	"github.com/MathieuMoalic/amumax/src/engine"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 func Start(host string, port int, basePath string, tunnel string, debug bool) {

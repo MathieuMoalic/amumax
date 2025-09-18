@@ -11,7 +11,7 @@ import (
 // provided the exchange stiffness with that neighbor is nonzero.
 func SetMaxAngle(dst, m *data.Slice, Aex_red SymmLUT, regions *Bytes, mesh mesh.MeshLike) {
 	N := mesh.Size()
-	pbc := mesh.PBC_code()
+	pbc := mesh.PBCCode()
 	cfg := make3DConf(N)
 	k_setmaxangle_async(dst.DevPtr(0),
 		m.DevPtr(X), m.DevPtr(Y), m.DevPtr(Z),

@@ -23,5 +23,5 @@ func AddZhangLiTorque(torque, m *data.Slice, Msat, J, alpha, xi, pol MSlice, mes
 		xi.DevPtr(0), xi.Mul(0),
 		pol.DevPtr(0), pol.Mul(0),
 		float32(c[X]), float32(c[Y]), float32(c[Z]),
-		N[X], N[Y], N[Z], mesh.PBC_code(), cfg)
+		N[X], N[Y], N[Z], mesh.PBCCode(), cfg)
 }

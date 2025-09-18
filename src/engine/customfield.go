@@ -317,7 +317,6 @@ func (d *pointwiseDiv) EvalTo(dst *data.Slice) {
 	default:
 		panic(fmt.Sprintf("Cannot point-wise divide %v components by %v components", a.NComp(), b.NComp()))
 	}
-
 }
 
 func divNN(dst, a, b *data.Slice) {

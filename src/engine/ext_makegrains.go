@@ -38,13 +38,15 @@ type center struct {
 
 // nRegion exclusive
 func newTesselation(grainsize float64, minRegion, maxRegion int, seed int64) *tesselation {
-	return &tesselation{grainsize,
+	return &tesselation{
+		grainsize,
 		float64(float32(grainsize * TILE)), // expect 4 grains/block, 36 per 3x3 blocks = safe, relatively round number
 		minRegion,
 		maxRegion,
 		make(map[int2][]center),
 		seed,
-		rand.New(rand.NewSource(0))}
+		rand.New(rand.NewSource(0)),
+	}
 }
 
 const (
@@ -72,7 +74,7 @@ func (t *tesselation) RegionOf(x, y, z float64) int {
 		}
 	}
 
-	//fmt.Println("nearest", x, y, ":", nearest)
+	// fmt.Println("nearest", x, y, ":", nearest)
 	return int(nearest.region)
 }
 

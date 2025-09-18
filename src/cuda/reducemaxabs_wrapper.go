@@ -66,8 +66,10 @@ func k_reducemaxabs_async(src unsafe.Pointer, dst unsafe.Pointer, initVal float3
 }
 
 // maps compute capability on PTX code for reducemaxabs kernel.
-var reducemaxabs_map = map[int]string{0: "",
-	52: reducemaxabs_ptx_52}
+var reducemaxabs_map = map[int]string{
+	0:  "",
+	52: reducemaxabs_ptx_52,
+}
 
 // reducemaxabs PTX code for various compute capabilities.
 const (

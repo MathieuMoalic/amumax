@@ -42,18 +42,20 @@ func (w *World) compileBinaryExpr(n *ast.BinaryExpr) Expr {
 type binaryExpr struct{ x, y Expr }
 
 func (w *World) newBinExpr(n *ast.BinaryExpr) binaryExpr {
-	x := typeConv(n.Pos(), w.compileExpr(n.X), float64_t)
-	y := typeConv(n.Pos(), w.compileExpr(n.Y), float64_t)
+	x := typeConv(n.Pos(), w.compileExpr(n.X), float64t)
+	y := typeConv(n.Pos(), w.compileExpr(n.Y), float64t)
 	return binaryExpr{x, y}
 }
 
-func (b *binaryExpr) Type() reflect.Type { return float64_t }
+func (b *binaryExpr) Type() reflect.Type { return float64t }
 func (b *binaryExpr) Child() []Expr      { return []Expr{b.x, b.y} }
 
-type add struct{ binaryExpr }
-type sub struct{ binaryExpr }
-type mul struct{ binaryExpr }
-type quo struct{ binaryExpr }
+type (
+	add struct{ binaryExpr }
+	sub struct{ binaryExpr }
+	mul struct{ binaryExpr }
+	quo struct{ binaryExpr }
+)
 
 func (b *add) Eval() any { return b.x.Eval().(float64) + b.y.Eval().(float64) }
 func (b *sub) Eval() any { return b.x.Eval().(float64) - b.y.Eval().(float64) }
@@ -71,15 +73,17 @@ func (w *World) newComp(n *ast.BinaryExpr) comp {
 	return comp(w.newBinExpr(n))
 }
 
-func (b *comp) Type() reflect.Type { return bool_t }
+func (b *comp) Type() reflect.Type { return boolt }
 func (b *comp) Child() []Expr      { return []Expr{b.x, b.y} }
 
-type lss struct{ comp }
-type gtr struct{ comp }
-type leq struct{ comp }
-type geq struct{ comp }
-type eql struct{ comp }
-type neq struct{ comp }
+type (
+	lss struct{ comp }
+	gtr struct{ comp }
+	leq struct{ comp }
+	geq struct{ comp }
+	eql struct{ comp }
+	neq struct{ comp }
+)
 
 func (b *lss) Eval() any { return b.x.Eval().(float64) < b.y.Eval().(float64) }
 func (b *gtr) Eval() any { return b.x.Eval().(float64) > b.y.Eval().(float64) }
@@ -98,16 +102,18 @@ func (b *neq) Fix() Expr { return &neq{comp{x: b.x.Fix(), y: b.y.Fix()}} }
 type boolOp struct{ x, y Expr }
 
 func (w *World) newBoolOp(n *ast.BinaryExpr) boolOp {
-	x := typeConv(n.Pos(), w.compileExpr(n.X), bool_t)
-	y := typeConv(n.Pos(), w.compileExpr(n.Y), bool_t)
+	x := typeConv(n.Pos(), w.compileExpr(n.X), boolt)
+	y := typeConv(n.Pos(), w.compileExpr(n.Y), boolt)
 	return boolOp{x, y}
 }
 
 func (b *boolOp) Child() []Expr      { return []Expr{b.x, b.y} }
-func (b *boolOp) Type() reflect.Type { return bool_t }
+func (b *boolOp) Type() reflect.Type { return boolt }
 
-type and struct{ boolOp }
-type or struct{ boolOp }
+type (
+	and struct{ boolOp }
+	or  struct{ boolOp }
+)
 
 func (b *and) Eval() any { return b.x.Eval().(bool) && b.y.Eval().(bool) }
 func (b *or) Eval() any  { return b.x.Eval().(bool) || b.y.Eval().(bool) }

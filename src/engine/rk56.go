@@ -8,11 +8,9 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-type rk56 struct {
-}
+type rk56 struct{}
 
 func (rk *rk56) Step() {
-
 	m := NormMag.Buffer()
 	size := m.Size()
 
@@ -35,7 +33,7 @@ func (rk *rk56) Step() {
 	defer cuda.Recycle(k6)
 	defer cuda.Recycle(k7)
 	defer cuda.Recycle(k8)
-	//k2 will be recyled as k9
+	// k2 will be recyled as k9
 
 	h := float32(Dt_si * gammaLL) // internal time step = Dt * gammaLL
 
@@ -86,7 +84,7 @@ func (rk *rk56) Step() {
 
 	// stage 9: 6th order solution
 	Time = t0 + (1.)*Dt_si
-	//madd6(m, m0, k1, k3, k4, k5, k6, 1, (31./384.)*h, (1125./2816.)*h, (9./32.)*h, (125./768.)*h, (5./66.)*h)
+	// madd6(m, m0, k1, k3, k4, k5, k6, 1, (31./384.)*h, (1125./2816.)*h, (9./32.)*h, (125./768.)*h, (5./66.)*h)
 	cuda.Madd7(m, m0, k1, k3, k4, k5, k7, k8, 1, (7./1408.)*h, (1125./2816.)*h, (9./32.)*h, (125./768.)*h, (5./66.)*h, (5./66.)*h)
 	NormMag.normalize()
 	torqueFn(k2) // re-use k2
@@ -109,7 +107,7 @@ func (rk *rk56) Step() {
 		adaptDt(math.Pow(MaxErr/err, 1./6.))
 	} else {
 		// undo bad step
-		//log.Println("Bad step at t=", t0, ", err=", err)
+		// log.Println("Bad step at t=", t0, ", err=", err)
 		log.AssertMsg(FixDt == 0, "Invalid step: cannot undo step when FixDt is set")
 		Time = t0
 		data.Copy(m, m0)

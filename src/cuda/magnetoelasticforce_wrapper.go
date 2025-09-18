@@ -105,8 +105,10 @@ func k_getmagnetoelasticforce_async(fx unsafe.Pointer, fy unsafe.Pointer, fz uns
 }
 
 // maps compute capability on PTX code for getmagnetoelasticforce kernel.
-var getmagnetoelasticforce_map = map[int]string{0: "",
-	52: getmagnetoelasticforce_ptx_52}
+var getmagnetoelasticforce_map = map[int]string{
+	0:  "",
+	52: getmagnetoelasticforce_ptx_52,
+}
 
 // getmagnetoelasticforce PTX code for various compute capabilities.
 const (

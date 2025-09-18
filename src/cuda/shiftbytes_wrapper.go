@@ -75,8 +75,10 @@ func k_shiftbytes_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, 
 }
 
 // maps compute capability on PTX code for shiftbytes kernel.
-var shiftbytes_map = map[int]string{0: "",
-	52: shiftbytes_ptx_52}
+var shiftbytes_map = map[int]string{
+	0:  "",
+	52: shiftbytes_ptx_52,
+}
 
 // shiftbytes PTX code for various compute capabilities.
 const (

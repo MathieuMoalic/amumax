@@ -100,7 +100,6 @@ func (sqs *savedQuantitiesType) createSavedQuantity(q Quantity, name string, rch
 	}
 	sqs.Quantities = append(sqs.Quantities, *newZArray)
 	return newZArray
-
 }
 
 func (sqs *savedQuantitiesType) updateSavedQuantity(q Quantity, name string, rchunks requestedChunking, period float64) {
@@ -173,6 +172,7 @@ func (sqs *savedQuantitiesType) saveAsInner(q Quantity, name string, rchunks req
 	}
 	sqs.getSavedQuantity(name).Save()
 }
+
 func (sqs *savedQuantitiesType) saveAs(q Quantity, name string) {
 	sqs.saveAsInner(q, name, requestedChunking{1, 1, 1, 1})
 }

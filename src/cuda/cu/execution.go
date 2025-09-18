@@ -12,7 +12,6 @@ import (
 const pointerSize = 8 // sorry, 64 bits only.
 
 func LaunchKernel(f Function, gridDimX, gridDimY, gridDimZ int, blockDimX, blockDimY, blockDimZ int, sharedMemBytes int, stream Stream, kernelParams []unsafe.Pointer) {
-
 	// Since Go 1.6, a cgo argument cannot have a Go pointer to Go pointer,
 	// so we copy the argument values go C memory first.
 	argv := C.malloc(C.size_t(len(kernelParams) * pointerSize))

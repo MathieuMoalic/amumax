@@ -71,7 +71,7 @@ func Memset(s *data.Slice, val ...float32) {
 	for c, v := range val {
 		cu.MemsetD32Async(cu.DevicePtr(uintptr(s.DevPtr(c))), math.Float32bits(v), int64(s.Len()), stream0)
 	}
-	if Synchronous { //debug
+	if Synchronous { // debug
 		Sync()
 		timer.Stop("memset")
 	}

@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	defer InitAndClose()()
 
 	Nx = 128

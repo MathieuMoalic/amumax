@@ -1,3 +1,4 @@
+// Package progressbar provides a terminal progress bar.
 package progressbar
 
 import (

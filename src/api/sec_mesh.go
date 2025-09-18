@@ -3,8 +3,9 @@ package api
 import (
 	"net/http"
 
-	"github.com/MathieuMoalic/amumax/src/engine"
 	"github.com/labstack/echo/v4"
+
+	"github.com/MathieuMoalic/amumax/src/engine"
 )
 
 type MeshState struct {

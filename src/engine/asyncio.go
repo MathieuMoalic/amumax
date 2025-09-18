@@ -17,7 +17,6 @@ var (
 )
 
 func init() {
-
 	saveQue = make(chan func())
 	go runSaver()
 }

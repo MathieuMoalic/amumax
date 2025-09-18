@@ -37,4 +37,5 @@ var typeString map[Type]string = map[Type]string{
 	C2C: "CUFFT_C2C",
 	D2Z: "CUFFT_D2Z",
 	Z2D: "CUFFT_Z2D",
-	Z2Z: "CUFFT_Z2Z"}
+	Z2Z: "CUFFT_Z2Z",
+}
