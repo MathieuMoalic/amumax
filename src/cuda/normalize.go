@@ -11,5 +11,5 @@ func Normalize(vec, vol *data.Slice) {
 
 	N := vec.Len()
 	cfg := make1DConf(N)
-	k_normalize_async(vec.DevPtr(X), vec.DevPtr(Y), vec.DevPtr(Z), vol.DevPtr(0), N, cfg)
+	kNormalizeAsync(vec.DevPtr(X), vec.DevPtr(Y), vec.DevPtr(Z), vol.DevPtr(0), N, cfg)
 }

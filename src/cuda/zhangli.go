@@ -12,7 +12,7 @@ func AddZhangLiTorque(torque, m *data.Slice, Msat, J, alpha, xi, pol MSlice, mes
 	N := mesh.Size()
 	cfg := make3DConf(N)
 
-	k_addzhanglitorque2_async(
+	kAddzhanglitorque2Async(
 		torque.DevPtr(X), torque.DevPtr(Y), torque.DevPtr(Z),
 		m.DevPtr(X), m.DevPtr(Y), m.DevPtr(Z),
 		Msat.DevPtr(0), Msat.Mul(0),

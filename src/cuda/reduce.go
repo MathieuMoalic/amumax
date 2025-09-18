@@ -19,7 +19,7 @@ const REDUCE_BLOCKSIZE = C.REDUCE_BLOCKSIZE
 func Sum(in *data.Slice) float32 {
 	log.AssertMsg(in.NComp() == 1, "Component mismatch: input must have 1 component in Sum")
 	out := reduceBuf(0)
-	k_reducesum_async(in.DevPtr(0), out, 0, in.Len(), reducecfg)
+	kReducesumAsync(in.DevPtr(0), out, 0, in.Len(), reducecfg)
 	return copyback(out)
 }
 
@@ -30,7 +30,7 @@ func Dot(a, b *data.Slice) float32 {
 	out := reduceBuf(0)
 	// not async over components
 	for c := 0; c < nComp; c++ {
-		k_reducedot_async(a.DevPtr(c), b.DevPtr(c), out, 0, a.Len(), reducecfg) // all components add to out
+		kReducedotAsync(a.DevPtr(c), b.DevPtr(c), out, 0, a.Len(), reducecfg) // all components add to out
 	}
 	return copyback(out)
 }
@@ -39,7 +39,7 @@ func Dot(a, b *data.Slice) float32 {
 func MaxAbs(in *data.Slice) float32 {
 	log.AssertMsg(in.NComp() == 1, "Component mismatch: input must have 1 component in MaxAbs")
 	out := reduceBuf(0)
-	k_reducemaxabs_async(in.DevPtr(0), out, 0, in.Len(), reducecfg)
+	kReducemaxabsAsync(in.DevPtr(0), out, 0, in.Len(), reducecfg)
 	return copyback(out)
 }
 
@@ -48,7 +48,7 @@ func MaxAbs(in *data.Slice) float32 {
 //	max_i sqrt( x[i]*x[i] + y[i]*y[i] + z[i]*z[i] )
 func MaxVecNorm(v *data.Slice) float64 {
 	out := reduceBuf(0)
-	k_reducemaxvecnorm2_async(v.DevPtr(0), v.DevPtr(1), v.DevPtr(2), out, 0, v.Len(), reducecfg)
+	kReducemaxvecnorm2Async(v.DevPtr(0), v.DevPtr(1), v.DevPtr(2), out, 0, v.Len(), reducecfg)
 	return math.Sqrt(float64(copyback(out)))
 }
 
@@ -59,7 +59,7 @@ func MaxVecNorm(v *data.Slice) float64 {
 func MaxVecDiff(x, y *data.Slice) float64 {
 	log.AssertMsg(x.Len() == y.Len(), "Length mismatch: x and y must have the same length in MaxVecDiff")
 	out := reduceBuf(0)
-	k_reducemaxvecdiff2_async(x.DevPtr(0), x.DevPtr(1), x.DevPtr(2),
+	kReducemaxvecdiff2Async(x.DevPtr(0), x.DevPtr(1), x.DevPtr(2),
 		y.DevPtr(0), y.DevPtr(1), y.DevPtr(2),
 		out, 0, x.Len(), reducecfg)
 	return math.Sqrt(float64(copyback(out)))

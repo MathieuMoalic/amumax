@@ -14,86 +14,86 @@ import (
 )
 
 // CUDA handle for madd7 kernel
-var madd7_code cu.Function
+var madd7Code cu.Function
 
 // Stores the arguments for madd7 kernel invocation
-type madd7_args_t struct {
-	arg_dst  unsafe.Pointer
-	arg_src1 unsafe.Pointer
-	arg_fac1 float32
-	arg_src2 unsafe.Pointer
-	arg_fac2 float32
-	arg_src3 unsafe.Pointer
-	arg_fac3 float32
-	arg_src4 unsafe.Pointer
-	arg_fac4 float32
-	arg_src5 unsafe.Pointer
-	arg_fac5 float32
-	arg_src6 unsafe.Pointer
-	arg_fac6 float32
-	arg_src7 unsafe.Pointer
-	arg_fac7 float32
-	arg_N    int
+type madd7ArgsT struct {
+	argDst  unsafe.Pointer
+	argSrc1 unsafe.Pointer
+	argFac1 float32
+	argSrc2 unsafe.Pointer
+	argFac2 float32
+	argSrc3 unsafe.Pointer
+	argFac3 float32
+	argSrc4 unsafe.Pointer
+	argFac4 float32
+	argSrc5 unsafe.Pointer
+	argFac5 float32
+	argSrc6 unsafe.Pointer
+	argFac6 float32
+	argSrc7 unsafe.Pointer
+	argFac7 float32
+	argN    int
 	argptr   [16]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for madd7 kernel invocation
-var madd7_args madd7_args_t
+var madd7Args madd7ArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	madd7_args.argptr[0] = unsafe.Pointer(&madd7_args.arg_dst)
-	madd7_args.argptr[1] = unsafe.Pointer(&madd7_args.arg_src1)
-	madd7_args.argptr[2] = unsafe.Pointer(&madd7_args.arg_fac1)
-	madd7_args.argptr[3] = unsafe.Pointer(&madd7_args.arg_src2)
-	madd7_args.argptr[4] = unsafe.Pointer(&madd7_args.arg_fac2)
-	madd7_args.argptr[5] = unsafe.Pointer(&madd7_args.arg_src3)
-	madd7_args.argptr[6] = unsafe.Pointer(&madd7_args.arg_fac3)
-	madd7_args.argptr[7] = unsafe.Pointer(&madd7_args.arg_src4)
-	madd7_args.argptr[8] = unsafe.Pointer(&madd7_args.arg_fac4)
-	madd7_args.argptr[9] = unsafe.Pointer(&madd7_args.arg_src5)
-	madd7_args.argptr[10] = unsafe.Pointer(&madd7_args.arg_fac5)
-	madd7_args.argptr[11] = unsafe.Pointer(&madd7_args.arg_src6)
-	madd7_args.argptr[12] = unsafe.Pointer(&madd7_args.arg_fac6)
-	madd7_args.argptr[13] = unsafe.Pointer(&madd7_args.arg_src7)
-	madd7_args.argptr[14] = unsafe.Pointer(&madd7_args.arg_fac7)
-	madd7_args.argptr[15] = unsafe.Pointer(&madd7_args.arg_N)
+	madd7Args.argptr[0] = unsafe.Pointer(&madd7Args.argDst)
+	madd7Args.argptr[1] = unsafe.Pointer(&madd7Args.argSrc1)
+	madd7Args.argptr[2] = unsafe.Pointer(&madd7Args.argFac1)
+	madd7Args.argptr[3] = unsafe.Pointer(&madd7Args.argSrc2)
+	madd7Args.argptr[4] = unsafe.Pointer(&madd7Args.argFac2)
+	madd7Args.argptr[5] = unsafe.Pointer(&madd7Args.argSrc3)
+	madd7Args.argptr[6] = unsafe.Pointer(&madd7Args.argFac3)
+	madd7Args.argptr[7] = unsafe.Pointer(&madd7Args.argSrc4)
+	madd7Args.argptr[8] = unsafe.Pointer(&madd7Args.argFac4)
+	madd7Args.argptr[9] = unsafe.Pointer(&madd7Args.argSrc5)
+	madd7Args.argptr[10] = unsafe.Pointer(&madd7Args.argFac5)
+	madd7Args.argptr[11] = unsafe.Pointer(&madd7Args.argSrc6)
+	madd7Args.argptr[12] = unsafe.Pointer(&madd7Args.argFac6)
+	madd7Args.argptr[13] = unsafe.Pointer(&madd7Args.argSrc7)
+	madd7Args.argptr[14] = unsafe.Pointer(&madd7Args.argFac7)
+	madd7Args.argptr[15] = unsafe.Pointer(&madd7Args.argN)
 }
 
 // Wrapper for madd7 CUDA kernel, asynchronous.
-func k_madd7_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, src4 unsafe.Pointer, fac4 float32, src5 unsafe.Pointer, fac5 float32, src6 unsafe.Pointer, fac6 float32, src7 unsafe.Pointer, fac7 float32, N int, cfg *config) {
+func kMadd7Async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, src4 unsafe.Pointer, fac4 float32, src5 unsafe.Pointer, fac5 float32, src6 unsafe.Pointer, fac6 float32, src7 unsafe.Pointer, fac7 float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("madd7")
 	}
 
-	madd7_args.Lock()
-	defer madd7_args.Unlock()
+	madd7Args.Lock()
+	defer madd7Args.Unlock()
 
-	if madd7_code == 0 {
-		madd7_code = fatbinLoad(madd7_map, "madd7")
+	if madd7Code == 0 {
+		madd7Code = fatbinLoad(madd7Map, "madd7")
 	}
 
-	madd7_args.arg_dst = dst
-	madd7_args.arg_src1 = src1
-	madd7_args.arg_fac1 = fac1
-	madd7_args.arg_src2 = src2
-	madd7_args.arg_fac2 = fac2
-	madd7_args.arg_src3 = src3
-	madd7_args.arg_fac3 = fac3
-	madd7_args.arg_src4 = src4
-	madd7_args.arg_fac4 = fac4
-	madd7_args.arg_src5 = src5
-	madd7_args.arg_fac5 = fac5
-	madd7_args.arg_src6 = src6
-	madd7_args.arg_fac6 = fac6
-	madd7_args.arg_src7 = src7
-	madd7_args.arg_fac7 = fac7
-	madd7_args.arg_N = N
+	madd7Args.argDst = dst
+	madd7Args.argSrc1 = src1
+	madd7Args.argFac1 = fac1
+	madd7Args.argSrc2 = src2
+	madd7Args.argFac2 = fac2
+	madd7Args.argSrc3 = src3
+	madd7Args.argFac3 = fac3
+	madd7Args.argSrc4 = src4
+	madd7Args.argFac4 = fac4
+	madd7Args.argSrc5 = src5
+	madd7Args.argFac5 = fac5
+	madd7Args.argSrc6 = src6
+	madd7Args.argFac6 = fac6
+	madd7Args.argSrc7 = src7
+	madd7Args.argFac7 = fac7
+	madd7Args.argN = N
 
-	args := madd7_args.argptr[:]
-	cu.LaunchKernel(madd7_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := madd7Args.argptr[:]
+	cu.LaunchKernel(madd7Code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -102,14 +102,14 @@ func k_madd7_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 u
 }
 
 // maps compute capability on PTX code for madd7 kernel.
-var madd7_map = map[int]string{
+var madd7Map = map[int]string{
 	0:  "",
-	52: madd7_ptx_52,
+	52: madd7Ptx52,
 }
 
 // madd7 PTX code for various compute capabilities.
 const (
-	madd7_ptx_52 = `
+	madd7Ptx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

@@ -9,12 +9,12 @@ import (
 
 // SetMaxAngle sets dst to the maximum angle of each cells magnetization with all of its neighbors,
 // provided the exchange stiffness with that neighbor is nonzero.
-func SetMaxAngle(dst, m *data.Slice, Aex_red SymmLUT, regions *Bytes, mesh mesh.MeshLike) {
+func SetMaxAngle(dst, m *data.Slice, AexRed SymmLUT, regions *Bytes, mesh mesh.MeshLike) {
 	N := mesh.Size()
 	pbc := mesh.PBCCode()
 	cfg := make3DConf(N)
-	k_setmaxangle_async(dst.DevPtr(0),
+	kSetmaxangleAsync(dst.DevPtr(0),
 		m.DevPtr(X), m.DevPtr(Y), m.DevPtr(Z),
-		unsafe.Pointer(Aex_red), regions.Ptr,
+		unsafe.Pointer(AexRed), regions.Ptr,
 		N[X], N[Y], N[Z], pbc, cfg)
 }

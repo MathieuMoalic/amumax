@@ -31,8 +31,8 @@ func (e *scalarExcitation) GetRegionToString(region int) string {
 	return fmt.Sprintf("%g", e.perRegion.GetRegion(region))
 }
 
-func (p *scalarExcitation) MSlice() cuda.MSlice {
-	buf, r := p.Slice()
+func (e *scalarExcitation) MSlice() cuda.MSlice {
+	buf, r := e.Slice()
 	log.AssertMsg(r, "Failed to retrieve slice: invalid state in scalarExcitation.MSlice")
 	return cuda.ToMSlice(buf)
 }
@@ -58,9 +58,10 @@ func (e *scalarExcitation) Slice() (*data.Slice, bool) {
 	return buf, true
 }
 
-// After resizing the mesh, the extra terms don't fit the grid anymore
+// RemoveExtraTerms After resizing the mesh, the extra terms don't fit the grid anymore
 // and there is no reasonable way to resize them. So remove them and have
 // the user re-add them.
+
 func (e *scalarExcitation) RemoveExtraTerms() {
 	if len(e.extraTerms) == 0 {
 		return
@@ -91,7 +92,7 @@ func (e *scalarExcitation) Add(mask *data.Slice, f script.ScalarFunction) {
 	e.AddGo(mask, mul)
 }
 
-// An Add(mask, f) equivalent for Go use
+// AddGo An Add(mask, f) equivalent for Go use
 func (e *scalarExcitation) AddGo(mask *data.Slice, mul func() float64) {
 	if mask != nil {
 		checkNaN(mask, e.Name()+".add()") // TODO: in more places

@@ -14,68 +14,68 @@ import (
 )
 
 // CUDA handle for madd4 kernel
-var madd4_code cu.Function
+var madd4Code cu.Function
 
 // Stores the arguments for madd4 kernel invocation
-type madd4_args_t struct {
-	arg_dst  unsafe.Pointer
-	arg_src1 unsafe.Pointer
-	arg_fac1 float32
-	arg_src2 unsafe.Pointer
-	arg_fac2 float32
-	arg_src3 unsafe.Pointer
-	arg_fac3 float32
-	arg_src4 unsafe.Pointer
-	arg_fac4 float32
-	arg_N    int
+type madd4ArgsT struct {
+	argDst  unsafe.Pointer
+	argSrc1 unsafe.Pointer
+	argFac1 float32
+	argSrc2 unsafe.Pointer
+	argFac2 float32
+	argSrc3 unsafe.Pointer
+	argFac3 float32
+	argSrc4 unsafe.Pointer
+	argFac4 float32
+	argN    int
 	argptr   [10]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for madd4 kernel invocation
-var madd4_args madd4_args_t
+var madd4Args madd4ArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	madd4_args.argptr[0] = unsafe.Pointer(&madd4_args.arg_dst)
-	madd4_args.argptr[1] = unsafe.Pointer(&madd4_args.arg_src1)
-	madd4_args.argptr[2] = unsafe.Pointer(&madd4_args.arg_fac1)
-	madd4_args.argptr[3] = unsafe.Pointer(&madd4_args.arg_src2)
-	madd4_args.argptr[4] = unsafe.Pointer(&madd4_args.arg_fac2)
-	madd4_args.argptr[5] = unsafe.Pointer(&madd4_args.arg_src3)
-	madd4_args.argptr[6] = unsafe.Pointer(&madd4_args.arg_fac3)
-	madd4_args.argptr[7] = unsafe.Pointer(&madd4_args.arg_src4)
-	madd4_args.argptr[8] = unsafe.Pointer(&madd4_args.arg_fac4)
-	madd4_args.argptr[9] = unsafe.Pointer(&madd4_args.arg_N)
+	madd4Args.argptr[0] = unsafe.Pointer(&madd4Args.argDst)
+	madd4Args.argptr[1] = unsafe.Pointer(&madd4Args.argSrc1)
+	madd4Args.argptr[2] = unsafe.Pointer(&madd4Args.argFac1)
+	madd4Args.argptr[3] = unsafe.Pointer(&madd4Args.argSrc2)
+	madd4Args.argptr[4] = unsafe.Pointer(&madd4Args.argFac2)
+	madd4Args.argptr[5] = unsafe.Pointer(&madd4Args.argSrc3)
+	madd4Args.argptr[6] = unsafe.Pointer(&madd4Args.argFac3)
+	madd4Args.argptr[7] = unsafe.Pointer(&madd4Args.argSrc4)
+	madd4Args.argptr[8] = unsafe.Pointer(&madd4Args.argFac4)
+	madd4Args.argptr[9] = unsafe.Pointer(&madd4Args.argN)
 }
 
 // Wrapper for madd4 CUDA kernel, asynchronous.
-func k_madd4_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, src4 unsafe.Pointer, fac4 float32, N int, cfg *config) {
+func kMadd4Async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, src4 unsafe.Pointer, fac4 float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("madd4")
 	}
 
-	madd4_args.Lock()
-	defer madd4_args.Unlock()
+	madd4Args.Lock()
+	defer madd4Args.Unlock()
 
-	if madd4_code == 0 {
-		madd4_code = fatbinLoad(madd4_map, "madd4")
+	if madd4Code == 0 {
+		madd4Code = fatbinLoad(madd4Map, "madd4")
 	}
 
-	madd4_args.arg_dst = dst
-	madd4_args.arg_src1 = src1
-	madd4_args.arg_fac1 = fac1
-	madd4_args.arg_src2 = src2
-	madd4_args.arg_fac2 = fac2
-	madd4_args.arg_src3 = src3
-	madd4_args.arg_fac3 = fac3
-	madd4_args.arg_src4 = src4
-	madd4_args.arg_fac4 = fac4
-	madd4_args.arg_N = N
+	madd4Args.argDst = dst
+	madd4Args.argSrc1 = src1
+	madd4Args.argFac1 = fac1
+	madd4Args.argSrc2 = src2
+	madd4Args.argFac2 = fac2
+	madd4Args.argSrc3 = src3
+	madd4Args.argFac3 = fac3
+	madd4Args.argSrc4 = src4
+	madd4Args.argFac4 = fac4
+	madd4Args.argN = N
 
-	args := madd4_args.argptr[:]
-	cu.LaunchKernel(madd4_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := madd4Args.argptr[:]
+	cu.LaunchKernel(madd4Code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -84,14 +84,14 @@ func k_madd4_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 u
 }
 
 // maps compute capability on PTX code for madd4 kernel.
-var madd4_map = map[int]string{
+var madd4Map = map[int]string{
 	0:  "",
-	52: madd4_ptx_52,
+	52: madd4Ptx52,
 }
 
 // madd4 PTX code for various compute capabilities.
 const (
-	madd4_ptx_52 = `
+	madd4Ptx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

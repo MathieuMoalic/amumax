@@ -14,89 +14,89 @@ import (
 )
 
 // CUDA handle for addexchange kernel
-var addexchange_code cu.Function
+var addexchangeCode cu.Function
 
 // Stores the arguments for addexchange kernel invocation
-type addexchange_args_t struct {
-	arg_Bx      unsafe.Pointer
-	arg_By      unsafe.Pointer
-	arg_Bz      unsafe.Pointer
-	arg_mx      unsafe.Pointer
-	arg_my      unsafe.Pointer
-	arg_mz      unsafe.Pointer
-	arg_Ms_     unsafe.Pointer
-	arg_Ms_mul  float32
-	arg_aLUT2d  unsafe.Pointer
-	arg_regions unsafe.Pointer
-	arg_wx      float32
-	arg_wy      float32
-	arg_wz      float32
-	arg_Nx      int
-	arg_Ny      int
-	arg_Nz      int
-	arg_PBC     byte
+type addexchangeArgsT struct {
+	argBx      unsafe.Pointer
+	argBy      unsafe.Pointer
+	argBz      unsafe.Pointer
+	argMx      unsafe.Pointer
+	argMy      unsafe.Pointer
+	argMz      unsafe.Pointer
+	argMs     unsafe.Pointer
+	argMsMul  float32
+	argALUT2d  unsafe.Pointer
+	argRegions unsafe.Pointer
+	argWx      float32
+	argWy      float32
+	argWz      float32
+	argNx      int
+	argNy      int
+	argNz      int
+	argPBC     byte
 	argptr      [17]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for addexchange kernel invocation
-var addexchange_args addexchange_args_t
+var addexchangeArgs addexchangeArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	addexchange_args.argptr[0] = unsafe.Pointer(&addexchange_args.arg_Bx)
-	addexchange_args.argptr[1] = unsafe.Pointer(&addexchange_args.arg_By)
-	addexchange_args.argptr[2] = unsafe.Pointer(&addexchange_args.arg_Bz)
-	addexchange_args.argptr[3] = unsafe.Pointer(&addexchange_args.arg_mx)
-	addexchange_args.argptr[4] = unsafe.Pointer(&addexchange_args.arg_my)
-	addexchange_args.argptr[5] = unsafe.Pointer(&addexchange_args.arg_mz)
-	addexchange_args.argptr[6] = unsafe.Pointer(&addexchange_args.arg_Ms_)
-	addexchange_args.argptr[7] = unsafe.Pointer(&addexchange_args.arg_Ms_mul)
-	addexchange_args.argptr[8] = unsafe.Pointer(&addexchange_args.arg_aLUT2d)
-	addexchange_args.argptr[9] = unsafe.Pointer(&addexchange_args.arg_regions)
-	addexchange_args.argptr[10] = unsafe.Pointer(&addexchange_args.arg_wx)
-	addexchange_args.argptr[11] = unsafe.Pointer(&addexchange_args.arg_wy)
-	addexchange_args.argptr[12] = unsafe.Pointer(&addexchange_args.arg_wz)
-	addexchange_args.argptr[13] = unsafe.Pointer(&addexchange_args.arg_Nx)
-	addexchange_args.argptr[14] = unsafe.Pointer(&addexchange_args.arg_Ny)
-	addexchange_args.argptr[15] = unsafe.Pointer(&addexchange_args.arg_Nz)
-	addexchange_args.argptr[16] = unsafe.Pointer(&addexchange_args.arg_PBC)
+	addexchangeArgs.argptr[0] = unsafe.Pointer(&addexchangeArgs.argBx)
+	addexchangeArgs.argptr[1] = unsafe.Pointer(&addexchangeArgs.argBy)
+	addexchangeArgs.argptr[2] = unsafe.Pointer(&addexchangeArgs.argBz)
+	addexchangeArgs.argptr[3] = unsafe.Pointer(&addexchangeArgs.argMx)
+	addexchangeArgs.argptr[4] = unsafe.Pointer(&addexchangeArgs.argMy)
+	addexchangeArgs.argptr[5] = unsafe.Pointer(&addexchangeArgs.argMz)
+	addexchangeArgs.argptr[6] = unsafe.Pointer(&addexchangeArgs.argMs)
+	addexchangeArgs.argptr[7] = unsafe.Pointer(&addexchangeArgs.argMsMul)
+	addexchangeArgs.argptr[8] = unsafe.Pointer(&addexchangeArgs.argALUT2d)
+	addexchangeArgs.argptr[9] = unsafe.Pointer(&addexchangeArgs.argRegions)
+	addexchangeArgs.argptr[10] = unsafe.Pointer(&addexchangeArgs.argWx)
+	addexchangeArgs.argptr[11] = unsafe.Pointer(&addexchangeArgs.argWy)
+	addexchangeArgs.argptr[12] = unsafe.Pointer(&addexchangeArgs.argWz)
+	addexchangeArgs.argptr[13] = unsafe.Pointer(&addexchangeArgs.argNx)
+	addexchangeArgs.argptr[14] = unsafe.Pointer(&addexchangeArgs.argNy)
+	addexchangeArgs.argptr[15] = unsafe.Pointer(&addexchangeArgs.argNz)
+	addexchangeArgs.argptr[16] = unsafe.Pointer(&addexchangeArgs.argPBC)
 }
 
 // Wrapper for addexchange CUDA kernel, asynchronous.
-func k_addexchange_async(Bx unsafe.Pointer, By unsafe.Pointer, Bz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, Ms_ unsafe.Pointer, Ms_mul float32, aLUT2d unsafe.Pointer, regions unsafe.Pointer, wx float32, wy float32, wz float32, Nx int, Ny int, Nz int, PBC byte, cfg *config) {
+func kAddexchangeAsync(Bx unsafe.Pointer, By unsafe.Pointer, Bz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, Ms_ unsafe.Pointer, MsMul float32, aLUT2d unsafe.Pointer, regions unsafe.Pointer, wx float32, wy float32, wz float32, Nx int, Ny int, Nz int, PBC byte, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("addexchange")
 	}
 
-	addexchange_args.Lock()
-	defer addexchange_args.Unlock()
+	addexchangeArgs.Lock()
+	defer addexchangeArgs.Unlock()
 
-	if addexchange_code == 0 {
-		addexchange_code = fatbinLoad(addexchange_map, "addexchange")
+	if addexchangeCode == 0 {
+		addexchangeCode = fatbinLoad(addexchangeMap, "addexchange")
 	}
 
-	addexchange_args.arg_Bx = Bx
-	addexchange_args.arg_By = By
-	addexchange_args.arg_Bz = Bz
-	addexchange_args.arg_mx = mx
-	addexchange_args.arg_my = my
-	addexchange_args.arg_mz = mz
-	addexchange_args.arg_Ms_ = Ms_
-	addexchange_args.arg_Ms_mul = Ms_mul
-	addexchange_args.arg_aLUT2d = aLUT2d
-	addexchange_args.arg_regions = regions
-	addexchange_args.arg_wx = wx
-	addexchange_args.arg_wy = wy
-	addexchange_args.arg_wz = wz
-	addexchange_args.arg_Nx = Nx
-	addexchange_args.arg_Ny = Ny
-	addexchange_args.arg_Nz = Nz
-	addexchange_args.arg_PBC = PBC
+	addexchangeArgs.argBx = Bx
+	addexchangeArgs.argBy = By
+	addexchangeArgs.argBz = Bz
+	addexchangeArgs.argMx = mx
+	addexchangeArgs.argMy = my
+	addexchangeArgs.argMz = mz
+	addexchangeArgs.argMs = Ms_
+	addexchangeArgs.argMsMul = MsMul
+	addexchangeArgs.argALUT2d = aLUT2d
+	addexchangeArgs.argRegions = regions
+	addexchangeArgs.argWx = wx
+	addexchangeArgs.argWy = wy
+	addexchangeArgs.argWz = wz
+	addexchangeArgs.argNx = Nx
+	addexchangeArgs.argNy = Ny
+	addexchangeArgs.argNz = Nz
+	addexchangeArgs.argPBC = PBC
 
-	args := addexchange_args.argptr[:]
-	cu.LaunchKernel(addexchange_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := addexchangeArgs.argptr[:]
+	cu.LaunchKernel(addexchangeCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -105,14 +105,14 @@ func k_addexchange_async(Bx unsafe.Pointer, By unsafe.Pointer, Bz unsafe.Pointer
 }
 
 // maps compute capability on PTX code for addexchange kernel.
-var addexchange_map = map[int]string{
+var addexchangeMap = map[int]string{
 	0:  "",
-	52: addexchange_ptx_52,
+	52: addexchangePtx52,
 }
 
 // addexchange PTX code for various compute capabilities.
 const (
-	addexchange_ptx_52 = `
+	addexchangePtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

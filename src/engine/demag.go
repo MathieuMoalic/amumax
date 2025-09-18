@@ -10,13 +10,13 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mag"
 )
 
-// Demag variables
+// DemagAccuracy NoDemagSpins EnableDemag EDemag EdensDemag BDemag MFull Msat Demag variables
 var (
 	Msat        = newScalarParam("Msat", "A/m", "Saturation magnetization")
-	M_full      = newVectorField("m_full", "A/m", "Unnormalized magnetization", setMFull)
-	B_demag     = newVectorField("B_demag", "T", "Magnetostatic field", setDemagField)
-	Edens_demag = newScalarField("Edens_demag", "J/m3", "Magnetostatic energy density", AddEdens_demag)
-	E_demag     = newScalarValue("E_demag", "J", "Magnetostatic energy", getDemagEnergy)
+	MFull      = newVectorField("m_full", "A/m", "Unnormalized magnetization", setMFull)
+	BDemag     = newVectorField("B_demag", "T", "Magnetostatic field", setDemagField)
+	EdensDemag = newScalarField("Edens_demag", "J/m3", "Magnetostatic energy density", AddEdensDemag)
+	EDemag     = newScalarValue("E_demag", "J", "Magnetostatic energy", getDemagEnergy)
 
 	EnableDemag   = true // enable/disable global demag field
 	NoDemagSpins  = newScalarParam("NoDemagSpins", "", "Disable magnetostatic interaction per region (default=0, set to 1 to disable). ")
@@ -24,10 +24,10 @@ var (
 	DemagAccuracy = 6.0                  // Demag accuracy (divide cubes in at most N^3 points)
 )
 
-var AddEdens_demag = makeEdensAdder(&B_demag, -0.5)
+var AddEdensDemag = makeEdensAdder(&BDemag, -0.5)
 
 func init() {
-	registerEnergy(getDemagEnergy, AddEdens_demag)
+	registerEnergy(getDemagEnergy, AddEdensDemag)
 }
 
 // Sets dst to the current demag field
@@ -110,5 +110,5 @@ func demagConv() *cuda.DemagConvolution {
 
 // Returns the current demag energy in Joules.
 func getDemagEnergy() float64 {
-	return -0.5 * cellVolume() * dot(&M_full, &B_demag)
+	return -0.5 * cellVolume() * dot(&MFull, &BDemag)
 }

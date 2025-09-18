@@ -27,7 +27,7 @@ func (rk *rk23) Step() {
 	size := m.Size()
 
 	if FixDt != 0 {
-		Dt_si = FixDt
+		DtSi = FixDt
 	}
 
 	// upon resize: remove wrongly sized k1
@@ -57,18 +57,18 @@ func (rk *rk23) Step() {
 	defer cuda.Recycle(k3)
 	defer cuda.Recycle(k4)
 
-	h := float32(Dt_si * gammaLL) // internal time step = Dt * gammaLL
+	h := float32(DtSi * gammaLL) // internal time step = Dt * gammaLL
 
 	// there is no explicit stage 1: k1 from previous step
 
 	// stage 2
-	Time = t0 + (1./2.)*Dt_si
+	Time = t0 + (1./2.)*DtSi
 	cuda.Madd2(m, m, rk.k1, 1, (1./2.)*h) // m = m*1 + k1*h/2
 	NormMag.normalize()
 	torqueFn(k2)
 
 	// stage 3
-	Time = t0 + (3./4.)*Dt_si
+	Time = t0 + (3./4.)*DtSi
 	cuda.Madd2(m, m0, k2, 1, (3./4.)*h) // m = m0*1 + k2*3/4
 	NormMag.normalize()
 	torqueFn(k3)
@@ -78,7 +78,7 @@ func (rk *rk23) Step() {
 	NormMag.normalize()
 
 	// error estimate
-	Time = t0 + Dt_si
+	Time = t0 + DtSi
 	torqueFn(k4)
 	Err := k2 // re-use k2 as error
 	// difference of 3rd and 2nd order torque without explicitly storing them first
@@ -88,12 +88,12 @@ func (rk *rk23) Step() {
 	err := cuda.MaxVecNorm(Err) * float64(h)
 
 	// adjust next time step
-	if err < MaxErr || Dt_si <= MinDt || FixDt != 0 { // mindt check to avoid infinite loop
+	if err < MaxErr || DtSi <= MinDt || FixDt != 0 { // mindt check to avoid infinite loop
 		// step OK
 		setLastErr(err)
 		setMaxTorque(k4)
 		NSteps++
-		Time = t0 + Dt_si
+		Time = t0 + DtSi
 		adaptDt(math.Pow(MaxErr/err, 1./3.))
 		data.Copy(rk.k1, k4) // FSAL
 	} else {

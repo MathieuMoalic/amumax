@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	clocks     map[string]*clock
+	clocks      map[string]*clock
 	firstStart time.Time
-	Enabled    bool
+	Enabled     bool
 )
 
 func Start(key string) {

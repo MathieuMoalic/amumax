@@ -104,8 +104,9 @@ func (c *fieldFunc) Mesh() *mesh.Mesh       { return GetMesh() }
 func (c *fieldFunc) average() []float64     { return qAverageUniverse(c) }
 func (c *fieldFunc) EvalTo(dst *data.Slice) { evalTo(c, dst) }
 
-// Calculates and returns the quantity.
+// Slice Calculates and returns the quantity.
 // recycle is true: slice needs to be recycled.
+
 func (q *fieldFunc) Slice() (s *data.Slice, recycle bool) {
 	buf := cuda.Buffer(q.NComp(), q.Mesh().Size())
 	cuda.Zero(buf)

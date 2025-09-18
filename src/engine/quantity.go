@@ -10,7 +10,7 @@ import (
 
 var Quantities = make(map[string]Quantity)
 
-// Arbitrary physical quantity.
+// Quantity Arbitrary physical quantity.
 type Quantity interface {
 	NComp() int
 	EvalTo(dst *data.Slice)

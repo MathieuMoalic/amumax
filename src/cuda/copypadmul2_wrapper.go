@@ -14,71 +14,71 @@ import (
 )
 
 // CUDA handle for copypadmul2 kernel
-var copypadmul2_code cu.Function
+var copypadmul2Code cu.Function
 
 // Stores the arguments for copypadmul2 kernel invocation
-type copypadmul2_args_t struct {
-	arg_dst    unsafe.Pointer
-	arg_Dx     int
-	arg_Dy     int
-	arg_Dz     int
-	arg_src    unsafe.Pointer
-	arg_Sx     int
-	arg_Sy     int
-	arg_Sz     int
-	arg_Ms_    unsafe.Pointer
-	arg_Ms_mul float32
-	arg_vol    unsafe.Pointer
+type copypadmul2ArgsT struct {
+	argDst    unsafe.Pointer
+	argDx     int
+	argDy     int
+	argDz     int
+	argSrc    unsafe.Pointer
+	argSx     int
+	argSy     int
+	argSz     int
+	argMs    unsafe.Pointer
+	argMsMul float32
+	argVol    unsafe.Pointer
 	argptr     [11]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for copypadmul2 kernel invocation
-var copypadmul2_args copypadmul2_args_t
+var copypadmul2Args copypadmul2ArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	copypadmul2_args.argptr[0] = unsafe.Pointer(&copypadmul2_args.arg_dst)
-	copypadmul2_args.argptr[1] = unsafe.Pointer(&copypadmul2_args.arg_Dx)
-	copypadmul2_args.argptr[2] = unsafe.Pointer(&copypadmul2_args.arg_Dy)
-	copypadmul2_args.argptr[3] = unsafe.Pointer(&copypadmul2_args.arg_Dz)
-	copypadmul2_args.argptr[4] = unsafe.Pointer(&copypadmul2_args.arg_src)
-	copypadmul2_args.argptr[5] = unsafe.Pointer(&copypadmul2_args.arg_Sx)
-	copypadmul2_args.argptr[6] = unsafe.Pointer(&copypadmul2_args.arg_Sy)
-	copypadmul2_args.argptr[7] = unsafe.Pointer(&copypadmul2_args.arg_Sz)
-	copypadmul2_args.argptr[8] = unsafe.Pointer(&copypadmul2_args.arg_Ms_)
-	copypadmul2_args.argptr[9] = unsafe.Pointer(&copypadmul2_args.arg_Ms_mul)
-	copypadmul2_args.argptr[10] = unsafe.Pointer(&copypadmul2_args.arg_vol)
+	copypadmul2Args.argptr[0] = unsafe.Pointer(&copypadmul2Args.argDst)
+	copypadmul2Args.argptr[1] = unsafe.Pointer(&copypadmul2Args.argDx)
+	copypadmul2Args.argptr[2] = unsafe.Pointer(&copypadmul2Args.argDy)
+	copypadmul2Args.argptr[3] = unsafe.Pointer(&copypadmul2Args.argDz)
+	copypadmul2Args.argptr[4] = unsafe.Pointer(&copypadmul2Args.argSrc)
+	copypadmul2Args.argptr[5] = unsafe.Pointer(&copypadmul2Args.argSx)
+	copypadmul2Args.argptr[6] = unsafe.Pointer(&copypadmul2Args.argSy)
+	copypadmul2Args.argptr[7] = unsafe.Pointer(&copypadmul2Args.argSz)
+	copypadmul2Args.argptr[8] = unsafe.Pointer(&copypadmul2Args.argMs)
+	copypadmul2Args.argptr[9] = unsafe.Pointer(&copypadmul2Args.argMsMul)
+	copypadmul2Args.argptr[10] = unsafe.Pointer(&copypadmul2Args.argVol)
 }
 
 // Wrapper for copypadmul2 CUDA kernel, asynchronous.
-func k_copypadmul2_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Pointer, Sx int, Sy int, Sz int, Ms_ unsafe.Pointer, Ms_mul float32, vol unsafe.Pointer, cfg *config) {
+func kCopypadmul2Async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Pointer, Sx int, Sy int, Sz int, Ms_ unsafe.Pointer, MsMul float32, vol unsafe.Pointer, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("copypadmul2")
 	}
 
-	copypadmul2_args.Lock()
-	defer copypadmul2_args.Unlock()
+	copypadmul2Args.Lock()
+	defer copypadmul2Args.Unlock()
 
-	if copypadmul2_code == 0 {
-		copypadmul2_code = fatbinLoad(copypadmul2_map, "copypadmul2")
+	if copypadmul2Code == 0 {
+		copypadmul2Code = fatbinLoad(copypadmul2Map, "copypadmul2")
 	}
 
-	copypadmul2_args.arg_dst = dst
-	copypadmul2_args.arg_Dx = Dx
-	copypadmul2_args.arg_Dy = Dy
-	copypadmul2_args.arg_Dz = Dz
-	copypadmul2_args.arg_src = src
-	copypadmul2_args.arg_Sx = Sx
-	copypadmul2_args.arg_Sy = Sy
-	copypadmul2_args.arg_Sz = Sz
-	copypadmul2_args.arg_Ms_ = Ms_
-	copypadmul2_args.arg_Ms_mul = Ms_mul
-	copypadmul2_args.arg_vol = vol
+	copypadmul2Args.argDst = dst
+	copypadmul2Args.argDx = Dx
+	copypadmul2Args.argDy = Dy
+	copypadmul2Args.argDz = Dz
+	copypadmul2Args.argSrc = src
+	copypadmul2Args.argSx = Sx
+	copypadmul2Args.argSy = Sy
+	copypadmul2Args.argSz = Sz
+	copypadmul2Args.argMs = Ms_
+	copypadmul2Args.argMsMul = MsMul
+	copypadmul2Args.argVol = vol
 
-	args := copypadmul2_args.argptr[:]
-	cu.LaunchKernel(copypadmul2_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := copypadmul2Args.argptr[:]
+	cu.LaunchKernel(copypadmul2Code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -87,14 +87,14 @@ func k_copypadmul2_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.
 }
 
 // maps compute capability on PTX code for copypadmul2 kernel.
-var copypadmul2_map = map[int]string{
+var copypadmul2Map = map[int]string{
 	0:  "",
-	52: copypadmul2_ptx_52,
+	52: copypadmul2Ptx52,
 }
 
 // copypadmul2 PTX code for various compute capabilities.
 const (
-	copypadmul2_ptx_52 = `
+	copypadmul2Ptx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

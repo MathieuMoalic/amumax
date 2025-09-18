@@ -14,7 +14,7 @@ func CrossProduct(dst, a, b *data.Slice) {
 
 	N := dst.Len()
 	cfg := make1DConf(N)
-	k_crossproduct_async(dst.DevPtr(X), dst.DevPtr(Y), dst.DevPtr(Z),
+	kCrossproductAsync(dst.DevPtr(X), dst.DevPtr(Y), dst.DevPtr(Z),
 		a.DevPtr(X), a.DevPtr(Y), a.DevPtr(Z),
 		b.DevPtr(X), b.DevPtr(Y), b.DevPtr(Z),
 		N, cfg)

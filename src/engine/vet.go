@@ -8,7 +8,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-// check all input files for errors, don't run.
+// Vet check all input files for errors, don't run.
 func Vet() {
 	status := 0
 	for _, f := range flag.Args() {

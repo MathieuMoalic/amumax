@@ -14,62 +14,62 @@ import (
 )
 
 // CUDA handle for shifty kernel
-var shifty_code cu.Function
+var shiftyCode cu.Function
 
 // Stores the arguments for shifty kernel invocation
-type shifty_args_t struct {
-	arg_dst    unsafe.Pointer
-	arg_src    unsafe.Pointer
-	arg_Nx     int
-	arg_Ny     int
-	arg_Nz     int
-	arg_shy    int
-	arg_clampL float32
-	arg_clampR float32
+type shiftyArgsT struct {
+	argDst    unsafe.Pointer
+	argSrc    unsafe.Pointer
+	argNx     int
+	argNy     int
+	argNz     int
+	argShy    int
+	argClampL float32
+	argClampR float32
 	argptr     [8]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for shifty kernel invocation
-var shifty_args shifty_args_t
+var shiftyArgs shiftyArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	shifty_args.argptr[0] = unsafe.Pointer(&shifty_args.arg_dst)
-	shifty_args.argptr[1] = unsafe.Pointer(&shifty_args.arg_src)
-	shifty_args.argptr[2] = unsafe.Pointer(&shifty_args.arg_Nx)
-	shifty_args.argptr[3] = unsafe.Pointer(&shifty_args.arg_Ny)
-	shifty_args.argptr[4] = unsafe.Pointer(&shifty_args.arg_Nz)
-	shifty_args.argptr[5] = unsafe.Pointer(&shifty_args.arg_shy)
-	shifty_args.argptr[6] = unsafe.Pointer(&shifty_args.arg_clampL)
-	shifty_args.argptr[7] = unsafe.Pointer(&shifty_args.arg_clampR)
+	shiftyArgs.argptr[0] = unsafe.Pointer(&shiftyArgs.argDst)
+	shiftyArgs.argptr[1] = unsafe.Pointer(&shiftyArgs.argSrc)
+	shiftyArgs.argptr[2] = unsafe.Pointer(&shiftyArgs.argNx)
+	shiftyArgs.argptr[3] = unsafe.Pointer(&shiftyArgs.argNy)
+	shiftyArgs.argptr[4] = unsafe.Pointer(&shiftyArgs.argNz)
+	shiftyArgs.argptr[5] = unsafe.Pointer(&shiftyArgs.argShy)
+	shiftyArgs.argptr[6] = unsafe.Pointer(&shiftyArgs.argClampL)
+	shiftyArgs.argptr[7] = unsafe.Pointer(&shiftyArgs.argClampR)
 }
 
 // Wrapper for shifty CUDA kernel, asynchronous.
-func k_shifty_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz int, shy int, clampL float32, clampR float32, cfg *config) {
+func kShiftyAsync(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz int, shy int, clampL float32, clampR float32, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("shifty")
 	}
 
-	shifty_args.Lock()
-	defer shifty_args.Unlock()
+	shiftyArgs.Lock()
+	defer shiftyArgs.Unlock()
 
-	if shifty_code == 0 {
-		shifty_code = fatbinLoad(shifty_map, "shifty")
+	if shiftyCode == 0 {
+		shiftyCode = fatbinLoad(shiftyMap, "shifty")
 	}
 
-	shifty_args.arg_dst = dst
-	shifty_args.arg_src = src
-	shifty_args.arg_Nx = Nx
-	shifty_args.arg_Ny = Ny
-	shifty_args.arg_Nz = Nz
-	shifty_args.arg_shy = shy
-	shifty_args.arg_clampL = clampL
-	shifty_args.arg_clampR = clampR
+	shiftyArgs.argDst = dst
+	shiftyArgs.argSrc = src
+	shiftyArgs.argNx = Nx
+	shiftyArgs.argNy = Ny
+	shiftyArgs.argNz = Nz
+	shiftyArgs.argShy = shy
+	shiftyArgs.argClampL = clampL
+	shiftyArgs.argClampR = clampR
 
-	args := shifty_args.argptr[:]
-	cu.LaunchKernel(shifty_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := shiftyArgs.argptr[:]
+	cu.LaunchKernel(shiftyCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -78,14 +78,14 @@ func k_shifty_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz i
 }
 
 // maps compute capability on PTX code for shifty kernel.
-var shifty_map = map[int]string{
+var shiftyMap = map[int]string{
 	0:  "",
-	52: shifty_ptx_52,
+	52: shiftyPtx52,
 }
 
 // shifty PTX code for various compute capabilities.
 const (
-	shifty_ptx_52 = `
+	shiftyPtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

@@ -14,95 +14,95 @@ import (
 )
 
 // CUDA handle for adduniaxialanisotropy2 kernel
-var adduniaxialanisotropy2_code cu.Function
+var adduniaxialanisotropy2Code cu.Function
 
 // Stores the arguments for adduniaxialanisotropy2 kernel invocation
-type adduniaxialanisotropy2_args_t struct {
-	arg_Bx     unsafe.Pointer
-	arg_By     unsafe.Pointer
-	arg_Bz     unsafe.Pointer
-	arg_mx     unsafe.Pointer
-	arg_my     unsafe.Pointer
-	arg_mz     unsafe.Pointer
-	arg_Ms_    unsafe.Pointer
-	arg_Ms_mul float32
-	arg_K1_    unsafe.Pointer
-	arg_K1_mul float32
-	arg_K2_    unsafe.Pointer
-	arg_K2_mul float32
-	arg_ux_    unsafe.Pointer
-	arg_ux_mul float32
-	arg_uy_    unsafe.Pointer
-	arg_uy_mul float32
-	arg_uz_    unsafe.Pointer
-	arg_uz_mul float32
-	arg_N      int
+type adduniaxialanisotropy2ArgsT struct {
+	argBx     unsafe.Pointer
+	argBy     unsafe.Pointer
+	argBz     unsafe.Pointer
+	argMx     unsafe.Pointer
+	argMy     unsafe.Pointer
+	argMz     unsafe.Pointer
+	argMs    unsafe.Pointer
+	argMsMul float32
+	argK1    unsafe.Pointer
+	argK1Mul float32
+	argK2    unsafe.Pointer
+	argK2Mul float32
+	argUx    unsafe.Pointer
+	argUxMul float32
+	argUy    unsafe.Pointer
+	argUyMul float32
+	argUz    unsafe.Pointer
+	argUzMul float32
+	argN      int
 	argptr     [19]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for adduniaxialanisotropy2 kernel invocation
-var adduniaxialanisotropy2_args adduniaxialanisotropy2_args_t
+var adduniaxialanisotropy2Args adduniaxialanisotropy2ArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	adduniaxialanisotropy2_args.argptr[0] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_Bx)
-	adduniaxialanisotropy2_args.argptr[1] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_By)
-	adduniaxialanisotropy2_args.argptr[2] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_Bz)
-	adduniaxialanisotropy2_args.argptr[3] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_mx)
-	adduniaxialanisotropy2_args.argptr[4] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_my)
-	adduniaxialanisotropy2_args.argptr[5] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_mz)
-	adduniaxialanisotropy2_args.argptr[6] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_Ms_)
-	adduniaxialanisotropy2_args.argptr[7] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_Ms_mul)
-	adduniaxialanisotropy2_args.argptr[8] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_K1_)
-	adduniaxialanisotropy2_args.argptr[9] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_K1_mul)
-	adduniaxialanisotropy2_args.argptr[10] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_K2_)
-	adduniaxialanisotropy2_args.argptr[11] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_K2_mul)
-	adduniaxialanisotropy2_args.argptr[12] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_ux_)
-	adduniaxialanisotropy2_args.argptr[13] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_ux_mul)
-	adduniaxialanisotropy2_args.argptr[14] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_uy_)
-	adduniaxialanisotropy2_args.argptr[15] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_uy_mul)
-	adduniaxialanisotropy2_args.argptr[16] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_uz_)
-	adduniaxialanisotropy2_args.argptr[17] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_uz_mul)
-	adduniaxialanisotropy2_args.argptr[18] = unsafe.Pointer(&adduniaxialanisotropy2_args.arg_N)
+	adduniaxialanisotropy2Args.argptr[0] = unsafe.Pointer(&adduniaxialanisotropy2Args.argBx)
+	adduniaxialanisotropy2Args.argptr[1] = unsafe.Pointer(&adduniaxialanisotropy2Args.argBy)
+	adduniaxialanisotropy2Args.argptr[2] = unsafe.Pointer(&adduniaxialanisotropy2Args.argBz)
+	adduniaxialanisotropy2Args.argptr[3] = unsafe.Pointer(&adduniaxialanisotropy2Args.argMx)
+	adduniaxialanisotropy2Args.argptr[4] = unsafe.Pointer(&adduniaxialanisotropy2Args.argMy)
+	adduniaxialanisotropy2Args.argptr[5] = unsafe.Pointer(&adduniaxialanisotropy2Args.argMz)
+	adduniaxialanisotropy2Args.argptr[6] = unsafe.Pointer(&adduniaxialanisotropy2Args.argMs)
+	adduniaxialanisotropy2Args.argptr[7] = unsafe.Pointer(&adduniaxialanisotropy2Args.argMsMul)
+	adduniaxialanisotropy2Args.argptr[8] = unsafe.Pointer(&adduniaxialanisotropy2Args.argK1)
+	adduniaxialanisotropy2Args.argptr[9] = unsafe.Pointer(&adduniaxialanisotropy2Args.argK1Mul)
+	adduniaxialanisotropy2Args.argptr[10] = unsafe.Pointer(&adduniaxialanisotropy2Args.argK2)
+	adduniaxialanisotropy2Args.argptr[11] = unsafe.Pointer(&adduniaxialanisotropy2Args.argK2Mul)
+	adduniaxialanisotropy2Args.argptr[12] = unsafe.Pointer(&adduniaxialanisotropy2Args.argUx)
+	adduniaxialanisotropy2Args.argptr[13] = unsafe.Pointer(&adduniaxialanisotropy2Args.argUxMul)
+	adduniaxialanisotropy2Args.argptr[14] = unsafe.Pointer(&adduniaxialanisotropy2Args.argUy)
+	adduniaxialanisotropy2Args.argptr[15] = unsafe.Pointer(&adduniaxialanisotropy2Args.argUyMul)
+	adduniaxialanisotropy2Args.argptr[16] = unsafe.Pointer(&adduniaxialanisotropy2Args.argUz)
+	adduniaxialanisotropy2Args.argptr[17] = unsafe.Pointer(&adduniaxialanisotropy2Args.argUzMul)
+	adduniaxialanisotropy2Args.argptr[18] = unsafe.Pointer(&adduniaxialanisotropy2Args.argN)
 }
 
 // Wrapper for adduniaxialanisotropy2 CUDA kernel, asynchronous.
-func k_adduniaxialanisotropy2_async(Bx unsafe.Pointer, By unsafe.Pointer, Bz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, Ms_ unsafe.Pointer, Ms_mul float32, K1_ unsafe.Pointer, K1_mul float32, K2_ unsafe.Pointer, K2_mul float32, ux_ unsafe.Pointer, ux_mul float32, uy_ unsafe.Pointer, uy_mul float32, uz_ unsafe.Pointer, uz_mul float32, N int, cfg *config) {
+func kAdduniaxialanisotropy2Async(Bx unsafe.Pointer, By unsafe.Pointer, Bz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, Ms_ unsafe.Pointer, MsMul float32, K1_ unsafe.Pointer, K1Mul float32, K2_ unsafe.Pointer, K2Mul float32, ux_ unsafe.Pointer, uxMul float32, uy_ unsafe.Pointer, uyMul float32, uz_ unsafe.Pointer, uzMul float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("adduniaxialanisotropy2")
 	}
 
-	adduniaxialanisotropy2_args.Lock()
-	defer adduniaxialanisotropy2_args.Unlock()
+	adduniaxialanisotropy2Args.Lock()
+	defer adduniaxialanisotropy2Args.Unlock()
 
-	if adduniaxialanisotropy2_code == 0 {
-		adduniaxialanisotropy2_code = fatbinLoad(adduniaxialanisotropy2_map, "adduniaxialanisotropy2")
+	if adduniaxialanisotropy2Code == 0 {
+		adduniaxialanisotropy2Code = fatbinLoad(adduniaxialanisotropy2Map, "adduniaxialanisotropy2")
 	}
 
-	adduniaxialanisotropy2_args.arg_Bx = Bx
-	adduniaxialanisotropy2_args.arg_By = By
-	adduniaxialanisotropy2_args.arg_Bz = Bz
-	adduniaxialanisotropy2_args.arg_mx = mx
-	adduniaxialanisotropy2_args.arg_my = my
-	adduniaxialanisotropy2_args.arg_mz = mz
-	adduniaxialanisotropy2_args.arg_Ms_ = Ms_
-	adduniaxialanisotropy2_args.arg_Ms_mul = Ms_mul
-	adduniaxialanisotropy2_args.arg_K1_ = K1_
-	adduniaxialanisotropy2_args.arg_K1_mul = K1_mul
-	adduniaxialanisotropy2_args.arg_K2_ = K2_
-	adduniaxialanisotropy2_args.arg_K2_mul = K2_mul
-	adduniaxialanisotropy2_args.arg_ux_ = ux_
-	adduniaxialanisotropy2_args.arg_ux_mul = ux_mul
-	adduniaxialanisotropy2_args.arg_uy_ = uy_
-	adduniaxialanisotropy2_args.arg_uy_mul = uy_mul
-	adduniaxialanisotropy2_args.arg_uz_ = uz_
-	adduniaxialanisotropy2_args.arg_uz_mul = uz_mul
-	adduniaxialanisotropy2_args.arg_N = N
+	adduniaxialanisotropy2Args.argBx = Bx
+	adduniaxialanisotropy2Args.argBy = By
+	adduniaxialanisotropy2Args.argBz = Bz
+	adduniaxialanisotropy2Args.argMx = mx
+	adduniaxialanisotropy2Args.argMy = my
+	adduniaxialanisotropy2Args.argMz = mz
+	adduniaxialanisotropy2Args.argMs = Ms_
+	adduniaxialanisotropy2Args.argMsMul = MsMul
+	adduniaxialanisotropy2Args.argK1 = K1_
+	adduniaxialanisotropy2Args.argK1Mul = K1Mul
+	adduniaxialanisotropy2Args.argK2 = K2_
+	adduniaxialanisotropy2Args.argK2Mul = K2Mul
+	adduniaxialanisotropy2Args.argUx = ux_
+	adduniaxialanisotropy2Args.argUxMul = uxMul
+	adduniaxialanisotropy2Args.argUy = uy_
+	adduniaxialanisotropy2Args.argUyMul = uyMul
+	adduniaxialanisotropy2Args.argUz = uz_
+	adduniaxialanisotropy2Args.argUzMul = uzMul
+	adduniaxialanisotropy2Args.argN = N
 
-	args := adduniaxialanisotropy2_args.argptr[:]
-	cu.LaunchKernel(adduniaxialanisotropy2_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := adduniaxialanisotropy2Args.argptr[:]
+	cu.LaunchKernel(adduniaxialanisotropy2Code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -111,14 +111,14 @@ func k_adduniaxialanisotropy2_async(Bx unsafe.Pointer, By unsafe.Pointer, Bz uns
 }
 
 // maps compute capability on PTX code for adduniaxialanisotropy2 kernel.
-var adduniaxialanisotropy2_map = map[int]string{
+var adduniaxialanisotropy2Map = map[int]string{
 	0:  "",
-	52: adduniaxialanisotropy2_ptx_52,
+	52: adduniaxialanisotropy2Ptx52,
 }
 
 // adduniaxialanisotropy2 PTX code for various compute capabilities.
 const (
-	adduniaxialanisotropy2_ptx_52 = `
+	adduniaxialanisotropy2Ptx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

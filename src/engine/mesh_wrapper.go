@@ -24,7 +24,7 @@ func SmoothMesh(smoothx, smoothy, smoothz bool) {
 	EngineState.Metadata.AddMesh(&Mesh)
 }
 
-// buggy and unused for now
+// ReCreateMesh buggy and unused for now
 func ReCreateMesh(Nx, Ny, Nz int, dx, dy, dz float64, PBCx, PBCy, PBCz int) {
 	setBusy(true)
 	defer setBusy(false)

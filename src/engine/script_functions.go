@@ -137,7 +137,7 @@ func init() {
 	DeclFunc("TableAutoSave", tableAutoSave, "Save the data table periodically.")
 }
 
-// Add a function to the script world
+// DeclFunc Add a function to the script world
 func DeclFunc(name string, f any, doc string) {
 	World.Func(name, f, doc)
 }

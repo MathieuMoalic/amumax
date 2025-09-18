@@ -14,50 +14,50 @@ import (
 )
 
 // CUDA handle for reducesum kernel
-var reducesum_code cu.Function
+var reducesumCode cu.Function
 
 // Stores the arguments for reducesum kernel invocation
-type reducesum_args_t struct {
-	arg_src     unsafe.Pointer
-	arg_dst     unsafe.Pointer
-	arg_initVal float32
-	arg_n       int
+type reducesumArgsT struct {
+	argSrc     unsafe.Pointer
+	argDst     unsafe.Pointer
+	argInitVal float32
+	argN       int
 	argptr      [4]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for reducesum kernel invocation
-var reducesum_args reducesum_args_t
+var reducesumArgs reducesumArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	reducesum_args.argptr[0] = unsafe.Pointer(&reducesum_args.arg_src)
-	reducesum_args.argptr[1] = unsafe.Pointer(&reducesum_args.arg_dst)
-	reducesum_args.argptr[2] = unsafe.Pointer(&reducesum_args.arg_initVal)
-	reducesum_args.argptr[3] = unsafe.Pointer(&reducesum_args.arg_n)
+	reducesumArgs.argptr[0] = unsafe.Pointer(&reducesumArgs.argSrc)
+	reducesumArgs.argptr[1] = unsafe.Pointer(&reducesumArgs.argDst)
+	reducesumArgs.argptr[2] = unsafe.Pointer(&reducesumArgs.argInitVal)
+	reducesumArgs.argptr[3] = unsafe.Pointer(&reducesumArgs.argN)
 }
 
 // Wrapper for reducesum CUDA kernel, asynchronous.
-func k_reducesum_async(src unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int, cfg *config) {
+func kReducesumAsync(src unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("reducesum")
 	}
 
-	reducesum_args.Lock()
-	defer reducesum_args.Unlock()
+	reducesumArgs.Lock()
+	defer reducesumArgs.Unlock()
 
-	if reducesum_code == 0 {
-		reducesum_code = fatbinLoad(reducesum_map, "reducesum")
+	if reducesumCode == 0 {
+		reducesumCode = fatbinLoad(reducesumMap, "reducesum")
 	}
 
-	reducesum_args.arg_src = src
-	reducesum_args.arg_dst = dst
-	reducesum_args.arg_initVal = initVal
-	reducesum_args.arg_n = n
+	reducesumArgs.argSrc = src
+	reducesumArgs.argDst = dst
+	reducesumArgs.argInitVal = initVal
+	reducesumArgs.argN = n
 
-	args := reducesum_args.argptr[:]
-	cu.LaunchKernel(reducesum_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := reducesumArgs.argptr[:]
+	cu.LaunchKernel(reducesumCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -66,14 +66,14 @@ func k_reducesum_async(src unsafe.Pointer, dst unsafe.Pointer, initVal float32, 
 }
 
 // maps compute capability on PTX code for reducesum kernel.
-var reducesum_map = map[int]string{
+var reducesumMap = map[int]string{
 	0:  "",
-	52: reducesum_ptx_52,
+	52: reducesumPtx52,
 }
 
 // reducesum PTX code for various compute capabilities.
 const (
-	reducesum_ptx_52 = `
+	reducesumPtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

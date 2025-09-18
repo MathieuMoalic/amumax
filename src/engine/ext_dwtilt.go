@@ -4,7 +4,7 @@ import (
 	"math"
 )
 
-// PMA domain wall tilt assuming straight wall.
+// DWTiltPMA PMA domain wall tilt assuming straight wall.
 var DWTiltPMA = newScalarValue("ext_dwtilt", "rad", "PMA domain wall tilt", dwTiltPMA)
 
 func dwTiltPMA() float64 {

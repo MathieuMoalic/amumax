@@ -14,83 +14,83 @@ import (
 )
 
 // CUDA handle for copyMRange kernel
-var copyMRange_code cu.Function
+var copyMRangeCode cu.Function
 
 // Stores the arguments for copyMRange kernel invocation
-type copyMRange_args_t struct {
-	arg_dst  unsafe.Pointer
-	arg_src  unsafe.Pointer
-	arg_Nx   int
-	arg_Ny   int
-	arg_Nz   int
-	arg_dx0  int
-	arg_dy0  int
-	arg_dz0  int
-	arg_sx0  int
-	arg_sy0  int
-	arg_sz0  int
-	arg_W    int
-	arg_H    int
-	arg_D    int
-	arg_wrap int
+type copyMRangeArgsT struct {
+	argDst  unsafe.Pointer
+	argSrc  unsafe.Pointer
+	argNx   int
+	argNy   int
+	argNz   int
+	argDx0  int
+	argDy0  int
+	argDz0  int
+	argSx0  int
+	argSy0  int
+	argSz0  int
+	argW    int
+	argH    int
+	argD    int
+	argWrap int
 	argptr   [15]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for copyMRange kernel invocation
-var copyMRange_args copyMRange_args_t
+var copyMRangeArgs copyMRangeArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	copyMRange_args.argptr[0] = unsafe.Pointer(&copyMRange_args.arg_dst)
-	copyMRange_args.argptr[1] = unsafe.Pointer(&copyMRange_args.arg_src)
-	copyMRange_args.argptr[2] = unsafe.Pointer(&copyMRange_args.arg_Nx)
-	copyMRange_args.argptr[3] = unsafe.Pointer(&copyMRange_args.arg_Ny)
-	copyMRange_args.argptr[4] = unsafe.Pointer(&copyMRange_args.arg_Nz)
-	copyMRange_args.argptr[5] = unsafe.Pointer(&copyMRange_args.arg_dx0)
-	copyMRange_args.argptr[6] = unsafe.Pointer(&copyMRange_args.arg_dy0)
-	copyMRange_args.argptr[7] = unsafe.Pointer(&copyMRange_args.arg_dz0)
-	copyMRange_args.argptr[8] = unsafe.Pointer(&copyMRange_args.arg_sx0)
-	copyMRange_args.argptr[9] = unsafe.Pointer(&copyMRange_args.arg_sy0)
-	copyMRange_args.argptr[10] = unsafe.Pointer(&copyMRange_args.arg_sz0)
-	copyMRange_args.argptr[11] = unsafe.Pointer(&copyMRange_args.arg_W)
-	copyMRange_args.argptr[12] = unsafe.Pointer(&copyMRange_args.arg_H)
-	copyMRange_args.argptr[13] = unsafe.Pointer(&copyMRange_args.arg_D)
-	copyMRange_args.argptr[14] = unsafe.Pointer(&copyMRange_args.arg_wrap)
+	copyMRangeArgs.argptr[0] = unsafe.Pointer(&copyMRangeArgs.argDst)
+	copyMRangeArgs.argptr[1] = unsafe.Pointer(&copyMRangeArgs.argSrc)
+	copyMRangeArgs.argptr[2] = unsafe.Pointer(&copyMRangeArgs.argNx)
+	copyMRangeArgs.argptr[3] = unsafe.Pointer(&copyMRangeArgs.argNy)
+	copyMRangeArgs.argptr[4] = unsafe.Pointer(&copyMRangeArgs.argNz)
+	copyMRangeArgs.argptr[5] = unsafe.Pointer(&copyMRangeArgs.argDx0)
+	copyMRangeArgs.argptr[6] = unsafe.Pointer(&copyMRangeArgs.argDy0)
+	copyMRangeArgs.argptr[7] = unsafe.Pointer(&copyMRangeArgs.argDz0)
+	copyMRangeArgs.argptr[8] = unsafe.Pointer(&copyMRangeArgs.argSx0)
+	copyMRangeArgs.argptr[9] = unsafe.Pointer(&copyMRangeArgs.argSy0)
+	copyMRangeArgs.argptr[10] = unsafe.Pointer(&copyMRangeArgs.argSz0)
+	copyMRangeArgs.argptr[11] = unsafe.Pointer(&copyMRangeArgs.argW)
+	copyMRangeArgs.argptr[12] = unsafe.Pointer(&copyMRangeArgs.argH)
+	copyMRangeArgs.argptr[13] = unsafe.Pointer(&copyMRangeArgs.argD)
+	copyMRangeArgs.argptr[14] = unsafe.Pointer(&copyMRangeArgs.argWrap)
 }
 
 // Wrapper for copyMRange CUDA kernel, asynchronous.
-func k_copyMRange_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz int, dx0 int, dy0 int, dz0 int, sx0 int, sy0 int, sz0 int, W int, H int, D int, wrap int, cfg *config) {
+func kCopyMRangeAsync(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz int, dx0 int, dy0 int, dz0 int, sx0 int, sy0 int, sz0 int, W int, H int, D int, wrap int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("copyMRange")
 	}
 
-	copyMRange_args.Lock()
-	defer copyMRange_args.Unlock()
+	copyMRangeArgs.Lock()
+	defer copyMRangeArgs.Unlock()
 
-	if copyMRange_code == 0 {
-		copyMRange_code = fatbinLoad(copyMRange_map, "copyMRange")
+	if copyMRangeCode == 0 {
+		copyMRangeCode = fatbinLoad(copyMRangeMap, "copyMRange")
 	}
 
-	copyMRange_args.arg_dst = dst
-	copyMRange_args.arg_src = src
-	copyMRange_args.arg_Nx = Nx
-	copyMRange_args.arg_Ny = Ny
-	copyMRange_args.arg_Nz = Nz
-	copyMRange_args.arg_dx0 = dx0
-	copyMRange_args.arg_dy0 = dy0
-	copyMRange_args.arg_dz0 = dz0
-	copyMRange_args.arg_sx0 = sx0
-	copyMRange_args.arg_sy0 = sy0
-	copyMRange_args.arg_sz0 = sz0
-	copyMRange_args.arg_W = W
-	copyMRange_args.arg_H = H
-	copyMRange_args.arg_D = D
-	copyMRange_args.arg_wrap = wrap
+	copyMRangeArgs.argDst = dst
+	copyMRangeArgs.argSrc = src
+	copyMRangeArgs.argNx = Nx
+	copyMRangeArgs.argNy = Ny
+	copyMRangeArgs.argNz = Nz
+	copyMRangeArgs.argDx0 = dx0
+	copyMRangeArgs.argDy0 = dy0
+	copyMRangeArgs.argDz0 = dz0
+	copyMRangeArgs.argSx0 = sx0
+	copyMRangeArgs.argSy0 = sy0
+	copyMRangeArgs.argSz0 = sz0
+	copyMRangeArgs.argW = W
+	copyMRangeArgs.argH = H
+	copyMRangeArgs.argD = D
+	copyMRangeArgs.argWrap = wrap
 
-	args := copyMRange_args.argptr[:]
-	cu.LaunchKernel(copyMRange_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := copyMRangeArgs.argptr[:]
+	cu.LaunchKernel(copyMRangeCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -99,14 +99,14 @@ func k_copyMRange_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, 
 }
 
 // maps compute capability on PTX code for copyMRange kernel.
-var copyMRange_map = map[int]string{
+var copyMRangeMap = map[int]string{
 	0:  "",
-	52: copyMRange_ptx_52,
+	52: copyMRangePtx52,
 }
 
 // copyMRange PTX code for various compute capabilities.
 const (
-	copyMRange_ptx_52 = `
+	copyMRangePtx52 = `
 .version 8.4
 .target sm_52
 .address_size 64

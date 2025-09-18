@@ -14,62 +14,62 @@ import (
 )
 
 // CUDA handle for madd3 kernel
-var madd3_code cu.Function
+var madd3Code cu.Function
 
 // Stores the arguments for madd3 kernel invocation
-type madd3_args_t struct {
-	arg_dst  unsafe.Pointer
-	arg_src1 unsafe.Pointer
-	arg_fac1 float32
-	arg_src2 unsafe.Pointer
-	arg_fac2 float32
-	arg_src3 unsafe.Pointer
-	arg_fac3 float32
-	arg_N    int
+type madd3ArgsT struct {
+	argDst  unsafe.Pointer
+	argSrc1 unsafe.Pointer
+	argFac1 float32
+	argSrc2 unsafe.Pointer
+	argFac2 float32
+	argSrc3 unsafe.Pointer
+	argFac3 float32
+	argN    int
 	argptr   [8]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for madd3 kernel invocation
-var madd3_args madd3_args_t
+var madd3Args madd3ArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	madd3_args.argptr[0] = unsafe.Pointer(&madd3_args.arg_dst)
-	madd3_args.argptr[1] = unsafe.Pointer(&madd3_args.arg_src1)
-	madd3_args.argptr[2] = unsafe.Pointer(&madd3_args.arg_fac1)
-	madd3_args.argptr[3] = unsafe.Pointer(&madd3_args.arg_src2)
-	madd3_args.argptr[4] = unsafe.Pointer(&madd3_args.arg_fac2)
-	madd3_args.argptr[5] = unsafe.Pointer(&madd3_args.arg_src3)
-	madd3_args.argptr[6] = unsafe.Pointer(&madd3_args.arg_fac3)
-	madd3_args.argptr[7] = unsafe.Pointer(&madd3_args.arg_N)
+	madd3Args.argptr[0] = unsafe.Pointer(&madd3Args.argDst)
+	madd3Args.argptr[1] = unsafe.Pointer(&madd3Args.argSrc1)
+	madd3Args.argptr[2] = unsafe.Pointer(&madd3Args.argFac1)
+	madd3Args.argptr[3] = unsafe.Pointer(&madd3Args.argSrc2)
+	madd3Args.argptr[4] = unsafe.Pointer(&madd3Args.argFac2)
+	madd3Args.argptr[5] = unsafe.Pointer(&madd3Args.argSrc3)
+	madd3Args.argptr[6] = unsafe.Pointer(&madd3Args.argFac3)
+	madd3Args.argptr[7] = unsafe.Pointer(&madd3Args.argN)
 }
 
 // Wrapper for madd3 CUDA kernel, asynchronous.
-func k_madd3_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, N int, cfg *config) {
+func kMadd3Async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("madd3")
 	}
 
-	madd3_args.Lock()
-	defer madd3_args.Unlock()
+	madd3Args.Lock()
+	defer madd3Args.Unlock()
 
-	if madd3_code == 0 {
-		madd3_code = fatbinLoad(madd3_map, "madd3")
+	if madd3Code == 0 {
+		madd3Code = fatbinLoad(madd3Map, "madd3")
 	}
 
-	madd3_args.arg_dst = dst
-	madd3_args.arg_src1 = src1
-	madd3_args.arg_fac1 = fac1
-	madd3_args.arg_src2 = src2
-	madd3_args.arg_fac2 = fac2
-	madd3_args.arg_src3 = src3
-	madd3_args.arg_fac3 = fac3
-	madd3_args.arg_N = N
+	madd3Args.argDst = dst
+	madd3Args.argSrc1 = src1
+	madd3Args.argFac1 = fac1
+	madd3Args.argSrc2 = src2
+	madd3Args.argFac2 = fac2
+	madd3Args.argSrc3 = src3
+	madd3Args.argFac3 = fac3
+	madd3Args.argN = N
 
-	args := madd3_args.argptr[:]
-	cu.LaunchKernel(madd3_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := madd3Args.argptr[:]
+	cu.LaunchKernel(madd3Code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -78,14 +78,14 @@ func k_madd3_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 u
 }
 
 // maps compute capability on PTX code for madd3 kernel.
-var madd3_map = map[int]string{
+var madd3Map = map[int]string{
 	0:  "",
-	52: madd3_ptx_52,
+	52: madd3Ptx52,
 }
 
 // madd3 PTX code for various compute capabilities.
 const (
-	madd3_ptx_52 = `
+	madd3Ptx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

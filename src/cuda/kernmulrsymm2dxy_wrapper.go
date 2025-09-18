@@ -14,59 +14,59 @@ import (
 )
 
 // CUDA handle for kernmulRSymm2Dxy kernel
-var kernmulRSymm2Dxy_code cu.Function
+var kernmulRSymm2DxyCode cu.Function
 
 // Stores the arguments for kernmulRSymm2Dxy kernel invocation
-type kernmulRSymm2Dxy_args_t struct {
-	arg_fftMx  unsafe.Pointer
-	arg_fftMy  unsafe.Pointer
-	arg_fftKxx unsafe.Pointer
-	arg_fftKyy unsafe.Pointer
-	arg_fftKxy unsafe.Pointer
-	arg_Nx     int
-	arg_Ny     int
+type kernmulRSymm2DxyArgsT struct {
+	argFftMx  unsafe.Pointer
+	argFftMy  unsafe.Pointer
+	argFftKxx unsafe.Pointer
+	argFftKyy unsafe.Pointer
+	argFftKxy unsafe.Pointer
+	argNx     int
+	argNy     int
 	argptr     [7]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for kernmulRSymm2Dxy kernel invocation
-var kernmulRSymm2Dxy_args kernmulRSymm2Dxy_args_t
+var kernmulRSymm2DxyArgs kernmulRSymm2DxyArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	kernmulRSymm2Dxy_args.argptr[0] = unsafe.Pointer(&kernmulRSymm2Dxy_args.arg_fftMx)
-	kernmulRSymm2Dxy_args.argptr[1] = unsafe.Pointer(&kernmulRSymm2Dxy_args.arg_fftMy)
-	kernmulRSymm2Dxy_args.argptr[2] = unsafe.Pointer(&kernmulRSymm2Dxy_args.arg_fftKxx)
-	kernmulRSymm2Dxy_args.argptr[3] = unsafe.Pointer(&kernmulRSymm2Dxy_args.arg_fftKyy)
-	kernmulRSymm2Dxy_args.argptr[4] = unsafe.Pointer(&kernmulRSymm2Dxy_args.arg_fftKxy)
-	kernmulRSymm2Dxy_args.argptr[5] = unsafe.Pointer(&kernmulRSymm2Dxy_args.arg_Nx)
-	kernmulRSymm2Dxy_args.argptr[6] = unsafe.Pointer(&kernmulRSymm2Dxy_args.arg_Ny)
+	kernmulRSymm2DxyArgs.argptr[0] = unsafe.Pointer(&kernmulRSymm2DxyArgs.argFftMx)
+	kernmulRSymm2DxyArgs.argptr[1] = unsafe.Pointer(&kernmulRSymm2DxyArgs.argFftMy)
+	kernmulRSymm2DxyArgs.argptr[2] = unsafe.Pointer(&kernmulRSymm2DxyArgs.argFftKxx)
+	kernmulRSymm2DxyArgs.argptr[3] = unsafe.Pointer(&kernmulRSymm2DxyArgs.argFftKyy)
+	kernmulRSymm2DxyArgs.argptr[4] = unsafe.Pointer(&kernmulRSymm2DxyArgs.argFftKxy)
+	kernmulRSymm2DxyArgs.argptr[5] = unsafe.Pointer(&kernmulRSymm2DxyArgs.argNx)
+	kernmulRSymm2DxyArgs.argptr[6] = unsafe.Pointer(&kernmulRSymm2DxyArgs.argNy)
 }
 
 // Wrapper for kernmulRSymm2Dxy CUDA kernel, asynchronous.
-func k_kernmulRSymm2Dxy_async(fftMx unsafe.Pointer, fftMy unsafe.Pointer, fftKxx unsafe.Pointer, fftKyy unsafe.Pointer, fftKxy unsafe.Pointer, Nx int, Ny int, cfg *config) {
+func kKernmulRSymm2DxyAsync(fftMx unsafe.Pointer, fftMy unsafe.Pointer, fftKxx unsafe.Pointer, fftKyy unsafe.Pointer, fftKxy unsafe.Pointer, Nx int, Ny int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("kernmulRSymm2Dxy")
 	}
 
-	kernmulRSymm2Dxy_args.Lock()
-	defer kernmulRSymm2Dxy_args.Unlock()
+	kernmulRSymm2DxyArgs.Lock()
+	defer kernmulRSymm2DxyArgs.Unlock()
 
-	if kernmulRSymm2Dxy_code == 0 {
-		kernmulRSymm2Dxy_code = fatbinLoad(kernmulRSymm2Dxy_map, "kernmulRSymm2Dxy")
+	if kernmulRSymm2DxyCode == 0 {
+		kernmulRSymm2DxyCode = fatbinLoad(kernmulRSymm2DxyMap, "kernmulRSymm2Dxy")
 	}
 
-	kernmulRSymm2Dxy_args.arg_fftMx = fftMx
-	kernmulRSymm2Dxy_args.arg_fftMy = fftMy
-	kernmulRSymm2Dxy_args.arg_fftKxx = fftKxx
-	kernmulRSymm2Dxy_args.arg_fftKyy = fftKyy
-	kernmulRSymm2Dxy_args.arg_fftKxy = fftKxy
-	kernmulRSymm2Dxy_args.arg_Nx = Nx
-	kernmulRSymm2Dxy_args.arg_Ny = Ny
+	kernmulRSymm2DxyArgs.argFftMx = fftMx
+	kernmulRSymm2DxyArgs.argFftMy = fftMy
+	kernmulRSymm2DxyArgs.argFftKxx = fftKxx
+	kernmulRSymm2DxyArgs.argFftKyy = fftKyy
+	kernmulRSymm2DxyArgs.argFftKxy = fftKxy
+	kernmulRSymm2DxyArgs.argNx = Nx
+	kernmulRSymm2DxyArgs.argNy = Ny
 
-	args := kernmulRSymm2Dxy_args.argptr[:]
-	cu.LaunchKernel(kernmulRSymm2Dxy_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := kernmulRSymm2DxyArgs.argptr[:]
+	cu.LaunchKernel(kernmulRSymm2DxyCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -75,14 +75,14 @@ func k_kernmulRSymm2Dxy_async(fftMx unsafe.Pointer, fftMy unsafe.Pointer, fftKxx
 }
 
 // maps compute capability on PTX code for kernmulRSymm2Dxy kernel.
-var kernmulRSymm2Dxy_map = map[int]string{
+var kernmulRSymm2DxyMap = map[int]string{
 	0:  "",
-	52: kernmulRSymm2Dxy_ptx_52,
+	52: kernmulRSymm2DxyPtx52,
 }
 
 // kernmulRSymm2Dxy PTX code for various compute capabilities.
 const (
-	kernmulRSymm2Dxy_ptx_52 = `
+	kernmulRSymm2DxyPtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

@@ -37,7 +37,7 @@ func (m *magnetization) average() []float64      { return sAverageMagnet(NormMag
 func (m *magnetization) Average() data.Vector    { return unslice(m.average()) }
 func (m *magnetization) normalize()              { cuda.Normalize(m.Buffer(), Geometry.Gpu()) }
 
-// allocate storage (not done by init, as mesh size may not yet be known then)
+// Alloc allocate storage (not done by init, as mesh size may not yet be known then)
 func (m *magnetization) Alloc() {
 	m.buffer_ = cuda.NewSlice(3, m.Mesh().Size())
 	m.Set(randomMag()) // sane starting config
@@ -73,7 +73,7 @@ func (m *magnetization) EvalTo(dst *data.Slice) {
 
 func (m *magnetization) Region(r int) *vOneReg { return vOneRegion(m, r) }
 
-// Set the value of one cell.
+// SetCell Set the value of one cell.
 func (m *magnetization) SetCell(ix, iy, iz int, v data.Vector) {
 	r := index2Coord(ix, iy, iz)
 	if Geometry.shape != nil && !Geometry.shape(r[X], r[Y], r[Z]) {
@@ -85,7 +85,7 @@ func (m *magnetization) SetCell(ix, iy, iz int, v data.Vector) {
 	}
 }
 
-// Get the value of one cell.
+// GetCell Get the value of one cell.
 func (m *magnetization) GetCell(ix, iy, iz int) data.Vector {
 	mx := float64(cuda.GetCell(m.Buffer(), X, ix, iy, iz))
 	my := float64(cuda.GetCell(m.Buffer(), Y, ix, iy, iz))
@@ -95,7 +95,7 @@ func (m *magnetization) GetCell(ix, iy, iz int) data.Vector {
 
 func (m *magnetization) Quantity() []float64 { return slice(m.Average()) }
 
-// Sets the magnetization inside the shape
+// SetInShape Sets the magnetization inside the shape
 func (m *magnetization) SetInShape(region shape, conf config) {
 	if region == nil {
 		region = universeInner
@@ -121,7 +121,7 @@ func (m *magnetization) SetInShape(region shape, conf config) {
 	m.SetArray(host)
 }
 
-// set m to config in region
+// SetRegion set m to config in region
 func (m *magnetization) SetRegion(region int, conf config) {
 	host := m.Buffer().HostCopy()
 	h := host.Vectors()

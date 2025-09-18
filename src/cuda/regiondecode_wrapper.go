@@ -14,50 +14,50 @@ import (
 )
 
 // CUDA handle for regiondecode kernel
-var regiondecode_code cu.Function
+var regiondecodeCode cu.Function
 
 // Stores the arguments for regiondecode kernel invocation
-type regiondecode_args_t struct {
-	arg_dst     unsafe.Pointer
-	arg_LUT     unsafe.Pointer
-	arg_regions unsafe.Pointer
-	arg_N       int
+type regiondecodeArgsT struct {
+	argDst     unsafe.Pointer
+	argLUT     unsafe.Pointer
+	argRegions unsafe.Pointer
+	argN       int
 	argptr      [4]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for regiondecode kernel invocation
-var regiondecode_args regiondecode_args_t
+var regiondecodeArgs regiondecodeArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	regiondecode_args.argptr[0] = unsafe.Pointer(&regiondecode_args.arg_dst)
-	regiondecode_args.argptr[1] = unsafe.Pointer(&regiondecode_args.arg_LUT)
-	regiondecode_args.argptr[2] = unsafe.Pointer(&regiondecode_args.arg_regions)
-	regiondecode_args.argptr[3] = unsafe.Pointer(&regiondecode_args.arg_N)
+	regiondecodeArgs.argptr[0] = unsafe.Pointer(&regiondecodeArgs.argDst)
+	regiondecodeArgs.argptr[1] = unsafe.Pointer(&regiondecodeArgs.argLUT)
+	regiondecodeArgs.argptr[2] = unsafe.Pointer(&regiondecodeArgs.argRegions)
+	regiondecodeArgs.argptr[3] = unsafe.Pointer(&regiondecodeArgs.argN)
 }
 
 // Wrapper for regiondecode CUDA kernel, asynchronous.
-func k_regiondecode_async(dst unsafe.Pointer, LUT unsafe.Pointer, regions unsafe.Pointer, N int, cfg *config) {
+func kRegiondecodeAsync(dst unsafe.Pointer, LUT unsafe.Pointer, regions unsafe.Pointer, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("regiondecode")
 	}
 
-	regiondecode_args.Lock()
-	defer regiondecode_args.Unlock()
+	regiondecodeArgs.Lock()
+	defer regiondecodeArgs.Unlock()
 
-	if regiondecode_code == 0 {
-		regiondecode_code = fatbinLoad(regiondecode_map, "regiondecode")
+	if regiondecodeCode == 0 {
+		regiondecodeCode = fatbinLoad(regiondecodeMap, "regiondecode")
 	}
 
-	regiondecode_args.arg_dst = dst
-	regiondecode_args.arg_LUT = LUT
-	regiondecode_args.arg_regions = regions
-	regiondecode_args.arg_N = N
+	regiondecodeArgs.argDst = dst
+	regiondecodeArgs.argLUT = LUT
+	regiondecodeArgs.argRegions = regions
+	regiondecodeArgs.argN = N
 
-	args := regiondecode_args.argptr[:]
-	cu.LaunchKernel(regiondecode_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := regiondecodeArgs.argptr[:]
+	cu.LaunchKernel(regiondecodeCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -66,14 +66,14 @@ func k_regiondecode_async(dst unsafe.Pointer, LUT unsafe.Pointer, regions unsafe
 }
 
 // maps compute capability on PTX code for regiondecode kernel.
-var regiondecode_map = map[int]string{
+var regiondecodeMap = map[int]string{
 	0:  "",
-	52: regiondecode_ptx_52,
+	52: regiondecodePtx52,
 }
 
 // regiondecode PTX code for various compute capabilities.
 const (
-	regiondecode_ptx_52 = `
+	regiondecodePtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

@@ -14,62 +14,62 @@ import (
 )
 
 // CUDA handle for shiftz kernel
-var shiftz_code cu.Function
+var shiftzCode cu.Function
 
 // Stores the arguments for shiftz kernel invocation
-type shiftz_args_t struct {
-	arg_dst    unsafe.Pointer
-	arg_src    unsafe.Pointer
-	arg_Nx     int
-	arg_Ny     int
-	arg_Nz     int
-	arg_shz    int
-	arg_clampL float32
-	arg_clampR float32
+type shiftzArgsT struct {
+	argDst    unsafe.Pointer
+	argSrc    unsafe.Pointer
+	argNx     int
+	argNy     int
+	argNz     int
+	argShz    int
+	argClampL float32
+	argClampR float32
 	argptr     [8]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for shiftz kernel invocation
-var shiftz_args shiftz_args_t
+var shiftzArgs shiftzArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	shiftz_args.argptr[0] = unsafe.Pointer(&shiftz_args.arg_dst)
-	shiftz_args.argptr[1] = unsafe.Pointer(&shiftz_args.arg_src)
-	shiftz_args.argptr[2] = unsafe.Pointer(&shiftz_args.arg_Nx)
-	shiftz_args.argptr[3] = unsafe.Pointer(&shiftz_args.arg_Ny)
-	shiftz_args.argptr[4] = unsafe.Pointer(&shiftz_args.arg_Nz)
-	shiftz_args.argptr[5] = unsafe.Pointer(&shiftz_args.arg_shz)
-	shiftz_args.argptr[6] = unsafe.Pointer(&shiftz_args.arg_clampL)
-	shiftz_args.argptr[7] = unsafe.Pointer(&shiftz_args.arg_clampR)
+	shiftzArgs.argptr[0] = unsafe.Pointer(&shiftzArgs.argDst)
+	shiftzArgs.argptr[1] = unsafe.Pointer(&shiftzArgs.argSrc)
+	shiftzArgs.argptr[2] = unsafe.Pointer(&shiftzArgs.argNx)
+	shiftzArgs.argptr[3] = unsafe.Pointer(&shiftzArgs.argNy)
+	shiftzArgs.argptr[4] = unsafe.Pointer(&shiftzArgs.argNz)
+	shiftzArgs.argptr[5] = unsafe.Pointer(&shiftzArgs.argShz)
+	shiftzArgs.argptr[6] = unsafe.Pointer(&shiftzArgs.argClampL)
+	shiftzArgs.argptr[7] = unsafe.Pointer(&shiftzArgs.argClampR)
 }
 
 // Wrapper for shiftz CUDA kernel, asynchronous.
-func k_shiftz_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz int, shz int, clampL float32, clampR float32, cfg *config) {
+func kShiftzAsync(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz int, shz int, clampL float32, clampR float32, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("shiftz")
 	}
 
-	shiftz_args.Lock()
-	defer shiftz_args.Unlock()
+	shiftzArgs.Lock()
+	defer shiftzArgs.Unlock()
 
-	if shiftz_code == 0 {
-		shiftz_code = fatbinLoad(shiftz_map, "shiftz")
+	if shiftzCode == 0 {
+		shiftzCode = fatbinLoad(shiftzMap, "shiftz")
 	}
 
-	shiftz_args.arg_dst = dst
-	shiftz_args.arg_src = src
-	shiftz_args.arg_Nx = Nx
-	shiftz_args.arg_Ny = Ny
-	shiftz_args.arg_Nz = Nz
-	shiftz_args.arg_shz = shz
-	shiftz_args.arg_clampL = clampL
-	shiftz_args.arg_clampR = clampR
+	shiftzArgs.argDst = dst
+	shiftzArgs.argSrc = src
+	shiftzArgs.argNx = Nx
+	shiftzArgs.argNy = Ny
+	shiftzArgs.argNz = Nz
+	shiftzArgs.argShz = shz
+	shiftzArgs.argClampL = clampL
+	shiftzArgs.argClampR = clampR
 
-	args := shiftz_args.argptr[:]
-	cu.LaunchKernel(shiftz_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := shiftzArgs.argptr[:]
+	cu.LaunchKernel(shiftzCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -78,14 +78,14 @@ func k_shiftz_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz i
 }
 
 // maps compute capability on PTX code for shiftz kernel.
-var shiftz_map = map[int]string{
+var shiftzMap = map[int]string{
 	0:  "",
-	52: shiftz_ptx_52,
+	52: shiftzPtx52,
 }
 
 // shiftz PTX code for various compute capabilities.
 const (
-	shiftz_ptx_52 = `
+	shiftzPtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

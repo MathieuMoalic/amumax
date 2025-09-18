@@ -18,7 +18,7 @@ func determineCC() int {
 		return UseCC
 	}
 
-	for k := range madd2_map {
+	for k := range madd2Map {
 		if k > UseCC && ccIsOK(k) {
 			UseCC = k
 		}
@@ -36,6 +36,6 @@ func ccIsOK(cc int) (ok bool) {
 			ok = false
 		}
 	}()
-	cu.ModuleLoadData(madd2_map[cc]).GetFunction("madd2")
+	cu.ModuleLoadData(madd2Map[cc]).GetFunction("madd2")
 	return true
 }

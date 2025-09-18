@@ -1,3 +1,4 @@
+// Package engine implements the core simulation engine.
 package engine
 
 import (
@@ -22,7 +23,7 @@ func setBusy(_b bool) {
 	defer busyLock.Unlock()
 }
 
-// Cleanly exits the simulation, assuring all output is flushed.
+// CleanExit Cleanly exits the simulation, assuring all output is flushed.
 func CleanExit() {
 	if outputdir == "" {
 		return

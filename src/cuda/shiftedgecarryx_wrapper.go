@@ -14,68 +14,68 @@ import (
 )
 
 // CUDA handle for shiftedgecarryX kernel
-var shiftedgecarryX_code cu.Function
+var shiftedgecarryXCode cu.Function
 
 // Stores the arguments for shiftedgecarryX kernel invocation
-type shiftedgecarryX_args_t struct {
-	arg_dst         unsafe.Pointer
-	arg_src         unsafe.Pointer
-	arg_othercomp   unsafe.Pointer
-	arg_anothercomp unsafe.Pointer
-	arg_Nx          int
-	arg_Ny          int
-	arg_Nz          int
-	arg_shx         int
-	arg_clampL      float32
-	arg_clampR      float32
+type shiftedgecarryXArgsT struct {
+	argDst         unsafe.Pointer
+	argSrc         unsafe.Pointer
+	argOthercomp   unsafe.Pointer
+	argAnothercomp unsafe.Pointer
+	argNx          int
+	argNy          int
+	argNz          int
+	argShx         int
+	argClampL      float32
+	argClampR      float32
 	argptr          [10]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for shiftedgecarryX kernel invocation
-var shiftedgecarryX_args shiftedgecarryX_args_t
+var shiftedgecarryXArgs shiftedgecarryXArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	shiftedgecarryX_args.argptr[0] = unsafe.Pointer(&shiftedgecarryX_args.arg_dst)
-	shiftedgecarryX_args.argptr[1] = unsafe.Pointer(&shiftedgecarryX_args.arg_src)
-	shiftedgecarryX_args.argptr[2] = unsafe.Pointer(&shiftedgecarryX_args.arg_othercomp)
-	shiftedgecarryX_args.argptr[3] = unsafe.Pointer(&shiftedgecarryX_args.arg_anothercomp)
-	shiftedgecarryX_args.argptr[4] = unsafe.Pointer(&shiftedgecarryX_args.arg_Nx)
-	shiftedgecarryX_args.argptr[5] = unsafe.Pointer(&shiftedgecarryX_args.arg_Ny)
-	shiftedgecarryX_args.argptr[6] = unsafe.Pointer(&shiftedgecarryX_args.arg_Nz)
-	shiftedgecarryX_args.argptr[7] = unsafe.Pointer(&shiftedgecarryX_args.arg_shx)
-	shiftedgecarryX_args.argptr[8] = unsafe.Pointer(&shiftedgecarryX_args.arg_clampL)
-	shiftedgecarryX_args.argptr[9] = unsafe.Pointer(&shiftedgecarryX_args.arg_clampR)
+	shiftedgecarryXArgs.argptr[0] = unsafe.Pointer(&shiftedgecarryXArgs.argDst)
+	shiftedgecarryXArgs.argptr[1] = unsafe.Pointer(&shiftedgecarryXArgs.argSrc)
+	shiftedgecarryXArgs.argptr[2] = unsafe.Pointer(&shiftedgecarryXArgs.argOthercomp)
+	shiftedgecarryXArgs.argptr[3] = unsafe.Pointer(&shiftedgecarryXArgs.argAnothercomp)
+	shiftedgecarryXArgs.argptr[4] = unsafe.Pointer(&shiftedgecarryXArgs.argNx)
+	shiftedgecarryXArgs.argptr[5] = unsafe.Pointer(&shiftedgecarryXArgs.argNy)
+	shiftedgecarryXArgs.argptr[6] = unsafe.Pointer(&shiftedgecarryXArgs.argNz)
+	shiftedgecarryXArgs.argptr[7] = unsafe.Pointer(&shiftedgecarryXArgs.argShx)
+	shiftedgecarryXArgs.argptr[8] = unsafe.Pointer(&shiftedgecarryXArgs.argClampL)
+	shiftedgecarryXArgs.argptr[9] = unsafe.Pointer(&shiftedgecarryXArgs.argClampR)
 }
 
 // Wrapper for shiftedgecarryX CUDA kernel, asynchronous.
-func k_shiftedgecarryX_async(dst unsafe.Pointer, src unsafe.Pointer, othercomp unsafe.Pointer, anothercomp unsafe.Pointer, Nx int, Ny int, Nz int, shx int, clampL float32, clampR float32, cfg *config) {
+func kShiftedgecarryXAsync(dst unsafe.Pointer, src unsafe.Pointer, othercomp unsafe.Pointer, anothercomp unsafe.Pointer, Nx int, Ny int, Nz int, shx int, clampL float32, clampR float32, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("shiftedgecarryX")
 	}
 
-	shiftedgecarryX_args.Lock()
-	defer shiftedgecarryX_args.Unlock()
+	shiftedgecarryXArgs.Lock()
+	defer shiftedgecarryXArgs.Unlock()
 
-	if shiftedgecarryX_code == 0 {
-		shiftedgecarryX_code = fatbinLoad(shiftedgecarryX_map, "shiftedgecarryX")
+	if shiftedgecarryXCode == 0 {
+		shiftedgecarryXCode = fatbinLoad(shiftedgecarryXMap, "shiftedgecarryX")
 	}
 
-	shiftedgecarryX_args.arg_dst = dst
-	shiftedgecarryX_args.arg_src = src
-	shiftedgecarryX_args.arg_othercomp = othercomp
-	shiftedgecarryX_args.arg_anothercomp = anothercomp
-	shiftedgecarryX_args.arg_Nx = Nx
-	shiftedgecarryX_args.arg_Ny = Ny
-	shiftedgecarryX_args.arg_Nz = Nz
-	shiftedgecarryX_args.arg_shx = shx
-	shiftedgecarryX_args.arg_clampL = clampL
-	shiftedgecarryX_args.arg_clampR = clampR
+	shiftedgecarryXArgs.argDst = dst
+	shiftedgecarryXArgs.argSrc = src
+	shiftedgecarryXArgs.argOthercomp = othercomp
+	shiftedgecarryXArgs.argAnothercomp = anothercomp
+	shiftedgecarryXArgs.argNx = Nx
+	shiftedgecarryXArgs.argNy = Ny
+	shiftedgecarryXArgs.argNz = Nz
+	shiftedgecarryXArgs.argShx = shx
+	shiftedgecarryXArgs.argClampL = clampL
+	shiftedgecarryXArgs.argClampR = clampR
 
-	args := shiftedgecarryX_args.argptr[:]
-	cu.LaunchKernel(shiftedgecarryX_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := shiftedgecarryXArgs.argptr[:]
+	cu.LaunchKernel(shiftedgecarryXCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -84,14 +84,14 @@ func k_shiftedgecarryX_async(dst unsafe.Pointer, src unsafe.Pointer, othercomp u
 }
 
 // maps compute capability on PTX code for shiftedgecarryX kernel.
-var shiftedgecarryX_map = map[int]string{
+var shiftedgecarryXMap = map[int]string{
 	0:  "",
-	52: shiftedgecarryX_ptx_52,
+	52: shiftedgecarryXPtx52,
 }
 
 // shiftedgecarryX PTX code for various compute capabilities.
 const (
-	shiftedgecarryX_ptx_52 = `
+	shiftedgecarryXPtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

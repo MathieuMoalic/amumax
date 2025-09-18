@@ -17,7 +17,7 @@ func (rk *rk45DP) Step() {
 	size := m.Size()
 
 	if FixDt != 0 {
-		Dt_si = FixDt
+		DtSi = FixDt
 	}
 
 	// upon resize: remove wrongly sized k1
@@ -50,42 +50,42 @@ func (rk *rk45DP) Step() {
 	defer cuda.Recycle(k6)
 	// k2 will be re-used as k7
 
-	h := float32(Dt_si * gammaLL) // internal time step = Dt * gammaLL
+	h := float32(DtSi * gammaLL) // internal time step = Dt * gammaLL
 
 	// there is no explicit stage 1: k1 from previous step
 
 	// stage 2
-	Time = t0 + (1./5.)*Dt_si
+	Time = t0 + (1./5.)*DtSi
 	cuda.Madd2(m, m, rk.k1, 1, (1./5.)*h) // m = m*1 + k1*h/5
 	NormMag.normalize()
 	torqueFn(k2)
 
 	// stage 3
-	Time = t0 + (3./10.)*Dt_si
+	Time = t0 + (3./10.)*DtSi
 	cuda.Madd3(m, m0, rk.k1, k2, 1, (3./40.)*h, (9./40.)*h)
 	NormMag.normalize()
 	torqueFn(k3)
 
 	// stage 4
-	Time = t0 + (4./5.)*Dt_si
+	Time = t0 + (4./5.)*DtSi
 	cuda.Madd4(m, m0, rk.k1, k2, k3, 1, (44./45.)*h, (-56./15.)*h, (32./9.)*h)
 	NormMag.normalize()
 	torqueFn(k4)
 
 	// stage 5
-	Time = t0 + (8./9.)*Dt_si
+	Time = t0 + (8./9.)*DtSi
 	cuda.Madd5(m, m0, rk.k1, k2, k3, k4, 1, (19372./6561.)*h, (-25360./2187.)*h, (64448./6561.)*h, (-212./729.)*h)
 	NormMag.normalize()
 	torqueFn(k5)
 
 	// stage 6
-	Time = t0 + (1.)*Dt_si
+	Time = t0 + (1.)*DtSi
 	cuda.Madd6(m, m0, rk.k1, k2, k3, k4, k5, 1, (9017./3168.)*h, (-355./33.)*h, (46732./5247.)*h, (49./176.)*h, (-5103./18656.)*h)
 	NormMag.normalize()
 	torqueFn(k6)
 
 	// stage 7: 5th order solution
-	Time = t0 + (1.)*Dt_si
+	Time = t0 + (1.)*DtSi
 	// no k2
 	cuda.Madd6(m, m0, rk.k1, k3, k4, k5, k6, 1, (35./384.)*h, (500./1113.)*h, (125./192.)*h, (-2187./6784.)*h, (11./84.)*h) // 5th
 	NormMag.normalize()
@@ -101,12 +101,12 @@ func (rk *rk45DP) Step() {
 	err := cuda.MaxVecNorm(Err) * float64(h)
 
 	// adjust next time step
-	if err < MaxErr || Dt_si <= MinDt || FixDt != 0 { // mindt check to avoid infinite loop
+	if err < MaxErr || DtSi <= MinDt || FixDt != 0 { // mindt check to avoid infinite loop
 		// step OK
 		setLastErr(err)
 		setMaxTorque(k7)
 		NSteps++
-		Time = t0 + Dt_si
+		Time = t0 + DtSi
 		adaptDt(math.Pow(MaxErr/err, 1./5.))
 		data.Copy(rk.k1, k7) // FSAL
 	} else {

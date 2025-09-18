@@ -10,7 +10,7 @@ func Minimize(m, m0, torque *data.Slice, dt float32) {
 	N := m.Len()
 	cfg := make1DConf(N)
 
-	k_minimize_async(m.DevPtr(X), m.DevPtr(Y), m.DevPtr(Z),
+	kMinimizeAsync(m.DevPtr(X), m.DevPtr(Y), m.DevPtr(Z),
 		m0.DevPtr(X), m0.DevPtr(Y), m0.DevPtr(Z),
 		torque.DevPtr(X), torque.DevPtr(Y), torque.DevPtr(Z),
 		dt, N, cfg)

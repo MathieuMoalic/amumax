@@ -89,8 +89,8 @@ func (mini *Minimizer) Step() {
 	cuda.Madd2(dk, k, k0, -1., 1.) // reversed due to LLNoPrecess sign
 
 	// get maxdiff and add to list
-	max_dm := cuda.MaxVecNorm(dm)
-	mini.lastDm.Add(max_dm)
+	maxDm := cuda.MaxVecNorm(dm)
+	mini.lastDm.Add(maxDm)
 	setLastErr(mini.lastDm.Max()) // report maxDm to user as LastErr
 
 	// adjust next time step

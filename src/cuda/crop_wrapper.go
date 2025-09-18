@@ -14,71 +14,71 @@ import (
 )
 
 // CUDA handle for crop kernel
-var crop_code cu.Function
+var cropCode cu.Function
 
 // Stores the arguments for crop kernel invocation
-type crop_args_t struct {
-	arg_dst  unsafe.Pointer
-	arg_Dx   int
-	arg_Dy   int
-	arg_Dz   int
-	arg_src  unsafe.Pointer
-	arg_Sx   int
-	arg_Sy   int
-	arg_Sz   int
-	arg_Offx int
-	arg_Offy int
-	arg_Offz int
+type cropArgsT struct {
+	argDst  unsafe.Pointer
+	argDx   int
+	argDy   int
+	argDz   int
+	argSrc  unsafe.Pointer
+	argSx   int
+	argSy   int
+	argSz   int
+	argOffx int
+	argOffy int
+	argOffz int
 	argptr   [11]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for crop kernel invocation
-var crop_args crop_args_t
+var cropArgs cropArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	crop_args.argptr[0] = unsafe.Pointer(&crop_args.arg_dst)
-	crop_args.argptr[1] = unsafe.Pointer(&crop_args.arg_Dx)
-	crop_args.argptr[2] = unsafe.Pointer(&crop_args.arg_Dy)
-	crop_args.argptr[3] = unsafe.Pointer(&crop_args.arg_Dz)
-	crop_args.argptr[4] = unsafe.Pointer(&crop_args.arg_src)
-	crop_args.argptr[5] = unsafe.Pointer(&crop_args.arg_Sx)
-	crop_args.argptr[6] = unsafe.Pointer(&crop_args.arg_Sy)
-	crop_args.argptr[7] = unsafe.Pointer(&crop_args.arg_Sz)
-	crop_args.argptr[8] = unsafe.Pointer(&crop_args.arg_Offx)
-	crop_args.argptr[9] = unsafe.Pointer(&crop_args.arg_Offy)
-	crop_args.argptr[10] = unsafe.Pointer(&crop_args.arg_Offz)
+	cropArgs.argptr[0] = unsafe.Pointer(&cropArgs.argDst)
+	cropArgs.argptr[1] = unsafe.Pointer(&cropArgs.argDx)
+	cropArgs.argptr[2] = unsafe.Pointer(&cropArgs.argDy)
+	cropArgs.argptr[3] = unsafe.Pointer(&cropArgs.argDz)
+	cropArgs.argptr[4] = unsafe.Pointer(&cropArgs.argSrc)
+	cropArgs.argptr[5] = unsafe.Pointer(&cropArgs.argSx)
+	cropArgs.argptr[6] = unsafe.Pointer(&cropArgs.argSy)
+	cropArgs.argptr[7] = unsafe.Pointer(&cropArgs.argSz)
+	cropArgs.argptr[8] = unsafe.Pointer(&cropArgs.argOffx)
+	cropArgs.argptr[9] = unsafe.Pointer(&cropArgs.argOffy)
+	cropArgs.argptr[10] = unsafe.Pointer(&cropArgs.argOffz)
 }
 
 // Wrapper for crop CUDA kernel, asynchronous.
-func k_crop_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Pointer, Sx int, Sy int, Sz int, Offx int, Offy int, Offz int, cfg *config) {
+func kCropAsync(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Pointer, Sx int, Sy int, Sz int, Offx int, Offy int, Offz int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("crop")
 	}
 
-	crop_args.Lock()
-	defer crop_args.Unlock()
+	cropArgs.Lock()
+	defer cropArgs.Unlock()
 
-	if crop_code == 0 {
-		crop_code = fatbinLoad(crop_map, "crop")
+	if cropCode == 0 {
+		cropCode = fatbinLoad(cropMap, "crop")
 	}
 
-	crop_args.arg_dst = dst
-	crop_args.arg_Dx = Dx
-	crop_args.arg_Dy = Dy
-	crop_args.arg_Dz = Dz
-	crop_args.arg_src = src
-	crop_args.arg_Sx = Sx
-	crop_args.arg_Sy = Sy
-	crop_args.arg_Sz = Sz
-	crop_args.arg_Offx = Offx
-	crop_args.arg_Offy = Offy
-	crop_args.arg_Offz = Offz
+	cropArgs.argDst = dst
+	cropArgs.argDx = Dx
+	cropArgs.argDy = Dy
+	cropArgs.argDz = Dz
+	cropArgs.argSrc = src
+	cropArgs.argSx = Sx
+	cropArgs.argSy = Sy
+	cropArgs.argSz = Sz
+	cropArgs.argOffx = Offx
+	cropArgs.argOffy = Offy
+	cropArgs.argOffz = Offz
 
-	args := crop_args.argptr[:]
-	cu.LaunchKernel(crop_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := cropArgs.argptr[:]
+	cu.LaunchKernel(cropCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -87,14 +87,14 @@ func k_crop_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Pointer
 }
 
 // maps compute capability on PTX code for crop kernel.
-var crop_map = map[int]string{
+var cropMap = map[int]string{
 	0:  "",
-	52: crop_ptx_52,
+	52: cropPtx52,
 }
 
 // crop PTX code for various compute capabilities.
 const (
-	crop_ptx_52 = `
+	cropPtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

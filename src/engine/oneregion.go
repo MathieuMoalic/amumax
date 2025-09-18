@@ -43,7 +43,7 @@ func (q *oneReg) Unit() string           { return unitOf(q.parent) }
 func (q *oneReg) Mesh() *mesh.Mesh       { return MeshOf(q.parent) }
 func (q *oneReg) EvalTo(dst *data.Slice) { evalTo(q, dst) }
 
-// returns a new slice equal to q in the given region, 0 outside.
+// Slice returns a new slice equal to q in the given region, 0 outside.
 func (q *oneReg) Slice() (*data.Slice, bool) {
 	src := ValueOf(q.parent)
 	defer cuda.Recycle(src)

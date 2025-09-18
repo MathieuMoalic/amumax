@@ -14,71 +14,71 @@ import (
 )
 
 // CUDA handle for resize kernel
-var resize_code cu.Function
+var resizeCode cu.Function
 
 // Stores the arguments for resize kernel invocation
-type resize_args_t struct {
-	arg_dst    unsafe.Pointer
-	arg_Dx     int
-	arg_Dy     int
-	arg_Dz     int
-	arg_src    unsafe.Pointer
-	arg_Sx     int
-	arg_Sy     int
-	arg_Sz     int
-	arg_layer  int
-	arg_scalex int
-	arg_scaley int
+type resizeArgsT struct {
+	argDst    unsafe.Pointer
+	argDx     int
+	argDy     int
+	argDz     int
+	argSrc    unsafe.Pointer
+	argSx     int
+	argSy     int
+	argSz     int
+	argLayer  int
+	argScalex int
+	argScaley int
 	argptr     [11]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for resize kernel invocation
-var resize_args resize_args_t
+var resizeArgs resizeArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	resize_args.argptr[0] = unsafe.Pointer(&resize_args.arg_dst)
-	resize_args.argptr[1] = unsafe.Pointer(&resize_args.arg_Dx)
-	resize_args.argptr[2] = unsafe.Pointer(&resize_args.arg_Dy)
-	resize_args.argptr[3] = unsafe.Pointer(&resize_args.arg_Dz)
-	resize_args.argptr[4] = unsafe.Pointer(&resize_args.arg_src)
-	resize_args.argptr[5] = unsafe.Pointer(&resize_args.arg_Sx)
-	resize_args.argptr[6] = unsafe.Pointer(&resize_args.arg_Sy)
-	resize_args.argptr[7] = unsafe.Pointer(&resize_args.arg_Sz)
-	resize_args.argptr[8] = unsafe.Pointer(&resize_args.arg_layer)
-	resize_args.argptr[9] = unsafe.Pointer(&resize_args.arg_scalex)
-	resize_args.argptr[10] = unsafe.Pointer(&resize_args.arg_scaley)
+	resizeArgs.argptr[0] = unsafe.Pointer(&resizeArgs.argDst)
+	resizeArgs.argptr[1] = unsafe.Pointer(&resizeArgs.argDx)
+	resizeArgs.argptr[2] = unsafe.Pointer(&resizeArgs.argDy)
+	resizeArgs.argptr[3] = unsafe.Pointer(&resizeArgs.argDz)
+	resizeArgs.argptr[4] = unsafe.Pointer(&resizeArgs.argSrc)
+	resizeArgs.argptr[5] = unsafe.Pointer(&resizeArgs.argSx)
+	resizeArgs.argptr[6] = unsafe.Pointer(&resizeArgs.argSy)
+	resizeArgs.argptr[7] = unsafe.Pointer(&resizeArgs.argSz)
+	resizeArgs.argptr[8] = unsafe.Pointer(&resizeArgs.argLayer)
+	resizeArgs.argptr[9] = unsafe.Pointer(&resizeArgs.argScalex)
+	resizeArgs.argptr[10] = unsafe.Pointer(&resizeArgs.argScaley)
 }
 
 // Wrapper for resize CUDA kernel, asynchronous.
-func k_resize_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Pointer, Sx int, Sy int, Sz int, layer int, scalex int, scaley int, cfg *config) {
+func kResizeAsync(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Pointer, Sx int, Sy int, Sz int, layer int, scalex int, scaley int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("resize")
 	}
 
-	resize_args.Lock()
-	defer resize_args.Unlock()
+	resizeArgs.Lock()
+	defer resizeArgs.Unlock()
 
-	if resize_code == 0 {
-		resize_code = fatbinLoad(resize_map, "resize")
+	if resizeCode == 0 {
+		resizeCode = fatbinLoad(resizeMap, "resize")
 	}
 
-	resize_args.arg_dst = dst
-	resize_args.arg_Dx = Dx
-	resize_args.arg_Dy = Dy
-	resize_args.arg_Dz = Dz
-	resize_args.arg_src = src
-	resize_args.arg_Sx = Sx
-	resize_args.arg_Sy = Sy
-	resize_args.arg_Sz = Sz
-	resize_args.arg_layer = layer
-	resize_args.arg_scalex = scalex
-	resize_args.arg_scaley = scaley
+	resizeArgs.argDst = dst
+	resizeArgs.argDx = Dx
+	resizeArgs.argDy = Dy
+	resizeArgs.argDz = Dz
+	resizeArgs.argSrc = src
+	resizeArgs.argSx = Sx
+	resizeArgs.argSy = Sy
+	resizeArgs.argSz = Sz
+	resizeArgs.argLayer = layer
+	resizeArgs.argScalex = scalex
+	resizeArgs.argScaley = scaley
 
-	args := resize_args.argptr[:]
-	cu.LaunchKernel(resize_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := resizeArgs.argptr[:]
+	cu.LaunchKernel(resizeCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -87,14 +87,14 @@ func k_resize_async(dst unsafe.Pointer, Dx int, Dy int, Dz int, src unsafe.Point
 }
 
 // maps compute capability on PTX code for resize kernel.
-var resize_map = map[int]string{
+var resizeMap = map[int]string{
 	0:  "",
-	52: resize_ptx_52,
+	52: resizePtx52,
 }
 
 // resize PTX code for various compute capabilities.
 const (
-	resize_ptx_52 = `
+	resizePtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

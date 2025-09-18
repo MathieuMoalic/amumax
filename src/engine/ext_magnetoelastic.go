@@ -17,10 +17,10 @@ var (
 	exy       = newScalarExcitation("exy", "", "exy component of the strain tensor")
 	exz       = newScalarExcitation("exz", "", "exz component of the strain tensor")
 	eyz       = newScalarExcitation("eyz", "", "eyz component of the strain tensor")
-	B_mel     = newVectorField("B_mel", "T", "Magneto-elastic filed", addMagnetoelasticField)
-	F_mel     = newVectorField("F_mel", "N/m3", "Magneto-elastic force density", getMagnetoelasticForceDensity)
-	Edens_mel = newScalarField("Edens_mel", "J/m3", "Magneto-elastic energy density", addMagnetoelasticEnergyDensity)
-	E_mel     = newScalarValue("E_mel", "J", "Magneto-elastic energy", getMagnetoelasticEnergy)
+	BMel     = newVectorField("B_mel", "T", "Magneto-elastic filed", addMagnetoelasticField)
+	FMel     = newVectorField("F_mel", "N/m3", "Magneto-elastic force density", getMagnetoelasticForceDensity)
+	EdensMel = newScalarField("Edens_mel", "J/m3", "Magneto-elastic energy density", addMagnetoelasticEnergyDensity)
+	EMel     = newScalarValue("E_mel", "J", "Magneto-elastic energy", getMagnetoelasticEnergy)
 )
 
 var zeroMel = newScalarParam("_zeroMel", "", "utility zero parameter")
@@ -92,11 +92,11 @@ func addMagnetoelasticEnergyDensity(dst *data.Slice) {
 		return
 	}
 
-	buf := cuda.Buffer(B_mel.NComp(), B_mel.Mesh().Size())
+	buf := cuda.Buffer(BMel.NComp(), BMel.Mesh().Size())
 	defer cuda.Recycle(buf)
 
 	// unnormalized magnetization:
-	Mf := ValueOf(M_full)
+	Mf := ValueOf(MFull)
 	defer cuda.Recycle(Mf)
 
 	Exx := exx.MSlice()

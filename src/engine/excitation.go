@@ -65,9 +65,10 @@ func (e *excitation) Slice() (*data.Slice, bool) {
 	return buf, true
 }
 
-// After resizing the mesh, the extra terms don't fit the grid anymore
+// RemoveExtraTerms After resizing the mesh, the extra terms don't fit the grid anymore
 // and there is no reasonable way to resize them. So remove them and have
 // the user re-add them.
+
 func (e *excitation) RemoveExtraTerms() {
 	if len(e.extraTerms) == 0 {
 		return
@@ -98,7 +99,7 @@ func (e *excitation) Add(mask *data.Slice, f script.ScalarFunction) {
 	e.AddGo(mask, mul)
 }
 
-// An Add(mask, f) equivalent for Go use
+// AddGo An Add(mask, f) equivalent for Go use
 func (e *excitation) AddGo(mask *data.Slice, mul func() float64) {
 	if mask != nil {
 		checkNaN(mask, e.Name()+".add()") // TODO: in more places

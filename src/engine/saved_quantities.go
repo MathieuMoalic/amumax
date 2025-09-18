@@ -63,7 +63,7 @@ type savedQuantitiesType struct {
 	Quantities []savedQuantity
 }
 
-// saveZarrArrays is called periodically to save arrays when needed.
+// SaveIfNeeded saveZarrArrays is called periodically to save arrays when needed.
 func (sqs *savedQuantitiesType) SaveIfNeeded() {
 	for i := range sqs.Quantities {
 		if sqs.Quantities[i].needSave() {

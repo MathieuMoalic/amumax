@@ -14,68 +14,68 @@ import (
 )
 
 // CUDA handle for settemperature2 kernel
-var settemperature2_code cu.Function
+var settemperature2Code cu.Function
 
 // Stores the arguments for settemperature2 kernel invocation
-type settemperature2_args_t struct {
-	arg_B            unsafe.Pointer
-	arg_noise        unsafe.Pointer
-	arg_kB2_VgammaDt float32
-	arg_Ms_          unsafe.Pointer
-	arg_Ms_mul       float32
-	arg_temp_        unsafe.Pointer
-	arg_temp_mul     float32
-	arg_alpha_       unsafe.Pointer
-	arg_alpha_mul    float32
-	arg_N            int
+type settemperature2ArgsT struct {
+	argB            unsafe.Pointer
+	argNoise        unsafe.Pointer
+	argKB2VgammaDt float32
+	argMs          unsafe.Pointer
+	argMsMul       float32
+	argTemp        unsafe.Pointer
+	argTempMul     float32
+	argAlpha       unsafe.Pointer
+	argAlphaMul    float32
+	argN            int
 	argptr           [10]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for settemperature2 kernel invocation
-var settemperature2_args settemperature2_args_t
+var settemperature2Args settemperature2ArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	settemperature2_args.argptr[0] = unsafe.Pointer(&settemperature2_args.arg_B)
-	settemperature2_args.argptr[1] = unsafe.Pointer(&settemperature2_args.arg_noise)
-	settemperature2_args.argptr[2] = unsafe.Pointer(&settemperature2_args.arg_kB2_VgammaDt)
-	settemperature2_args.argptr[3] = unsafe.Pointer(&settemperature2_args.arg_Ms_)
-	settemperature2_args.argptr[4] = unsafe.Pointer(&settemperature2_args.arg_Ms_mul)
-	settemperature2_args.argptr[5] = unsafe.Pointer(&settemperature2_args.arg_temp_)
-	settemperature2_args.argptr[6] = unsafe.Pointer(&settemperature2_args.arg_temp_mul)
-	settemperature2_args.argptr[7] = unsafe.Pointer(&settemperature2_args.arg_alpha_)
-	settemperature2_args.argptr[8] = unsafe.Pointer(&settemperature2_args.arg_alpha_mul)
-	settemperature2_args.argptr[9] = unsafe.Pointer(&settemperature2_args.arg_N)
+	settemperature2Args.argptr[0] = unsafe.Pointer(&settemperature2Args.argB)
+	settemperature2Args.argptr[1] = unsafe.Pointer(&settemperature2Args.argNoise)
+	settemperature2Args.argptr[2] = unsafe.Pointer(&settemperature2Args.argKB2VgammaDt)
+	settemperature2Args.argptr[3] = unsafe.Pointer(&settemperature2Args.argMs)
+	settemperature2Args.argptr[4] = unsafe.Pointer(&settemperature2Args.argMsMul)
+	settemperature2Args.argptr[5] = unsafe.Pointer(&settemperature2Args.argTemp)
+	settemperature2Args.argptr[6] = unsafe.Pointer(&settemperature2Args.argTempMul)
+	settemperature2Args.argptr[7] = unsafe.Pointer(&settemperature2Args.argAlpha)
+	settemperature2Args.argptr[8] = unsafe.Pointer(&settemperature2Args.argAlphaMul)
+	settemperature2Args.argptr[9] = unsafe.Pointer(&settemperature2Args.argN)
 }
 
 // Wrapper for settemperature2 CUDA kernel, asynchronous.
-func k_settemperature2_async(B unsafe.Pointer, noise unsafe.Pointer, kB2_VgammaDt float32, Ms_ unsafe.Pointer, Ms_mul float32, temp_ unsafe.Pointer, temp_mul float32, alpha_ unsafe.Pointer, alpha_mul float32, N int, cfg *config) {
+func kSettemperature2Async(B unsafe.Pointer, noise unsafe.Pointer, kB2VgammaDt float32, Ms_ unsafe.Pointer, MsMul float32, temp_ unsafe.Pointer, tempMul float32, alpha_ unsafe.Pointer, alphaMul float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("settemperature2")
 	}
 
-	settemperature2_args.Lock()
-	defer settemperature2_args.Unlock()
+	settemperature2Args.Lock()
+	defer settemperature2Args.Unlock()
 
-	if settemperature2_code == 0 {
-		settemperature2_code = fatbinLoad(settemperature2_map, "settemperature2")
+	if settemperature2Code == 0 {
+		settemperature2Code = fatbinLoad(settemperature2Map, "settemperature2")
 	}
 
-	settemperature2_args.arg_B = B
-	settemperature2_args.arg_noise = noise
-	settemperature2_args.arg_kB2_VgammaDt = kB2_VgammaDt
-	settemperature2_args.arg_Ms_ = Ms_
-	settemperature2_args.arg_Ms_mul = Ms_mul
-	settemperature2_args.arg_temp_ = temp_
-	settemperature2_args.arg_temp_mul = temp_mul
-	settemperature2_args.arg_alpha_ = alpha_
-	settemperature2_args.arg_alpha_mul = alpha_mul
-	settemperature2_args.arg_N = N
+	settemperature2Args.argB = B
+	settemperature2Args.argNoise = noise
+	settemperature2Args.argKB2VgammaDt = kB2VgammaDt
+	settemperature2Args.argMs = Ms_
+	settemperature2Args.argMsMul = MsMul
+	settemperature2Args.argTemp = temp_
+	settemperature2Args.argTempMul = tempMul
+	settemperature2Args.argAlpha = alpha_
+	settemperature2Args.argAlphaMul = alphaMul
+	settemperature2Args.argN = N
 
-	args := settemperature2_args.argptr[:]
-	cu.LaunchKernel(settemperature2_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := settemperature2Args.argptr[:]
+	cu.LaunchKernel(settemperature2Code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -84,14 +84,14 @@ func k_settemperature2_async(B unsafe.Pointer, noise unsafe.Pointer, kB2_VgammaD
 }
 
 // maps compute capability on PTX code for settemperature2 kernel.
-var settemperature2_map = map[int]string{
+var settemperature2Map = map[int]string{
 	0:  "",
-	52: settemperature2_ptx_52,
+	52: settemperature2Ptx52,
 }
 
 // settemperature2 PTX code for various compute capabilities.
 const (
-	settemperature2_ptx_52 = `
+	settemperature2Ptx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

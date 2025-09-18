@@ -14,68 +14,68 @@ import (
 )
 
 // CUDA handle for exchangedecode kernel
-var exchangedecode_code cu.Function
+var exchangedecodeCode cu.Function
 
 // Stores the arguments for exchangedecode kernel invocation
-type exchangedecode_args_t struct {
-	arg_dst     unsafe.Pointer
-	arg_aLUT2d  unsafe.Pointer
-	arg_regions unsafe.Pointer
-	arg_wx      float32
-	arg_wy      float32
-	arg_wz      float32
-	arg_Nx      int
-	arg_Ny      int
-	arg_Nz      int
-	arg_PBC     byte
+type exchangedecodeArgsT struct {
+	argDst     unsafe.Pointer
+	argALUT2d  unsafe.Pointer
+	argRegions unsafe.Pointer
+	argWx      float32
+	argWy      float32
+	argWz      float32
+	argNx      int
+	argNy      int
+	argNz      int
+	argPBC     byte
 	argptr      [10]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for exchangedecode kernel invocation
-var exchangedecode_args exchangedecode_args_t
+var exchangedecodeArgs exchangedecodeArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	exchangedecode_args.argptr[0] = unsafe.Pointer(&exchangedecode_args.arg_dst)
-	exchangedecode_args.argptr[1] = unsafe.Pointer(&exchangedecode_args.arg_aLUT2d)
-	exchangedecode_args.argptr[2] = unsafe.Pointer(&exchangedecode_args.arg_regions)
-	exchangedecode_args.argptr[3] = unsafe.Pointer(&exchangedecode_args.arg_wx)
-	exchangedecode_args.argptr[4] = unsafe.Pointer(&exchangedecode_args.arg_wy)
-	exchangedecode_args.argptr[5] = unsafe.Pointer(&exchangedecode_args.arg_wz)
-	exchangedecode_args.argptr[6] = unsafe.Pointer(&exchangedecode_args.arg_Nx)
-	exchangedecode_args.argptr[7] = unsafe.Pointer(&exchangedecode_args.arg_Ny)
-	exchangedecode_args.argptr[8] = unsafe.Pointer(&exchangedecode_args.arg_Nz)
-	exchangedecode_args.argptr[9] = unsafe.Pointer(&exchangedecode_args.arg_PBC)
+	exchangedecodeArgs.argptr[0] = unsafe.Pointer(&exchangedecodeArgs.argDst)
+	exchangedecodeArgs.argptr[1] = unsafe.Pointer(&exchangedecodeArgs.argALUT2d)
+	exchangedecodeArgs.argptr[2] = unsafe.Pointer(&exchangedecodeArgs.argRegions)
+	exchangedecodeArgs.argptr[3] = unsafe.Pointer(&exchangedecodeArgs.argWx)
+	exchangedecodeArgs.argptr[4] = unsafe.Pointer(&exchangedecodeArgs.argWy)
+	exchangedecodeArgs.argptr[5] = unsafe.Pointer(&exchangedecodeArgs.argWz)
+	exchangedecodeArgs.argptr[6] = unsafe.Pointer(&exchangedecodeArgs.argNx)
+	exchangedecodeArgs.argptr[7] = unsafe.Pointer(&exchangedecodeArgs.argNy)
+	exchangedecodeArgs.argptr[8] = unsafe.Pointer(&exchangedecodeArgs.argNz)
+	exchangedecodeArgs.argptr[9] = unsafe.Pointer(&exchangedecodeArgs.argPBC)
 }
 
 // Wrapper for exchangedecode CUDA kernel, asynchronous.
-func k_exchangedecode_async(dst unsafe.Pointer, aLUT2d unsafe.Pointer, regions unsafe.Pointer, wx float32, wy float32, wz float32, Nx int, Ny int, Nz int, PBC byte, cfg *config) {
+func kExchangedecodeAsync(dst unsafe.Pointer, aLUT2d unsafe.Pointer, regions unsafe.Pointer, wx float32, wy float32, wz float32, Nx int, Ny int, Nz int, PBC byte, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("exchangedecode")
 	}
 
-	exchangedecode_args.Lock()
-	defer exchangedecode_args.Unlock()
+	exchangedecodeArgs.Lock()
+	defer exchangedecodeArgs.Unlock()
 
-	if exchangedecode_code == 0 {
-		exchangedecode_code = fatbinLoad(exchangedecode_map, "exchangedecode")
+	if exchangedecodeCode == 0 {
+		exchangedecodeCode = fatbinLoad(exchangedecodeMap, "exchangedecode")
 	}
 
-	exchangedecode_args.arg_dst = dst
-	exchangedecode_args.arg_aLUT2d = aLUT2d
-	exchangedecode_args.arg_regions = regions
-	exchangedecode_args.arg_wx = wx
-	exchangedecode_args.arg_wy = wy
-	exchangedecode_args.arg_wz = wz
-	exchangedecode_args.arg_Nx = Nx
-	exchangedecode_args.arg_Ny = Ny
-	exchangedecode_args.arg_Nz = Nz
-	exchangedecode_args.arg_PBC = PBC
+	exchangedecodeArgs.argDst = dst
+	exchangedecodeArgs.argALUT2d = aLUT2d
+	exchangedecodeArgs.argRegions = regions
+	exchangedecodeArgs.argWx = wx
+	exchangedecodeArgs.argWy = wy
+	exchangedecodeArgs.argWz = wz
+	exchangedecodeArgs.argNx = Nx
+	exchangedecodeArgs.argNy = Ny
+	exchangedecodeArgs.argNz = Nz
+	exchangedecodeArgs.argPBC = PBC
 
-	args := exchangedecode_args.argptr[:]
-	cu.LaunchKernel(exchangedecode_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := exchangedecodeArgs.argptr[:]
+	cu.LaunchKernel(exchangedecodeCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -84,14 +84,14 @@ func k_exchangedecode_async(dst unsafe.Pointer, aLUT2d unsafe.Pointer, regions u
 }
 
 // maps compute capability on PTX code for exchangedecode kernel.
-var exchangedecode_map = map[int]string{
+var exchangedecodeMap = map[int]string{
 	0:  "",
-	52: exchangedecode_ptx_52,
+	52: exchangedecodePtx52,
 }
 
 // exchangedecode PTX code for various compute capabilities.
 const (
-	exchangedecode_ptx_52 = `
+	exchangedecodePtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

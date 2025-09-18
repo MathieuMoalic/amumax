@@ -30,7 +30,7 @@ func initSolverAPI(e *echo.Group, ws *WebSocketManager) *SolverState {
 		Type:       getSolverName(engine.Solvertype),
 		Steps:      &engine.NSteps,
 		Time:       &engine.Time,
-		Dt:         &engine.Dt_si,
+		Dt:         &engine.DtSi,
 		ErrPerStep: &engine.LastErr,
 		MaxTorque:  &engine.LastTorque,
 		Fixdt:      &engine.FixDt,

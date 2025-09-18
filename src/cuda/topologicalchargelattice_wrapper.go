@@ -14,65 +14,65 @@ import (
 )
 
 // CUDA handle for settopologicalchargelattice kernel
-var settopologicalchargelattice_code cu.Function
+var settopologicalchargelatticeCode cu.Function
 
 // Stores the arguments for settopologicalchargelattice kernel invocation
-type settopologicalchargelattice_args_t struct {
-	arg_s     unsafe.Pointer
-	arg_mx    unsafe.Pointer
-	arg_my    unsafe.Pointer
-	arg_mz    unsafe.Pointer
-	arg_icxcy float32
-	arg_Nx    int
-	arg_Ny    int
-	arg_Nz    int
-	arg_PBC   byte
+type settopologicalchargelatticeArgsT struct {
+	argS     unsafe.Pointer
+	argMx    unsafe.Pointer
+	argMy    unsafe.Pointer
+	argMz    unsafe.Pointer
+	argIcxcy float32
+	argNx    int
+	argNy    int
+	argNz    int
+	argPBC   byte
 	argptr    [9]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for settopologicalchargelattice kernel invocation
-var settopologicalchargelattice_args settopologicalchargelattice_args_t
+var settopologicalchargelatticeArgs settopologicalchargelatticeArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	settopologicalchargelattice_args.argptr[0] = unsafe.Pointer(&settopologicalchargelattice_args.arg_s)
-	settopologicalchargelattice_args.argptr[1] = unsafe.Pointer(&settopologicalchargelattice_args.arg_mx)
-	settopologicalchargelattice_args.argptr[2] = unsafe.Pointer(&settopologicalchargelattice_args.arg_my)
-	settopologicalchargelattice_args.argptr[3] = unsafe.Pointer(&settopologicalchargelattice_args.arg_mz)
-	settopologicalchargelattice_args.argptr[4] = unsafe.Pointer(&settopologicalchargelattice_args.arg_icxcy)
-	settopologicalchargelattice_args.argptr[5] = unsafe.Pointer(&settopologicalchargelattice_args.arg_Nx)
-	settopologicalchargelattice_args.argptr[6] = unsafe.Pointer(&settopologicalchargelattice_args.arg_Ny)
-	settopologicalchargelattice_args.argptr[7] = unsafe.Pointer(&settopologicalchargelattice_args.arg_Nz)
-	settopologicalchargelattice_args.argptr[8] = unsafe.Pointer(&settopologicalchargelattice_args.arg_PBC)
+	settopologicalchargelatticeArgs.argptr[0] = unsafe.Pointer(&settopologicalchargelatticeArgs.argS)
+	settopologicalchargelatticeArgs.argptr[1] = unsafe.Pointer(&settopologicalchargelatticeArgs.argMx)
+	settopologicalchargelatticeArgs.argptr[2] = unsafe.Pointer(&settopologicalchargelatticeArgs.argMy)
+	settopologicalchargelatticeArgs.argptr[3] = unsafe.Pointer(&settopologicalchargelatticeArgs.argMz)
+	settopologicalchargelatticeArgs.argptr[4] = unsafe.Pointer(&settopologicalchargelatticeArgs.argIcxcy)
+	settopologicalchargelatticeArgs.argptr[5] = unsafe.Pointer(&settopologicalchargelatticeArgs.argNx)
+	settopologicalchargelatticeArgs.argptr[6] = unsafe.Pointer(&settopologicalchargelatticeArgs.argNy)
+	settopologicalchargelatticeArgs.argptr[7] = unsafe.Pointer(&settopologicalchargelatticeArgs.argNz)
+	settopologicalchargelatticeArgs.argptr[8] = unsafe.Pointer(&settopologicalchargelatticeArgs.argPBC)
 }
 
 // Wrapper for settopologicalchargelattice CUDA kernel, asynchronous.
-func k_settopologicalchargelattice_async(s unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, icxcy float32, Nx int, Ny int, Nz int, PBC byte, cfg *config) {
+func kSettopologicalchargelatticeAsync(s unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, icxcy float32, Nx int, Ny int, Nz int, PBC byte, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("settopologicalchargelattice")
 	}
 
-	settopologicalchargelattice_args.Lock()
-	defer settopologicalchargelattice_args.Unlock()
+	settopologicalchargelatticeArgs.Lock()
+	defer settopologicalchargelatticeArgs.Unlock()
 
-	if settopologicalchargelattice_code == 0 {
-		settopologicalchargelattice_code = fatbinLoad(settopologicalchargelattice_map, "settopologicalchargelattice")
+	if settopologicalchargelatticeCode == 0 {
+		settopologicalchargelatticeCode = fatbinLoad(settopologicalchargelatticeMap, "settopologicalchargelattice")
 	}
 
-	settopologicalchargelattice_args.arg_s = s
-	settopologicalchargelattice_args.arg_mx = mx
-	settopologicalchargelattice_args.arg_my = my
-	settopologicalchargelattice_args.arg_mz = mz
-	settopologicalchargelattice_args.arg_icxcy = icxcy
-	settopologicalchargelattice_args.arg_Nx = Nx
-	settopologicalchargelattice_args.arg_Ny = Ny
-	settopologicalchargelattice_args.arg_Nz = Nz
-	settopologicalchargelattice_args.arg_PBC = PBC
+	settopologicalchargelatticeArgs.argS = s
+	settopologicalchargelatticeArgs.argMx = mx
+	settopologicalchargelatticeArgs.argMy = my
+	settopologicalchargelatticeArgs.argMz = mz
+	settopologicalchargelatticeArgs.argIcxcy = icxcy
+	settopologicalchargelatticeArgs.argNx = Nx
+	settopologicalchargelatticeArgs.argNy = Ny
+	settopologicalchargelatticeArgs.argNz = Nz
+	settopologicalchargelatticeArgs.argPBC = PBC
 
-	args := settopologicalchargelattice_args.argptr[:]
-	cu.LaunchKernel(settopologicalchargelattice_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := settopologicalchargelatticeArgs.argptr[:]
+	cu.LaunchKernel(settopologicalchargelatticeCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -81,14 +81,14 @@ func k_settopologicalchargelattice_async(s unsafe.Pointer, mx unsafe.Pointer, my
 }
 
 // maps compute capability on PTX code for settopologicalchargelattice kernel.
-var settopologicalchargelattice_map = map[int]string{
+var settopologicalchargelatticeMap = map[int]string{
 	0:  "",
-	52: settopologicalchargelattice_ptx_52,
+	52: settopologicalchargelatticePtx52,
 }
 
 // settopologicalchargelattice PTX code for various compute capabilities.
 const (
-	settopologicalchargelattice_ptx_52 = `
+	settopologicalchargelatticePtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

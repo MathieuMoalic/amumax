@@ -13,8 +13,8 @@ import (
 var (
 	energyTerms []func() float64        // all contributions to total energy
 	edensTerms  []func(dst *data.Slice) // all contributions to total energy density (add to dst)
-	Edens_total = newScalarField("Edens_total", "J/m3", "Total energy density", setTotalEdens)
-	E_total     = newScalarValue("E_total", "J", "total energy", getTotalEnergy)
+	EdensTotal = newScalarField("Edens_total", "J/m3", "Total energy density", setTotalEdens)
+	ETotal     = newScalarValue("E_total", "J", "total energy", getTotalEnergy)
 )
 
 // add energy term to global energy
@@ -54,7 +54,7 @@ func makeEdensAdder(field Quantity, prefactor float64) func(*data.Slice) {
 	return func(dst *data.Slice) {
 		B := ValueOf(field)
 		defer cuda.Recycle(B)
-		m := ValueOf(M_full)
+		m := ValueOf(MFull)
 		defer cuda.Recycle(m)
 		factor := float32(prefactor)
 		cuda.AddDotProduct(dst, factor, B, m)

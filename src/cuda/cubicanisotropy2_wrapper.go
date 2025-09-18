@@ -14,119 +14,119 @@ import (
 )
 
 // CUDA handle for addcubicanisotropy2 kernel
-var addcubicanisotropy2_code cu.Function
+var addcubicanisotropy2Code cu.Function
 
 // Stores the arguments for addcubicanisotropy2 kernel invocation
-type addcubicanisotropy2_args_t struct {
-	arg_Bx      unsafe.Pointer
-	arg_By      unsafe.Pointer
-	arg_Bz      unsafe.Pointer
-	arg_mx      unsafe.Pointer
-	arg_my      unsafe.Pointer
-	arg_mz      unsafe.Pointer
-	arg_Ms_     unsafe.Pointer
-	arg_Ms_mul  float32
-	arg_k1_     unsafe.Pointer
-	arg_k1_mul  float32
-	arg_k2_     unsafe.Pointer
-	arg_k2_mul  float32
-	arg_k3_     unsafe.Pointer
-	arg_k3_mul  float32
-	arg_c1x_    unsafe.Pointer
-	arg_c1x_mul float32
-	arg_c1y_    unsafe.Pointer
-	arg_c1y_mul float32
-	arg_c1z_    unsafe.Pointer
-	arg_c1z_mul float32
-	arg_c2x_    unsafe.Pointer
-	arg_c2x_mul float32
-	arg_c2y_    unsafe.Pointer
-	arg_c2y_mul float32
-	arg_c2z_    unsafe.Pointer
-	arg_c2z_mul float32
-	arg_N       int
+type addcubicanisotropy2ArgsT struct {
+	argBx      unsafe.Pointer
+	argBy      unsafe.Pointer
+	argBz      unsafe.Pointer
+	argMx      unsafe.Pointer
+	argMy      unsafe.Pointer
+	argMz      unsafe.Pointer
+	argMs     unsafe.Pointer
+	argMsMul  float32
+	argK1     unsafe.Pointer
+	argK1Mul  float32
+	argK2     unsafe.Pointer
+	argK2Mul  float32
+	argK3     unsafe.Pointer
+	argK3Mul  float32
+	argC1x    unsafe.Pointer
+	argC1xMul float32
+	argC1y    unsafe.Pointer
+	argC1yMul float32
+	argC1z    unsafe.Pointer
+	argC1zMul float32
+	argC2x    unsafe.Pointer
+	argC2xMul float32
+	argC2y    unsafe.Pointer
+	argC2yMul float32
+	argC2z    unsafe.Pointer
+	argC2zMul float32
+	argN       int
 	argptr      [27]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for addcubicanisotropy2 kernel invocation
-var addcubicanisotropy2_args addcubicanisotropy2_args_t
+var addcubicanisotropy2Args addcubicanisotropy2ArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	addcubicanisotropy2_args.argptr[0] = unsafe.Pointer(&addcubicanisotropy2_args.arg_Bx)
-	addcubicanisotropy2_args.argptr[1] = unsafe.Pointer(&addcubicanisotropy2_args.arg_By)
-	addcubicanisotropy2_args.argptr[2] = unsafe.Pointer(&addcubicanisotropy2_args.arg_Bz)
-	addcubicanisotropy2_args.argptr[3] = unsafe.Pointer(&addcubicanisotropy2_args.arg_mx)
-	addcubicanisotropy2_args.argptr[4] = unsafe.Pointer(&addcubicanisotropy2_args.arg_my)
-	addcubicanisotropy2_args.argptr[5] = unsafe.Pointer(&addcubicanisotropy2_args.arg_mz)
-	addcubicanisotropy2_args.argptr[6] = unsafe.Pointer(&addcubicanisotropy2_args.arg_Ms_)
-	addcubicanisotropy2_args.argptr[7] = unsafe.Pointer(&addcubicanisotropy2_args.arg_Ms_mul)
-	addcubicanisotropy2_args.argptr[8] = unsafe.Pointer(&addcubicanisotropy2_args.arg_k1_)
-	addcubicanisotropy2_args.argptr[9] = unsafe.Pointer(&addcubicanisotropy2_args.arg_k1_mul)
-	addcubicanisotropy2_args.argptr[10] = unsafe.Pointer(&addcubicanisotropy2_args.arg_k2_)
-	addcubicanisotropy2_args.argptr[11] = unsafe.Pointer(&addcubicanisotropy2_args.arg_k2_mul)
-	addcubicanisotropy2_args.argptr[12] = unsafe.Pointer(&addcubicanisotropy2_args.arg_k3_)
-	addcubicanisotropy2_args.argptr[13] = unsafe.Pointer(&addcubicanisotropy2_args.arg_k3_mul)
-	addcubicanisotropy2_args.argptr[14] = unsafe.Pointer(&addcubicanisotropy2_args.arg_c1x_)
-	addcubicanisotropy2_args.argptr[15] = unsafe.Pointer(&addcubicanisotropy2_args.arg_c1x_mul)
-	addcubicanisotropy2_args.argptr[16] = unsafe.Pointer(&addcubicanisotropy2_args.arg_c1y_)
-	addcubicanisotropy2_args.argptr[17] = unsafe.Pointer(&addcubicanisotropy2_args.arg_c1y_mul)
-	addcubicanisotropy2_args.argptr[18] = unsafe.Pointer(&addcubicanisotropy2_args.arg_c1z_)
-	addcubicanisotropy2_args.argptr[19] = unsafe.Pointer(&addcubicanisotropy2_args.arg_c1z_mul)
-	addcubicanisotropy2_args.argptr[20] = unsafe.Pointer(&addcubicanisotropy2_args.arg_c2x_)
-	addcubicanisotropy2_args.argptr[21] = unsafe.Pointer(&addcubicanisotropy2_args.arg_c2x_mul)
-	addcubicanisotropy2_args.argptr[22] = unsafe.Pointer(&addcubicanisotropy2_args.arg_c2y_)
-	addcubicanisotropy2_args.argptr[23] = unsafe.Pointer(&addcubicanisotropy2_args.arg_c2y_mul)
-	addcubicanisotropy2_args.argptr[24] = unsafe.Pointer(&addcubicanisotropy2_args.arg_c2z_)
-	addcubicanisotropy2_args.argptr[25] = unsafe.Pointer(&addcubicanisotropy2_args.arg_c2z_mul)
-	addcubicanisotropy2_args.argptr[26] = unsafe.Pointer(&addcubicanisotropy2_args.arg_N)
+	addcubicanisotropy2Args.argptr[0] = unsafe.Pointer(&addcubicanisotropy2Args.argBx)
+	addcubicanisotropy2Args.argptr[1] = unsafe.Pointer(&addcubicanisotropy2Args.argBy)
+	addcubicanisotropy2Args.argptr[2] = unsafe.Pointer(&addcubicanisotropy2Args.argBz)
+	addcubicanisotropy2Args.argptr[3] = unsafe.Pointer(&addcubicanisotropy2Args.argMx)
+	addcubicanisotropy2Args.argptr[4] = unsafe.Pointer(&addcubicanisotropy2Args.argMy)
+	addcubicanisotropy2Args.argptr[5] = unsafe.Pointer(&addcubicanisotropy2Args.argMz)
+	addcubicanisotropy2Args.argptr[6] = unsafe.Pointer(&addcubicanisotropy2Args.argMs)
+	addcubicanisotropy2Args.argptr[7] = unsafe.Pointer(&addcubicanisotropy2Args.argMsMul)
+	addcubicanisotropy2Args.argptr[8] = unsafe.Pointer(&addcubicanisotropy2Args.argK1)
+	addcubicanisotropy2Args.argptr[9] = unsafe.Pointer(&addcubicanisotropy2Args.argK1Mul)
+	addcubicanisotropy2Args.argptr[10] = unsafe.Pointer(&addcubicanisotropy2Args.argK2)
+	addcubicanisotropy2Args.argptr[11] = unsafe.Pointer(&addcubicanisotropy2Args.argK2Mul)
+	addcubicanisotropy2Args.argptr[12] = unsafe.Pointer(&addcubicanisotropy2Args.argK3)
+	addcubicanisotropy2Args.argptr[13] = unsafe.Pointer(&addcubicanisotropy2Args.argK3Mul)
+	addcubicanisotropy2Args.argptr[14] = unsafe.Pointer(&addcubicanisotropy2Args.argC1x)
+	addcubicanisotropy2Args.argptr[15] = unsafe.Pointer(&addcubicanisotropy2Args.argC1xMul)
+	addcubicanisotropy2Args.argptr[16] = unsafe.Pointer(&addcubicanisotropy2Args.argC1y)
+	addcubicanisotropy2Args.argptr[17] = unsafe.Pointer(&addcubicanisotropy2Args.argC1yMul)
+	addcubicanisotropy2Args.argptr[18] = unsafe.Pointer(&addcubicanisotropy2Args.argC1z)
+	addcubicanisotropy2Args.argptr[19] = unsafe.Pointer(&addcubicanisotropy2Args.argC1zMul)
+	addcubicanisotropy2Args.argptr[20] = unsafe.Pointer(&addcubicanisotropy2Args.argC2x)
+	addcubicanisotropy2Args.argptr[21] = unsafe.Pointer(&addcubicanisotropy2Args.argC2xMul)
+	addcubicanisotropy2Args.argptr[22] = unsafe.Pointer(&addcubicanisotropy2Args.argC2y)
+	addcubicanisotropy2Args.argptr[23] = unsafe.Pointer(&addcubicanisotropy2Args.argC2yMul)
+	addcubicanisotropy2Args.argptr[24] = unsafe.Pointer(&addcubicanisotropy2Args.argC2z)
+	addcubicanisotropy2Args.argptr[25] = unsafe.Pointer(&addcubicanisotropy2Args.argC2zMul)
+	addcubicanisotropy2Args.argptr[26] = unsafe.Pointer(&addcubicanisotropy2Args.argN)
 }
 
 // Wrapper for addcubicanisotropy2 CUDA kernel, asynchronous.
-func k_addcubicanisotropy2_async(Bx unsafe.Pointer, By unsafe.Pointer, Bz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, Ms_ unsafe.Pointer, Ms_mul float32, k1_ unsafe.Pointer, k1_mul float32, k2_ unsafe.Pointer, k2_mul float32, k3_ unsafe.Pointer, k3_mul float32, c1x_ unsafe.Pointer, c1x_mul float32, c1y_ unsafe.Pointer, c1y_mul float32, c1z_ unsafe.Pointer, c1z_mul float32, c2x_ unsafe.Pointer, c2x_mul float32, c2y_ unsafe.Pointer, c2y_mul float32, c2z_ unsafe.Pointer, c2z_mul float32, N int, cfg *config) {
+func kAddcubicanisotropy2Async(Bx unsafe.Pointer, By unsafe.Pointer, Bz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, Ms_ unsafe.Pointer, MsMul float32, k1_ unsafe.Pointer, k1Mul float32, k2_ unsafe.Pointer, k2Mul float32, k3_ unsafe.Pointer, k3Mul float32, c1x_ unsafe.Pointer, c1xMul float32, c1y_ unsafe.Pointer, c1yMul float32, c1z_ unsafe.Pointer, c1zMul float32, c2x_ unsafe.Pointer, c2xMul float32, c2y_ unsafe.Pointer, c2yMul float32, c2z_ unsafe.Pointer, c2zMul float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("addcubicanisotropy2")
 	}
 
-	addcubicanisotropy2_args.Lock()
-	defer addcubicanisotropy2_args.Unlock()
+	addcubicanisotropy2Args.Lock()
+	defer addcubicanisotropy2Args.Unlock()
 
-	if addcubicanisotropy2_code == 0 {
-		addcubicanisotropy2_code = fatbinLoad(addcubicanisotropy2_map, "addcubicanisotropy2")
+	if addcubicanisotropy2Code == 0 {
+		addcubicanisotropy2Code = fatbinLoad(addcubicanisotropy2Map, "addcubicanisotropy2")
 	}
 
-	addcubicanisotropy2_args.arg_Bx = Bx
-	addcubicanisotropy2_args.arg_By = By
-	addcubicanisotropy2_args.arg_Bz = Bz
-	addcubicanisotropy2_args.arg_mx = mx
-	addcubicanisotropy2_args.arg_my = my
-	addcubicanisotropy2_args.arg_mz = mz
-	addcubicanisotropy2_args.arg_Ms_ = Ms_
-	addcubicanisotropy2_args.arg_Ms_mul = Ms_mul
-	addcubicanisotropy2_args.arg_k1_ = k1_
-	addcubicanisotropy2_args.arg_k1_mul = k1_mul
-	addcubicanisotropy2_args.arg_k2_ = k2_
-	addcubicanisotropy2_args.arg_k2_mul = k2_mul
-	addcubicanisotropy2_args.arg_k3_ = k3_
-	addcubicanisotropy2_args.arg_k3_mul = k3_mul
-	addcubicanisotropy2_args.arg_c1x_ = c1x_
-	addcubicanisotropy2_args.arg_c1x_mul = c1x_mul
-	addcubicanisotropy2_args.arg_c1y_ = c1y_
-	addcubicanisotropy2_args.arg_c1y_mul = c1y_mul
-	addcubicanisotropy2_args.arg_c1z_ = c1z_
-	addcubicanisotropy2_args.arg_c1z_mul = c1z_mul
-	addcubicanisotropy2_args.arg_c2x_ = c2x_
-	addcubicanisotropy2_args.arg_c2x_mul = c2x_mul
-	addcubicanisotropy2_args.arg_c2y_ = c2y_
-	addcubicanisotropy2_args.arg_c2y_mul = c2y_mul
-	addcubicanisotropy2_args.arg_c2z_ = c2z_
-	addcubicanisotropy2_args.arg_c2z_mul = c2z_mul
-	addcubicanisotropy2_args.arg_N = N
+	addcubicanisotropy2Args.argBx = Bx
+	addcubicanisotropy2Args.argBy = By
+	addcubicanisotropy2Args.argBz = Bz
+	addcubicanisotropy2Args.argMx = mx
+	addcubicanisotropy2Args.argMy = my
+	addcubicanisotropy2Args.argMz = mz
+	addcubicanisotropy2Args.argMs = Ms_
+	addcubicanisotropy2Args.argMsMul = MsMul
+	addcubicanisotropy2Args.argK1 = k1_
+	addcubicanisotropy2Args.argK1Mul = k1Mul
+	addcubicanisotropy2Args.argK2 = k2_
+	addcubicanisotropy2Args.argK2Mul = k2Mul
+	addcubicanisotropy2Args.argK3 = k3_
+	addcubicanisotropy2Args.argK3Mul = k3Mul
+	addcubicanisotropy2Args.argC1x = c1x_
+	addcubicanisotropy2Args.argC1xMul = c1xMul
+	addcubicanisotropy2Args.argC1y = c1y_
+	addcubicanisotropy2Args.argC1yMul = c1yMul
+	addcubicanisotropy2Args.argC1z = c1z_
+	addcubicanisotropy2Args.argC1zMul = c1zMul
+	addcubicanisotropy2Args.argC2x = c2x_
+	addcubicanisotropy2Args.argC2xMul = c2xMul
+	addcubicanisotropy2Args.argC2y = c2y_
+	addcubicanisotropy2Args.argC2yMul = c2yMul
+	addcubicanisotropy2Args.argC2z = c2z_
+	addcubicanisotropy2Args.argC2zMul = c2zMul
+	addcubicanisotropy2Args.argN = N
 
-	args := addcubicanisotropy2_args.argptr[:]
-	cu.LaunchKernel(addcubicanisotropy2_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := addcubicanisotropy2Args.argptr[:]
+	cu.LaunchKernel(addcubicanisotropy2Code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -135,14 +135,14 @@ func k_addcubicanisotropy2_async(Bx unsafe.Pointer, By unsafe.Pointer, Bz unsafe
 }
 
 // maps compute capability on PTX code for addcubicanisotropy2 kernel.
-var addcubicanisotropy2_map = map[int]string{
+var addcubicanisotropy2Map = map[int]string{
 	0:  "",
-	52: addcubicanisotropy2_ptx_52,
+	52: addcubicanisotropy2Ptx52,
 }
 
 // addcubicanisotropy2 PTX code for various compute capabilities.
 const (
-	addcubicanisotropy2_ptx_52 = `
+	addcubicanisotropy2Ptx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

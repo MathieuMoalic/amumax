@@ -65,11 +65,11 @@ func (c *MFMConvolution) initFFTKern3D() {
 	c.fftKernSize = fftR2COutputSizeFloats(c.kernSize)
 
 	for i := 0; i < 3; i++ {
-		zero1_async(c.fftRBuf)
+		zero1Async(c.fftRBuf)
 		data.Copy(c.fftRBuf, c.kern[i])
 		c.fwPlan.ExecAsync(c.fftRBuf, c.fftCBuf)
 		scale := 2 / float32(c.fwPlan.InputLen()) // ??
-		zero1_async(c.gpuFFTKern[i])
+		zero1Async(c.gpuFFTKern[i])
 		Madd2(c.gpuFFTKern[i], c.gpuFFTKern[i], c.fftCBuf, 0, scale)
 	}
 }
@@ -77,12 +77,12 @@ func (c *MFMConvolution) initFFTKern3D() {
 // store MFM image in output, based on magnetization in inp.
 func (c *MFMConvolution) Exec(outp, inp, vol *data.Slice, Msat MSlice) {
 	for i := 0; i < 3; i++ {
-		zero1_async(c.fftRBuf)
+		zero1Async(c.fftRBuf)
 		copyPadMul(c.fftRBuf, inp.Comp(i), vol, c.kernSize, c.size, Msat)
 		c.fwPlan.ExecAsync(c.fftRBuf, c.fftCBuf)
 
 		Nx, Ny := c.fftKernSize[X]/2, c.fftKernSize[Y] //   ??
-		kernMulC_async(c.fftCBuf, c.gpuFFTKern[i], Nx, Ny)
+		kernMulCAsync(c.fftCBuf, c.gpuFFTKern[i], Nx, Ny)
 
 		c.bwPlan.ExecAsync(c.fftCBuf, c.fftRBuf)
 		copyUnPad(outp.Comp(i), c.fftRBuf, c.size, c.kernSize)

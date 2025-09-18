@@ -47,7 +47,7 @@ func (b *thermField) update() {
 	// we need to fix the time step here because solver will not yet have done it before the first step.
 	// FixDt as an lvalue that sets Dt_si on change might be cleaner.
 	if FixDt != 0 {
-		Dt_si = FixDt
+		DtSi = FixDt
 	}
 
 	if b.generator == 0 {
@@ -64,21 +64,21 @@ func (b *thermField) update() {
 	if Temp.isZero() {
 		cuda.Memset(b.noise, 0, 0, 0)
 		b.step = NSteps
-		b.dt = Dt_si
+		b.dt = DtSi
 		return
 	}
 
 	// keep constant during time step
-	if NSteps == b.step && Dt_si == b.dt {
+	if NSteps == b.step && DtSi == b.dt {
 		return
 	}
 
 	// after a bad step the timestep is rescaled and the noise should be rescaled accordingly, instead of redrawing the random numbers
-	if NSteps == b.step && Dt_si != b.dt {
+	if NSteps == b.step && DtSi != b.dt {
 		for c := 0; c < 3; c++ {
-			cuda.Madd2(b.noise.Comp(c), b.noise.Comp(c), b.noise.Comp(c), float32(math.Sqrt(b.dt/Dt_si)), 0.)
+			cuda.Madd2(b.noise.Comp(c), b.noise.Comp(c), b.noise.Comp(c), float32(math.Sqrt(b.dt/DtSi)), 0.)
 		}
-		b.dt = Dt_si
+		b.dt = DtSi
 		return
 	}
 
@@ -89,7 +89,7 @@ func (b *thermField) update() {
 		log.Log.Warn("nonzero temperature requires an even amount of grid cells, but all axes have "+
 			"an odd number of cells: %v. This may cause a CURAND_STATUS_LENGTH_NOT_MULTIPLE error.", GetMesh().Size())
 	}
-	k2_VgammaDt := 2 * mag.Kb / (gammaLL * cellVolume() * Dt_si)
+	k2_VgammaDt := 2 * mag.Kb / (gammaLL * cellVolume() * DtSi)
 	noise := cuda.Buffer(1, GetMesh().Size())
 	defer cuda.Recycle(noise)
 
@@ -108,14 +108,14 @@ func (b *thermField) update() {
 	}
 
 	b.step = NSteps
-	b.dt = Dt_si
+	b.dt = DtSi
 }
 
 func getThermalEnergy() float64 {
 	if Temp.isZero() || relaxing {
 		return 0
 	} else {
-		return -cellVolume() * dot(&M_full, &B_therm)
+		return -cellVolume() * dot(&MFull, &B_therm)
 	}
 }
 

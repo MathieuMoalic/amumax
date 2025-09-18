@@ -18,7 +18,7 @@ func Crop(dst, src *data.Slice, offX, offY, offZ int) {
 	cfg := make3DConf(D)
 
 	for c := 0; c < dst.NComp(); c++ {
-		k_crop_async(dst.DevPtr(c), D[X], D[Y], D[Z],
+		kCropAsync(dst.DevPtr(c), D[X], D[Y], D[Z],
 			src.DevPtr(c), S[X], S[Y], S[Z],
 			offX, offY, offZ, cfg)
 	}

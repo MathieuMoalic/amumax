@@ -52,7 +52,7 @@ func Eval(code string) {
 	tree.Eval()
 }
 
-// holds the script state (variables etc)
+// World holds the script state (variables etc)
 var World = script.NewWorld()
 
 func export(q interface {
@@ -70,7 +70,7 @@ type lValue interface {
 	Type() reflect.Type // type that can be assigned and will be returned by Eval
 }
 
-// evaluate code, exit on error (behavior for input files)
+// EvalFile evaluate code, exit on error (behavior for input files)
 func EvalFile(code *script.BlockStmt) {
 	for i := range code.Children {
 		formatted := rmln(script.Format(code.Node[i]))
@@ -84,7 +84,7 @@ func EvalFile(code *script.BlockStmt) {
 				CreateMesh()
 				NormMag.Alloc()
 				Regions.Alloc()
-				EngineState.Metadata.Init(OD(), StartTime, cuda.GPUInfo_old)
+				EngineState.Metadata.Init(OD(), StartTime, cuda.GPUInfoOld)
 				EngineState.Metadata.AddMesh(&Mesh)
 			}
 		}

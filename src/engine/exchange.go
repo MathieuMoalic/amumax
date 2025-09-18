@@ -21,18 +21,18 @@ var (
 	din2   exchParam // inter-cell Dind
 	dbulk2 exchParam // inter-cell Dbulk
 
-	B_exch     = newVectorField("B_exch", "T", "Exchange field", addExchangeField)
-	E_exch     = newScalarValue("E_exch", "J", "Total exchange energy (including the DMI energy)", getExchangeEnergy)
-	Edens_exch = newScalarField("Edens_exch", "J/m3", "Total exchange energy density (including the DMI energy density)", AddExchangeEnergyDensity)
+	BExch     = newVectorField("B_exch", "T", "Exchange field", addExchangeField)
+	EExch     = newScalarValue("E_exch", "J", "Total exchange energy (including the DMI energy)", getExchangeEnergy)
+	EdensExch = newScalarField("Edens_exch", "J/m3", "Total exchange energy density (including the DMI energy density)", AddExchangeEnergyDensity)
 
-	// Average exchange coupling with neighbors. Useful to debug inter-region exchange
+	// ExchCoupling Average exchange coupling with neighbors. Useful to debug inter-region exchange
 	ExchCoupling = newScalarField("ExchCoupling", "arb.", "Average exchange coupling with neighbors", exchangeDecode)
 	DindCoupling = newScalarField("DindCoupling", "arb.", "Average DMI coupling with neighbors", dindDecode)
 
 	OpenBC = false
 )
 
-var AddExchangeEnergyDensity = makeEdensAdder(&B_exch, -0.5) // TODO: normal func
+var AddExchangeEnergyDensity = makeEdensAdder(&BExch, -0.5) // TODO: normal func
 
 func init() {
 	registerEnergy(getExchangeEnergy, AddExchangeEnergyDensity)
@@ -72,7 +72,7 @@ func dindDecode(dst *data.Slice) {
 
 // Returns the current exchange energy in Joules.
 func getExchangeEnergy() float64 {
-	return -0.5 * cellVolume() * dot(&M_full, &B_exch)
+	return -0.5 * cellVolume() * dot(&MFull, &BExch)
 }
 
 // Scales the heisenberg exchange interaction between region1 and 2.
@@ -104,13 +104,13 @@ type exchParam struct {
 	scale          [NREGION * (NREGION + 1) / 2]float32 // extra scale factor for lut[SymmIdx(i, j)]
 	inter          [NREGION * (NREGION + 1) / 2]float32 // extra term for lut[SymmIdx(i, j)]
 	gpu            cuda.SymmLUT                         // gpu copy of lut, lazily transferred when needed
-	gpu_ok, cpu_ok bool                                 // gpu cache up-to date with lut source
+	gpuOk, cpuOk bool                                 // gpu cache up-to date with lut source
 }
 
 // to be called after Aex or scaling changed
 func (p *exchParam) invalidate() {
-	p.cpu_ok = false
-	p.gpu_ok = false
+	p.cpuOk = false
+	p.gpuOk = false
 }
 
 func (p *exchParam) init(parent *regionwiseScalar) {
@@ -121,11 +121,12 @@ func (p *exchParam) init(parent *regionwiseScalar) {
 	p.parent = parent
 }
 
-// Get a GPU mirror of the look-up table.
+// Gpu Get a GPU mirror of the look-up table.
 // Copies to GPU first only if needed.
+
 func (p *exchParam) Gpu() cuda.SymmLUT {
 	p.update()
-	if !p.gpu_ok {
+	if !p.gpuOk {
 		p.upload()
 	}
 	return p.gpu
@@ -146,7 +147,7 @@ func (p *exchParam) setScale(region1, region2 int, scale float64) {
 }
 
 func (p *exchParam) update() {
-	if !p.cpu_ok {
+	if !p.cpuOk {
 		ex := p.parent.cpuLUT()
 		for i := 0; i < NREGION; i++ {
 			exi := ex[0][i]
@@ -156,8 +157,8 @@ func (p *exchParam) update() {
 				p.lut[I] = p.scale[I]*exchAverage(exi, exj) + p.inter[I]
 			}
 		}
-		p.gpu_ok = false
-		p.cpu_ok = true
+		p.gpuOk = false
+		p.cpuOk = true
 	}
 }
 
@@ -168,7 +169,7 @@ func (p *exchParam) upload() {
 	}
 	lut := p.lut // Copy, to work around Go 1.6 cgo pointer limitations.
 	cuda.MemCpyHtoD(unsafe.Pointer(p.gpu), unsafe.Pointer(&lut[0]), cu.SIZEOF_FLOAT32*int64(len(p.lut)))
-	p.gpu_ok = true
+	p.gpuOk = true
 }
 
 // Index in symmetric matrix where only one half is stored.

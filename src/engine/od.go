@@ -30,8 +30,9 @@ func OD() string {
 	return outputdir
 }
 
-// SetOD sets the output directory where auto-saved files will be stored.
+// InitIO SetOD sets the output directory where auto-saved files will be stored.
 // The -o flag can also be used for this purpose.
+
 func InitIO(mx3Path, od, cachedir string, skipexists, forceclean, hideprogressbar, selftest, syncandlog bool) {
 	CacheDir = cachedir
 	SkipExists = skipexists

@@ -14,62 +14,62 @@ import (
 )
 
 // CUDA handle for regionaddv kernel
-var regionaddv_code cu.Function
+var regionaddvCode cu.Function
 
 // Stores the arguments for regionaddv kernel invocation
-type regionaddv_args_t struct {
-	arg_dstx    unsafe.Pointer
-	arg_dsty    unsafe.Pointer
-	arg_dstz    unsafe.Pointer
-	arg_LUTx    unsafe.Pointer
-	arg_LUTy    unsafe.Pointer
-	arg_LUTz    unsafe.Pointer
-	arg_regions unsafe.Pointer
-	arg_N       int
+type regionaddvArgsT struct {
+	argDstx    unsafe.Pointer
+	argDsty    unsafe.Pointer
+	argDstz    unsafe.Pointer
+	argLUTx    unsafe.Pointer
+	argLUTy    unsafe.Pointer
+	argLUTz    unsafe.Pointer
+	argRegions unsafe.Pointer
+	argN       int
 	argptr      [8]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for regionaddv kernel invocation
-var regionaddv_args regionaddv_args_t
+var regionaddvArgs regionaddvArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	regionaddv_args.argptr[0] = unsafe.Pointer(&regionaddv_args.arg_dstx)
-	regionaddv_args.argptr[1] = unsafe.Pointer(&regionaddv_args.arg_dsty)
-	regionaddv_args.argptr[2] = unsafe.Pointer(&regionaddv_args.arg_dstz)
-	regionaddv_args.argptr[3] = unsafe.Pointer(&regionaddv_args.arg_LUTx)
-	regionaddv_args.argptr[4] = unsafe.Pointer(&regionaddv_args.arg_LUTy)
-	regionaddv_args.argptr[5] = unsafe.Pointer(&regionaddv_args.arg_LUTz)
-	regionaddv_args.argptr[6] = unsafe.Pointer(&regionaddv_args.arg_regions)
-	regionaddv_args.argptr[7] = unsafe.Pointer(&regionaddv_args.arg_N)
+	regionaddvArgs.argptr[0] = unsafe.Pointer(&regionaddvArgs.argDstx)
+	regionaddvArgs.argptr[1] = unsafe.Pointer(&regionaddvArgs.argDsty)
+	regionaddvArgs.argptr[2] = unsafe.Pointer(&regionaddvArgs.argDstz)
+	regionaddvArgs.argptr[3] = unsafe.Pointer(&regionaddvArgs.argLUTx)
+	regionaddvArgs.argptr[4] = unsafe.Pointer(&regionaddvArgs.argLUTy)
+	regionaddvArgs.argptr[5] = unsafe.Pointer(&regionaddvArgs.argLUTz)
+	regionaddvArgs.argptr[6] = unsafe.Pointer(&regionaddvArgs.argRegions)
+	regionaddvArgs.argptr[7] = unsafe.Pointer(&regionaddvArgs.argN)
 }
 
 // Wrapper for regionaddv CUDA kernel, asynchronous.
-func k_regionaddv_async(dstx unsafe.Pointer, dsty unsafe.Pointer, dstz unsafe.Pointer, LUTx unsafe.Pointer, LUTy unsafe.Pointer, LUTz unsafe.Pointer, regions unsafe.Pointer, N int, cfg *config) {
+func kRegionaddvAsync(dstx unsafe.Pointer, dsty unsafe.Pointer, dstz unsafe.Pointer, LUTx unsafe.Pointer, LUTy unsafe.Pointer, LUTz unsafe.Pointer, regions unsafe.Pointer, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("regionaddv")
 	}
 
-	regionaddv_args.Lock()
-	defer regionaddv_args.Unlock()
+	regionaddvArgs.Lock()
+	defer regionaddvArgs.Unlock()
 
-	if regionaddv_code == 0 {
-		regionaddv_code = fatbinLoad(regionaddv_map, "regionaddv")
+	if regionaddvCode == 0 {
+		regionaddvCode = fatbinLoad(regionaddvMap, "regionaddv")
 	}
 
-	regionaddv_args.arg_dstx = dstx
-	regionaddv_args.arg_dsty = dsty
-	regionaddv_args.arg_dstz = dstz
-	regionaddv_args.arg_LUTx = LUTx
-	regionaddv_args.arg_LUTy = LUTy
-	regionaddv_args.arg_LUTz = LUTz
-	regionaddv_args.arg_regions = regions
-	regionaddv_args.arg_N = N
+	regionaddvArgs.argDstx = dstx
+	regionaddvArgs.argDsty = dsty
+	regionaddvArgs.argDstz = dstz
+	regionaddvArgs.argLUTx = LUTx
+	regionaddvArgs.argLUTy = LUTy
+	regionaddvArgs.argLUTz = LUTz
+	regionaddvArgs.argRegions = regions
+	regionaddvArgs.argN = N
 
-	args := regionaddv_args.argptr[:]
-	cu.LaunchKernel(regionaddv_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := regionaddvArgs.argptr[:]
+	cu.LaunchKernel(regionaddvCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -78,14 +78,14 @@ func k_regionaddv_async(dstx unsafe.Pointer, dsty unsafe.Pointer, dstz unsafe.Po
 }
 
 // maps compute capability on PTX code for regionaddv kernel.
-var regionaddv_map = map[int]string{
+var regionaddvMap = map[int]string{
 	0:  "",
-	52: regionaddv_ptx_52,
+	52: regionaddvPtx52,
 }
 
 // regionaddv PTX code for various compute capabilities.
 const (
-	regionaddv_ptx_52 = `
+	regionaddvPtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

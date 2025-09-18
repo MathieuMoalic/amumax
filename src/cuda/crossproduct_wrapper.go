@@ -14,68 +14,68 @@ import (
 )
 
 // CUDA handle for crossproduct kernel
-var crossproduct_code cu.Function
+var crossproductCode cu.Function
 
 // Stores the arguments for crossproduct kernel invocation
-type crossproduct_args_t struct {
-	arg_dstx unsafe.Pointer
-	arg_dsty unsafe.Pointer
-	arg_dstz unsafe.Pointer
-	arg_ax   unsafe.Pointer
-	arg_ay   unsafe.Pointer
-	arg_az   unsafe.Pointer
-	arg_bx   unsafe.Pointer
-	arg_by   unsafe.Pointer
-	arg_bz   unsafe.Pointer
-	arg_N    int
+type crossproductArgsT struct {
+	argDstx unsafe.Pointer
+	argDsty unsafe.Pointer
+	argDstz unsafe.Pointer
+	argAx   unsafe.Pointer
+	argAy   unsafe.Pointer
+	argAz   unsafe.Pointer
+	argBx   unsafe.Pointer
+	argBy   unsafe.Pointer
+	argBz   unsafe.Pointer
+	argN    int
 	argptr   [10]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for crossproduct kernel invocation
-var crossproduct_args crossproduct_args_t
+var crossproductArgs crossproductArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	crossproduct_args.argptr[0] = unsafe.Pointer(&crossproduct_args.arg_dstx)
-	crossproduct_args.argptr[1] = unsafe.Pointer(&crossproduct_args.arg_dsty)
-	crossproduct_args.argptr[2] = unsafe.Pointer(&crossproduct_args.arg_dstz)
-	crossproduct_args.argptr[3] = unsafe.Pointer(&crossproduct_args.arg_ax)
-	crossproduct_args.argptr[4] = unsafe.Pointer(&crossproduct_args.arg_ay)
-	crossproduct_args.argptr[5] = unsafe.Pointer(&crossproduct_args.arg_az)
-	crossproduct_args.argptr[6] = unsafe.Pointer(&crossproduct_args.arg_bx)
-	crossproduct_args.argptr[7] = unsafe.Pointer(&crossproduct_args.arg_by)
-	crossproduct_args.argptr[8] = unsafe.Pointer(&crossproduct_args.arg_bz)
-	crossproduct_args.argptr[9] = unsafe.Pointer(&crossproduct_args.arg_N)
+	crossproductArgs.argptr[0] = unsafe.Pointer(&crossproductArgs.argDstx)
+	crossproductArgs.argptr[1] = unsafe.Pointer(&crossproductArgs.argDsty)
+	crossproductArgs.argptr[2] = unsafe.Pointer(&crossproductArgs.argDstz)
+	crossproductArgs.argptr[3] = unsafe.Pointer(&crossproductArgs.argAx)
+	crossproductArgs.argptr[4] = unsafe.Pointer(&crossproductArgs.argAy)
+	crossproductArgs.argptr[5] = unsafe.Pointer(&crossproductArgs.argAz)
+	crossproductArgs.argptr[6] = unsafe.Pointer(&crossproductArgs.argBx)
+	crossproductArgs.argptr[7] = unsafe.Pointer(&crossproductArgs.argBy)
+	crossproductArgs.argptr[8] = unsafe.Pointer(&crossproductArgs.argBz)
+	crossproductArgs.argptr[9] = unsafe.Pointer(&crossproductArgs.argN)
 }
 
 // Wrapper for crossproduct CUDA kernel, asynchronous.
-func k_crossproduct_async(dstx unsafe.Pointer, dsty unsafe.Pointer, dstz unsafe.Pointer, ax unsafe.Pointer, ay unsafe.Pointer, az unsafe.Pointer, bx unsafe.Pointer, by unsafe.Pointer, bz unsafe.Pointer, N int, cfg *config) {
+func kCrossproductAsync(dstx unsafe.Pointer, dsty unsafe.Pointer, dstz unsafe.Pointer, ax unsafe.Pointer, ay unsafe.Pointer, az unsafe.Pointer, bx unsafe.Pointer, by unsafe.Pointer, bz unsafe.Pointer, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("crossproduct")
 	}
 
-	crossproduct_args.Lock()
-	defer crossproduct_args.Unlock()
+	crossproductArgs.Lock()
+	defer crossproductArgs.Unlock()
 
-	if crossproduct_code == 0 {
-		crossproduct_code = fatbinLoad(crossproduct_map, "crossproduct")
+	if crossproductCode == 0 {
+		crossproductCode = fatbinLoad(crossproductMap, "crossproduct")
 	}
 
-	crossproduct_args.arg_dstx = dstx
-	crossproduct_args.arg_dsty = dsty
-	crossproduct_args.arg_dstz = dstz
-	crossproduct_args.arg_ax = ax
-	crossproduct_args.arg_ay = ay
-	crossproduct_args.arg_az = az
-	crossproduct_args.arg_bx = bx
-	crossproduct_args.arg_by = by
-	crossproduct_args.arg_bz = bz
-	crossproduct_args.arg_N = N
+	crossproductArgs.argDstx = dstx
+	crossproductArgs.argDsty = dsty
+	crossproductArgs.argDstz = dstz
+	crossproductArgs.argAx = ax
+	crossproductArgs.argAy = ay
+	crossproductArgs.argAz = az
+	crossproductArgs.argBx = bx
+	crossproductArgs.argBy = by
+	crossproductArgs.argBz = bz
+	crossproductArgs.argN = N
 
-	args := crossproduct_args.argptr[:]
-	cu.LaunchKernel(crossproduct_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := crossproductArgs.argptr[:]
+	cu.LaunchKernel(crossproductCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -84,14 +84,14 @@ func k_crossproduct_async(dstx unsafe.Pointer, dsty unsafe.Pointer, dstz unsafe.
 }
 
 // maps compute capability on PTX code for crossproduct kernel.
-var crossproduct_map = map[int]string{
+var crossproductMap = map[int]string{
 	0:  "",
-	52: crossproduct_ptx_52,
+	52: crossproductPtx52,
 }
 
 // crossproduct PTX code for various compute capabilities.
 const (
-	crossproduct_ptx_52 = `
+	crossproductPtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

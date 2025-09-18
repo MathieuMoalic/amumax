@@ -249,8 +249,9 @@ func (s shape) Transl(dx, dy, dz float64) shape {
 	}
 }
 
-// Infinitely repeats the shape with given period in x, y, z.
+// Repeat Infinitely repeats the shape with given period in x, y, z.
 // A period of 0 or infinity means no repetition.
+
 func (s shape) Repeat(periodX, periodY, periodZ float64) shape {
 	return func(x, y, z float64) bool {
 		return s(fmod(x, periodX), fmod(y, periodY), fmod(z, periodZ))
@@ -275,7 +276,7 @@ func (s shape) Scale(sx, sy, sz float64) shape {
 	}
 }
 
-// Rotates the shape around the Z-axis, over θ radians.
+// RotZ Rotates the shape around the Z-axis, over θ radians.
 func (s shape) RotZ(θ float64) shape {
 	cos := math.Cos(θ)
 	sin := math.Sin(θ)
@@ -286,7 +287,7 @@ func (s shape) RotZ(θ float64) shape {
 	}
 }
 
-// Rotates the shape around the Y-axis, over θ radians.
+// RotY Rotates the shape around the Y-axis, over θ radians.
 func (s shape) RotY(θ float64) shape {
 	cos := math.Cos(θ)
 	sin := math.Sin(θ)
@@ -297,7 +298,7 @@ func (s shape) RotY(θ float64) shape {
 	}
 }
 
-// Rotates the shape around the X-axis, over θ radians.
+// RotX Rotates the shape around the X-axis, over θ radians.
 func (s shape) RotX(θ float64) shape {
 	cos := math.Cos(θ)
 	sin := math.Sin(θ)
@@ -308,17 +309,17 @@ func (s shape) RotX(θ float64) shape {
 	}
 }
 
-// Union of shapes a and b (logical OR).
-func (a shape) Add(b shape) shape {
+// Add Union of shapes a and b (logical OR).
+func (s shape) Add(b shape) shape {
 	return func(x, y, z float64) bool {
-		return a(x, y, z) || b(x, y, z)
+		return s(x, y, z) || b(x, y, z)
 	}
 }
 
-// Intersection of shapes a and b (logical AND).
-func (a shape) Intersect(b shape) shape {
+// Intersect Intersection of shapes a and b (logical AND).
+func (s shape) Intersect(b shape) shape {
 	return func(x, y, z float64) bool {
-		return a(x, y, z) && b(x, y, z)
+		return s(x, y, z) && b(x, y, z)
 	}
 }
 
@@ -329,17 +330,17 @@ func (s shape) Inverse() shape {
 	}
 }
 
-// Removes b from a (logical a AND NOT b)
-func (a shape) Sub(b shape) shape {
+// Sub Removes b from a (logical a AND NOT b)
+func (s shape) Sub(b shape) shape {
 	return func(x, y, z float64) bool {
-		return a(x, y, z) && !b(x, y, z)
+		return s(x, y, z) && !b(x, y, z)
 	}
 }
 
-// Logical XOR of shapes a and b
-func (a shape) Xor(b shape) shape {
+// Xor Logical XOR of shapes a and b
+func (s shape) Xor(b shape) shape {
 	return func(x, y, z float64) bool {
-		A, B := a(x, y, z), b(x, y, z)
+		A, B := s(x, y, z), b(x, y, z)
 		return (A || B) && (!A || !B)
 	}
 }

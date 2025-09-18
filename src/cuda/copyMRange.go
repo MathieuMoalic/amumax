@@ -12,7 +12,7 @@ func CopyMRange(dst, src *data.Slice, dst0, src0, box [3]int, wrap bool) {
 	if wrap {
 		w = 1
 	}
-	k_copyMRange_async(
+	kCopyMRangeAsync(
 		dst.DevPtr(0), src.DevPtr(0),
 		N[X], N[Y], N[Z],
 		dst0[X], dst0[Y], dst0[Z],

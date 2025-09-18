@@ -120,8 +120,9 @@ func (t *tesselation3d) tabulateCells() []cellLocs {
 
 var grainCutShape = false
 
-// Find the nearest Voronoi center to the point (x, y, z). Only points inside the given shape will be
+// RegionOf Find the nearest Voronoi center to the point (x, y, z). Only points inside the given shape will be
 // assigned a region.
+
 func (t *tesselation3d) RegionOf(x, y, z float64) int {
 	if !(t.shape(x, y, z) || grainCutShape) {
 		return -1 // Regions < 0 won't be rastered

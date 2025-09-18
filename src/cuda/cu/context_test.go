@@ -10,7 +10,7 @@ func TestContext(t *testing.T) {
 	ctx := CtxCreate(CTX_SCHED_AUTO, 0)
 	fmt.Println("CtxSetCurrent")
 	CtxSetCurrent(ctx)
-	fmt.Println("CtxGetApiVersion:", ctx.ApiVersion())
+	fmt.Println("CtxGetApiVersion:", ctx.APIVersion())
 	fmt.Println("CtxGetDevice:", CtxGetDevice())
 	(&ctx).Destroy()
 }

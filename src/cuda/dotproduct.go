@@ -15,7 +15,7 @@ func AddDotProduct(dst *data.Slice, prefactor float32, a, b *data.Slice) {
 
 	N := dst.Len()
 	cfg := make1DConf(N)
-	k_dotproduct_async(dst.DevPtr(0), prefactor,
+	kDotproductAsync(dst.DevPtr(0), prefactor,
 		a.DevPtr(X), a.DevPtr(Y), a.DevPtr(Z),
 		b.DevPtr(X), b.DevPtr(Y), b.DevPtr(Z),
 		N, cfg)

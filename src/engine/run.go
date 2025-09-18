@@ -13,14 +13,14 @@ import (
 	"github.com/MathieuMoalic/amumax/src/progressbar"
 )
 
-// Solver globals
+// ProgressBar Solvertype FixDt NEvals NUndone NSteps LastTorque PeakErr LastErr Headroom MaxErr MaxDt MinDt DtSi Inject Pause Time Solver globals
 var (
 	Time                    float64                              // time in seconds
 	alarm                   float64                              // alarm clock marks end time of run, dt adaptation must not cross it!
 	Pause                   = true                               // set pause at any time to stop running after the current step
 	postStep                []func()                             // called on after every full time step
 	Inject                                   = make(chan func()) // injects code in between time steps. Used by web interface.
-	Dt_si                   float64          = 1e-15             // time step = dt_si (seconds) *dt_mul, which should be nice float32
+	DtSi                   float64          = 1e-15             // time step = dt_si (seconds) *dt_mul, which should be nice float32
 	MinDt, MaxDt            float64                              // minimum and maximum time step
 	MaxErr                  float64          = 1e-5              // maximum error/step
 	Headroom                float64          = 0.8               // solver headroom, (Gustafsson, 1992, Control of Error and Convergence in ODE Solvers)
@@ -36,7 +36,7 @@ var (
 
 func init() {
 	setSolver(DORMANDPRINCE)
-	_ = newScalarValue("dt", "s", "Time Step", func() float64 { return Dt_si })
+	_ = newScalarValue("dt", "s", "Time Step", func() float64 { return DtSi })
 	_ = newScalarValue("LastErr", "", "Error of last step", func() float64 { return LastErr })
 	_ = newScalarValue("PeakErr", "", "Overall maxium error per step", func() float64 { return PeakErr })
 	_ = newScalarValue("NEval", "", "Total number of torque evaluations", func() float64 { return float64(NEvals) })
@@ -49,7 +49,7 @@ type stepperInterface interface {
 	Free() // free resources, if any (e.g.: RK23 previous torque)
 }
 
-// Arguments for SetSolver
+// FEHLBERG DORMANDPRINCE RUNGEKUTTA BOGAKISHAMPINE HEUN EULER BACKWARD_EULER Arguments for SetSolver
 const (
 	BACKWARD_EULER = -1
 	EULER          = 1
@@ -107,7 +107,7 @@ func setMaxTorque(τ *data.Slice) {
 // adapt time step: dt *= corr, but limited to sensible values.
 func adaptDt(corr float64) {
 	if FixDt != 0 {
-		Dt_si = FixDt
+		DtSi = FixDt
 		return
 	}
 
@@ -125,23 +125,23 @@ func adaptDt(corr float64) {
 	if corr < 1./2. {
 		corr = 1. / 2.
 	}
-	Dt_si *= corr
-	if MinDt != 0 && Dt_si < MinDt {
-		Dt_si = MinDt
+	DtSi *= corr
+	if MinDt != 0 && DtSi < MinDt {
+		DtSi = MinDt
 	}
-	if MaxDt != 0 && Dt_si > MaxDt {
-		Dt_si = MaxDt
+	if MaxDt != 0 && DtSi > MaxDt {
+		DtSi = MaxDt
 	}
-	if Dt_si == 0 {
+	if DtSi == 0 {
 		log.Log.ErrAndExit("time step too small")
 	}
 
 	// do not cross alarm time
-	if Time < alarm && Time+Dt_si > alarm {
-		Dt_si = alarm - Time
+	if Time < alarm && Time+DtSi > alarm {
+		DtSi = alarm - Time
 	}
 
-	log.AssertMsg(Dt_si > 0, fmt.Sprint("Time step too small: ", Dt_si))
+	log.AssertMsg(DtSi > 0, fmt.Sprint("Time step too small: ", DtSi))
 }
 
 // Run the simulation for a number of seconds.
@@ -209,7 +209,7 @@ func runWhileInner(condition func() bool, output bool) {
 	}
 }
 
-// Runs indefinitely
+// RunInteractive Runs indefinitely
 func RunInteractive() {
 	for {
 		f := <-Inject
@@ -229,8 +229,9 @@ func step(output bool) {
 	}
 }
 
-// Register function f to be called after every time step.
+// PostStep Register function f to be called after every time step.
 // Typically used, e.g., to manipulate the magnetization.
+
 func PostStep(f func()) {
 	postStep = append(postStep, f)
 }
@@ -239,7 +240,7 @@ func Break() {
 	Inject <- func() { Pause = true }
 }
 
-// inject code into engine and wait for it to complete.
+// InjectAndWait inject code into engine and wait for it to complete.
 func InjectAndWait(task func()) {
 	ready := make(chan int)
 	Inject <- func() { task(); ready <- 1 }

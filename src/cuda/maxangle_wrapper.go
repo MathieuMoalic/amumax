@@ -14,68 +14,68 @@ import (
 )
 
 // CUDA handle for setmaxangle kernel
-var setmaxangle_code cu.Function
+var setmaxangleCode cu.Function
 
 // Stores the arguments for setmaxangle kernel invocation
-type setmaxangle_args_t struct {
-	arg_dst     unsafe.Pointer
-	arg_mx      unsafe.Pointer
-	arg_my      unsafe.Pointer
-	arg_mz      unsafe.Pointer
-	arg_aLUT2d  unsafe.Pointer
-	arg_regions unsafe.Pointer
-	arg_Nx      int
-	arg_Ny      int
-	arg_Nz      int
-	arg_PBC     byte
+type setmaxangleArgsT struct {
+	argDst     unsafe.Pointer
+	argMx      unsafe.Pointer
+	argMy      unsafe.Pointer
+	argMz      unsafe.Pointer
+	argALUT2d  unsafe.Pointer
+	argRegions unsafe.Pointer
+	argNx      int
+	argNy      int
+	argNz      int
+	argPBC     byte
 	argptr      [10]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for setmaxangle kernel invocation
-var setmaxangle_args setmaxangle_args_t
+var setmaxangleArgs setmaxangleArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	setmaxangle_args.argptr[0] = unsafe.Pointer(&setmaxangle_args.arg_dst)
-	setmaxangle_args.argptr[1] = unsafe.Pointer(&setmaxangle_args.arg_mx)
-	setmaxangle_args.argptr[2] = unsafe.Pointer(&setmaxangle_args.arg_my)
-	setmaxangle_args.argptr[3] = unsafe.Pointer(&setmaxangle_args.arg_mz)
-	setmaxangle_args.argptr[4] = unsafe.Pointer(&setmaxangle_args.arg_aLUT2d)
-	setmaxangle_args.argptr[5] = unsafe.Pointer(&setmaxangle_args.arg_regions)
-	setmaxangle_args.argptr[6] = unsafe.Pointer(&setmaxangle_args.arg_Nx)
-	setmaxangle_args.argptr[7] = unsafe.Pointer(&setmaxangle_args.arg_Ny)
-	setmaxangle_args.argptr[8] = unsafe.Pointer(&setmaxangle_args.arg_Nz)
-	setmaxangle_args.argptr[9] = unsafe.Pointer(&setmaxangle_args.arg_PBC)
+	setmaxangleArgs.argptr[0] = unsafe.Pointer(&setmaxangleArgs.argDst)
+	setmaxangleArgs.argptr[1] = unsafe.Pointer(&setmaxangleArgs.argMx)
+	setmaxangleArgs.argptr[2] = unsafe.Pointer(&setmaxangleArgs.argMy)
+	setmaxangleArgs.argptr[3] = unsafe.Pointer(&setmaxangleArgs.argMz)
+	setmaxangleArgs.argptr[4] = unsafe.Pointer(&setmaxangleArgs.argALUT2d)
+	setmaxangleArgs.argptr[5] = unsafe.Pointer(&setmaxangleArgs.argRegions)
+	setmaxangleArgs.argptr[6] = unsafe.Pointer(&setmaxangleArgs.argNx)
+	setmaxangleArgs.argptr[7] = unsafe.Pointer(&setmaxangleArgs.argNy)
+	setmaxangleArgs.argptr[8] = unsafe.Pointer(&setmaxangleArgs.argNz)
+	setmaxangleArgs.argptr[9] = unsafe.Pointer(&setmaxangleArgs.argPBC)
 }
 
 // Wrapper for setmaxangle CUDA kernel, asynchronous.
-func k_setmaxangle_async(dst unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, aLUT2d unsafe.Pointer, regions unsafe.Pointer, Nx int, Ny int, Nz int, PBC byte, cfg *config) {
+func kSetmaxangleAsync(dst unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, aLUT2d unsafe.Pointer, regions unsafe.Pointer, Nx int, Ny int, Nz int, PBC byte, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("setmaxangle")
 	}
 
-	setmaxangle_args.Lock()
-	defer setmaxangle_args.Unlock()
+	setmaxangleArgs.Lock()
+	defer setmaxangleArgs.Unlock()
 
-	if setmaxangle_code == 0 {
-		setmaxangle_code = fatbinLoad(setmaxangle_map, "setmaxangle")
+	if setmaxangleCode == 0 {
+		setmaxangleCode = fatbinLoad(setmaxangleMap, "setmaxangle")
 	}
 
-	setmaxangle_args.arg_dst = dst
-	setmaxangle_args.arg_mx = mx
-	setmaxangle_args.arg_my = my
-	setmaxangle_args.arg_mz = mz
-	setmaxangle_args.arg_aLUT2d = aLUT2d
-	setmaxangle_args.arg_regions = regions
-	setmaxangle_args.arg_Nx = Nx
-	setmaxangle_args.arg_Ny = Ny
-	setmaxangle_args.arg_Nz = Nz
-	setmaxangle_args.arg_PBC = PBC
+	setmaxangleArgs.argDst = dst
+	setmaxangleArgs.argMx = mx
+	setmaxangleArgs.argMy = my
+	setmaxangleArgs.argMz = mz
+	setmaxangleArgs.argALUT2d = aLUT2d
+	setmaxangleArgs.argRegions = regions
+	setmaxangleArgs.argNx = Nx
+	setmaxangleArgs.argNy = Ny
+	setmaxangleArgs.argNz = Nz
+	setmaxangleArgs.argPBC = PBC
 
-	args := setmaxangle_args.argptr[:]
-	cu.LaunchKernel(setmaxangle_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := setmaxangleArgs.argptr[:]
+	cu.LaunchKernel(setmaxangleCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -84,14 +84,14 @@ func k_setmaxangle_async(dst unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointe
 }
 
 // maps compute capability on PTX code for setmaxangle kernel.
-var setmaxangle_map = map[int]string{
+var setmaxangleMap = map[int]string{
 	0:  "",
-	52: setmaxangle_ptx_52,
+	52: setmaxanglePtx52,
 }
 
 // setmaxangle PTX code for various compute capabilities.
 const (
-	setmaxangle_ptx_52 = `
+	setmaxanglePtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

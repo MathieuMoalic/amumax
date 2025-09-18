@@ -14,74 +14,74 @@ import (
 )
 
 // CUDA handle for madd5 kernel
-var madd5_code cu.Function
+var madd5Code cu.Function
 
 // Stores the arguments for madd5 kernel invocation
-type madd5_args_t struct {
-	arg_dst  unsafe.Pointer
-	arg_src1 unsafe.Pointer
-	arg_fac1 float32
-	arg_src2 unsafe.Pointer
-	arg_fac2 float32
-	arg_src3 unsafe.Pointer
-	arg_fac3 float32
-	arg_src4 unsafe.Pointer
-	arg_fac4 float32
-	arg_src5 unsafe.Pointer
-	arg_fac5 float32
-	arg_N    int
+type madd5ArgsT struct {
+	argDst  unsafe.Pointer
+	argSrc1 unsafe.Pointer
+	argFac1 float32
+	argSrc2 unsafe.Pointer
+	argFac2 float32
+	argSrc3 unsafe.Pointer
+	argFac3 float32
+	argSrc4 unsafe.Pointer
+	argFac4 float32
+	argSrc5 unsafe.Pointer
+	argFac5 float32
+	argN    int
 	argptr   [12]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for madd5 kernel invocation
-var madd5_args madd5_args_t
+var madd5Args madd5ArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	madd5_args.argptr[0] = unsafe.Pointer(&madd5_args.arg_dst)
-	madd5_args.argptr[1] = unsafe.Pointer(&madd5_args.arg_src1)
-	madd5_args.argptr[2] = unsafe.Pointer(&madd5_args.arg_fac1)
-	madd5_args.argptr[3] = unsafe.Pointer(&madd5_args.arg_src2)
-	madd5_args.argptr[4] = unsafe.Pointer(&madd5_args.arg_fac2)
-	madd5_args.argptr[5] = unsafe.Pointer(&madd5_args.arg_src3)
-	madd5_args.argptr[6] = unsafe.Pointer(&madd5_args.arg_fac3)
-	madd5_args.argptr[7] = unsafe.Pointer(&madd5_args.arg_src4)
-	madd5_args.argptr[8] = unsafe.Pointer(&madd5_args.arg_fac4)
-	madd5_args.argptr[9] = unsafe.Pointer(&madd5_args.arg_src5)
-	madd5_args.argptr[10] = unsafe.Pointer(&madd5_args.arg_fac5)
-	madd5_args.argptr[11] = unsafe.Pointer(&madd5_args.arg_N)
+	madd5Args.argptr[0] = unsafe.Pointer(&madd5Args.argDst)
+	madd5Args.argptr[1] = unsafe.Pointer(&madd5Args.argSrc1)
+	madd5Args.argptr[2] = unsafe.Pointer(&madd5Args.argFac1)
+	madd5Args.argptr[3] = unsafe.Pointer(&madd5Args.argSrc2)
+	madd5Args.argptr[4] = unsafe.Pointer(&madd5Args.argFac2)
+	madd5Args.argptr[5] = unsafe.Pointer(&madd5Args.argSrc3)
+	madd5Args.argptr[6] = unsafe.Pointer(&madd5Args.argFac3)
+	madd5Args.argptr[7] = unsafe.Pointer(&madd5Args.argSrc4)
+	madd5Args.argptr[8] = unsafe.Pointer(&madd5Args.argFac4)
+	madd5Args.argptr[9] = unsafe.Pointer(&madd5Args.argSrc5)
+	madd5Args.argptr[10] = unsafe.Pointer(&madd5Args.argFac5)
+	madd5Args.argptr[11] = unsafe.Pointer(&madd5Args.argN)
 }
 
 // Wrapper for madd5 CUDA kernel, asynchronous.
-func k_madd5_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, src4 unsafe.Pointer, fac4 float32, src5 unsafe.Pointer, fac5 float32, N int, cfg *config) {
+func kMadd5Async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 unsafe.Pointer, fac2 float32, src3 unsafe.Pointer, fac3 float32, src4 unsafe.Pointer, fac4 float32, src5 unsafe.Pointer, fac5 float32, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("madd5")
 	}
 
-	madd5_args.Lock()
-	defer madd5_args.Unlock()
+	madd5Args.Lock()
+	defer madd5Args.Unlock()
 
-	if madd5_code == 0 {
-		madd5_code = fatbinLoad(madd5_map, "madd5")
+	if madd5Code == 0 {
+		madd5Code = fatbinLoad(madd5Map, "madd5")
 	}
 
-	madd5_args.arg_dst = dst
-	madd5_args.arg_src1 = src1
-	madd5_args.arg_fac1 = fac1
-	madd5_args.arg_src2 = src2
-	madd5_args.arg_fac2 = fac2
-	madd5_args.arg_src3 = src3
-	madd5_args.arg_fac3 = fac3
-	madd5_args.arg_src4 = src4
-	madd5_args.arg_fac4 = fac4
-	madd5_args.arg_src5 = src5
-	madd5_args.arg_fac5 = fac5
-	madd5_args.arg_N = N
+	madd5Args.argDst = dst
+	madd5Args.argSrc1 = src1
+	madd5Args.argFac1 = fac1
+	madd5Args.argSrc2 = src2
+	madd5Args.argFac2 = fac2
+	madd5Args.argSrc3 = src3
+	madd5Args.argFac3 = fac3
+	madd5Args.argSrc4 = src4
+	madd5Args.argFac4 = fac4
+	madd5Args.argSrc5 = src5
+	madd5Args.argFac5 = fac5
+	madd5Args.argN = N
 
-	args := madd5_args.argptr[:]
-	cu.LaunchKernel(madd5_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := madd5Args.argptr[:]
+	cu.LaunchKernel(madd5Code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -90,14 +90,14 @@ func k_madd5_async(dst unsafe.Pointer, src1 unsafe.Pointer, fac1 float32, src2 u
 }
 
 // maps compute capability on PTX code for madd5 kernel.
-var madd5_map = map[int]string{
+var madd5Map = map[int]string{
 	0:  "",
-	52: madd5_ptx_52,
+	52: madd5Ptx52,
 }
 
 // madd5 PTX code for various compute capabilities.
 const (
-	madd5_ptx_52 = `
+	madd5Ptx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

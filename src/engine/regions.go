@@ -13,7 +13,7 @@ var Regions = RegionsState{info: info{1, "regions", ""}, Indices: make(map[int]b
 
 const NREGION = 256 // maximum number of regions, limited by size of byte.
 
-// stores the region index for each cell
+// RegionsState stores the region index for each cell
 type RegionsState struct {
 	gpuBuffer *cuda.Bytes                 // region data on GPU
 	hist      []func(x, y, z float64) int // history of region set operations
@@ -34,7 +34,7 @@ func (r *RegionsState) GetExistingIndices() []int {
 	return indices
 }
 
-func (r *RegionsState) redefine(startId, endId int) {
+func (r *RegionsState) redefine(startID, endID int) {
 	// Loop through all cells, if their region ID matches startId, change it to endId
 	n := GetMesh().Size()
 	l := r.RegionListCPU() // need to start from previous state
@@ -43,8 +43,8 @@ func (r *RegionsState) redefine(startId, endId int) {
 	for iz := 0; iz < n[Z]; iz++ {
 		for iy := 0; iy < n[Y]; iy++ {
 			for ix := 0; ix < n[X]; ix++ {
-				if arr[iz][iy][ix] == byte(startId) {
-					arr[iz][iy][ix] = byte(endId)
+				if arr[iz][iy][ix] == byte(startID) {
+					arr[iz][iy][ix] = byte(endID)
 				}
 			}
 		}
@@ -63,9 +63,9 @@ func (r *RegionsState) Alloc() {
 	DefRegion(0, universeInner)
 }
 
-// Define a region with id (0-255) to be inside the Shape.
+// DefRegion Define a region with id (0-255) to be inside the Shape.
 func DefRegion(id int, s shape) {
-	defRegionId(id)
+	defRegionID(id)
 	f := func(x, y, z float64) int {
 		if s(x, y, z) {
 			return id
@@ -78,30 +78,30 @@ func DefRegion(id int, s shape) {
 	// regions.hist = append(regions.hist, f)
 }
 
-// Redefine a region with a given ID to a new ID
-func RedefRegion(startId, endId int) {
+// RedefRegion Redefine a region with a given ID to a new ID
+func RedefRegion(startID, endID int) {
 	// Checks validity of input region IDs
-	defRegionId(startId)
-	defRegionId(endId)
+	defRegionID(startID)
+	defRegionID(endID)
 
-	hist_len := len(Regions.hist) // Only consider hist before this Redef to avoid recursion
+	histLen := len(Regions.hist) // Only consider hist before this Redef to avoid recursion
 	f := func(x, y, z float64) int {
 		value := -1
-		for i := hist_len - 1; i >= 0; i-- {
-			f_other := Regions.hist[i]
-			region := f_other(x, y, z)
+		for i := histLen - 1; i >= 0; i-- {
+			fOther := Regions.hist[i]
+			region := fOther(x, y, z)
 			if region >= 0 {
 				value = region
 				break
 			}
 		}
-		if value == startId {
-			return endId
+		if value == startID {
+			return endID
 		} else {
 			return value
 		}
 	}
-	Regions.redefine(startId, endId)
+	Regions.redefine(startID, endID)
 	Regions.hist = append(Regions.hist, f)
 }
 
@@ -150,7 +150,7 @@ func (r *RegionsState) RegionListCPU() []byte {
 }
 
 func DefRegionCell(id int, x, y, z int) {
-	defRegionId(id)
+	defRegionID(id)
 	index := data.Index(GetMesh().Size(), x, y, z)
 	Regions.gpuBuffer.Set(index, byte(id))
 }
@@ -165,7 +165,7 @@ func (r *RegionsState) average() []float64 {
 
 func (r *RegionsState) Average() float64 { return r.average()[0] }
 
-// Set the region of one cell
+// SetCell Set the region of one cell
 func (r *RegionsState) SetCell(ix, iy, iz int, region int) {
 	size := GetMesh().Size()
 	i := data.Index(size, ix, iy, iz)
@@ -179,7 +179,7 @@ func (r *RegionsState) GetCell(ix, iy, iz int) int {
 	return int(r.gpuBuffer.Get(i))
 }
 
-func defRegionId(id int) {
+func defRegionID(id int) {
 	if id < 0 || id > NREGION {
 		log.Log.ErrAndExit("region id should be 0 -%d, have: %d", NREGION, id)
 	}
@@ -201,7 +201,7 @@ func (r *RegionsState) volume(region_ int) float64 {
 	return V
 }
 
-// Get the region data on GPU
+// Gpu Get the region data on GPU
 func (r *RegionsState) Gpu() *cuda.Bytes {
 	return r.gpuBuffer
 }
@@ -215,7 +215,7 @@ func init() {
 	}
 }
 
-// Get returns the regions as a slice of floats, so it can be output.
+// Slice Get returns the regions as a slice of floats, so it can be output.
 func (r *RegionsState) Slice() (*data.Slice, bool) {
 	buf := cuda.Buffer(1, r.Mesh().Size())
 	cuda.RegionDecode(buf, unitMap.gpuLUT1(), Regions.Gpu())

@@ -14,53 +14,53 @@ import (
 )
 
 // CUDA handle for setTheta kernel
-var setTheta_code cu.Function
+var setThetaCode cu.Function
 
 // Stores the arguments for setTheta kernel invocation
-type setTheta_args_t struct {
-	arg_theta unsafe.Pointer
-	arg_mz    unsafe.Pointer
-	arg_Nx    int
-	arg_Ny    int
-	arg_Nz    int
+type setThetaArgsT struct {
+	argTheta unsafe.Pointer
+	argMz    unsafe.Pointer
+	argNx    int
+	argNy    int
+	argNz    int
 	argptr    [5]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for setTheta kernel invocation
-var setTheta_args setTheta_args_t
+var setThetaArgs setThetaArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	setTheta_args.argptr[0] = unsafe.Pointer(&setTheta_args.arg_theta)
-	setTheta_args.argptr[1] = unsafe.Pointer(&setTheta_args.arg_mz)
-	setTheta_args.argptr[2] = unsafe.Pointer(&setTheta_args.arg_Nx)
-	setTheta_args.argptr[3] = unsafe.Pointer(&setTheta_args.arg_Ny)
-	setTheta_args.argptr[4] = unsafe.Pointer(&setTheta_args.arg_Nz)
+	setThetaArgs.argptr[0] = unsafe.Pointer(&setThetaArgs.argTheta)
+	setThetaArgs.argptr[1] = unsafe.Pointer(&setThetaArgs.argMz)
+	setThetaArgs.argptr[2] = unsafe.Pointer(&setThetaArgs.argNx)
+	setThetaArgs.argptr[3] = unsafe.Pointer(&setThetaArgs.argNy)
+	setThetaArgs.argptr[4] = unsafe.Pointer(&setThetaArgs.argNz)
 }
 
 // Wrapper for setTheta CUDA kernel, asynchronous.
-func k_setTheta_async(theta unsafe.Pointer, mz unsafe.Pointer, Nx int, Ny int, Nz int, cfg *config) {
+func kSetThetaAsync(theta unsafe.Pointer, mz unsafe.Pointer, Nx int, Ny int, Nz int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("setTheta")
 	}
 
-	setTheta_args.Lock()
-	defer setTheta_args.Unlock()
+	setThetaArgs.Lock()
+	defer setThetaArgs.Unlock()
 
-	if setTheta_code == 0 {
-		setTheta_code = fatbinLoad(setTheta_map, "setTheta")
+	if setThetaCode == 0 {
+		setThetaCode = fatbinLoad(setThetaMap, "setTheta")
 	}
 
-	setTheta_args.arg_theta = theta
-	setTheta_args.arg_mz = mz
-	setTheta_args.arg_Nx = Nx
-	setTheta_args.arg_Ny = Ny
-	setTheta_args.arg_Nz = Nz
+	setThetaArgs.argTheta = theta
+	setThetaArgs.argMz = mz
+	setThetaArgs.argNx = Nx
+	setThetaArgs.argNy = Ny
+	setThetaArgs.argNz = Nz
 
-	args := setTheta_args.argptr[:]
-	cu.LaunchKernel(setTheta_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := setThetaArgs.argptr[:]
+	cu.LaunchKernel(setThetaCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -69,14 +69,14 @@ func k_setTheta_async(theta unsafe.Pointer, mz unsafe.Pointer, Nx int, Ny int, N
 }
 
 // maps compute capability on PTX code for setTheta kernel.
-var setTheta_map = map[int]string{
+var setThetaMap = map[int]string{
 	0:  "",
-	52: setTheta_ptx_52,
+	52: setThetaPtx52,
 }
 
 // setTheta PTX code for various compute capabilities.
 const (
-	setTheta_ptx_52 = `
+	setThetaPtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

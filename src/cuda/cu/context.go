@@ -34,7 +34,7 @@ func (ctx *Context) Destroy() {
 }
 
 // Returns the API version to create the context.
-func CtxGetApiVersion(ctx Context) (version int) {
+func CtxGetAPIVersion(ctx Context) (version int) {
 	var cversion C.uint
 	err := Result(C.cuCtxGetApiVersion(C.CUcontext(unsafe.Pointer(uintptr(ctx))), &cversion))
 	if err != SUCCESS {
@@ -45,8 +45,8 @@ func CtxGetApiVersion(ctx Context) (version int) {
 }
 
 // Returns the API version to create the context.
-func (ctx Context) ApiVersion() (version int) {
-	return CtxGetApiVersion(ctx)
+func (ctx Context) APIVersion() (version int) {
+	return CtxGetAPIVersion(ctx)
 }
 
 // Gets the current active context.

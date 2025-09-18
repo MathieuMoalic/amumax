@@ -53,7 +53,7 @@ func (c *DemagConvolution) exec3D(outp, inp, vol *data.Slice, Msat MSlice) {
 	}
 
 	// kern mul
-	kernMulRSymm3D_async(c.fftCBuf,
+	kernMulRSymm3DAsync(c.fftCBuf,
 		c.kern[X][X], c.kern[Y][Y], c.kern[Z][Z],
 		c.kern[Y][Z], c.kern[X][Z], c.kern[X][Y],
 		c.fftKernLogicSize[X], c.fftKernLogicSize[Y], c.fftKernLogicSize[Z])
@@ -71,13 +71,13 @@ func (c *DemagConvolution) exec2D(outp, inp, vol *data.Slice, Msat MSlice) {
 
 	// Z
 	c.fwFFT(Z, inp, vol, Msat)
-	kernMulRSymm2Dz_async(c.fftCBuf[Z], c.kern[Z][Z], Nx, Ny)
+	kernMulRSymm2DzAsync(c.fftCBuf[Z], c.kern[Z][Z], Nx, Ny)
 	c.bwFFT(Z, outp)
 
 	// XY
 	c.fwFFT(X, inp, vol, Msat)
 	c.fwFFT(Y, inp, vol, Msat)
-	kernMulRSymm2Dxy_async(c.fftCBuf[X], c.fftCBuf[Y],
+	kernMulRSymm2DxyAsync(c.fftCBuf[X], c.fftCBuf[Y],
 		c.kern[X][X], c.kern[Y][Y], c.kern[X][Y], Nx, Ny)
 	c.bwFFT(X, outp)
 	c.bwFFT(Y, outp)
@@ -88,13 +88,13 @@ func (c *DemagConvolution) is2D() bool {
 }
 
 // zero 1-component slice
-func zero1_async(dst *data.Slice) {
+func zero1Async(dst *data.Slice) {
 	cu.MemsetD32Async(cu.DevicePtr(uintptr(dst.DevPtr(0))), 0, int64(dst.Len()), stream0)
 }
 
 // forward FFT component i
 func (c *DemagConvolution) fwFFT(i int, inp, vol *data.Slice, Msat MSlice) {
-	zero1_async(c.fftRBuf[i])
+	zero1Async(c.fftRBuf[i])
 	in := inp.Comp(i)
 	copyPadMul(c.fftRBuf[i], in, vol, c.realKernSize, c.inputSize, Msat)
 	c.fwPlan.ExecAsync(c.fftRBuf[i], c.fftCBuf[i])

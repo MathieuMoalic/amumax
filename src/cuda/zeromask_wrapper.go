@@ -14,50 +14,50 @@ import (
 )
 
 // CUDA handle for zeromask kernel
-var zeromask_code cu.Function
+var zeromaskCode cu.Function
 
 // Stores the arguments for zeromask kernel invocation
-type zeromask_args_t struct {
-	arg_dst     unsafe.Pointer
-	arg_maskLUT unsafe.Pointer
-	arg_regions unsafe.Pointer
-	arg_N       int
+type zeromaskArgsT struct {
+	argDst     unsafe.Pointer
+	argMaskLUT unsafe.Pointer
+	argRegions unsafe.Pointer
+	argN       int
 	argptr      [4]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for zeromask kernel invocation
-var zeromask_args zeromask_args_t
+var zeromaskArgs zeromaskArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	zeromask_args.argptr[0] = unsafe.Pointer(&zeromask_args.arg_dst)
-	zeromask_args.argptr[1] = unsafe.Pointer(&zeromask_args.arg_maskLUT)
-	zeromask_args.argptr[2] = unsafe.Pointer(&zeromask_args.arg_regions)
-	zeromask_args.argptr[3] = unsafe.Pointer(&zeromask_args.arg_N)
+	zeromaskArgs.argptr[0] = unsafe.Pointer(&zeromaskArgs.argDst)
+	zeromaskArgs.argptr[1] = unsafe.Pointer(&zeromaskArgs.argMaskLUT)
+	zeromaskArgs.argptr[2] = unsafe.Pointer(&zeromaskArgs.argRegions)
+	zeromaskArgs.argptr[3] = unsafe.Pointer(&zeromaskArgs.argN)
 }
 
 // Wrapper for zeromask CUDA kernel, asynchronous.
-func k_zeromask_async(dst unsafe.Pointer, maskLUT unsafe.Pointer, regions unsafe.Pointer, N int, cfg *config) {
+func kZeromaskAsync(dst unsafe.Pointer, maskLUT unsafe.Pointer, regions unsafe.Pointer, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("zeromask")
 	}
 
-	zeromask_args.Lock()
-	defer zeromask_args.Unlock()
+	zeromaskArgs.Lock()
+	defer zeromaskArgs.Unlock()
 
-	if zeromask_code == 0 {
-		zeromask_code = fatbinLoad(zeromask_map, "zeromask")
+	if zeromaskCode == 0 {
+		zeromaskCode = fatbinLoad(zeromaskMap, "zeromask")
 	}
 
-	zeromask_args.arg_dst = dst
-	zeromask_args.arg_maskLUT = maskLUT
-	zeromask_args.arg_regions = regions
-	zeromask_args.arg_N = N
+	zeromaskArgs.argDst = dst
+	zeromaskArgs.argMaskLUT = maskLUT
+	zeromaskArgs.argRegions = regions
+	zeromaskArgs.argN = N
 
-	args := zeromask_args.argptr[:]
-	cu.LaunchKernel(zeromask_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := zeromaskArgs.argptr[:]
+	cu.LaunchKernel(zeromaskCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -66,14 +66,14 @@ func k_zeromask_async(dst unsafe.Pointer, maskLUT unsafe.Pointer, regions unsafe
 }
 
 // maps compute capability on PTX code for zeromask kernel.
-var zeromask_map = map[int]string{
+var zeromaskMap = map[int]string{
 	0:  "",
-	52: zeromask_ptx_52,
+	52: zeromaskPtx52,
 }
 
 // zeromask PTX code for various compute capabilities.
 const (
-	zeromask_ptx_52 = `
+	zeromaskPtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

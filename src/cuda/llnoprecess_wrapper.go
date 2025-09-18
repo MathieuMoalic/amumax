@@ -14,68 +14,68 @@ import (
 )
 
 // CUDA handle for llnoprecess kernel
-var llnoprecess_code cu.Function
+var llnoprecessCode cu.Function
 
 // Stores the arguments for llnoprecess kernel invocation
-type llnoprecess_args_t struct {
-	arg_tx unsafe.Pointer
-	arg_ty unsafe.Pointer
-	arg_tz unsafe.Pointer
-	arg_mx unsafe.Pointer
-	arg_my unsafe.Pointer
-	arg_mz unsafe.Pointer
-	arg_hx unsafe.Pointer
-	arg_hy unsafe.Pointer
-	arg_hz unsafe.Pointer
-	arg_N  int
+type llnoprecessArgsT struct {
+	argTx unsafe.Pointer
+	argTy unsafe.Pointer
+	argTz unsafe.Pointer
+	argMx unsafe.Pointer
+	argMy unsafe.Pointer
+	argMz unsafe.Pointer
+	argHx unsafe.Pointer
+	argHy unsafe.Pointer
+	argHz unsafe.Pointer
+	argN  int
 	argptr [10]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for llnoprecess kernel invocation
-var llnoprecess_args llnoprecess_args_t
+var llnoprecessArgs llnoprecessArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	llnoprecess_args.argptr[0] = unsafe.Pointer(&llnoprecess_args.arg_tx)
-	llnoprecess_args.argptr[1] = unsafe.Pointer(&llnoprecess_args.arg_ty)
-	llnoprecess_args.argptr[2] = unsafe.Pointer(&llnoprecess_args.arg_tz)
-	llnoprecess_args.argptr[3] = unsafe.Pointer(&llnoprecess_args.arg_mx)
-	llnoprecess_args.argptr[4] = unsafe.Pointer(&llnoprecess_args.arg_my)
-	llnoprecess_args.argptr[5] = unsafe.Pointer(&llnoprecess_args.arg_mz)
-	llnoprecess_args.argptr[6] = unsafe.Pointer(&llnoprecess_args.arg_hx)
-	llnoprecess_args.argptr[7] = unsafe.Pointer(&llnoprecess_args.arg_hy)
-	llnoprecess_args.argptr[8] = unsafe.Pointer(&llnoprecess_args.arg_hz)
-	llnoprecess_args.argptr[9] = unsafe.Pointer(&llnoprecess_args.arg_N)
+	llnoprecessArgs.argptr[0] = unsafe.Pointer(&llnoprecessArgs.argTx)
+	llnoprecessArgs.argptr[1] = unsafe.Pointer(&llnoprecessArgs.argTy)
+	llnoprecessArgs.argptr[2] = unsafe.Pointer(&llnoprecessArgs.argTz)
+	llnoprecessArgs.argptr[3] = unsafe.Pointer(&llnoprecessArgs.argMx)
+	llnoprecessArgs.argptr[4] = unsafe.Pointer(&llnoprecessArgs.argMy)
+	llnoprecessArgs.argptr[5] = unsafe.Pointer(&llnoprecessArgs.argMz)
+	llnoprecessArgs.argptr[6] = unsafe.Pointer(&llnoprecessArgs.argHx)
+	llnoprecessArgs.argptr[7] = unsafe.Pointer(&llnoprecessArgs.argHy)
+	llnoprecessArgs.argptr[8] = unsafe.Pointer(&llnoprecessArgs.argHz)
+	llnoprecessArgs.argptr[9] = unsafe.Pointer(&llnoprecessArgs.argN)
 }
 
 // Wrapper for llnoprecess CUDA kernel, asynchronous.
-func k_llnoprecess_async(tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, hx unsafe.Pointer, hy unsafe.Pointer, hz unsafe.Pointer, N int, cfg *config) {
+func kLlnoprecessAsync(tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, mz unsafe.Pointer, hx unsafe.Pointer, hy unsafe.Pointer, hz unsafe.Pointer, N int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("llnoprecess")
 	}
 
-	llnoprecess_args.Lock()
-	defer llnoprecess_args.Unlock()
+	llnoprecessArgs.Lock()
+	defer llnoprecessArgs.Unlock()
 
-	if llnoprecess_code == 0 {
-		llnoprecess_code = fatbinLoad(llnoprecess_map, "llnoprecess")
+	if llnoprecessCode == 0 {
+		llnoprecessCode = fatbinLoad(llnoprecessMap, "llnoprecess")
 	}
 
-	llnoprecess_args.arg_tx = tx
-	llnoprecess_args.arg_ty = ty
-	llnoprecess_args.arg_tz = tz
-	llnoprecess_args.arg_mx = mx
-	llnoprecess_args.arg_my = my
-	llnoprecess_args.arg_mz = mz
-	llnoprecess_args.arg_hx = hx
-	llnoprecess_args.arg_hy = hy
-	llnoprecess_args.arg_hz = hz
-	llnoprecess_args.arg_N = N
+	llnoprecessArgs.argTx = tx
+	llnoprecessArgs.argTy = ty
+	llnoprecessArgs.argTz = tz
+	llnoprecessArgs.argMx = mx
+	llnoprecessArgs.argMy = my
+	llnoprecessArgs.argMz = mz
+	llnoprecessArgs.argHx = hx
+	llnoprecessArgs.argHy = hy
+	llnoprecessArgs.argHz = hz
+	llnoprecessArgs.argN = N
 
-	args := llnoprecess_args.argptr[:]
-	cu.LaunchKernel(llnoprecess_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := llnoprecessArgs.argptr[:]
+	cu.LaunchKernel(llnoprecessCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -84,14 +84,14 @@ func k_llnoprecess_async(tx unsafe.Pointer, ty unsafe.Pointer, tz unsafe.Pointer
 }
 
 // maps compute capability on PTX code for llnoprecess kernel.
-var llnoprecess_map = map[int]string{
+var llnoprecessMap = map[int]string{
 	0:  "",
-	52: llnoprecess_ptx_52,
+	52: llnoprecessPtx52,
 }
 
 // llnoprecess PTX code for various compute capabilities.
 const (
-	llnoprecess_ptx_52 = `
+	llnoprecessPtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

@@ -25,7 +25,7 @@ func init() {
 // input parameter, settable by user
 type regionwise struct {
 	lut
-	upd_reg    [NREGION]func() []float64 // time-dependent values
+	updReg    [NREGION]func() []float64 // time-dependent values
 	timestamp  float64                   // used not to double-evaluate f(t)
 	children   []derived                 // derived parameters
 	name, unit string
@@ -103,7 +103,7 @@ func (p *regionwise) update() {
 		changed := false
 		// update functions of time
 		for r := 0; r < NREGION; r++ {
-			updFunc := p.upd_reg[r]
+			updFunc := p.updReg[r]
 			if updFunc != nil {
 				p.bufset_(r, updFunc())
 				changed = true
@@ -132,19 +132,19 @@ func (p *regionwise) setUniform(v []float64) {
 
 // set in regions r1..r2(excl)
 func (p *regionwise) setRegions(r1, r2 int, v []float64) {
-	log.AssertMsg(len(v) == len(p.cpu_buf), "Size mismatch: the length of v must match the length of p.cpu_buf in setRegions")
+	log.AssertMsg(len(v) == len(p.cpuBuf), "Size mismatch: the length of v must match the length of p.cpu_buf in setRegions")
 	log.AssertMsg(r1 < r2, "Invalid region range: r1 must be less than r2 (exclusive upper bound) in setRegions")
 
 	for r := r1; r < r2; r++ {
-		p.upd_reg[r] = nil
+		p.updReg[r] = nil
 		p.bufset_(r, v)
 	}
 	p.invalidate()
 }
 
 func (p *regionwise) bufset_(region int, v []float64) {
-	for c := range p.cpu_buf {
-		p.cpu_buf[c][region] = float32(v[c])
+	for c := range p.cpuBuf {
+		p.cpuBuf[c][region] = float32(v[c])
 	}
 }
 
@@ -152,14 +152,14 @@ func (p *regionwise) setFunc(r1, r2 int, f func() []float64) {
 	log.AssertMsg(r1 < r2, "Invalid region range: r1 must be less than r2 (exclusive upper bound) in setFunc")
 
 	for r := r1; r < r2; r++ {
-		p.upd_reg[r] = f
+		p.updReg[r] = f
 	}
 	p.invalidate()
 }
 
 // mark my GPU copy and my children as invalid (need update)
 func (p *regionwise) invalidate() {
-	p.gpu_ok = false
+	p.gpuOk = false
 	for _, c := range p.children {
 		c.invalidate()
 	}

@@ -14,62 +14,62 @@ import (
 )
 
 // CUDA handle for shiftx kernel
-var shiftx_code cu.Function
+var shiftxCode cu.Function
 
 // Stores the arguments for shiftx kernel invocation
-type shiftx_args_t struct {
-	arg_dst    unsafe.Pointer
-	arg_src    unsafe.Pointer
-	arg_Nx     int
-	arg_Ny     int
-	arg_Nz     int
-	arg_shx    int
-	arg_clampL float32
-	arg_clampR float32
+type shiftxArgsT struct {
+	argDst    unsafe.Pointer
+	argSrc    unsafe.Pointer
+	argNx     int
+	argNy     int
+	argNz     int
+	argShx    int
+	argClampL float32
+	argClampR float32
 	argptr     [8]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for shiftx kernel invocation
-var shiftx_args shiftx_args_t
+var shiftxArgs shiftxArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	shiftx_args.argptr[0] = unsafe.Pointer(&shiftx_args.arg_dst)
-	shiftx_args.argptr[1] = unsafe.Pointer(&shiftx_args.arg_src)
-	shiftx_args.argptr[2] = unsafe.Pointer(&shiftx_args.arg_Nx)
-	shiftx_args.argptr[3] = unsafe.Pointer(&shiftx_args.arg_Ny)
-	shiftx_args.argptr[4] = unsafe.Pointer(&shiftx_args.arg_Nz)
-	shiftx_args.argptr[5] = unsafe.Pointer(&shiftx_args.arg_shx)
-	shiftx_args.argptr[6] = unsafe.Pointer(&shiftx_args.arg_clampL)
-	shiftx_args.argptr[7] = unsafe.Pointer(&shiftx_args.arg_clampR)
+	shiftxArgs.argptr[0] = unsafe.Pointer(&shiftxArgs.argDst)
+	shiftxArgs.argptr[1] = unsafe.Pointer(&shiftxArgs.argSrc)
+	shiftxArgs.argptr[2] = unsafe.Pointer(&shiftxArgs.argNx)
+	shiftxArgs.argptr[3] = unsafe.Pointer(&shiftxArgs.argNy)
+	shiftxArgs.argptr[4] = unsafe.Pointer(&shiftxArgs.argNz)
+	shiftxArgs.argptr[5] = unsafe.Pointer(&shiftxArgs.argShx)
+	shiftxArgs.argptr[6] = unsafe.Pointer(&shiftxArgs.argClampL)
+	shiftxArgs.argptr[7] = unsafe.Pointer(&shiftxArgs.argClampR)
 }
 
 // Wrapper for shiftx CUDA kernel, asynchronous.
-func k_shiftx_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz int, shx int, clampL float32, clampR float32, cfg *config) {
+func kShiftxAsync(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz int, shx int, clampL float32, clampR float32, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("shiftx")
 	}
 
-	shiftx_args.Lock()
-	defer shiftx_args.Unlock()
+	shiftxArgs.Lock()
+	defer shiftxArgs.Unlock()
 
-	if shiftx_code == 0 {
-		shiftx_code = fatbinLoad(shiftx_map, "shiftx")
+	if shiftxCode == 0 {
+		shiftxCode = fatbinLoad(shiftxMap, "shiftx")
 	}
 
-	shiftx_args.arg_dst = dst
-	shiftx_args.arg_src = src
-	shiftx_args.arg_Nx = Nx
-	shiftx_args.arg_Ny = Ny
-	shiftx_args.arg_Nz = Nz
-	shiftx_args.arg_shx = shx
-	shiftx_args.arg_clampL = clampL
-	shiftx_args.arg_clampR = clampR
+	shiftxArgs.argDst = dst
+	shiftxArgs.argSrc = src
+	shiftxArgs.argNx = Nx
+	shiftxArgs.argNy = Ny
+	shiftxArgs.argNz = Nz
+	shiftxArgs.argShx = shx
+	shiftxArgs.argClampL = clampL
+	shiftxArgs.argClampR = clampR
 
-	args := shiftx_args.argptr[:]
-	cu.LaunchKernel(shiftx_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := shiftxArgs.argptr[:]
+	cu.LaunchKernel(shiftxCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -78,14 +78,14 @@ func k_shiftx_async(dst unsafe.Pointer, src unsafe.Pointer, Nx int, Ny int, Nz i
 }
 
 // maps compute capability on PTX code for shiftx kernel.
-var shiftx_map = map[int]string{
+var shiftxMap = map[int]string{
 	0:  "",
-	52: shiftx_ptx_52,
+	52: shiftxPtx52,
 }
 
 // shiftx PTX code for various compute capabilities.
 const (
-	shiftx_ptx_52 = `
+	shiftxPtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

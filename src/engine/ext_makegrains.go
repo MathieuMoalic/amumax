@@ -54,7 +54,7 @@ const (
 	LAMBDA = TILE * TILE // expected grains per tile
 )
 
-// Returns the region of the grain where cell at x,y,z belongs to
+// RegionOf Returns the region of the grain where cell at x,y,z belongs to
 func (t *tesselation) RegionOf(x, y, z float64) int {
 	tile := t.tileOf(x, y) // tile containing x,y
 

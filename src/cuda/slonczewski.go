@@ -12,7 +12,7 @@ func AddSlonczewskiTorque2(torque, m *data.Slice, Msat, J, fixedP, alpha, pol, Î
 	cfg := make1DConf(N)
 	meshThickness := mesh.WorldSize()[Z]
 
-	k_addslonczewskitorque2_async(
+	kAddslonczewskitorque2Async(
 		torque.DevPtr(X), torque.DevPtr(Y), torque.DevPtr(Z),
 		m.DevPtr(X), m.DevPtr(Y), m.DevPtr(Z),
 		Msat.DevPtr(0), Msat.Mul(0),

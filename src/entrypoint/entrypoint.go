@@ -124,7 +124,7 @@ func printVersion() {
 	log.Log.Info("Platform:        %s_%s", runtime.GOOS, runtime.GOARCH)
 	log.Log.Info("Go Version:      %s (%s)", runtime.Version(), runtime.Compiler)
 	log.Log.Info("CUDA Version:    %d.%d (CC=%d PTX)", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10, cuda.UseCC)
-	log.Log.Info("GPU Information: %s", cuda.GPUInfo_old)
+	log.Log.Info("GPU Information: %s", cuda.GPUInfoOld)
 }
 
 func setupAndServe(flags *flags.Flags, mx3Path string, isInteractive bool) (*script.BlockStmt, error) {

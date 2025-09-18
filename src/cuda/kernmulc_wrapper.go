@@ -14,50 +14,50 @@ import (
 )
 
 // CUDA handle for kernmulC kernel
-var kernmulC_code cu.Function
+var kernmulCCode cu.Function
 
 // Stores the arguments for kernmulC kernel invocation
-type kernmulC_args_t struct {
-	arg_fftM unsafe.Pointer
-	arg_fftK unsafe.Pointer
-	arg_Nx   int
-	arg_Ny   int
+type kernmulCArgsT struct {
+	argFftM unsafe.Pointer
+	argFftK unsafe.Pointer
+	argNx   int
+	argNy   int
 	argptr   [4]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for kernmulC kernel invocation
-var kernmulC_args kernmulC_args_t
+var kernmulCArgs kernmulCArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	kernmulC_args.argptr[0] = unsafe.Pointer(&kernmulC_args.arg_fftM)
-	kernmulC_args.argptr[1] = unsafe.Pointer(&kernmulC_args.arg_fftK)
-	kernmulC_args.argptr[2] = unsafe.Pointer(&kernmulC_args.arg_Nx)
-	kernmulC_args.argptr[3] = unsafe.Pointer(&kernmulC_args.arg_Ny)
+	kernmulCArgs.argptr[0] = unsafe.Pointer(&kernmulCArgs.argFftM)
+	kernmulCArgs.argptr[1] = unsafe.Pointer(&kernmulCArgs.argFftK)
+	kernmulCArgs.argptr[2] = unsafe.Pointer(&kernmulCArgs.argNx)
+	kernmulCArgs.argptr[3] = unsafe.Pointer(&kernmulCArgs.argNy)
 }
 
 // Wrapper for kernmulC CUDA kernel, asynchronous.
-func k_kernmulC_async(fftM unsafe.Pointer, fftK unsafe.Pointer, Nx int, Ny int, cfg *config) {
+func kKernmulCAsync(fftM unsafe.Pointer, fftK unsafe.Pointer, Nx int, Ny int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("kernmulC")
 	}
 
-	kernmulC_args.Lock()
-	defer kernmulC_args.Unlock()
+	kernmulCArgs.Lock()
+	defer kernmulCArgs.Unlock()
 
-	if kernmulC_code == 0 {
-		kernmulC_code = fatbinLoad(kernmulC_map, "kernmulC")
+	if kernmulCCode == 0 {
+		kernmulCCode = fatbinLoad(kernmulCMap, "kernmulC")
 	}
 
-	kernmulC_args.arg_fftM = fftM
-	kernmulC_args.arg_fftK = fftK
-	kernmulC_args.arg_Nx = Nx
-	kernmulC_args.arg_Ny = Ny
+	kernmulCArgs.argFftM = fftM
+	kernmulCArgs.argFftK = fftK
+	kernmulCArgs.argNx = Nx
+	kernmulCArgs.argNy = Ny
 
-	args := kernmulC_args.argptr[:]
-	cu.LaunchKernel(kernmulC_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := kernmulCArgs.argptr[:]
+	cu.LaunchKernel(kernmulCCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -66,14 +66,14 @@ func k_kernmulC_async(fftM unsafe.Pointer, fftK unsafe.Pointer, Nx int, Ny int, 
 }
 
 // maps compute capability on PTX code for kernmulC kernel.
-var kernmulC_map = map[int]string{
+var kernmulCMap = map[int]string{
 	0:  "",
-	52: kernmulC_ptx_52,
+	52: kernmulCPtx52,
 }
 
 // kernmulC PTX code for various compute capabilities.
 const (
-	kernmulC_ptx_52 = `
+	kernmulCPtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

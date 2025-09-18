@@ -14,56 +14,56 @@ import (
 )
 
 // CUDA handle for setPhi kernel
-var setPhi_code cu.Function
+var setPhiCode cu.Function
 
 // Stores the arguments for setPhi kernel invocation
-type setPhi_args_t struct {
-	arg_phi unsafe.Pointer
-	arg_mx  unsafe.Pointer
-	arg_my  unsafe.Pointer
-	arg_Nx  int
-	arg_Ny  int
-	arg_Nz  int
+type setPhiArgsT struct {
+	argPhi unsafe.Pointer
+	argMx  unsafe.Pointer
+	argMy  unsafe.Pointer
+	argNx  int
+	argNy  int
+	argNz  int
 	argptr  [6]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for setPhi kernel invocation
-var setPhi_args setPhi_args_t
+var setPhiArgs setPhiArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	setPhi_args.argptr[0] = unsafe.Pointer(&setPhi_args.arg_phi)
-	setPhi_args.argptr[1] = unsafe.Pointer(&setPhi_args.arg_mx)
-	setPhi_args.argptr[2] = unsafe.Pointer(&setPhi_args.arg_my)
-	setPhi_args.argptr[3] = unsafe.Pointer(&setPhi_args.arg_Nx)
-	setPhi_args.argptr[4] = unsafe.Pointer(&setPhi_args.arg_Ny)
-	setPhi_args.argptr[5] = unsafe.Pointer(&setPhi_args.arg_Nz)
+	setPhiArgs.argptr[0] = unsafe.Pointer(&setPhiArgs.argPhi)
+	setPhiArgs.argptr[1] = unsafe.Pointer(&setPhiArgs.argMx)
+	setPhiArgs.argptr[2] = unsafe.Pointer(&setPhiArgs.argMy)
+	setPhiArgs.argptr[3] = unsafe.Pointer(&setPhiArgs.argNx)
+	setPhiArgs.argptr[4] = unsafe.Pointer(&setPhiArgs.argNy)
+	setPhiArgs.argptr[5] = unsafe.Pointer(&setPhiArgs.argNz)
 }
 
 // Wrapper for setPhi CUDA kernel, asynchronous.
-func k_setPhi_async(phi unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, Nx int, Ny int, Nz int, cfg *config) {
+func kSetPhiAsync(phi unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, Nx int, Ny int, Nz int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("setPhi")
 	}
 
-	setPhi_args.Lock()
-	defer setPhi_args.Unlock()
+	setPhiArgs.Lock()
+	defer setPhiArgs.Unlock()
 
-	if setPhi_code == 0 {
-		setPhi_code = fatbinLoad(setPhi_map, "setPhi")
+	if setPhiCode == 0 {
+		setPhiCode = fatbinLoad(setPhiMap, "setPhi")
 	}
 
-	setPhi_args.arg_phi = phi
-	setPhi_args.arg_mx = mx
-	setPhi_args.arg_my = my
-	setPhi_args.arg_Nx = Nx
-	setPhi_args.arg_Ny = Ny
-	setPhi_args.arg_Nz = Nz
+	setPhiArgs.argPhi = phi
+	setPhiArgs.argMx = mx
+	setPhiArgs.argMy = my
+	setPhiArgs.argNx = Nx
+	setPhiArgs.argNy = Ny
+	setPhiArgs.argNz = Nz
 
-	args := setPhi_args.argptr[:]
-	cu.LaunchKernel(setPhi_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := setPhiArgs.argptr[:]
+	cu.LaunchKernel(setPhiCode, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -72,14 +72,14 @@ func k_setPhi_async(phi unsafe.Pointer, mx unsafe.Pointer, my unsafe.Pointer, Nx
 }
 
 // maps compute capability on PTX code for setPhi kernel.
-var setPhi_map = map[int]string{
+var setPhiMap = map[int]string{
 	0:  "",
-	52: setPhi_ptx_52,
+	52: setPhiPtx52,
 }
 
 // setPhi PTX code for various compute capabilities.
 const (
-	setPhi_ptx_52 = `
+	setPhiPtx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

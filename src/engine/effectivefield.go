@@ -4,7 +4,7 @@ package engine
 
 import "github.com/MathieuMoalic/amumax/src/data"
 
-var B_eff = newVectorField("B_eff", "T", "Effective field", setEffectiveField)
+var BEff = newVectorField("B_eff", "T", "Effective field", setEffectiveField)
 
 // Sets dst to the current effective field, in Tesla.
 // This is the sum of all effective field terms,

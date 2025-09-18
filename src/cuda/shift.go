@@ -13,7 +13,7 @@ func ShiftX(dst, src *data.Slice, shiftX int, clampL, clampR float32) {
 	log.AssertMsg(dst.Len() == src.Len(), "Length mismatch: dst and src must have the same length in ShiftX")
 	N := dst.Size()
 	cfg := make3DConf(N)
-	k_shiftx_async(dst.DevPtr(0), src.DevPtr(0), N[X], N[Y], N[Z], shiftX, clampL, clampR, cfg)
+	kShiftxAsync(dst.DevPtr(0), src.DevPtr(0), N[X], N[Y], N[Z], shiftX, clampL, clampR, cfg)
 }
 
 // Shifts a component `src` of a vector field by `shiftX` cells along the X-axis.
@@ -28,7 +28,7 @@ func ShiftEdgeCarryX(dst, src, othercomp, anothercomp *data.Slice, shiftX int, c
 	log.AssertMsg(dst.Len() == src.Len(), "Length mismatch: dst and src must have the same length in ShiftEdgeCarryX")
 	N := dst.Size()
 	cfg := make3DConf(N)
-	k_shiftedgecarryX_async(dst.DevPtr(0), src.DevPtr(0), othercomp.DevPtr(0), anothercomp.DevPtr(0), N[X], N[Y], N[Z], shiftX, clampL, clampR, cfg)
+	kShiftedgecarryXAsync(dst.DevPtr(0), src.DevPtr(0), othercomp.DevPtr(0), anothercomp.DevPtr(0), N[X], N[Y], N[Z], shiftX, clampL, clampR, cfg)
 }
 
 func ShiftY(dst, src *data.Slice, shiftY int, clampL, clampR float32) {
@@ -36,7 +36,7 @@ func ShiftY(dst, src *data.Slice, shiftY int, clampL, clampR float32) {
 	log.AssertMsg(dst.Len() == src.Len(), "Length mismatch: dst and src must have the same length in ShiftY")
 	N := dst.Size()
 	cfg := make3DConf(N)
-	k_shifty_async(dst.DevPtr(0), src.DevPtr(0), N[X], N[Y], N[Z], shiftY, clampL, clampR, cfg)
+	kShiftyAsync(dst.DevPtr(0), src.DevPtr(0), N[X], N[Y], N[Z], shiftY, clampL, clampR, cfg)
 }
 
 // Shifts a component `src` of a vector field by `shiftY` cells along the Y-axis.
@@ -51,7 +51,7 @@ func ShiftEdgeCarry(dst, src, othercomp, anothercomp *data.Slice, shiftY int, cl
 	log.AssertMsg(dst.Len() == src.Len(), "Length mismatch: dst and src must have the same length in ShiftEdgeCarry")
 	N := dst.Size()
 	cfg := make3DConf(N)
-	k_shiftedgecarryY_async(dst.DevPtr(0), src.DevPtr(0), othercomp.DevPtr(0), anothercomp.DevPtr(0), N[X], N[Y], N[Z], shiftY, clampL, clampR, cfg)
+	kShiftedgecarryYAsync(dst.DevPtr(0), src.DevPtr(0), othercomp.DevPtr(0), anothercomp.DevPtr(0), N[X], N[Y], N[Z], shiftY, clampL, clampR, cfg)
 }
 
 func ShiftZ(dst, src *data.Slice, shiftZ int, clampL, clampR float32) {
@@ -59,18 +59,18 @@ func ShiftZ(dst, src *data.Slice, shiftZ int, clampL, clampR float32) {
 	log.AssertMsg(dst.Len() == src.Len(), "Length mismatch: dst and src must have the same length in ShiftZ")
 	N := dst.Size()
 	cfg := make3DConf(N)
-	k_shiftz_async(dst.DevPtr(0), src.DevPtr(0), N[X], N[Y], N[Z], shiftZ, clampL, clampR, cfg)
+	kShiftzAsync(dst.DevPtr(0), src.DevPtr(0), N[X], N[Y], N[Z], shiftZ, clampL, clampR, cfg)
 }
 
 // Like Shift, but for bytes
 func ShiftBytes(dst, src *Bytes, m mesh.MeshLike, shiftX int, clamp byte) {
 	N := m.Size()
 	cfg := make3DConf(N)
-	k_shiftbytes_async(dst.Ptr, src.Ptr, N[X], N[Y], N[Z], shiftX, clamp, cfg)
+	kShiftbytesAsync(dst.Ptr, src.Ptr, N[X], N[Y], N[Z], shiftX, clamp, cfg)
 }
 
 func ShiftBytesY(dst, src *Bytes, m mesh.MeshLike, shiftY int, clamp byte) {
 	N := m.Size()
 	cfg := make3DConf(N)
-	k_shiftbytesy_async(dst.Ptr, src.Ptr, N[X], N[Y], N[Z], shiftY, clamp, cfg)
+	kShiftbytesyAsync(dst.Ptr, src.Ptr, N[X], N[Y], N[Z], shiftY, clamp, cfg)
 }

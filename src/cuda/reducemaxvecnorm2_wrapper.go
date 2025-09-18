@@ -14,56 +14,56 @@ import (
 )
 
 // CUDA handle for reducemaxvecnorm2 kernel
-var reducemaxvecnorm2_code cu.Function
+var reducemaxvecnorm2Code cu.Function
 
 // Stores the arguments for reducemaxvecnorm2 kernel invocation
-type reducemaxvecnorm2_args_t struct {
-	arg_x       unsafe.Pointer
-	arg_y       unsafe.Pointer
-	arg_z       unsafe.Pointer
-	arg_dst     unsafe.Pointer
-	arg_initVal float32
-	arg_n       int
+type reducemaxvecnorm2ArgsT struct {
+	argX       unsafe.Pointer
+	argY       unsafe.Pointer
+	argZ       unsafe.Pointer
+	argDst     unsafe.Pointer
+	argInitVal float32
+	argN       int
 	argptr      [6]unsafe.Pointer
 	sync.Mutex
 }
 
 // Stores the arguments for reducemaxvecnorm2 kernel invocation
-var reducemaxvecnorm2_args reducemaxvecnorm2_args_t
+var reducemaxvecnorm2Args reducemaxvecnorm2ArgsT
 
 func init() {
 	// CUDA driver kernel call wants pointers to arguments, set them up once.
-	reducemaxvecnorm2_args.argptr[0] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_x)
-	reducemaxvecnorm2_args.argptr[1] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_y)
-	reducemaxvecnorm2_args.argptr[2] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_z)
-	reducemaxvecnorm2_args.argptr[3] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_dst)
-	reducemaxvecnorm2_args.argptr[4] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_initVal)
-	reducemaxvecnorm2_args.argptr[5] = unsafe.Pointer(&reducemaxvecnorm2_args.arg_n)
+	reducemaxvecnorm2Args.argptr[0] = unsafe.Pointer(&reducemaxvecnorm2Args.argX)
+	reducemaxvecnorm2Args.argptr[1] = unsafe.Pointer(&reducemaxvecnorm2Args.argY)
+	reducemaxvecnorm2Args.argptr[2] = unsafe.Pointer(&reducemaxvecnorm2Args.argZ)
+	reducemaxvecnorm2Args.argptr[3] = unsafe.Pointer(&reducemaxvecnorm2Args.argDst)
+	reducemaxvecnorm2Args.argptr[4] = unsafe.Pointer(&reducemaxvecnorm2Args.argInitVal)
+	reducemaxvecnorm2Args.argptr[5] = unsafe.Pointer(&reducemaxvecnorm2Args.argN)
 }
 
 // Wrapper for reducemaxvecnorm2 CUDA kernel, asynchronous.
-func k_reducemaxvecnorm2_async(x unsafe.Pointer, y unsafe.Pointer, z unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int, cfg *config) {
+func kReducemaxvecnorm2Async(x unsafe.Pointer, y unsafe.Pointer, z unsafe.Pointer, dst unsafe.Pointer, initVal float32, n int, cfg *config) {
 	if Synchronous { // debug
 		Sync()
 		timer.Start("reducemaxvecnorm2")
 	}
 
-	reducemaxvecnorm2_args.Lock()
-	defer reducemaxvecnorm2_args.Unlock()
+	reducemaxvecnorm2Args.Lock()
+	defer reducemaxvecnorm2Args.Unlock()
 
-	if reducemaxvecnorm2_code == 0 {
-		reducemaxvecnorm2_code = fatbinLoad(reducemaxvecnorm2_map, "reducemaxvecnorm2")
+	if reducemaxvecnorm2Code == 0 {
+		reducemaxvecnorm2Code = fatbinLoad(reducemaxvecnorm2Map, "reducemaxvecnorm2")
 	}
 
-	reducemaxvecnorm2_args.arg_x = x
-	reducemaxvecnorm2_args.arg_y = y
-	reducemaxvecnorm2_args.arg_z = z
-	reducemaxvecnorm2_args.arg_dst = dst
-	reducemaxvecnorm2_args.arg_initVal = initVal
-	reducemaxvecnorm2_args.arg_n = n
+	reducemaxvecnorm2Args.argX = x
+	reducemaxvecnorm2Args.argY = y
+	reducemaxvecnorm2Args.argZ = z
+	reducemaxvecnorm2Args.argDst = dst
+	reducemaxvecnorm2Args.argInitVal = initVal
+	reducemaxvecnorm2Args.argN = n
 
-	args := reducemaxvecnorm2_args.argptr[:]
-	cu.LaunchKernel(reducemaxvecnorm2_code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
+	args := reducemaxvecnorm2Args.argptr[:]
+	cu.LaunchKernel(reducemaxvecnorm2Code, cfg.Grid.X, cfg.Grid.Y, cfg.Grid.Z, cfg.Block.X, cfg.Block.Y, cfg.Block.Z, 0, stream0, args)
 
 	if Synchronous { // debug
 		Sync()
@@ -72,14 +72,14 @@ func k_reducemaxvecnorm2_async(x unsafe.Pointer, y unsafe.Pointer, z unsafe.Poin
 }
 
 // maps compute capability on PTX code for reducemaxvecnorm2 kernel.
-var reducemaxvecnorm2_map = map[int]string{
+var reducemaxvecnorm2Map = map[int]string{
 	0:  "",
-	52: reducemaxvecnorm2_ptx_52,
+	52: reducemaxvecnorm2Ptx52,
 }
 
 // reducemaxvecnorm2 PTX code for various compute capabilities.
 const (
-	reducemaxvecnorm2_ptx_52 = `
+	reducemaxvecnorm2Ptx52 = `
 .version 7.0
 .target sm_52
 .address_size 64

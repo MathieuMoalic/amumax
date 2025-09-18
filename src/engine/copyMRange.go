@@ -1,4 +1,3 @@
-// engine/ext_copymrange.go
 package engine
 
 import "github.com/MathieuMoalic/amumax/src/cuda"
@@ -8,7 +7,7 @@ func init() {
 		"Copy a block of m (GPU only): CopyMRange(dx,dy,dz, sx,sy,sz, W,H,D, wrap)")
 }
 
-// Copies a W×H×D block of m from (sx,sy,sz) to (dx,dy,dz).
+// CopyMRange Copies a W×H×D block of m from (sx,sy,sz) to (dx,dy,dz).
 func CopyMRange(dx, dy, dz, sx, sy, sz, W, H, D int, wrap bool) {
 	m := NormMag.Buffer()
 	dst0 := [3]int{dx, dy, dz}

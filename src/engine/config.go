@@ -203,7 +203,7 @@ func (c config) Scale(sx, sy, sz float64) config {
 	}
 }
 
-// Rotates the configuration around the Z-axis, over θ radians.
+// RotZ Rotates the configuration around the Z-axis, over θ radians.
 func (c config) RotZ(θ float64) config {
 	cos := math.Cos(θ)
 	sin := math.Sin(θ)
@@ -217,12 +217,13 @@ func (c config) RotZ(θ float64) config {
 	}
 }
 
-// Returns a new magnetization equal to c + weight * other.
+// Add Returns a new magnetization equal to c + weight * other.
 // E.g.:
 //
-//	Uniform(1, 0, 0).Add(0.2, RandomMag())
+// Uniform(1, 0, 0).Add(0.2, RandomMag())
 //
 // for a uniform state with 20% random distortion.
+
 func (c config) Add(weight float64, other config) config {
 	return func(x, y, z float64) data.Vector {
 		return c(x, y, z).MAdd(weight, other(x, y, z))

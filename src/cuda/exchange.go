@@ -14,7 +14,7 @@ import (
 //	Aex_red: Aex / (Msat * 1e18 m2)
 //
 // see exchange.cu
-func AddExchange(B, m *data.Slice, Aex_red SymmLUT, Msat MSlice, regions *Bytes, mesh mesh.MeshLike) {
+func AddExchange(B, m *data.Slice, AexRed SymmLUT, Msat MSlice, regions *Bytes, mesh mesh.MeshLike) {
 	c := mesh.CellSize()
 	wx := float32(2 / (c[X] * c[X]))
 	wy := float32(2 / (c[Y] * c[Y]))
@@ -22,15 +22,15 @@ func AddExchange(B, m *data.Slice, Aex_red SymmLUT, Msat MSlice, regions *Bytes,
 	N := mesh.Size()
 	pbc := mesh.PBCCode()
 	cfg := make3DConf(N)
-	k_addexchange_async(B.DevPtr(X), B.DevPtr(Y), B.DevPtr(Z),
+	kAddexchangeAsync(B.DevPtr(X), B.DevPtr(Y), B.DevPtr(Z),
 		m.DevPtr(X), m.DevPtr(Y), m.DevPtr(Z),
 		Msat.DevPtr(0), Msat.Mul(0),
-		unsafe.Pointer(Aex_red), regions.Ptr,
+		unsafe.Pointer(AexRed), regions.Ptr,
 		wx, wy, wz, N[X], N[Y], N[Z], pbc, cfg)
 }
 
 // Finds the average exchange strength around each cell, for debugging.
-func ExchangeDecode(dst *data.Slice, Aex_red SymmLUT, regions *Bytes, mesh mesh.MeshLike) {
+func ExchangeDecode(dst *data.Slice, AexRed SymmLUT, regions *Bytes, mesh mesh.MeshLike) {
 	c := mesh.CellSize()
 	wx := float32(2 / (c[X] * c[X]))
 	wy := float32(2 / (c[Y] * c[Y]))
@@ -38,5 +38,5 @@ func ExchangeDecode(dst *data.Slice, Aex_red SymmLUT, regions *Bytes, mesh mesh.
 	N := mesh.Size()
 	pbc := mesh.PBCCode()
 	cfg := make3DConf(N)
-	k_exchangedecode_async(dst.DevPtr(0), unsafe.Pointer(Aex_red), regions.Ptr, wx, wy, wz, N[X], N[Y], N[Z], pbc, cfg)
+	kExchangedecodeAsync(dst.DevPtr(0), unsafe.Pointer(AexRed), regions.Ptr, wx, wy, wz, N[X], N[Y], N[Z], pbc, cfg)
 }

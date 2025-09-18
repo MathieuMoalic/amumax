@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	B_custom       = newVectorField("B_custom", "T", "User-defined field", addCustomField)
-	Edens_custom   = newScalarField("Edens_custom", "J/m3", "Energy density of user-defined field.", addCustomEnergyDensity)
-	E_custom       = newScalarValue("E_custom", "J", "total energy of user-defined field", getCustomEnergy)
+	BCustom       = newVectorField("B_custom", "T", "User-defined field", addCustomField)
+	EdensCustom   = newScalarField("Edens_custom", "J/m3", "Energy density of user-defined field.", addCustomEnergyDensity)
+	ECustom       = newScalarValue("E_custom", "J", "total energy of user-defined field", getCustomEnergy)
 	customTerms    []Quantity // vector
 	customEnergies []Quantity // scalar
 )

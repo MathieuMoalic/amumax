@@ -12,7 +12,7 @@ func AddCubicAnisotropy2(Beff, m *data.Slice, Msat, k1, k2, k3, c1, c2 MSlice) {
 
 	N := Beff.Len()
 	cfg := make1DConf(N)
-	k_addcubicanisotropy2_async(
+	kAddcubicanisotropy2Async(
 		Beff.DevPtr(X), Beff.DevPtr(Y), Beff.DevPtr(Z),
 		m.DevPtr(X), m.DevPtr(Y), m.DevPtr(Z),
 		Msat.DevPtr(0), Msat.Mul(0),
@@ -38,7 +38,7 @@ func AddUniaxialAnisotropy2(Beff, m *data.Slice, Msat, k1, k2, u MSlice) {
 	N := Beff.Len()
 	cfg := make1DConf(N)
 
-	k_adduniaxialanisotropy2_async(
+	kAdduniaxialanisotropy2Async(
 		Beff.DevPtr(X), Beff.DevPtr(Y), Beff.DevPtr(Z),
 		m.DevPtr(X), m.DevPtr(Y), m.DevPtr(Z),
 		Msat.DevPtr(0), Msat.Mul(0),
