@@ -9,7 +9,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-// Wrapper for cu.MemAlloc, fatal exit on out of memory.
+// MemAlloc Wrapper for cu.MemAlloc, fatal exit on out of memory.
 func MemAlloc(bytes int64) unsafe.Pointer {
 	defer func() {
 		err := recover()
@@ -23,7 +23,7 @@ func MemAlloc(bytes int64) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(cu.MemAlloc(bytes)))
 }
 
-// Returns a copy of in, allocated on GPU.
+// GPUCopy Returns a copy of in, allocated on GPU.
 func GPUCopy(in *data.Slice) *data.Slice {
 	s := NewSlice(in.NComp(), in.Size())
 	data.Copy(s, in)

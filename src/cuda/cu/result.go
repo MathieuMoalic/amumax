@@ -9,13 +9,14 @@ import (
 	"fmt"
 )
 
-// CUDA error status.
+// Result CUDA error status.
 // CUDA error statuses are not returned by functions but checked and passed to
 // panic() when not successful. If desired, they can be caught by
 // recover().
+
 type Result int
 
-// Message string for the error
+// String Message string for the error
 func (err Result) String() string {
 	str, ok := errorString[err]
 	if !ok {

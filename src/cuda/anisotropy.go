@@ -5,7 +5,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-// Add uniaxial magnetocrystalline anisotropy field to Beff.
+// AddCubicAnisotropy2 Add uniaxial magnetocrystalline anisotropy field to Beff.
 // see uniaxialanisotropy.cu
 func AddCubicAnisotropy2(Beff, m *data.Slice, Msat, k1, k2, k3, c1, c2 MSlice) {
 	log.AssertMsg(Beff.Size() == m.Size(), "AddCubicAnisotropy2: Size mismatch between Beff and m slices")
@@ -28,7 +28,7 @@ func AddCubicAnisotropy2(Beff, m *data.Slice, Msat, k1, k2, k3, c1, c2 MSlice) {
 		N, cfg)
 }
 
-// Add uniaxial magnetocrystalline anisotropy field to Beff.
+// AddUniaxialAnisotropy2 Add uniaxial magnetocrystalline anisotropy field to Beff.
 // see uniaxialanisotropy.cu
 func AddUniaxialAnisotropy2(Beff, m *data.Slice, Msat, k1, k2, u MSlice) {
 	log.AssertMsg(Beff.Size() == m.Size(), "AddUniaxialAnisotropy2: Size mismatch between Beff and m slices")

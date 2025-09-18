@@ -43,13 +43,13 @@ func scaleRealParts(dst, src *data.Slice, scale float32) {
 
 	// ...however, we check that the imaginary parts are nearly zero,
 	// just to be sure we did not make a mistake during kernel creation.
-	if maximg > FFT_IMAG_TOLERANCE {
+	if maximg > FFTImageTolerance {
 		log.Log.ErrAndExit("FFT kernel imaginary part: %v\n", maximg)
 	}
 }
 
-// Maximum tolerable imaginary/real part for demag kernel in Fourier space. Assures kernel has correct symmetry.
-const FFT_IMAG_TOLERANCE = 1e-6
+// FFTImageTolerance Maximum tolerable imaginary/real part for demag kernel in Fourier space. Assures kernel has correct symmetry.
+const FFTImageTolerance = 1e-6
 
 // float32 absolute value
 func fabs(x float32) float32 {

@@ -15,17 +15,17 @@ import (
 )
 
 func init() {
-	declROnly("OVF1_BINARY", OVF1_BINARY, "OutputFormat = OVF1_BINARY sets binary OVF1 output")
-	declROnly("OVF2_BINARY", OVF2_BINARY, "OutputFormat = OVF2_BINARY sets binary OVF2 output")
-	declROnly("OVF1_TEXT", OVF1_TEXT, "OutputFormat = OVF1_TEXT sets text OVF1 output")
-	declROnly("OVF2_TEXT", OVF2_TEXT, "OutputFormat = OVF2_TEXT sets text OVF2 output")
+	declROnly("OVF1_BINARY", OVF1Binary, "OutputFormat = OVF1_BINARY sets binary OVF1 output")
+	declROnly("OVF2_BINARY", OVF2Binary, "OutputFormat = OVF2_BINARY sets binary OVF2 output")
+	declROnly("OVF1_TEXT", OVF1Text, "OutputFormat = OVF1_TEXT sets text OVF1 output")
+	declROnly("OVF2_TEXT", OVF2Text, "OutputFormat = OVF2_TEXT sets text OVF2 output")
 	declROnly("DUMP", DUMP, "OutputFormat = DUMP sets text DUMP output")
 }
 
 var (
-	filenameFormat = "%s%06d"    // formatting string for auto filenames.
-	snapshotFormat = "jpg"       // user-settable snapshot format
-	outputFormat   = OVF2_BINARY // user-settable output format
+	filenameFormat = "%s%06d"   // formatting string for auto filenames.
+	snapshotFormat = "jpg"      // user-settable snapshot format
+	outputFormat   = OVF2Binary // user-settable output format
 )
 
 type fformat struct{}
@@ -38,7 +38,7 @@ type oformat struct{}
 
 func (*oformat) Eval() any          { return outputFormat }
 func (*oformat) SetValue(v any)     { drainOutput(); outputFormat = v.(outputFormatType) }
-func (*oformat) Type() reflect.Type { return reflect.TypeOf(outputFormatType(OVF2_BINARY)) }
+func (*oformat) Type() reflect.Type { return reflect.TypeOf(outputFormatType(OVF2Binary)) }
 
 // saveOVF once, with auto file name
 func saveOVF(q Quantity) {
@@ -61,7 +61,7 @@ func saveAsOVF(q Quantity, fname string) {
 	defer cuda.Recycle(buffer)
 	info := oommf.Meta{Time: Time, Name: nameOf(q), Unit: unitOf(q), CellSize: MeshOf(q).CellSize()}
 	data := buffer.HostCopy() // must be copy (async io)
-	queOutput(func() { saveAs_sync(fname, data, info, outputFormat) })
+	queOutput(func() { saveAsSync(fname, data, info, outputFormat) })
 }
 
 // Save image once, with auto file name
@@ -71,7 +71,7 @@ func snapshot(q Quantity) {
 	s := ValueOf(q)
 	defer cuda.Recycle(s)
 	data := s.HostCopy() // must be copy (asyncio)
-	queOutput(func() { snapshot_sync(fname, data) })
+	queOutput(func() { snapshotSync(fname, data) })
 	autonum[qname]++
 }
 
@@ -86,11 +86,11 @@ func snapshotAs(q Quantity, fname string) {
 	s := ValueOf(q)
 	defer cuda.Recycle(s)
 	data := s.HostCopy() // must be copy (asyncio)
-	queOutput(func() { snapshot_sync(fname, data) })
+	queOutput(func() { snapshotSync(fname, data) })
 }
 
 // synchronous snapshot
-func snapshot_sync(fname string, output *data.Slice) {
+func snapshotSync(fname string, output *data.Slice) {
 	f, err := fsutil.Create(fname)
 	log.Log.PanicIfError(err)
 	defer f.Close()
@@ -102,19 +102,19 @@ func snapshot_sync(fname string, output *data.Slice) {
 }
 
 // synchronous save
-func saveAs_sync(fname string, s *data.Slice, info oommf.Meta, format outputFormatType) {
+func saveAsSync(fname string, s *data.Slice, info oommf.Meta, format outputFormatType) {
 	f, err := fsutil.Create(fname)
 	log.Log.PanicIfError(err)
 	defer f.Close()
 
 	switch format {
-	case OVF1_TEXT:
+	case OVF1Text:
 		oommf.WriteOVF1(f, s, info, "text")
-	case OVF1_BINARY:
+	case OVF1Binary:
 		oommf.WriteOVF1(f, s, info, "binary 4")
-	case OVF2_TEXT:
+	case OVF2Text:
 		oommf.WriteOVF2(f, s, info, "text")
-	case OVF2_BINARY:
+	case OVF2Binary:
 		oommf.WriteOVF2(f, s, info, "binary 4")
 	default:
 		panic("invalid output format")
@@ -124,17 +124,17 @@ func saveAs_sync(fname string, s *data.Slice, info oommf.Meta, format outputForm
 type outputFormatType int
 
 const (
-	OVF1_TEXT outputFormatType = iota + 1
-	OVF1_BINARY
-	OVF2_TEXT
-	OVF2_BINARY
+	OVF1Text outputFormatType = iota + 1
+	OVF1Binary
+	OVF2Text
+	OVF2Binary
 	DUMP
 )
 
 var StringFromOutputFormat = map[outputFormatType]string{
-	OVF1_TEXT:   "ovf",
-	OVF1_BINARY: "ovf",
-	OVF2_TEXT:   "ovf",
-	OVF2_BINARY: "ovf",
-	DUMP:        "dump",
+	OVF1Text:   "ovf",
+	OVF1Binary: "ovf",
+	OVF2Text:   "ovf",
+	OVF2Binary: "ovf",
+	DUMP:       "dump",
 }

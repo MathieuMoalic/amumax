@@ -7,7 +7,7 @@ import "C"
 
 const CUDA_VERSION = C.CUDA_VERSION
 
-// Returns the CUDA driver version.
+// Version Returns the CUDA driver version.
 func Version() int {
 	var version C.int
 	err := Result(C.cuDriverGetVersion(&version))

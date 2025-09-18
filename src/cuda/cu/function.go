@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Represents a CUDA CUfunction, a reference to a function within a module.
+// Function Represents a CUDA CUfunction, a reference to a function within a module.
 type Function uintptr
 
 func FuncGetAttribute(attrib FunctionAttribute, function Function) int {

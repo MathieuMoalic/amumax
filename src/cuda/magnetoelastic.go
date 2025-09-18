@@ -6,8 +6,9 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
-// Add magneto-elastic coupling field to the effective field.
+// AddMagnetoelasticField Add magneto-elastic coupling field to the effective field.
 // see magnetoelasticfield.cu
+
 func AddMagnetoelasticField(Beff, m *data.Slice, exx, eyy, ezz, exy, exz, eyz, B1, B2, Msat MSlice) {
 	log.AssertMsg(Beff.Size() == m.Size(), "Size mismatch: Beff and m must have the same dimensions in AddMagnetoelasticField")
 	log.AssertMsg(Beff.Size() == exx.Size(), "Size mismatch: Beff and exx must have the same dimensions in AddMagnetoelasticField")
@@ -29,8 +30,9 @@ func AddMagnetoelasticField(Beff, m *data.Slice, exx, eyy, ezz, exy, exz, eyz, B
 		N, cfg)
 }
 
-// Calculate magneto-elastic force density
+// GetMagnetoelasticForceDensity Calculate magneto-elastic force density
 // see magnetoelasticforce.cu
+
 func GetMagnetoelasticForceDensity(out, m *data.Slice, B1, B2 MSlice, mesh mesh.MeshLike) {
 	log.AssertMsg(out.Size() == m.Size(), "Size mismatch: out and m must have the same dimensions in GetMagnetoelasticForceDensity")
 

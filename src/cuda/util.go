@@ -6,9 +6,10 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 )
 
-// CUDA Launch parameters.
+// MaxGridSize TileY TileX BlockSize CUDA Launch parameters.
 // there might be better choices for recent hardware,
 // but it barely makes a difference in the end.
+
 const (
 	BlockSize    = 512
 	TileX, TileY = 32, 32

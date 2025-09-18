@@ -66,7 +66,7 @@ func inputType(e Expr) reflect.Type {
 	return e.Type()
 }
 
-// common type definitions
+// VectorIft ScalarIft VectorFunctiont ScalarFunctiont common type definitions
 var (
 	float64t        = reflect.TypeOf(float64(0))
 	boolt           = reflect.TypeOf(false)

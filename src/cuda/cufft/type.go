@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-// FFT type
+// Type FFT type
 type Type int
 
 const (

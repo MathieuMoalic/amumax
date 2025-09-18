@@ -26,7 +26,7 @@ func removeLRSurfaceCharge(region int, mxLeft, mxRight float64) {
 	log.AssertMsg(bsat != 0,
 		"RemoveSurfaceCharges: Msat is zero in region "+fmt.Sprint(region))
 
-	B_ext.Add(compensateLRSurfaceCharges(GetMesh(), mxLeft, mxRight, bsat), nil)
+	BExt.Add(compensateLRSurfaceCharges(GetMesh(), mxLeft, mxRight, bsat), nil)
 }
 
 func compensateLRSurfaceCharges(m *mesh.Mesh, mxLeft, mxRight float64, bsat float64) *data.Slice {

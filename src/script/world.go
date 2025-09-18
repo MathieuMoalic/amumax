@@ -36,32 +36,35 @@ func (w *scope) init() {
 	}
 }
 
-// adds a native variable to the world. E.g.:
+// Var adds a native variable to the world. E.g.:
 //
-//	var x = 3.14
-//	world.Var("x", &x)
-//	world.MustEval("x") // returns 3.14
+// var x = 3.14
+// world.Var("x", &x)
+// world.MustEval("x") // returns 3.14
+
 func (w *scope) Var(name string, addr any, doc ...string) {
 	w.declare(name, newReflectLvalue(addr), doc...)
 }
 
-// Hack for fixing the closure caveat:
+// TVar Hack for fixing the closure caveat:
 // Decleare the time variable, the only variable closures close over.
+
 func (w *scope) TVar(name string, addr any, doc ...string) {
 	w.declare(name, &TVar{newReflectLvalue(addr)}, doc...)
 }
 
-// adds a native variable to the world. It cannot be changed from script.
+// ROnly adds a native variable to the world. It cannot be changed from script.
 //
-//	var x = 3.14
-//	world.ROnly("x", &x)
-//	world.MustEval("x")   // returns 3.14
-//	world.MustExec("x=2") // fails: cannot assign to x
+// var x = 3.14
+// world.ROnly("x", &x)
+// world.MustEval("x")   // returns 3.14
+// world.MustExec("x=2") // fails: cannot assign to x
+
 func (w *scope) ROnly(name string, addr any, doc ...string) {
 	w.declare(name, newReflectROnly(addr), doc...)
 }
 
-// adds a constant. Cannot be changed in any way.
+// Const adds a constant. Cannot be changed in any way.
 func (w *scope) Const(name string, val any, doc ...string) {
 	switch v := val.(type) {
 	default:
@@ -73,16 +76,18 @@ func (w *scope) Const(name string, val any, doc ...string) {
 	}
 }
 
-// adds a special variable to the world. Upon assignment,
+// LValue adds a special variable to the world. Upon assignment,
 // v's Set() will be called.
+
 func (w *scope) LValue(name string, v LValue, doc ...string) {
 	w.declare(name, v, doc...)
 }
 
-// adds a native function to the world. E.g.:
+// Func adds a native function to the world. E.g.:
 //
-//	world.Func("sin", math.Sin)
-//	world.MustEval("sin(0)") // returns 0
+// world.Func("sin", math.Sin)
+// world.MustEval("sin(0)") // returns 0
+
 func (w *scope) Func(name string, f any, doc ...string) {
 	w.declare(name, newFunction(f), doc...)
 }

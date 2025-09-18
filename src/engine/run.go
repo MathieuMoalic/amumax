@@ -13,14 +13,14 @@ import (
 	"github.com/MathieuMoalic/amumax/src/progressbar"
 )
 
-// ProgressBar Solvertype FixDt NEvals NUndone NSteps LastTorque PeakErr LastErr Headroom MaxErr MaxDt MinDt DtSi Inject Pause Time Solver globals
+// ProgressBar Solvertype FixDt NEvals NUndone NSteps LastTorque PeakErr LastErr Headroom MaxErr MaxDt MinDt DtSi Inject Pause Time ProgressBar Solvertype FixDt NEvals NUndone NSteps LastTorque PeakErr LastErr Headroom MaxErr MaxDt MinDt DtSi Inject Pause Time Solver globals
 var (
 	Time                    float64                              // time in seconds
 	alarm                   float64                              // alarm clock marks end time of run, dt adaptation must not cross it!
 	Pause                   = true                               // set pause at any time to stop running after the current step
 	postStep                []func()                             // called on after every full time step
 	Inject                                   = make(chan func()) // injects code in between time steps. Used by web interface.
-	DtSi                   float64          = 1e-15             // time step = dt_si (seconds) *dt_mul, which should be nice float32
+	DtSi                    float64          = 1e-15             // time step = dt_si (seconds) *dt_mul, which should be nice float32
 	MinDt, MaxDt            float64                              // minimum and maximum time step
 	MaxErr                  float64          = 1e-5              // maximum error/step
 	Headroom                float64          = 0.8               // solver headroom, (Gustafsson, 1992, Control of Error and Convergence in ODE Solvers)
@@ -49,9 +49,9 @@ type stepperInterface interface {
 	Free() // free resources, if any (e.g.: RK23 previous torque)
 }
 
-// FEHLBERG DORMANDPRINCE RUNGEKUTTA BOGAKISHAMPINE HEUN EULER BACKWARD_EULER Arguments for SetSolver
+// FEHLBERG DORMANDPRINCE RUNGEKUTTA BOGAKISHAMPINE HEUN EULER BackwardEuler FEHLBERG DORMANDPRINCE RUNGEKUTTA BOGAKISHAMPINE HEUN EULER BackwardEuler Arguments for SetSolver
 const (
-	BACKWARD_EULER = -1
+	BackwardEuler  = -1
 	EULER          = 1
 	HEUN           = 2
 	BOGAKISHAMPINE = 3
@@ -68,7 +68,7 @@ func setSolver(typ int) {
 	switch typ {
 	default:
 		log.Log.ErrAndExit("SetSolver: unknown solver type:  %v", typ)
-	case BACKWARD_EULER:
+	case BackwardEuler:
 		stepper = new(backwardEuler)
 	case EULER:
 		stepper = new(euler)
@@ -267,9 +267,9 @@ func checkExchangeLength() {
 	}
 	// iterate over all of the quantities
 	for _, region := range Regions.GetExistingIndices() {
-		Msat_r := Msat.GetRegion(region)
-		Aex_r := Aex.GetRegion(region)
-		lex := math.Sqrt(2 * Aex_r / (mag.Mu0 * Msat_r * Msat_r))
+		MsatR := Msat.GetRegion(region)
+		AexR := Aex.GetRegion(region)
+		lex := math.Sqrt(2 * AexR / (mag.Mu0 * MsatR * MsatR))
 		if !exchangeLenghtWarned {
 			if Mesh.Dx > lex {
 				log.Log.Warn("Warning: Exchange length (%.3g nm) smaller than dx (%.3g nm) in region %d", lex*1e9, Mesh.Dx*1e9, region)

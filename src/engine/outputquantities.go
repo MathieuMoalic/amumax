@@ -100,17 +100,17 @@ type fieldFunc struct {
 	f func(*data.Slice)
 }
 
-func (c *fieldFunc) Mesh() *mesh.Mesh       { return GetMesh() }
-func (c *fieldFunc) average() []float64     { return qAverageUniverse(c) }
-func (c *fieldFunc) EvalTo(dst *data.Slice) { evalTo(c, dst) }
+func (f *fieldFunc) Mesh() *mesh.Mesh       { return GetMesh() }
+func (f *fieldFunc) average() []float64     { return qAverageUniverse(f) }
+func (f *fieldFunc) EvalTo(dst *data.Slice) { evalTo(f, dst) }
 
 // Slice Calculates and returns the quantity.
 // recycle is true: slice needs to be recycled.
 
-func (q *fieldFunc) Slice() (s *data.Slice, recycle bool) {
-	buf := cuda.Buffer(q.NComp(), q.Mesh().Size())
+func (f *fieldFunc) Slice() (s *data.Slice, recycle bool) {
+	buf := cuda.Buffer(f.NComp(), f.Mesh().Size())
 	cuda.Zero(buf)
-	q.f(buf)
+	f.f(buf)
 	return buf, true
 }
 

@@ -10,13 +10,13 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-// 3D byte slice, used for region lookup.
+// Bytes 3D byte slice, used for region lookup.
 type Bytes struct {
 	Ptr unsafe.Pointer
 	Len int
 }
 
-// Construct new byte slice with given length,
+// NewBytes Construct new byte slice with given length,
 // initialised to zeros.
 func NewBytes(Len int) *Bytes {
 	ptr := cu.MemAlloc(int64(Len))
@@ -25,45 +25,45 @@ func NewBytes(Len int) *Bytes {
 }
 
 // Upload src (host) to dst (gpu).
-func (dst *Bytes) Upload(src []byte) {
-	log.AssertMsg(dst.Len == len(src), "Upload: Length mismatch between destination (gpu) and source (host) data")
-	MemCpyHtoD(dst.Ptr, unsafe.Pointer(&src[0]), int64(dst.Len))
+func (b *Bytes) Upload(src []byte) {
+	log.AssertMsg(b.Len == len(src), "Upload: Length mismatch between destination (gpu) and source (host) data")
+	MemCpyHtoD(b.Ptr, unsafe.Pointer(&src[0]), int64(b.Len))
 }
 
 // Copy on device: dst = src.
-func (dst *Bytes) Copy(src *Bytes) {
-	log.AssertMsg(dst.Len == src.Len, "Copy: Length mismatch between source and destination data on device")
-	MemCpy(dst.Ptr, src.Ptr, int64(dst.Len))
+func (b *Bytes) Copy(src *Bytes) {
+	log.AssertMsg(b.Len == src.Len, "Copy: Length mismatch between source and destination data on device")
+	MemCpy(b.Ptr, src.Ptr, int64(b.Len))
 }
 
-// Copy to host: dst = src.
-func (src *Bytes) Download(dst []byte) {
-	log.AssertMsg(src.Len == len(dst), "Download: Length mismatch between source (gpu) and destination (host) data")
-	MemCpyDtoH(unsafe.Pointer(&dst[0]), src.Ptr, int64(src.Len))
+// Download Copy to host: dst = src.
+func (b *Bytes) Download(dst []byte) {
+	log.AssertMsg(b.Len == len(dst), "Download: Length mismatch between source (gpu) and destination (host) data")
+	MemCpyDtoH(unsafe.Pointer(&dst[0]), b.Ptr, int64(b.Len))
 }
 
 // Set one element to value.
 // data.Index can be used to find the index for x,y,z.
-func (dst *Bytes) Set(index int, value byte) {
-	if index < 0 || index >= dst.Len {
+func (b *Bytes) Set(index int, value byte) {
+	if index < 0 || index >= b.Len {
 		log.Log.PanicIfError(fmt.Errorf("Bytes.Set: index out of range: %d", index))
 	}
 	src := value
-	MemCpyHtoD(unsafe.Pointer(uintptr(dst.Ptr)+uintptr(index)), unsafe.Pointer(&src), 1)
+	MemCpyHtoD(unsafe.Pointer(uintptr(b.Ptr)+uintptr(index)), unsafe.Pointer(&src), 1)
 }
 
 // Get one element.
 // data.Index can be used to find the index for x,y,z.
-func (src *Bytes) Get(index int) byte {
-	if index < 0 || index >= src.Len {
+func (b *Bytes) Get(index int) byte {
+	if index < 0 || index >= b.Len {
 		log.Log.PanicIfError(fmt.Errorf("Bytes.Set: index out of range: %v", index))
 	}
 	var dst byte
-	MemCpyDtoH(unsafe.Pointer(&dst), unsafe.Pointer(uintptr(src.Ptr)+uintptr(index)), 1)
+	MemCpyDtoH(unsafe.Pointer(&dst), unsafe.Pointer(uintptr(b.Ptr)+uintptr(index)), 1)
 	return dst
 }
 
-// Frees the GPU memory and disables the slice.
+// Free Frees the GPU memory and disables the slice.
 func (b *Bytes) Free() {
 	if b.Ptr != nil {
 		cu.MemFree(cu.DevicePtr(uintptr(b.Ptr)))

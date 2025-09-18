@@ -7,16 +7,16 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
-// EAnis EdensAnis BAnis AnisC2 AnisC1 AnisU Kc3 Kc2 Kc1 Ku2 Ku1 Anisotropy variables
+// EAnis EdensAnis BAnis AnisC2 AnisC1 AnisU Kc3 Kc2 Kc1 Ku2 Ku1 EAnis EdensAnis BAnis AnisC2 AnisC1 AnisU Kc3 Kc2 Kc1 Ku2 Ku1 Anisotropy variables
 var (
-	Ku1        = newScalarParam("Ku1", "J/m3", "1st order uniaxial anisotropy constant")
-	Ku2        = newScalarParam("Ku2", "J/m3", "2nd order uniaxial anisotropy constant")
-	Kc1        = newScalarParam("Kc1", "J/m3", "1st order cubic anisotropy constant")
-	Kc2        = newScalarParam("Kc2", "J/m3", "2nd order cubic anisotropy constant")
-	Kc3        = newScalarParam("Kc3", "J/m3", "3rd order cubic anisotropy constant")
-	AnisU      = newVectorParam("anisU", "", "Uniaxial anisotropy direction")
-	AnisC1     = newVectorParam("anisC1", "", "Cubic anisotropy direction #1")
-	AnisC2     = newVectorParam("anisC2", "", "Cubic anisotorpy directon #2")
+	Ku1       = newScalarParam("Ku1", "J/m3", "1st order uniaxial anisotropy constant")
+	Ku2       = newScalarParam("Ku2", "J/m3", "2nd order uniaxial anisotropy constant")
+	Kc1       = newScalarParam("Kc1", "J/m3", "1st order cubic anisotropy constant")
+	Kc2       = newScalarParam("Kc2", "J/m3", "2nd order cubic anisotropy constant")
+	Kc3       = newScalarParam("Kc3", "J/m3", "3rd order cubic anisotropy constant")
+	AnisU     = newVectorParam("anisU", "", "Uniaxial anisotropy direction")
+	AnisC1    = newVectorParam("anisC1", "", "Cubic anisotropy direction #1")
+	AnisC2    = newVectorParam("anisC2", "", "Cubic anisotorpy directon #2")
 	BAnis     = newVectorField("B_anis", "T", "Anisotropy field", addAnisotropyField)
 	EdensAnis = newScalarField("Edens_anis", "J/m3", "Anisotropy energy density", addAnisotropyEnergyDensity)
 	EAnis     = newScalarValue("E_anis", "J", "Total anisotropy energy", getAnisotropyEnergy)

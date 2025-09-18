@@ -14,9 +14,9 @@ func setEffectiveField(dst *data.Slice) {
 	addExchangeField(dst) // ...then add other terms
 	addAnisotropyField(dst)
 	addMagnetoelasticField(dst)
-	B_ext.AddTo(dst)
+	BExt.AddTo(dst)
 	if !relaxing {
-		B_therm.AddTo(dst)
+		BTherm.AddTo(dst)
 	}
 	addCustomField(dst)
 }

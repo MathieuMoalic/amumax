@@ -19,7 +19,7 @@ import (
 )
 
 func init() {
-	addParameter("B_ext", B_ext, "External magnetic field (T)")
+	addParameter("B_ext", BExt, "External magnetic field (T)")
 }
 
 // input parameter, settable by user

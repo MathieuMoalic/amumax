@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-// CUFFT compatibility mode
+// CompatibilityMode CUFFT compatibility mode
 type CompatibilityMode int
 
 const (

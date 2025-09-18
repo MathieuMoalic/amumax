@@ -12,7 +12,7 @@ import (
 
 type DevicePtr uintptr
 
-// Allocates a number of bytes of device memory.
+// MemAlloc Allocates a number of bytes of device memory.
 func MemAlloc(bytes int64) DevicePtr {
 	var devptr C.CUdeviceptr
 	err := Result(C.cuMemAlloc(&devptr, C.size_t(bytes)))
@@ -22,8 +22,9 @@ func MemAlloc(bytes int64) DevicePtr {
 	return DevicePtr(devptr)
 }
 
-// Frees device memory allocated by MemAlloc().
+// MemFree Frees device memory allocated by MemAlloc().
 // It is safe to double-free.
+
 func MemFree(p DevicePtr) {
 	if p == DevicePtr(uintptr(0)) {
 		return // Already freed
@@ -34,16 +35,18 @@ func MemFree(p DevicePtr) {
 	}
 }
 
-// Frees device memory allocated by MemAlloc().
+// Free Frees device memory allocated by MemAlloc().
 // Overwrites the pointer with NULL.
 // It is safe to double-free.
+
 func (ptr DevicePtr) Free() {
 	MemFree(ptr)
 }
 
-// Copies a number of bytes on the current device.
+// Memcpy Copies a number of bytes on the current device.
 // Requires unified addressing to be supported.
 // See also: MemcpyDtoD().
+
 func Memcpy(dst, src DevicePtr, bytes int64) {
 	err := Result(C.cuMemcpy(C.CUdeviceptr(dst), C.CUdeviceptr(src), C.size_t(bytes)))
 	if err != SUCCESS {
@@ -51,7 +54,7 @@ func Memcpy(dst, src DevicePtr, bytes int64) {
 	}
 }
 
-// Asynchronously copies a number of bytes on the current device.
+// MemcpyAsync Asynchronously copies a number of bytes on the current device.
 func MemcpyAsync(dst, src DevicePtr, bytes int64, stream Stream) {
 	err := Result(C.cuMemcpyAsync(C.CUdeviceptr(dst), C.CUdeviceptr(src), C.size_t(bytes), C.CUstream(unsafe.Pointer(uintptr(stream)))))
 	if err != SUCCESS {
@@ -59,7 +62,7 @@ func MemcpyAsync(dst, src DevicePtr, bytes int64, stream Stream) {
 	}
 }
 
-// Copies a number of bytes from host to device.
+// MemcpyDtoD Copies a number of bytes from host to device.
 func MemcpyDtoD(dst, src DevicePtr, bytes int64) {
 	err := Result(C.cuMemcpyDtoD(C.CUdeviceptr(dst), C.CUdeviceptr(src), C.size_t(bytes)))
 	if err != SUCCESS {
@@ -67,7 +70,7 @@ func MemcpyDtoD(dst, src DevicePtr, bytes int64) {
 	}
 }
 
-// Asynchronously copies a number of bytes from host to device.
+// MemcpyDtoDAsync Asynchronously copies a number of bytes from host to device.
 func MemcpyDtoDAsync(dst, src DevicePtr, bytes int64, stream Stream) {
 	err := Result(C.cuMemcpyDtoDAsync(C.CUdeviceptr(dst), C.CUdeviceptr(src), C.size_t(bytes), C.CUstream(unsafe.Pointer(uintptr(stream)))))
 	if err != SUCCESS {
@@ -75,7 +78,7 @@ func MemcpyDtoDAsync(dst, src DevicePtr, bytes int64, stream Stream) {
 	}
 }
 
-// Copies a number of bytes from host to device.
+// MemcpyHtoD Copies a number of bytes from host to device.
 func MemcpyHtoD(dst DevicePtr, src unsafe.Pointer, bytes int64) {
 	err := Result(C.cuMemcpyHtoD(C.CUdeviceptr(dst), src, C.size_t(bytes)))
 	if err != SUCCESS {
@@ -83,8 +86,9 @@ func MemcpyHtoD(dst DevicePtr, src unsafe.Pointer, bytes int64) {
 	}
 }
 
-// Asynchronously copies a number of bytes from host to device.
+// MemcpyHtoDAsync Asynchronously copies a number of bytes from host to device.
 // The host memory must be page-locked (see MemRegister)
+
 func MemcpyHtoDAsync(dst DevicePtr, src unsafe.Pointer, bytes int64, stream Stream) {
 	err := Result(C.cuMemcpyHtoDAsync(C.CUdeviceptr(dst), src, C.size_t(bytes), C.CUstream(unsafe.Pointer(uintptr(stream)))))
 	if err != SUCCESS {
@@ -92,7 +96,7 @@ func MemcpyHtoDAsync(dst DevicePtr, src unsafe.Pointer, bytes int64, stream Stre
 	}
 }
 
-// Copies a number of bytes from device to host.
+// MemcpyDtoH Copies a number of bytes from device to host.
 func MemcpyDtoH(dst unsafe.Pointer, src DevicePtr, bytes int64) {
 	err := Result(C.cuMemcpyDtoH(dst, C.CUdeviceptr(src), C.size_t(bytes)))
 	if err != SUCCESS {
@@ -100,8 +104,9 @@ func MemcpyDtoH(dst unsafe.Pointer, src DevicePtr, bytes int64) {
 	}
 }
 
-// Asynchronously copies a number of bytes device host to host.
+// MemcpyDtoHAsync Asynchronously copies a number of bytes device host to host.
 // The host memory must be page-locked (see MemRegister)
+
 func MemcpyDtoHAsync(dst unsafe.Pointer, src DevicePtr, bytes int64, stream Stream) {
 	err := Result(C.cuMemcpyDtoHAsync(dst, C.CUdeviceptr(src), C.size_t(bytes), C.CUstream(unsafe.Pointer(uintptr(stream)))))
 	if err != SUCCESS {
@@ -109,7 +114,7 @@ func MemcpyDtoHAsync(dst unsafe.Pointer, src DevicePtr, bytes int64, stream Stre
 	}
 }
 
-// Copies from device memory in one context (device) to another.
+// MemcpyPeer Copies from device memory in one context (device) to another.
 func MemcpyPeer(dst DevicePtr, dstCtx Context, src DevicePtr, srcCtx Context, bytes int64) {
 	err := Result(C.cuMemcpyPeer(C.CUdeviceptr(dst), C.CUcontext(unsafe.Pointer(uintptr(dstCtx))), C.CUdeviceptr(src), C.CUcontext(unsafe.Pointer(uintptr(srcCtx))), C.size_t(bytes)))
 	if err != SUCCESS {
@@ -117,7 +122,7 @@ func MemcpyPeer(dst DevicePtr, dstCtx Context, src DevicePtr, srcCtx Context, by
 	}
 }
 
-// Asynchronously copies from device memory in one context (device) to another.
+// MemcpyPeerAsync Asynchronously copies from device memory in one context (device) to another.
 func MemcpyPeerAsync(dst DevicePtr, dstCtx Context, src DevicePtr, srcCtx Context, bytes int64, stream Stream) {
 	err := Result(C.cuMemcpyPeerAsync(C.CUdeviceptr(dst), C.CUcontext(unsafe.Pointer(uintptr(dstCtx))), C.CUdeviceptr(src), C.CUcontext(unsafe.Pointer(uintptr(srcCtx))), C.size_t(bytes), C.CUstream(unsafe.Pointer(uintptr(stream)))))
 	if err != SUCCESS {
@@ -125,7 +130,7 @@ func MemcpyPeerAsync(dst DevicePtr, dstCtx Context, src DevicePtr, srcCtx Contex
 	}
 }
 
-// Returns the base address and size of the allocation (by MemAlloc) that contains the input pointer ptr.
+// MemGetAddressRange Returns the base address and size of the allocation (by MemAlloc) that contains the input pointer ptr.
 func MemGetAddressRange(ptr DevicePtr) (bytes int64, base DevicePtr) {
 	var cbytes C.size_t
 	var cptr C.CUdeviceptr
@@ -138,18 +143,18 @@ func MemGetAddressRange(ptr DevicePtr) (bytes int64, base DevicePtr) {
 	return
 }
 
-// Returns the base address and size of the allocation (by MemAlloc) that contains the input pointer ptr.
+// GetAddressRange Returns the base address and size of the allocation (by MemAlloc) that contains the input pointer ptr.
 func (ptr DevicePtr) GetAddressRange() (bytes int64, base DevicePtr) {
 	return MemGetAddressRange(ptr)
 }
 
-// Returns the size of the allocation (by MemAlloc) that contains the input pointer ptr.
+// Bytes Returns the size of the allocation (by MemAlloc) that contains the input pointer ptr.
 func (ptr DevicePtr) Bytes() (bytes int64) {
 	bytes, _ = MemGetAddressRange(ptr)
 	return
 }
 
-// Returns the free and total amount of memroy in the current Context (in bytes).
+// MemGetInfo Returns the free and total amount of memroy in the current Context (in bytes).
 func MemGetInfo() (free, total int64) {
 	var cfree, ctotal C.size_t
 	err := Result(C.cuMemGetInfo(&cfree, &ctotal))
@@ -201,9 +206,9 @@ type MemHostRegisterFlag int
 
 // Flag for MemHostRegister
 const (
-	// Memory is pinned in all CUDA contexts.
+	// MEMHOSTREGISTER_PORTABLE Memory is pinned in all CUDA contexts.
 	MEMHOSTREGISTER_PORTABLE MemHostRegisterFlag = C.CU_MEMHOSTREGISTER_PORTABLE
-	// Maps the allocation in CUDA address space. TODO(a): cuMemHostGetDevicePointer()
+	// MEMHOSTREGISTER_DEVICEMAP Maps the allocation in CUDA address space. TODO(a): cuMemHostGetDevicePointer()
 	MEMHOSTREGISTER_DEVICEMAP MemHostRegisterFlag = C.CU_MEMHOSTREGISTER_DEVICEMAP
 )
 
@@ -211,7 +216,7 @@ func (p DevicePtr) String() string {
 	return fmt.Sprint(unsafe.Pointer(uintptr(p)))
 }
 
-// Type size in bytes
+// SIZEOF_COMPLEX128 SIZEOF_COMPLEX64 SIZEOF_FLOAT64 SIZEOF_FLOAT32 Type size in bytes
 const (
 	SIZEOF_FLOAT32    = 4
 	SIZEOF_FLOAT64    = 8
@@ -219,7 +224,7 @@ const (
 	SIZEOF_COMPLEX128 = 16
 )
 
-// Physical memory type of device pointer.
+// MemoryType Physical memory type of device pointer.
 type MemoryType uint
 
 const (
@@ -243,7 +248,7 @@ func (t MemoryType) String() string {
 	return "MemoryTypeUnknown"
 }
 
-// Returns the physical memory type that ptr addresses.
+// PointerGetAttributeMemoryType Returns the physical memory type that ptr addresses.
 func PointerGetAttributeMemoryType(ptr DevicePtr) (t MemoryType, err Result) {
 	var typ uint64 // foresee enough memory just to be safe
 	err = Result(C.cuPointerGetAttribute(unsafe.Pointer(&typ),
@@ -251,7 +256,7 @@ func PointerGetAttributeMemoryType(ptr DevicePtr) (t MemoryType, err Result) {
 	return MemoryType(uint(typ)), err
 }
 
-// Returns the physical memory type that ptr addresses.
+// MemoryType Returns the physical memory type that ptr addresses.
 func (ptr DevicePtr) MemoryType() MemoryType {
 	t, err := PointerGetAttributeMemoryType(ptr)
 	if err != SUCCESS {

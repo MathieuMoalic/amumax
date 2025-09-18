@@ -4,8 +4,9 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
-// m = 1 / (4 + τ²(m x H)²) [{4 - τ²(m x H)²} m - 4τ(m x m x H)]
+// Minimize m = 1 / (4 + τ²(m x H)²) [{4 - τ²(m x H)²} m - 4τ(m x m x H)]
 // note: torque from LLNoPrecess has negative sign
+
 func Minimize(m, m0, torque *data.Slice, dt float32) {
 	N := m.Len()
 	cfg := make1DConf(N)

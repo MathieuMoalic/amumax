@@ -10,9 +10,9 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mag"
 )
 
-// DemagAccuracy NoDemagSpins EnableDemag EDemag EdensDemag BDemag MFull Msat Demag variables
+// DemagAccuracy NoDemagSpins EnableDemag EDemag EdensDemag BDemag MFull Msat DemagAccuracy NoDemagSpins EnableDemag EDemag EdensDemag BDemag MFull Msat Demag variables
 var (
-	Msat        = newScalarParam("Msat", "A/m", "Saturation magnetization")
+	Msat       = newScalarParam("Msat", "A/m", "Saturation magnetization")
 	MFull      = newVectorField("m_full", "A/m", "Unnormalized magnetization", setMFull)
 	BDemag     = newVectorField("B_demag", "T", "Magnetostatic field", setDemagField)
 	EdensDemag = newScalarField("Edens_demag", "J/m3", "Magnetostatic energy density", AddEdensDemag)

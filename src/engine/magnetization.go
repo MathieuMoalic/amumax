@@ -43,12 +43,12 @@ func (m *magnetization) Alloc() {
 	m.Set(randomMag()) // sane starting config
 }
 
-func (b *magnetization) SetArray(src *data.Slice) {
-	if src.Size() != b.Mesh().Size() {
-		src = data.Resample(src, b.Mesh().Size())
+func (m *magnetization) SetArray(src *data.Slice) {
+	if src.Size() != m.Mesh().Size() {
+		src = data.Resample(src, m.Mesh().Size())
 	}
-	data.Copy(b.Buffer(), src)
-	b.normalize()
+	data.Copy(m.Buffer(), src)
+	m.normalize()
 }
 
 func (m *magnetization) Set(c config) {

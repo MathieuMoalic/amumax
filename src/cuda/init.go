@@ -10,12 +10,12 @@ import (
 )
 
 var (
-	GPUInfoOld string     // Human-readable GPU description
+	GPUInfoOld  string     // Human-readable GPU description
 	Synchronous bool       // for debug: synchronize stream0 at every kernel launch
 	cudaCtx     cu.Context // global CUDA context
 )
 
-// Locks to an OS thread and initializes CUDA for that thread.
+// Init Locks to an OS thread and initializes CUDA for that thread.
 func Init(gpu int) [6]string {
 	if cudaCtx != 0 {
 		return [6]string{"", "", "", "", "", ""} // needed for tests
@@ -71,8 +71,9 @@ func tryCuInit() {
 // Global stream used for everything
 const stream0 = cu.Stream(0)
 
-// Synchronize the global stream
+// Sync Synchronize the global stream
 // This is called before and after all memcopy operations between host and device.
+
 func Sync() {
 	stream0.Synchronize()
 }

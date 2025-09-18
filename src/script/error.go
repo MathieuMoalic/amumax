@@ -15,7 +15,7 @@ type compileErr struct {
 	msg string
 }
 
-// implements error
+// Error implements error
 func (c *compileErr) Error() string {
 	return c.msg
 }

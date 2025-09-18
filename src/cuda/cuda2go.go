@@ -95,7 +95,7 @@ func typemap(ctype string) string {
 
 var tm = map[string]string{"float*": "unsafe.Pointer", "float": "float32", "int": "int", "uint8_t*": "unsafe.Pointer", "uint8_t": "byte"}
 
-// template data
+// Kernel template data
 type Kernel struct {
 	Name string
 	ArgT []string

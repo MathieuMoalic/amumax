@@ -20,7 +20,7 @@ func newFunction(fn any) *function {
 	return &function{val}
 }
 
-// type of the function itself (when not called)
+// Type type of the function itself (when not called)
 func (f *function) Type() reflect.Type    { return f.Value.Type() }
 func (f *function) NumIn() int            { return f.Type().NumIn() }
 func (f *function) In(i int) reflect.Type { return f.Type().In(i) }

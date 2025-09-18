@@ -8,7 +8,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
-// Stores the necessary state to perform FFT-accelerated convolution
+// MFMConvolution Stores the necessary state to perform FFT-accelerated convolution
 type MFMConvolution struct {
 	size        [3]int         // 3D size of the input/output data
 	kernSize    [3]int         // Size of kernel and logical FFT size.
@@ -74,7 +74,7 @@ func (c *MFMConvolution) initFFTKern3D() {
 	}
 }
 
-// store MFM image in output, based on magnetization in inp.
+// Exec store MFM image in output, based on magnetization in inp.
 func (c *MFMConvolution) Exec(outp, inp, vol *data.Slice, Msat MSlice) {
 	for i := 0; i < 3; i++ {
 		zero1Async(c.fftRBuf)
@@ -94,7 +94,7 @@ func (c *MFMConvolution) Reinit(lift, tipsize float64, cachedir string) {
 	c.initFFTKern3D()
 }
 
-// Initializes a convolution to evaluate the demag field for the given mesh geometry.
+// NewMFM Initializes a convolution to evaluate the demag field for the given mesh geometry.
 func NewMFM(mesh mesh.MeshLike, lift, tipsize float64, cachedir string) *MFMConvolution {
 	k := mag.MFMKernel(mesh, lift, tipsize, cachedir)
 	size := mesh.Size()

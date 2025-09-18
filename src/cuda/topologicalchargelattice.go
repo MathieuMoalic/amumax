@@ -6,7 +6,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
-// Topological charge according to Berg and Lüscher
+// SetTopologicalChargeLattice Topological charge according to Berg and Lüscher
 func SetTopologicalChargeLattice(s *data.Slice, m *data.Slice, mesh mesh.MeshLike) {
 	cellsize := mesh.CellSize()
 	N := s.Size()

@@ -55,7 +55,7 @@ func FeedbackLoop(inputMask, outputMask *data.Slice, multiplier float64) {
 	var once sync.Once
 	var baseline float64
 
-	B_ext.AddGo(drive, func() float64 {
+	BExt.AddGo(drive, func() float64 {
 		s := magModulatedByMask(outputMask)
 		once.Do(func() { baseline = s }) // set on first call
 		return multiplier * (s - baseline)

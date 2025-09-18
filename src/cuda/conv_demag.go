@@ -6,7 +6,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-// Stores the necessary state to perform FFT-accelerated convolution
+// DemagConvolution Stores the necessary state to perform FFT-accelerated convolution
 // with magnetostatic kernel (or other kernel of same symmetry).
 type DemagConvolution struct {
 	inputSize        [3]int            // 3D size of the input/output data
@@ -19,7 +19,7 @@ type DemagConvolution struct {
 	bwPlan           fft3DC2RPlan      // Backward FFT (1 component)
 }
 
-// Initializes a convolution to evaluate the demag field for the given mesh geometry.
+// NewDemag Initializes a convolution to evaluate the demag field for the given mesh geometry.
 // Sanity-checked if test == true (slow-ish for large meshes).
 func NewDemag(inputSize, PBC [3]int, kernel [3][3]*data.Slice, test bool) *DemagConvolution {
 	c := new(DemagConvolution)
@@ -32,7 +32,7 @@ func NewDemag(inputSize, PBC [3]int, kernel [3][3]*data.Slice, test bool) *Demag
 	return c
 }
 
-// Calculate the demag field of m * vol * Bsat, store result in B.
+// Exec Calculate the demag field of m * vol * Bsat, store result in B.
 //
 //	m:    magnetization normalized to unit length
 //	vol:  unitless mask used to scale m length, may be nil

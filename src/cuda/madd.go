@@ -5,8 +5,9 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-// multiply: dst[i] = a[i] * b[i]
+// Mul multiply: dst[i] = a[i] * b[i]
 // a and b must have the same number of components
+
 func Mul(dst, a, b *data.Slice) {
 	N := dst.Len()
 	nComp := dst.NComp()
@@ -17,8 +18,9 @@ func Mul(dst, a, b *data.Slice) {
 	}
 }
 
-// divide: dst[i] = a[i] / b[i]
+// Div divide: dst[i] = a[i] / b[i]
 // divide-by-zero yields zero.
+
 func Div(dst, a, b *data.Slice) {
 	N := dst.Len()
 	nComp := dst.NComp()
@@ -29,12 +31,12 @@ func Div(dst, a, b *data.Slice) {
 	}
 }
 
-// Add: dst = src1 + src2.
+// Add Add: dst = src1 + src2.
 func Add(dst, src1, src2 *data.Slice) {
 	Madd2(dst, src1, src2, 1, 1)
 }
 
-// multiply-add: dst[i] = src1[i] * factor1 + src2[i] * factor2
+// Madd2 multiply-add: dst[i] = src1[i] * factor1 + src2[i] * factor2
 func Madd2(dst, src1, src2 *data.Slice, factor1, factor2 float32) {
 	N := dst.Len()
 	nComp := dst.NComp()
@@ -47,7 +49,7 @@ func Madd2(dst, src1, src2 *data.Slice, factor1, factor2 float32) {
 	}
 }
 
-// multiply-add: dst[i] = src1[i] * factor1 + src2[i] * factor2 + src3[i] * factor3
+// Madd3 multiply-add: dst[i] = src1[i] * factor1 + src2[i] * factor2 + src3[i] * factor3
 func Madd3(dst, src1, src2, src3 *data.Slice, factor1, factor2, factor3 float32) {
 	N := dst.Len()
 	nComp := dst.NComp()
@@ -60,7 +62,7 @@ func Madd3(dst, src1, src2, src3 *data.Slice, factor1, factor2, factor3 float32)
 	}
 }
 
-// multiply-add: dst[i] = src1[i] * factor1 + src2[i] * factor2 + src3[i] * factor3 + src4[i] * factor4
+// Madd4 multiply-add: dst[i] = src1[i] * factor1 + src2[i] * factor2 + src3[i] * factor3 + src4[i] * factor4
 func Madd4(dst, src1, src2, src3, src4 *data.Slice, factor1, factor2, factor3, factor4 float32) {
 	N := dst.Len()
 	nComp := dst.NComp()
@@ -76,7 +78,7 @@ func Madd4(dst, src1, src2, src3, src4 *data.Slice, factor1, factor2, factor3, f
 	}
 }
 
-// multiply-add: dst[i] = src1[i] * factor1 + src2[i] * factor2 + src3[i] * factor3 + src4[i] * factor4 + src5[i] * factor5
+// Madd5 multiply-add: dst[i] = src1[i] * factor1 + src2[i] * factor2 + src3[i] * factor3 + src4[i] * factor4 + src5[i] * factor5
 func Madd5(dst, src1, src2, src3, src4, src5 *data.Slice, factor1, factor2, factor3, factor4, factor5 float32) {
 	N := dst.Len()
 	nComp := dst.NComp()
@@ -93,7 +95,7 @@ func Madd5(dst, src1, src2, src3, src4, src5 *data.Slice, factor1, factor2, fact
 	}
 }
 
-// multiply-add: dst[i] = src1[i] * factor1 + src2[i] * factor2 + src3[i] * factor3 + src4[i] * factor4 + src5[i] * factor5 + src6[i] * factor6
+// Madd6 multiply-add: dst[i] = src1[i] * factor1 + src2[i] * factor2 + src3[i] * factor3 + src4[i] * factor4 + src5[i] * factor5 + src6[i] * factor6
 func Madd6(dst, src1, src2, src3, src4, src5, src6 *data.Slice, factor1, factor2, factor3, factor4, factor5, factor6 float32) {
 	N := dst.Len()
 	nComp := dst.NComp()
@@ -111,7 +113,7 @@ func Madd6(dst, src1, src2, src3, src4, src5, src6 *data.Slice, factor1, factor2
 	}
 }
 
-// multiply-add: dst[i] = src1[i] * factor1 + src2[i] * factor2 + src3[i] * factor3 + src4[i] * factor4 + src5[i] * factor5 + src6[i] * factor6 + src7[i] * factor7
+// Madd7 multiply-add: dst[i] = src1[i] * factor1 + src2[i] * factor2 + src3[i] * factor3 + src4[i] * factor4 + src5[i] * factor5 + src6[i] * factor6 + src7[i] * factor7
 func Madd7(dst, src1, src2, src3, src4, src5, src6, src7 *data.Slice, factor1, factor2, factor3, factor4, factor5, factor6, factor7 float32) {
 	N := dst.Len()
 	nComp := dst.NComp()

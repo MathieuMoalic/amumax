@@ -5,7 +5,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/log"
 )
 
-// Select and resize one layer for interactive output
+// Resize Select and resize one layer for interactive output
 func Resize(dst, src *data.Slice, layer int) {
 	dstsize := dst.Size()
 	srcsize := src.Size()

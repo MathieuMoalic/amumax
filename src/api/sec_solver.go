@@ -88,7 +88,7 @@ func (s SolverState) postSolverType(c echo.Context) error {
 		if solver == engine.EULER && engine.FixDt == 0 {
 			engine.EvalTryRecover("FixDt = 1e-15")
 		}
-		if solver == engine.BACKWARD_EULER && engine.FixDt == 0 {
+		if solver == engine.BackwardEuler && engine.FixDt == 0 {
 			engine.EvalTryRecover("FixDt = 1e-13")
 		}
 

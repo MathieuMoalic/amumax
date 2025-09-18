@@ -5,8 +5,9 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
-// Add Zhang-Li ST torque (Tesla) to torque.
+// AddZhangLiTorque Add Zhang-Li ST torque (Tesla) to torque.
 // see zhangli.cu
+
 func AddZhangLiTorque(torque, m *data.Slice, Msat, J, alpha, xi, pol MSlice, mesh mesh.MeshLike) {
 	c := mesh.CellSize()
 	N := mesh.Size()

@@ -118,7 +118,7 @@ func (s *Slice) Disable() {
 	s.memType = 0
 }
 
-// value for Slice.memType
+// GPUMemory CPUMemory value for Slice.memType
 const (
 	CPUMemory = 1 << 0
 	GPUMemory = 1 << 1

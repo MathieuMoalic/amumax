@@ -26,14 +26,14 @@ var (
 	precess                          = true
 	disableZhangLiTorque             = false
 	disableSlonczewskiTorque         = false
-	fixedLayerPosition               = FIXEDLAYER_TOP // instructs mumax3 how free and fixed layers are stacked along +z direction
+	fixedLayerPosition               = FixedLayerTop // instructs mumax3 how free and fixed layers are stacked along +z direction
 )
 
 func init() {
 	Pol.setUniform([]float64{1}) // default spin polarization
 	Lambda.Set(1)                // sensible default value (?).
-	declROnly("FIXEDLAYER_TOP", FIXEDLAYER_TOP, "FixedLayerPosition = FIXEDLAYER_TOP instructs mumax3 that fixed layer is on top of the free layer")
-	declROnly("FIXEDLAYER_BOTTOM", FIXEDLAYER_BOTTOM, "FixedLayerPosition = FIXEDLAYER_BOTTOM instructs mumax3 that fixed layer is underneath of the free layer")
+	declROnly("FIXEDLAYER_TOP", FixedLayerTop, "FixedLayerPosition = FIXEDLAYER_TOP instructs mumax3 that fixed layer is on top of the free layer")
+	declROnly("FIXEDLAYER_BOTTOM", FixedLayerBottom, "FixedLayerPosition = FIXEDLAYER_BOTTOM instructs mumax3 that fixed layer is underneath of the free layer")
 }
 
 // Sets dst to the current total torque
@@ -122,13 +122,13 @@ func getMaxTorque() float64 {
 type fixedLayerPositionType int
 
 const (
-	FIXEDLAYER_TOP fixedLayerPositionType = iota + 1
-	FIXEDLAYER_BOTTOM
+	FixedLayerTop fixedLayerPositionType = iota + 1
+	FixedLayerBottom
 )
 
 var currentSignFromFixedLayerPosition = map[fixedLayerPositionType]float64{
-	FIXEDLAYER_TOP:    1.0,
-	FIXEDLAYER_BOTTOM: -1.0,
+	FixedLayerTop:    1.0,
+	FixedLayerBottom: -1.0,
 }
 
 type flposition struct{}
@@ -138,4 +138,4 @@ func (*flposition) SetValue(v any) {
 	drainOutput()
 	fixedLayerPosition = v.(fixedLayerPositionType)
 }
-func (*flposition) Type() reflect.Type { return reflect.TypeOf(fixedLayerPositionType(FIXEDLAYER_TOP)) }
+func (*flposition) Type() reflect.Type { return reflect.TypeOf(fixedLayerPositionType(FixedLayerTop)) }

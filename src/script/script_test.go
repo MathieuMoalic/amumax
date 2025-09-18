@@ -198,7 +198,7 @@ func TestMany(test *testing.T) {
 	}
 }
 
-// Test a few cases that should not compile
+// TestFail Test a few cases that should not compile
 func TestFail(test *testing.T) {
 	w := NewWorld()
 	w.Const("c", 3e8)

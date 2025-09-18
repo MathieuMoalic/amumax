@@ -9,10 +9,10 @@ import (
 	"unsafe"
 )
 
-// Represents a CUDA CUmodule, a reference to executable device code.
+// Module Represents a CUDA CUmodule, a reference to executable device code.
 type Module uintptr
 
-// Loads a compute module from file
+// ModuleLoad Loads a compute module from file
 func ModuleLoad(fname string) Module {
 	// fmt.Fprintln(os.Stderr, "driver.ModuleLoad", fname)
 	var mod C.CUmodule
@@ -23,7 +23,7 @@ func ModuleLoad(fname string) Module {
 	return Module(uintptr(unsafe.Pointer(mod)))
 }
 
-// Loads a compute module from string
+// ModuleLoadData Loads a compute module from string
 func ModuleLoadData(image string) Module {
 	var mod C.CUmodule
 	err := Result(C.cuModuleLoadData(&mod, unsafe.Pointer(C.CString(image))))
@@ -33,7 +33,7 @@ func ModuleLoadData(image string) Module {
 	return Module(uintptr(unsafe.Pointer(mod)))
 }
 
-// Returns a Function handle.
+// ModuleGetFunction Returns a Function handle.
 func ModuleGetFunction(module Module, name string) Function {
 	var function C.CUfunction
 	err := Result(C.cuModuleGetFunction(
@@ -46,7 +46,7 @@ func ModuleGetFunction(module Module, name string) Function {
 	return Function(uintptr(unsafe.Pointer(function)))
 }
 
-// Returns a Function handle.
+// GetFunction Returns a Function handle.
 func (m Module) GetFunction(name string) Function {
 	return ModuleGetFunction(m, name)
 }

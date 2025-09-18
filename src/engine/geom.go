@@ -48,7 +48,7 @@ func (g *geom) Slice() (*data.Slice, bool) {
 	}
 }
 
-func (q *geom) EvalTo(dst *data.Slice) { evalTo(q, dst) }
+func (g *geom) EvalTo(dst *data.Slice) { evalTo(g, dst) }
 
 var _ Quantity = &Geometry
 
@@ -62,7 +62,7 @@ func (g *geom) average() []float64 {
 
 func (g *geom) Average() float64 { return g.average()[0] }
 
-func (geometry *geom) setGeom(s shape) {
+func (g *geom) setGeom(s shape) {
 	setBusy(true)
 	defer setBusy(false)
 
@@ -71,17 +71,17 @@ func (geometry *geom) setGeom(s shape) {
 		s = universeInner
 	}
 
-	geometry.shape = s
-	if geometry.Gpu().IsNil() {
-		geometry.Buffer = cuda.NewSlice(1, geometry.Mesh().Size())
+	g.shape = s
+	if g.Gpu().IsNil() {
+		g.Buffer = cuda.NewSlice(1, g.Mesh().Size())
 	}
 
-	host := data.NewSlice(1, geometry.Gpu().Size())
+	host := data.NewSlice(1, g.Gpu().Size())
 	array := host.Scalars()
 	V := host
 	v := array
-	n := geometry.Mesh().Size()
-	c := geometry.Mesh().CellSize()
+	n := g.Mesh().Size()
+	c := g.Mesh().CellSize()
 	cx, cy, cz := c[X], c[Y], c[Z]
 
 	log.Log.Info("Initializing geometry")
@@ -122,7 +122,7 @@ func (geometry *geom) setGeom(s shape) {
 				case allOut:
 					v[iz][iy][ix] = 0
 				default:
-					v[iz][iy][ix] = geometry.cellVolume(ix, iy, iz)
+					v[iz][iy][ix] = g.cellVolume(ix, iy, iz)
 					empty = empty && (v[iz][iy][ix] == 0)
 				}
 			}
@@ -133,7 +133,7 @@ func (geometry *geom) setGeom(s shape) {
 		log.Log.ErrAndExit("SetGeom: geometry completely empty")
 	}
 
-	data.Copy(geometry.Buffer, V)
+	data.Copy(g.Buffer, V)
 
 	// M inside geom but previously outside needs to be re-inited
 	needupload := false

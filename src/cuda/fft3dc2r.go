@@ -22,8 +22,9 @@ func newFFT3DC2R(Nx, Ny, Nz int) fft3DC2RPlan {
 	return fft3DC2RPlan{fftplan{handle}, [3]int{Nx, Ny, Nz}}
 }
 
-// Execute the FFT plan, asynchronous.
+// ExecAsync Execute the FFT plan, asynchronous.
 // src and dst are 3D arrays stored 1D arrays.
+
 func (p *fft3DC2RPlan) ExecAsync(src, dst *data.Slice) {
 	if Synchronous {
 		Sync()
@@ -44,22 +45,22 @@ func (p *fft3DC2RPlan) ExecAsync(src, dst *data.Slice) {
 	}
 }
 
-// 3D size of the input array.
+// InputSizeFloats 3D size of the input array.
 func (p *fft3DC2RPlan) InputSizeFloats() (Nx, Ny, Nz int) {
 	return 2 * (p.size[X]/2 + 1), p.size[Y], p.size[Z]
 }
 
-// 3D size of the output array.
+// OutputSizeFloats 3D size of the output array.
 func (p *fft3DC2RPlan) OutputSizeFloats() (Nx, Ny, Nz int) {
 	return p.size[X], p.size[Y], p.size[Z]
 }
 
-// Required length of the (1D) input array.
+// InputLenFloats Required length of the (1D) input array.
 func (p *fft3DC2RPlan) InputLenFloats() int {
 	return prod3(p.InputSizeFloats())
 }
 
-// Required length of the (1D) output array.
+// OutputLenFloats Required length of the (1D) output array.
 func (p *fft3DC2RPlan) OutputLenFloats() int {
 	return prod3(p.OutputSizeFloats())
 }

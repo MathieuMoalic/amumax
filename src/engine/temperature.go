@@ -13,13 +13,13 @@ import (
 
 var (
 	Temp                      = newScalarParam("Temp", "K", "Temperature")
-	E_therm                   = newScalarValue("E_therm", "J", "Thermal energy", getThermalEnergy)
-	Edens_therm               = newScalarField("Edens_therm", "J/m3", "Thermal energy density", AddThermalEnergyDensity)
-	B_therm                   thermField // Thermal effective field (T)
+	ETherm                   = newScalarValue("E_therm", "J", "Thermal energy", getThermalEnergy)
+	EdensTherm               = newScalarField("Edens_therm", "J/m3", "Thermal energy density", AddThermalEnergyDensity)
+	BTherm                   thermField // Thermal effective field (T)
 	printedWarningTempOddGrid = false
 )
 
-var AddThermalEnergyDensity = makeEdensAdder(&B_therm, -1)
+var AddThermalEnergyDensity = makeEdensAdder(&BTherm, -1)
 
 // thermField calculates and caches thermal noise.
 type thermField struct {
@@ -32,8 +32,8 @@ type thermField struct {
 
 func init() {
 	registerEnergy(getThermalEnergy, AddThermalEnergyDensity)
-	B_therm.step = -1 // invalidate noise cache
-	declROnly("B_therm", &B_therm, "Thermal field (T)")
+	BTherm.step = -1 // invalidate noise cache
+	declROnly("B_therm", &BTherm, "Thermal field (T)")
 }
 
 func (b *thermField) AddTo(dst *data.Slice) {
@@ -57,8 +57,8 @@ func (b *thermField) update() {
 	if b.noise == nil {
 		b.noise = cuda.NewSlice(b.NComp(), b.Mesh().Size())
 		// when noise was (re-)allocated it's invalid for sure.
-		B_therm.step = -1
-		B_therm.dt = -1
+		BTherm.step = -1
+		BTherm.dt = -1
 	}
 
 	if Temp.isZero() {
@@ -89,7 +89,7 @@ func (b *thermField) update() {
 		log.Log.Warn("nonzero temperature requires an even amount of grid cells, but all axes have "+
 			"an odd number of cells: %v. This may cause a CURAND_STATUS_LENGTH_NOT_MULTIPLE error.", GetMesh().Size())
 	}
-	k2_VgammaDt := 2 * mag.Kb / (gammaLL * cellVolume() * DtSi)
+	k2VgammaDt := 2 * mag.Kb / (gammaLL * cellVolume() * DtSi)
 	noise := cuda.Buffer(1, GetMesh().Size())
 	defer cuda.Recycle(noise)
 
@@ -104,7 +104,7 @@ func (b *thermField) update() {
 	defer alpha.Recycle()
 	for i := 0; i < 3; i++ {
 		b.generator.GenerateNormal(uintptr(noise.DevPtr(0)), int64(N), mean, stddev)
-		cuda.SetTemperature(dst.Comp(i), noise, k2_VgammaDt, ms, temp, alpha)
+		cuda.SetTemperature(dst.Comp(i), noise, k2VgammaDt, ms, temp, alpha)
 	}
 
 	b.step = NSteps
@@ -115,15 +115,15 @@ func getThermalEnergy() float64 {
 	if Temp.isZero() || relaxing {
 		return 0
 	} else {
-		return -cellVolume() * dot(&MFull, &B_therm)
+		return -cellVolume() * dot(&MFull, &BTherm)
 	}
 }
 
 // Seeds the thermal noise generator
 func thermSeed(seed int) {
-	B_therm.seed = int64(seed)
-	if B_therm.generator != 0 {
-		B_therm.generator.SetSeed(B_therm.seed)
+	BTherm.seed = int64(seed)
+	if BTherm.generator != 0 {
+		BTherm.generator.SetSeed(BTherm.seed)
 	}
 }
 

@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Make allocations from the peer Context available to the current context.
+// CtxEnablePeerAccess Make allocations from the peer Context available to the current context.
 func CtxEnablePeerAccess(peer Context) {
 	err := Result(C.cuCtxEnablePeerAccess(C.CUcontext(unsafe.Pointer(uintptr(peer))), C.uint(0)))
 	if err != SUCCESS {
@@ -17,12 +17,12 @@ func CtxEnablePeerAccess(peer Context) {
 	}
 }
 
-// Make allocations from the peer Context available to the current context.
+// EnablePeerAccess Make allocations from the peer Context available to the current context.
 func (peer Context) EnablePeerAccess() {
 	CtxEnablePeerAccess(peer)
 }
 
-// Reverses CtxEnablePeerAccess().
+// CtxDisablePeerAccess Reverses CtxEnablePeerAccess().
 func CtxDisablePeerAccess(peer Context) {
 	err := Result(C.cuCtxDisablePeerAccess(C.CUcontext(unsafe.Pointer(uintptr(peer)))))
 	if err != SUCCESS {
@@ -30,12 +30,12 @@ func CtxDisablePeerAccess(peer Context) {
 	}
 }
 
-// Reverses EnablePeerAccess().
+// DisablePeerAccess Reverses EnablePeerAccess().
 func (peer Context) DisablePeerAccess() {
 	CtxDisablePeerAccess(peer)
 }
 
-// Returns true if CtxEnablePeerAccess can be called on a context for dev and peerDev.
+// DeviceCanAccessPeer Returns true if CtxEnablePeerAccess can be called on a context for dev and peerDev.
 func DeviceCanAccessPeer(dev, peer Device) bool {
 	var canAccessPeer C.int
 	err := Result(C.cuDeviceCanAccessPeer(&canAccessPeer, C.CUdevice(dev), C.CUdevice(peer)))
@@ -45,7 +45,7 @@ func DeviceCanAccessPeer(dev, peer Device) bool {
 	return int(canAccessPeer) != 0
 }
 
-// Returns true if CtxEnablePeerAccess can be called on a context for dev and peerDev.
+// CanAccessPeer Returns true if CtxEnablePeerAccess can be called on a context for dev and peerDev.
 func (dev Device) CanAccessPeer(peer Device) bool {
 	return DeviceCanAccessPeer(dev, peer)
 }

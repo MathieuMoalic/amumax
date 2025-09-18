@@ -6,7 +6,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
-// Sets vector dst to zero where mask != 0.
+// ZeroMask Sets vector dst to zero where mask != 0.
 func ZeroMask(dst *data.Slice, mask LUTPtr, regions *Bytes) {
 	N := dst.Len()
 	cfg := make1DConf(N)

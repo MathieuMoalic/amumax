@@ -13,10 +13,10 @@ import (
 	"github.com/MathieuMoalic/amumax/src/cuda/cu"
 )
 
-// FFT plan handle, reference type to a plan
+// Handle FFT plan handle, reference type to a plan
 type Handle uintptr
 
-// 1D FFT plan
+// Plan1d 1D FFT plan
 func Plan1d(nx int, typ Type, batch int) Handle {
 	var handle C.cufftHandle
 	err := Result(C.cufftPlan1d(
@@ -30,7 +30,7 @@ func Plan1d(nx int, typ Type, batch int) Handle {
 	return Handle(handle)
 }
 
-// 2D FFT plan
+// Plan2d 2D FFT plan
 func Plan2d(nx, ny int, typ Type) Handle {
 	var handle C.cufftHandle
 	err := Result(C.cufftPlan2d(
@@ -44,7 +44,7 @@ func Plan2d(nx, ny int, typ Type) Handle {
 	return Handle(handle)
 }
 
-// 3D FFT plan
+// Plan3d 3D FFT plan
 func Plan3d(nx, ny, nz int, typ Type) Handle {
 	var handle C.cufftHandle
 	err := Result(C.cufftPlan3d(
@@ -64,7 +64,7 @@ func Plan3d(nx, ny, nz int, typ Type) Handle {
 //    int istride, int idist, int *onembed, int ostride,
 //    int odist, cufftType type, int batch );
 
-// 1D,2D or 3D FFT plan
+// PlanMany 1D,2D or 3D FFT plan
 func PlanMany(n []int, inembed []int, istride int, oembed []int, ostride int, typ Type, batch int) Handle {
 	var handle C.cufftHandle
 
@@ -102,7 +102,7 @@ func PlanMany(n []int, inembed []int, istride int, oembed []int, ostride int, ty
 	return Handle(handle)
 }
 
-// Execute Complex-to-Complex plan
+// ExecC2C Execute Complex-to-Complex plan
 func (plan Handle) ExecC2C(idata, odata cu.DevicePtr, direction int) {
 	err := Result(C.cufftExecC2C(
 		C.cufftHandle(plan),
@@ -114,7 +114,7 @@ func (plan Handle) ExecC2C(idata, odata cu.DevicePtr, direction int) {
 	}
 }
 
-// Execute Real-to-Complex plan
+// ExecR2C Execute Real-to-Complex plan
 func (plan Handle) ExecR2C(idata, odata cu.DevicePtr) {
 	err := Result(C.cufftExecR2C(
 		C.cufftHandle(plan),
@@ -125,7 +125,7 @@ func (plan Handle) ExecR2C(idata, odata cu.DevicePtr) {
 	}
 }
 
-// Execute Complex-to-Real plan
+// ExecC2R Execute Complex-to-Real plan
 func (plan Handle) ExecC2R(idata, odata cu.DevicePtr) {
 	err := Result(C.cufftExecC2R(
 		C.cufftHandle(plan),
@@ -136,7 +136,7 @@ func (plan Handle) ExecC2R(idata, odata cu.DevicePtr) {
 	}
 }
 
-// Execute Double Complex-to-Complex plan
+// ExecZ2Z Execute Double Complex-to-Complex plan
 func (plan Handle) ExecZ2Z(idata, odata cu.DevicePtr, direction int) {
 	err := Result(C.cufftExecZ2Z(
 		C.cufftHandle(plan),
@@ -148,7 +148,7 @@ func (plan Handle) ExecZ2Z(idata, odata cu.DevicePtr, direction int) {
 	}
 }
 
-// Execute Double Real-to-Complex plan
+// ExecD2Z Execute Double Real-to-Complex plan
 func (plan Handle) ExecD2Z(idata, odata cu.DevicePtr) {
 	err := Result(C.cufftExecD2Z(
 		C.cufftHandle(plan),
@@ -159,7 +159,7 @@ func (plan Handle) ExecD2Z(idata, odata cu.DevicePtr) {
 	}
 }
 
-// Execute Double Complex-to-Real plan
+// ExecZ2D Execute Double Complex-to-Real plan
 func (plan Handle) ExecZ2D(idata, odata cu.DevicePtr) {
 	err := Result(C.cufftExecZ2D(
 		C.cufftHandle(plan),
@@ -170,7 +170,7 @@ func (plan Handle) ExecZ2D(idata, odata cu.DevicePtr) {
 	}
 }
 
-// Destroys the plan.
+// Destroy Destroys the plan.
 func (plan *Handle) Destroy() {
 	err := Result(C.cufftDestroy(C.cufftHandle(*plan)))
 	*plan = 0 // make sure plan is not used anymore
@@ -179,7 +179,7 @@ func (plan *Handle) Destroy() {
 	}
 }
 
-// Sets the cuda stream for this plan
+// SetStream Sets the cuda stream for this plan
 func (plan Handle) SetStream(stream cu.Stream) {
 	err := Result(C.cufftSetStream(
 		C.cufftHandle(plan),

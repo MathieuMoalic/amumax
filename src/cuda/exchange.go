@@ -7,13 +7,14 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
-// Add exchange field to Beff.
+// AddExchange Add exchange field to Beff.
 //
-//	m: normalized magnetization
-//	B: effective field in Tesla
-//	Aex_red: Aex / (Msat * 1e18 m2)
+// m: normalized magnetization
+// B: effective field in Tesla
+// Aex_red: Aex / (Msat * 1e18 m2)
 //
 // see exchange.cu
+
 func AddExchange(B, m *data.Slice, AexRed SymmLUT, Msat MSlice, regions *Bytes, mesh mesh.MeshLike) {
 	c := mesh.CellSize()
 	wx := float32(2 / (c[X] * c[X]))
@@ -29,7 +30,7 @@ func AddExchange(B, m *data.Slice, AexRed SymmLUT, Msat MSlice, regions *Bytes, 
 		wx, wy, wz, N[X], N[Y], N[Z], pbc, cfg)
 }
 
-// Finds the average exchange strength around each cell, for debugging.
+// ExchangeDecode Finds the average exchange strength around each cell, for debugging.
 func ExchangeDecode(dst *data.Slice, AexRed SymmLUT, regions *Bytes, mesh mesh.MeshLike) {
 	c := mesh.CellSize()
 	wx := float32(2 / (c[X] * c[X]))

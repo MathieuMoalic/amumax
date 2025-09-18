@@ -88,7 +88,7 @@ func (s *stateTab) Finish(j job) {
 	s.jobs[j.uid].webAddr = ""
 }
 
-// Runs all the jobs in stateTab.
+// Run Runs all the jobs in stateTab.
 func (s *stateTab) Run(flags *flags.Flags) {
 	nGPU := cu.DeviceGetCount()
 	idle := initGPUs(nGPU)

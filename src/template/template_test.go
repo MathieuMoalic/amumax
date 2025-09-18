@@ -95,7 +95,7 @@ func TestFormat3(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for simple arange expression
+// TestGenerateFilesWithArange Test case for simple arange expression
 func TestGenerateFilesWithArange(t *testing.T) {
 	templateContent := `x:="{start=0;end=1;step=1}"`
 	expectedFiles := []string{
@@ -156,7 +156,7 @@ func TestGenerateFilesWithArangePrefixAndFormat(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for linspace (start, end, count)
+// TestGenerateFilesWithLinspace Test case for linspace (start, end, count)
 func TestGenerateFilesWithLinspace(t *testing.T) {
 	templateContent := `x:="{prefix=test;start=0;end=2;count=3}"`
 	expectedFiles := []string{
@@ -172,7 +172,7 @@ func TestGenerateFilesWithLinspace(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for array
+// TestGenerateFilesWithArray Test case for array
 func TestGenerateFilesWithArray(t *testing.T) {
 	templateContent := `x:="{prefix=array_test;array=[3.14, 2.71, 1.41]}"`
 	expectedFiles := []string{
@@ -188,7 +188,7 @@ func TestGenerateFilesWithArray(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for array with formatting
+// TestGenerateFilesWithArrayAndFormat Test case for array with formatting
 func TestGenerateFilesWithArrayAndFormat(t *testing.T) {
 	templateContent := `x:="{prefix=array_fmt;array=[10, 20, 30];format=%03.0f}"`
 	expectedFiles := []string{
@@ -204,7 +204,7 @@ func TestGenerateFilesWithArrayAndFormat(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for step and format together
+// TestGenerateFilesWithStepAndFormat Test case for step and format together
 func TestGenerateFilesWithStepAndFormat(t *testing.T) {
 	templateContent := `x:="{prefix=step_fmt;start=0;end=4;step=2;format=%04.0f}"`
 	expectedFiles := []string{
@@ -220,7 +220,7 @@ func TestGenerateFilesWithStepAndFormat(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for both linspace and step together
+// TestGenerateFilesWithLinspaceAndStep Test case for both linspace and step together
 func TestGenerateFilesWithLinspaceAndStep(t *testing.T) {
 	templateContent := `x:="{prefix=lin_step;start=0;end=4;count=3}"`
 	expectedFiles := []string{
@@ -236,7 +236,7 @@ func TestGenerateFilesWithLinspaceAndStep(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// format is %d, it should not be allowed
+// TestFormatError format is %d, it should not be allowed
 func TestFormatError(t *testing.T) {
 	templateContent := `x:="{array=[1];format=%g}"`
 	templatePath := "test_output/template"
@@ -332,7 +332,7 @@ z:="{array=[0,1]}"`
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, true)
 }
 
-// Test case for an empty array
+// TestEmptyArray Test case for an empty array
 func TestEmptyArray(t *testing.T) {
 	templateContent := `x:="{array=[]}"`
 	templatePath := "test_output/template"
@@ -345,7 +345,7 @@ func TestEmptyArray(t *testing.T) {
 	}
 }
 
-// Test case where start is greater than end
+// TestInvalidStartEnd Test case where start is greater than end
 func TestInvalidStartEnd(t *testing.T) {
 	templateContent := `x:="{start=5;end=1;step=1}"`
 	templatePath := "test_output/template"
@@ -358,7 +358,7 @@ func TestInvalidStartEnd(t *testing.T) {
 	}
 }
 
-// Test case where step is zero
+// TestZeroStep Test case where step is zero
 func TestZeroStep(t *testing.T) {
 	templateContent := `x:="{start=0;end=1;step=0}"`
 	templatePath := "test_output/template"
@@ -371,7 +371,7 @@ func TestZeroStep(t *testing.T) {
 	}
 }
 
-// Test case with missing required fields
+// TestMissingFields Test case with missing required fields
 func TestMissingFields(t *testing.T) {
 	templateContent := `x:="{end=5;step=1}"`
 	templatePath := "test_output/template"
@@ -384,7 +384,7 @@ func TestMissingFields(t *testing.T) {
 	}
 }
 
-// Test case with conflicting fields (both array and start provided)
+// TestConflictingFields Test case with conflicting fields (both array and start provided)
 func TestConflictingFields(t *testing.T) {
 	templateContent := `x:="{array=[1,2];start=0;end=1;step=1}"`
 	templatePath := "test_output/template"
@@ -397,7 +397,7 @@ func TestConflictingFields(t *testing.T) {
 	}
 }
 
-// Test case with unexpected tokens in the expression
+// TestUnexpectedTokens Test case with unexpected tokens in the expression
 func TestUnexpectedTokens(t *testing.T) {
 	templateContent := `x:="{array=[1,2];unknown=5}"`
 	templatePath := "test_output/template"
@@ -410,7 +410,7 @@ func TestUnexpectedTokens(t *testing.T) {
 	}
 }
 
-// Test case with malformed expression
+// TestMalformedExpression Test case with malformed expression
 func TestMalformedExpression(t *testing.T) {
 	templateContent := `x:="{array=[1,2]`
 	templatePath := "test_output/template"
@@ -423,7 +423,7 @@ func TestMalformedExpression(t *testing.T) {
 	}
 }
 
-// Test case with large ranges
+// TestLargeRange Test case with large ranges
 func TestLargeRange(t *testing.T) {
 	templateContent := `x:="{start=1;end=10000;step=1000}"`
 	expectedFiles := []string{
@@ -446,7 +446,7 @@ func TestLargeRange(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case with special characters in prefix and suffix
+// TestSpecialCharactersInPrefixSuffix Test case with special characters in prefix and suffix
 func TestSpecialCharactersInPrefixSuffix(t *testing.T) {
 	templateContent := `x:="{prefix=val_;suffix=_test;array=[1,2]}"`
 	expectedFiles := []string{
@@ -460,7 +460,7 @@ func TestSpecialCharactersInPrefixSuffix(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case with only one value in linspace
+// TestLinspaceSingleValue Test case with only one value in linspace
 func TestLinspaceSingleValue(t *testing.T) {
 	templateContent := `x:="{start=5;end=5;count=1}"`
 	expectedFiles := []string{
@@ -472,7 +472,7 @@ func TestLinspaceSingleValue(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case where count is zero in linspace
+// TestZeroCountLinspace Test case where count is zero in linspace
 func TestZeroCountLinspace(t *testing.T) {
 	templateContent := `x:="{start=0;end=1;count=0}"`
 	templatePath := "test_output/template"
@@ -485,7 +485,7 @@ func TestZeroCountLinspace(t *testing.T) {
 	}
 }
 
-// Test case with floating-point step value
+// TestFloatingPointStep Test case with floating-point step value
 func TestFloatingPointStep(t *testing.T) {
 	templateContent := `x:="{start=0;end=1;step=0.5}"`
 	expectedFiles := []string{
@@ -501,7 +501,7 @@ func TestFloatingPointStep(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case with multiple variables and complex combinations
+// TestComplexCombinations Test case with multiple variables and complex combinations
 func TestComplexCombinations(t *testing.T) {
 	templateContent := `a:="{array=[1,2]}"
 b:="{start=0;end=1;step=1}"
@@ -529,7 +529,7 @@ c:=5`,
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for array of strings
+// TestGenerateFilesWithStringArray Test case for array of strings
 func TestGenerateFilesWithStringArray(t *testing.T) {
 	templateContent := `x:="{prefix=str_;array=['apple', 'banana', 'cherry'];format=%s}"`
 	expectedFiles := []string{
@@ -545,7 +545,7 @@ func TestGenerateFilesWithStringArray(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for array of strings without format
+// TestGenerateFilesWithStringArrayNoFormat Test case for array of strings without format
 func TestGenerateFilesWithStringArrayNoFormat(t *testing.T) {
 	templateContent := `x:="{prefix=str_;array=['dog', 'cat', 'mouse']}"`
 	expectedFiles := []string{
@@ -561,7 +561,7 @@ func TestGenerateFilesWithStringArrayNoFormat(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for string array with special characters and suffix
+// TestGenerateFilesWithStringArraySpecialChars Test case for string array with special characters and suffix
 func TestGenerateFilesWithStringArraySpecialChars(t *testing.T) {
 	templateContent := `x:="{prefix=str_;array=['hello-world', 'foo_bar', 'baz@qux'];suffix=_test}"`
 	expectedFiles := []string{
@@ -577,7 +577,7 @@ func TestGenerateFilesWithStringArraySpecialChars(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for string array with numeric format (should produce an error)
+// TestStringArrayWithNumericFormatError Test case for string array with numeric format (should produce an error)
 func TestStringArrayWithNumericFormatError(t *testing.T) {
 	templateContent := `x:="{array=['a','b'];format=%02.0f}"`
 	templatePath := "test_output/template"
@@ -590,7 +590,7 @@ func TestStringArrayWithNumericFormatError(t *testing.T) {
 	}
 }
 
-// Test case for combination of string array and numeric array
+// TestGenerateFilesWithStringAndNumericArrays Test case for combination of string array and numeric array
 func TestGenerateFilesWithStringAndNumericArrays(t *testing.T) {
 	templateContent := `x:="{array=['red','green']}"
 y:="{array=[1,2]}"`
@@ -613,7 +613,7 @@ y:=2`,
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for string array with format %s
+// TestGenerateFilesWithStringArrayAndFormat Test case for string array with format %s
 func TestGenerateFilesWithStringArrayAndFormat(t *testing.T) {
 	templateContent := `x:="{array=['alpha','beta'];format=%s}"`
 	expectedFiles := []string{
@@ -627,7 +627,7 @@ func TestGenerateFilesWithStringArrayAndFormat(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for array of strings with spaces and quotes
+// TestGenerateFilesWithStringArraySpaces Test case for array of strings with spaces and quotes
 func TestGenerateFilesWithStringArraySpaces(t *testing.T) {
 	templateContent := `x:="{array=['first value', 'second value'];format=%s}"`
 	expectedFiles := []string{
@@ -641,7 +641,7 @@ func TestGenerateFilesWithStringArraySpaces(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case with special characters in array elements
+// TestGenerateFilesWithStringArraySpecialElements Test case with special characters in array elements
 func TestGenerateFilesWithStringArraySpecialElements(t *testing.T) {
 	templateContent := `x:="{array=['val$1', 'val#2', 'val&3'];format=%s}"`
 	expectedFiles := []string{
@@ -657,7 +657,7 @@ func TestGenerateFilesWithStringArraySpecialElements(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for string array with prefix and suffix
+// TestGenerateFilesWithStringArrayPrefixSuffix Test case for string array with prefix and suffix
 func TestGenerateFilesWithStringArrayPrefixSuffix(t *testing.T) {
 	templateContent := `x:="{prefix=pre_;array=['one','two'];suffix=_suf;format=%s}"`
 	expectedFiles := []string{
@@ -671,7 +671,7 @@ func TestGenerateFilesWithStringArrayPrefixSuffix(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for empty string array
+// TestEmptyStringArray Test case for empty string array
 func TestEmptyStringArray(t *testing.T) {
 	templateContent := `x:="{array=[]}"`
 	templatePath := "test_output/template"
@@ -684,7 +684,7 @@ func TestEmptyStringArray(t *testing.T) {
 	}
 }
 
-// Test case for string array with numeric values treated as strings
+// TestStringArrayWithNumericValues Test case for string array with numeric values treated as strings
 func TestStringArrayWithNumericValues(t *testing.T) {
 	templateContent := `x:="{array=['123','456'];format=%s}"`
 	expectedFiles := []string{
@@ -698,7 +698,7 @@ func TestStringArrayWithNumericValues(t *testing.T) {
 	writeParseTestClean(t, templateContent, expectedFiles, expectedContent, false)
 }
 
-// Test case for combination of multiple string arrays
+// TestGenerateFilesWithMultipleStringArrays Test case for combination of multiple string arrays
 func TestGenerateFilesWithMultipleStringArrays(t *testing.T) {
 	templateContent := `x:="{prefix=a_;array=['x','y']}"
 y:="{prefix=b_;array=['1','2'];suffix=_end}"`

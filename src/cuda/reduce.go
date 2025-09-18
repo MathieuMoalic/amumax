@@ -12,8 +12,8 @@ import (
 //#include "reduce.h"
 import "C"
 
-// Block size for reduce kernels.
-const REDUCE_BLOCKSIZE = C.REDUCE_BLOCKSIZE
+// ReduceBlockSize Block size for reduce kernels.
+const ReduceBlockSize = C.REDUCE_BLOCKSIZE
 
 // Sum of all elements.
 func Sum(in *data.Slice) float32 {
@@ -35,7 +35,7 @@ func Dot(a, b *data.Slice) float32 {
 	return copyback(out)
 }
 
-// Maximum of absolute values of all elements.
+// MaxAbs Maximum of absolute values of all elements.
 func MaxAbs(in *data.Slice) float32 {
 	log.AssertMsg(in.NComp() == 1, "Component mismatch: input must have 1 component in MaxAbs")
 	out := reduceBuf(0)
@@ -43,19 +43,21 @@ func MaxAbs(in *data.Slice) float32 {
 	return copyback(out)
 }
 
-// Maximum of the norms of all vectors (x[i], y[i], z[i]).
+// MaxVecNorm Maximum of the norms of all vectors (x[i], y[i], z[i]).
 //
-//	max_i sqrt( x[i]*x[i] + y[i]*y[i] + z[i]*z[i] )
+// max_i sqrt( x[i]*x[i] + y[i]*y[i] + z[i]*z[i] )
+
 func MaxVecNorm(v *data.Slice) float64 {
 	out := reduceBuf(0)
 	kReducemaxvecnorm2Async(v.DevPtr(0), v.DevPtr(1), v.DevPtr(2), out, 0, v.Len(), reducecfg)
 	return math.Sqrt(float64(copyback(out)))
 }
 
-// Maximum of the norms of the difference between all vectors (x1,y1,z1) and (x2,y2,z2)
+// MaxVecDiff Maximum of the norms of the difference between all vectors (x1,y1,z1) and (x2,y2,z2)
 //
-//	(dx, dy, dz) = (x1, y1, z1) - (x2, y2, z2)
-//	max_i sqrt( dx[i]*dx[i] + dy[i]*dy[i] + dz[i]*dz[i] )
+// (dx, dy, dz) = (x1, y1, z1) - (x2, y2, z2)
+// max_i sqrt( dx[i]*dx[i] + dy[i]*dy[i] + dz[i]*dz[i] )
+
 func MaxVecDiff(x, y *data.Slice) float64 {
 	log.AssertMsg(x.Len() == y.Len(), "Length mismatch: x and y must have the same length in MaxVecDiff")
 	out := reduceBuf(0)
@@ -98,4 +100,4 @@ func initReduceBuf() {
 // launch configuration for reduce kernels
 // 8 is typ. number of multiprocessors.
 // could be improved but takes hardly ~1% of execution time
-var reducecfg = &config{Grid: cu.Dim3{X: 8, Y: 1, Z: 1}, Block: cu.Dim3{X: REDUCE_BLOCKSIZE, Y: 1, Z: 1}}
+var reducecfg = &config{Grid: cu.Dim3{X: 8, Y: 1, Z: 1}, Block: cu.Dim3{X: ReduceBlockSize, Y: 1, Z: 1}}

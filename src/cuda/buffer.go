@@ -22,7 +22,7 @@ var (
 
 const bufMax = 100 // maximum number of buffers to allocate (detect memory leak early)
 
-// Returns a GPU slice for temporary use. To be returned to the pool with Recycle
+// Buffer Returns a GPU slice for temporary use. To be returned to the pool with Recycle
 func Buffer(nComp int, size [3]int) *data.Slice {
 	if Synchronous {
 		Sync()
@@ -51,7 +51,7 @@ func Buffer(nComp int, size [3]int) *data.Slice {
 	return data.SliceFromPtrs(size, data.GPUMemory, ptrs)
 }
 
-// Returns a buffer obtained from GetBuffer to the pool.
+// Recycle Returns a buffer obtained from GetBuffer to the pool.
 func Recycle(s *data.Slice) {
 	if Synchronous {
 		Sync()
@@ -74,7 +74,7 @@ func Recycle(s *data.Slice) {
 	bufPool[N] = pool
 }
 
-// Frees all buffers. Called after mesh resize.
+// FreeBuffers Frees all buffers. Called after mesh resize.
 func FreeBuffers() {
 	Sync()
 	for _, size := range bufPool {

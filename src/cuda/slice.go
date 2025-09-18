@@ -10,7 +10,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/timer"
 )
 
-// Make a GPU Slice with nComp components each of size length.
+// NewSlice Make a GPU Slice with nComp components each of size length.
 func NewSlice(nComp int, size [3]int) *data.Slice {
 	return newSlice(nComp, size, MemAlloc, data.GPUMemory)
 }
@@ -77,7 +77,7 @@ func Memset(s *data.Slice, val ...float32) {
 	}
 }
 
-// Set all elements of all components to zero.
+// Zero Set all elements of all components to zero.
 func Zero(s *data.Slice) {
 	Memset(s, make([]float32, s.NComp())...)
 }

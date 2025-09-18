@@ -45,13 +45,13 @@ func testConvolution(c *DemagConvolution, PBC [3]int, realKern [3][3]*data.Slice
 			}
 		}
 	}
-	if err > CONV_TOLERANCE {
+	if err > ConvolutionTolerance {
 		log.Log.ErrAndExit("convolution self-test tolerance: %v FAIL", err)
 	}
 }
 
-// Maximum tolerable error on demag convolution self-test.
-const CONV_TOLERANCE = 1e-6
+// ConvolutionTolerance Maximum tolerable error on demag convolution self-test.
+const ConvolutionTolerance = 1e-6
 
 // Brute-force O(N²) vector convolution on CPU.
 // Used to verify GPU FFT convolution.

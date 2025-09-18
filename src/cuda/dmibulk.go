@@ -8,8 +8,9 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
-// Add effective field due to bulk Dzyaloshinskii-Moriya interaction to Beff.
+// AddDMIBulk Add effective field due to bulk Dzyaloshinskii-Moriya interaction to Beff.
 // See dmibulk.cu
+
 func AddDMIBulk(Beff *data.Slice, m *data.Slice, AexRed, DRed SymmLUT, Msat MSlice, regions *Bytes, mesh mesh.MeshLike, OpenBC bool) {
 	cellsize := mesh.CellSize()
 	N := Beff.Size()

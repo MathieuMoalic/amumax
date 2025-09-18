@@ -6,8 +6,9 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
-// Set s to the topological charge density s = m · (∂m/∂x ❌ ∂m/∂y)
+// SetTopologicalCharge Set s to the topological charge density s = m · (∂m/∂x ❌ ∂m/∂y)
 // See topologicalcharge.cu
+
 func SetTopologicalCharge(s *data.Slice, m *data.Slice, mesh mesh.MeshLike) {
 	cellsize := mesh.CellSize()
 	N := s.Size()

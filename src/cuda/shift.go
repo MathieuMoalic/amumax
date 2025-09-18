@@ -6,8 +6,9 @@ import (
 	"github.com/MathieuMoalic/amumax/src/mesh"
 )
 
-// shift dst by shx cells (positive or negative) along X-axis.
+// ShiftX shift dst by shx cells (positive or negative) along X-axis.
 // new edge value is clampL at left edge or clampR at right edge.
+
 func ShiftX(dst, src *data.Slice, shiftX int, clampL, clampR float32) {
 	log.AssertMsg(dst.NComp() == 1 && src.NComp() == 1, "Component mismatch: dst and src must both have 1 component in ShiftX")
 	log.AssertMsg(dst.Len() == src.Len(), "Length mismatch: dst and src must have the same length in ShiftX")
@@ -16,13 +17,14 @@ func ShiftX(dst, src *data.Slice, shiftX int, clampL, clampR float32) {
 	kShiftxAsync(dst.DevPtr(0), src.DevPtr(0), N[X], N[Y], N[Z], shiftX, clampL, clampR, cfg)
 }
 
-// Shifts a component `src` of a vector field by `shiftX` cells along the X-axis.
+// ShiftEdgeCarryX Shifts a component `src` of a vector field by `shiftX` cells along the X-axis.
 // Unlike the normal `shift()`, the new edge value is the current edge value.
 //
 // To avoid the situation where the magnetization could be set to (0,0,0) within the geometry, it is
 // also required to pass the two other vector components `othercomp` and `anothercomp` to this function.
 // In cells where the vector (`src`, `othercomp`, `anothercomp`) is the zero-vector,
 // `clampL` or `clampR` is used for the component `src` instead.
+
 func ShiftEdgeCarryX(dst, src, othercomp, anothercomp *data.Slice, shiftX int, clampL, clampR float32) {
 	log.AssertMsg(dst.NComp() == 1 && src.NComp() == 1 && othercomp.NComp() == 1 && anothercomp.NComp() == 1, "Component mismatch: dst, src, othercomp and anothercomp must all have 1 component in ShiftEdgeCarryX")
 	log.AssertMsg(dst.Len() == src.Len(), "Length mismatch: dst and src must have the same length in ShiftEdgeCarryX")
@@ -39,13 +41,14 @@ func ShiftY(dst, src *data.Slice, shiftY int, clampL, clampR float32) {
 	kShiftyAsync(dst.DevPtr(0), src.DevPtr(0), N[X], N[Y], N[Z], shiftY, clampL, clampR, cfg)
 }
 
-// Shifts a component `src` of a vector field by `shiftY` cells along the Y-axis.
+// ShiftEdgeCarry Shifts a component `src` of a vector field by `shiftY` cells along the Y-axis.
 // Unlike the normal `shift()`, the new edge value is the current edge value.
 //
 // To avoid the situation where the magnetization could be set to (0,0,0) within the geometry, it is
 // also required to pass the two other vector components `othercomp` and `anothercomp` to this function.
 // In cells where the vector (`src`, `othercomp`, `anothercomp`) is the zero-vector,
 // `clampD` or `clampU` is used for the component `src` instead.
+
 func ShiftEdgeCarry(dst, src, othercomp, anothercomp *data.Slice, shiftY int, clampL, clampR float32) {
 	log.AssertMsg(dst.NComp() == 1 && src.NComp() == 1 && othercomp.NComp() == 1 && anothercomp.NComp() == 1, "Component mismatch: dst, src, othercomp and anothercomp must all have 1 component in ShiftEdgeCarry")
 	log.AssertMsg(dst.Len() == src.Len(), "Length mismatch: dst and src must have the same length in ShiftEdgeCarry")
@@ -62,7 +65,7 @@ func ShiftZ(dst, src *data.Slice, shiftZ int, clampL, clampR float32) {
 	kShiftzAsync(dst.DevPtr(0), src.DevPtr(0), N[X], N[Y], N[Z], shiftZ, clampL, clampR, cfg)
 }
 
-// Like Shift, but for bytes
+// ShiftBytes Like Shift, but for bytes
 func ShiftBytes(dst, src *Bytes, m mesh.MeshLike, shiftX int, clamp byte) {
 	N := m.Size()
 	cfg := make3DConf(N)

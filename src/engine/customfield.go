@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	BCustom       = newVectorField("B_custom", "T", "User-defined field", addCustomField)
-	EdensCustom   = newScalarField("Edens_custom", "J/m3", "Energy density of user-defined field.", addCustomEnergyDensity)
-	ECustom       = newScalarValue("E_custom", "J", "total energy of user-defined field", getCustomEnergy)
+	BCustom        = newVectorField("B_custom", "T", "User-defined field", addCustomField)
+	EdensCustom    = newScalarField("Edens_custom", "J/m3", "Energy density of user-defined field.", addCustomEnergyDensity)
+	ECustom        = newScalarValue("E_custom", "J", "total energy of user-defined field", getCustomEnergy)
 	customTerms    []Quantity // vector
 	customEnergies []Quantity // scalar
 )
@@ -74,8 +74,8 @@ type constValue struct {
 
 func (c *constValue) NComp() int { return len(c.value) }
 
-func (d *constValue) EvalTo(dst *data.Slice) {
-	for c, v := range d.value {
+func (c *constValue) EvalTo(dst *data.Slice) {
+	for c, v := range c.value {
 		cuda.Memset(dst.Comp(c), float32(v))
 	}
 }

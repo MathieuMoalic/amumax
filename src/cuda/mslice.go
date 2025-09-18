@@ -6,7 +6,7 @@ import (
 	"github.com/MathieuMoalic/amumax/src/data"
 )
 
-// Slice + scalar multiplier.
+// MSlice Slice + scalar multiplier.
 type MSlice struct {
 	arr *data.Slice
 	mul []float64

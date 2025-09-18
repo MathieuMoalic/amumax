@@ -73,7 +73,7 @@ func (c *call) Child() []Expr {
 	return append([]Expr{c.f}, c.args...)
 }
 
-// return type of call
+// Type return type of call
 func (c *call) Type() reflect.Type {
 	switch c.f.Type().NumOut() {
 	case 0:
