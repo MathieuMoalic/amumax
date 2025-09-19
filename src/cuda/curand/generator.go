@@ -1,3 +1,4 @@
+// Package curand provides bindings for the cuRAND library.
 package curand
 
 //#include <curand.h>
@@ -12,13 +13,13 @@ type Generator uintptr
 type RngType int
 
 const (
-	PSEUDO_DEFAULT          RngType = C.CURAND_RNG_PSEUDO_DEFAULT          // Default pseudorandom generator
-	PSEUDO_XORWOW           RngType = C.CURAND_RNG_PSEUDO_XORWOW           // XORWOW pseudorandom generator
-	QUASI_DEFAULT           RngType = C.CURAND_RNG_QUASI_DEFAULT           // Default quasirandom generator
-	QUASI_SOBOL32           RngType = C.CURAND_RNG_QUASI_SOBOL32           // Sobol32 quasirandom generator
-	QUASI_SCRAMBLED_SOBOL32 RngType = C.CURAND_RNG_QUASI_SCRAMBLED_SOBOL32 // Scrambled Sobol32 quasirandom generator
-	QUASI_SOBOL64           RngType = C.CURAND_RNG_QUASI_SOBOL64           // Sobol64 quasirandom generator
-	QUASI_SCRAMBLED_SOBOL64 RngType = C.CURAND_RNG_QUASI_SCRAMBLED_SOBOL64 // Scrambled Sobol64 quasirandom generator
+	PseudoDefault         RngType = C.CURAND_RNG_PSEUDO_DEFAULT          // Default pseudorandom generator
+	PseudoXORWOW          RngType = C.CURAND_RNG_PSEUDO_XORWOW           // XORWOW pseudorandom generator
+	QuasiDefault          RngType = C.CURAND_RNG_QUASI_DEFAULT           // Default quasirandom generator
+	QuasiSOBOL32          RngType = C.CURAND_RNG_QUASI_SOBOL32           // Sobol32 quasirandom generator
+	QuasiScrambledSOBOL32 RngType = C.CURAND_RNG_QUASI_SCRAMBLED_SOBOL32 // Scrambled Sobol32 quasirandom generator
+	QuasiSOBOL64          RngType = C.CURAND_RNG_QUASI_SOBOL64           // Sobol64 quasirandom generator
+	QuasiScrambledSOBOL64 RngType = C.CURAND_RNG_QUASI_SCRAMBLED_SOBOL64 // Scrambled Sobol64 quasirandom generator
 )
 
 func CreateGenerator(rngType RngType) Generator {

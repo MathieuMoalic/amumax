@@ -30,7 +30,7 @@ type madd5ArgsT struct {
 	argSrc5 unsafe.Pointer
 	argFac5 float32
 	argN    int
-	argptr   [12]unsafe.Pointer
+	argptr  [12]unsafe.Pointer
 	sync.Mutex
 }
 

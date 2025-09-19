@@ -83,25 +83,24 @@ func (t *tesselation) centersInTile(tx, ty int) []center {
 	pos := int2{tx, ty}
 	if c, ok := t.cache[pos]; ok {
 		return c
-	} else {
-		// tile-specific seed that works for positive and negative tx, ty
-		seed := (int64(ty)+(1<<24))*(1<<24) + (int64(tx) + (1 << 24))
-		t.rnd.Seed(seed ^ t.seed)
-		N := t.poisson(LAMBDA)
-		c := make([]center, N)
-
-		// absolute position of tile (m)
-		x0, y0 := float64(tx)*t.tilesize, float64(ty)*t.tilesize
-
-		for i := range c {
-			// random position inside tile
-			c[i].x = x0 + t.rnd.Float64()*t.tilesize
-			c[i].y = y0 + t.rnd.Float64()*t.tilesize
-			c[i].region = byte(t.rnd.Intn(t.maxRegion-t.minRegion) + t.minRegion)
-		}
-		t.cache[pos] = c
-		return c
 	}
+	// tile-specific seed that works for positive and negative tx, ty
+	seed := (int64(ty)+(1<<24))*(1<<24) + (int64(tx) + (1 << 24))
+	t.rnd.Seed(seed ^ t.seed)
+	N := t.poisson(LAMBDA)
+	c := make([]center, N)
+
+	// absolute position of tile (m)
+	x0, y0 := float64(tx)*t.tilesize, float64(ty)*t.tilesize
+
+	for i := range c {
+		// random position inside tile
+		c[i].x = x0 + t.rnd.Float64()*t.tilesize
+		c[i].y = y0 + t.rnd.Float64()*t.tilesize
+		c[i].region = byte(t.rnd.Intn(t.maxRegion-t.minRegion) + t.minRegion)
+	}
+	t.cache[pos] = c
+	return c
 }
 
 func sqr(x float64) float64 { return x * x }

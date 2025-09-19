@@ -22,7 +22,7 @@ type pointwiseDivArgsT struct {
 	argA   unsafe.Pointer
 	argB   unsafe.Pointer
 	argN   int
-	argptr  [4]unsafe.Pointer
+	argptr [4]unsafe.Pointer
 	sync.Mutex
 }
 

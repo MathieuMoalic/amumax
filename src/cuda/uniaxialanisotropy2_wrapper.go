@@ -18,12 +18,12 @@ var adduniaxialanisotropy2Code cu.Function
 
 // Stores the arguments for adduniaxialanisotropy2 kernel invocation
 type adduniaxialanisotropy2ArgsT struct {
-	argBx     unsafe.Pointer
-	argBy     unsafe.Pointer
-	argBz     unsafe.Pointer
-	argMx     unsafe.Pointer
-	argMy     unsafe.Pointer
-	argMz     unsafe.Pointer
+	argBx    unsafe.Pointer
+	argBy    unsafe.Pointer
+	argBz    unsafe.Pointer
+	argMx    unsafe.Pointer
+	argMy    unsafe.Pointer
+	argMz    unsafe.Pointer
 	argMs    unsafe.Pointer
 	argMsMul float32
 	argK1    unsafe.Pointer
@@ -36,8 +36,8 @@ type adduniaxialanisotropy2ArgsT struct {
 	argUyMul float32
 	argUz    unsafe.Pointer
 	argUzMul float32
-	argN      int
-	argptr     [19]unsafe.Pointer
+	argN     int
+	argptr   [19]unsafe.Pointer
 	sync.Mutex
 }
 

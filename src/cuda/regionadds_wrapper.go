@@ -22,7 +22,7 @@ type regionaddsArgsT struct {
 	argLUT     unsafe.Pointer
 	argRegions unsafe.Pointer
 	argN       int
-	argptr      [4]unsafe.Pointer
+	argptr     [4]unsafe.Pointer
 	sync.Mutex
 }
 

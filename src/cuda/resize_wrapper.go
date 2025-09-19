@@ -29,7 +29,7 @@ type resizeArgsT struct {
 	argLayer  int
 	argScalex int
 	argScaley int
-	argptr     [11]unsafe.Pointer
+	argptr    [11]unsafe.Pointer
 	sync.Mutex
 }
 

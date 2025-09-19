@@ -33,7 +33,7 @@ type copyMRangeArgsT struct {
 	argH    int
 	argD    int
 	argWrap int
-	argptr   [15]unsafe.Pointer
+	argptr  [15]unsafe.Pointer
 	sync.Mutex
 }
 

@@ -18,18 +18,18 @@ var copypadmul2Code cu.Function
 
 // Stores the arguments for copypadmul2 kernel invocation
 type copypadmul2ArgsT struct {
-	argDst    unsafe.Pointer
-	argDx     int
-	argDy     int
-	argDz     int
-	argSrc    unsafe.Pointer
-	argSx     int
-	argSy     int
-	argSz     int
+	argDst   unsafe.Pointer
+	argDx    int
+	argDy    int
+	argDz    int
+	argSrc   unsafe.Pointer
+	argSx    int
+	argSy    int
+	argSz    int
 	argMs    unsafe.Pointer
 	argMsMul float32
-	argVol    unsafe.Pointer
-	argptr     [11]unsafe.Pointer
+	argVol   unsafe.Pointer
+	argptr   [11]unsafe.Pointer
 	sync.Mutex
 }
 

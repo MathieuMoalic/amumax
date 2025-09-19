@@ -18,16 +18,16 @@ var llnoprecessCode cu.Function
 
 // Stores the arguments for llnoprecess kernel invocation
 type llnoprecessArgsT struct {
-	argTx unsafe.Pointer
-	argTy unsafe.Pointer
-	argTz unsafe.Pointer
-	argMx unsafe.Pointer
-	argMy unsafe.Pointer
-	argMz unsafe.Pointer
-	argHx unsafe.Pointer
-	argHy unsafe.Pointer
-	argHz unsafe.Pointer
-	argN  int
+	argTx  unsafe.Pointer
+	argTy  unsafe.Pointer
+	argTz  unsafe.Pointer
+	argMx  unsafe.Pointer
+	argMy  unsafe.Pointer
+	argMz  unsafe.Pointer
+	argHx  unsafe.Pointer
+	argHy  unsafe.Pointer
+	argHz  unsafe.Pointer
+	argN   int
 	argptr [10]unsafe.Pointer
 	sync.Mutex
 }

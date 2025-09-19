@@ -18,12 +18,12 @@ var addcubicanisotropy2Code cu.Function
 
 // Stores the arguments for addcubicanisotropy2 kernel invocation
 type addcubicanisotropy2ArgsT struct {
-	argBx      unsafe.Pointer
-	argBy      unsafe.Pointer
-	argBz      unsafe.Pointer
-	argMx      unsafe.Pointer
-	argMy      unsafe.Pointer
-	argMz      unsafe.Pointer
+	argBx     unsafe.Pointer
+	argBy     unsafe.Pointer
+	argBz     unsafe.Pointer
+	argMx     unsafe.Pointer
+	argMy     unsafe.Pointer
+	argMz     unsafe.Pointer
 	argMs     unsafe.Pointer
 	argMsMul  float32
 	argK1     unsafe.Pointer
@@ -44,8 +44,8 @@ type addcubicanisotropy2ArgsT struct {
 	argC2yMul float32
 	argC2z    unsafe.Pointer
 	argC2zMul float32
-	argN       int
-	argptr      [27]unsafe.Pointer
+	argN      int
+	argptr    [27]unsafe.Pointer
 	sync.Mutex
 }
 

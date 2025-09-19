@@ -23,7 +23,7 @@ type setThetaArgsT struct {
 	argNx    int
 	argNy    int
 	argNz    int
-	argptr    [5]unsafe.Pointer
+	argptr   [5]unsafe.Pointer
 	sync.Mutex
 }
 

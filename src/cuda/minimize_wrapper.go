@@ -29,7 +29,7 @@ type minimizeArgsT struct {
 	argTz  unsafe.Pointer
 	argDt  float32
 	argN   int
-	argptr  [11]unsafe.Pointer
+	argptr [11]unsafe.Pointer
 	sync.Mutex
 }
 

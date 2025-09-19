@@ -29,7 +29,7 @@ type cropArgsT struct {
 	argOffx int
 	argOffy int
 	argOffz int
-	argptr   [11]unsafe.Pointer
+	argptr  [11]unsafe.Pointer
 	sync.Mutex
 }
 

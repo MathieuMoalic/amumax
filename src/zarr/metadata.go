@@ -68,16 +68,20 @@ func (m *Metadata) NeedSave() bool {
 	if time.Since(m.lastSave) > 5*time.Second {
 		m.lastSave = time.Now()
 		return true
-	} else {
-		return false
 	}
+	return false
 }
 
 func (m *Metadata) Save() {
 	if m.Path != "" {
 		zattrs, err := fsutil.Create(m.Path)
 		log.Log.PanicIfError(err)
-		defer zattrs.Close()
+		defer func() {
+			cerr := zattrs.Close()
+			if cerr != nil {
+				log.Log.Err("Error closing zattrs file: %v", cerr)
+			}
+		}()
 		jsonMeta, err := json.MarshalIndent(m.Fields, "", "\t")
 		log.Log.PanicIfError(err)
 		_, err = zattrs.Write([]byte(jsonMeta))

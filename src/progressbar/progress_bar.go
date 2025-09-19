@@ -9,6 +9,8 @@ import (
 
 	"github.com/fatih/color"
 	"golang.org/x/term"
+
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 type ProgressBar struct {
@@ -99,10 +101,16 @@ func (bar *ProgressBar) Update(currentTime float64) {
 			percentage)
 
 		// Clear the line
-		bar.out.Print("\r\033[K")
+		_, err := bar.out.Print("\r\033[K")
+		if err != nil {
+			log.Log.Err("Error clearing progress bar line: %v", err)
+		}
 
 		// Write the progress bar
-		bar.out.Print(progressBar)
+		_, err = bar.out.Print(progressBar)
+		if err != nil {
+			log.Log.Err("Error writing progress bar: %v", err)
+		}
 	}
 }
 
@@ -116,9 +124,15 @@ func (bar *ProgressBar) Finish() {
 			filledSymbols)
 
 		// Clear the line
-		bar.out.Print("\r\033[K")
+		_, err := bar.out.Print("\r\033[K")
+		if err != nil {
+			log.Log.Err("Error clearing progress bar line: %v", err)
+		}
 
 		// Write the progress bar
-		bar.out.Print(progressBar)
+		_, err = bar.out.Print(progressBar)
+		if err != nil {
+			log.Log.Err("Error writing progress bar: %v", err)
+		}
 	}
 }

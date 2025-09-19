@@ -28,7 +28,7 @@ type shiftedgecarryXArgsT struct {
 	argShx         int
 	argClampL      float32
 	argClampR      float32
-	argptr          [10]unsafe.Pointer
+	argptr         [10]unsafe.Pointer
 	sync.Mutex
 }
 

@@ -26,7 +26,7 @@ func Read(in io.Reader) (s *data.Slice, meta Meta, err error) {
 	info := readHeader(in)
 
 	n := info.Size
-	data_ := data.NewSlice(info.NComp, n)
+	dataSlice := data.NewSlice(info.NComp, n)
 
 	format := strings.ToLower(info.Format)
 	ovf := info.OVF
@@ -35,18 +35,18 @@ func Read(in io.Reader) (s *data.Slice, meta Meta, err error) {
 	default:
 		panic(fmt.Sprint("unknown format: OVF", ovf, " ", format))
 	case format == "text":
-		readOVFDataText(in, data_)
+		readOVFDataText(in, dataSlice)
 	case format == "binary 4" && ovf == 1:
-		readOVF1DataBinary4(in, data_)
+		readOVF1DataBinary4(in, dataSlice)
 	case format == "binary 8" && ovf == 1:
-		readOVF1DataBinary8(in, data_)
+		readOVF1DataBinary8(in, dataSlice)
 	case format == "binary 4" && ovf == 2:
-		readOVF2DataBinary4(in, data_)
+		readOVF2DataBinary4(in, dataSlice)
 	case format == "binary 8" && ovf == 2:
-		readOVF2DataBinary8(in, data_)
+		readOVF2DataBinary8(in, dataSlice)
 	}
 
-	return data_, Meta{Name: info.Title, Time: info.TotalTime, Unit: info.ValueUnit, CellSize: info.StepSize}, nil
+	return dataSlice, Meta{Name: info.Title, Time: info.TotalTime, Unit: info.ValueUnit, CellSize: info.StepSize}, nil
 }
 
 func ReadFile(fname string) (*data.Slice, Meta, error) {
@@ -54,7 +54,12 @@ func ReadFile(fname string) (*data.Slice, Meta, error) {
 	if err != nil {
 		return nil, Meta{}, err
 	}
-	defer f.Close()
+	defer func() {
+		cerr := f.Close()
+		if cerr != nil {
+			log.Log.Err("Error closing file %s: %v", fname, cerr)
+		}
+	}()
 	return Read(bufio.NewReader(f))
 }
 
@@ -228,10 +233,16 @@ func writeOVFText(out io.Writer, tens *data.Slice) (err error) {
 	for iz := 0; iz < gridsize[Z]; iz++ {
 		for iy := 0; iy < gridsize[Y]; iy++ {
 			for ix := 0; ix < gridsize[X]; ix++ {
-				for c := 0; c < ncomp; c++ {
-					fmt.Fprint(out, data[c][iz][iy][ix], " ")
+				for c := range ncomp {
+					_, err = fmt.Fprint(out, data[c][iz][iy][ix], " ")
+					if err != nil {
+						return err
+					}
 				}
 				_, err = fmt.Fprint(out, "\n")
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}

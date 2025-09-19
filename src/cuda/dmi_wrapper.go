@@ -24,8 +24,8 @@ type adddmiArgsT struct {
 	argMx      unsafe.Pointer
 	argMy      unsafe.Pointer
 	argMz      unsafe.Pointer
-	argMs     unsafe.Pointer
-	argMsMul  float32
+	argMs      unsafe.Pointer
+	argMsMul   float32
 	argALUT2d  unsafe.Pointer
 	argDLUT2d  unsafe.Pointer
 	argRegions unsafe.Pointer
@@ -37,7 +37,7 @@ type adddmiArgsT struct {
 	argNz      int
 	argPBC     byte
 	argOpenBC  byte
-	argptr      [19]unsafe.Pointer
+	argptr     [19]unsafe.Pointer
 	sync.Mutex
 }
 

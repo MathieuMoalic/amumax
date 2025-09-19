@@ -27,7 +27,7 @@ type dotproductArgsT struct {
 	argBy        unsafe.Pointer
 	argBz        unsafe.Pointer
 	argN         int
-	argptr        [9]unsafe.Pointer
+	argptr       [9]unsafe.Pointer
 	sync.Mutex
 }
 

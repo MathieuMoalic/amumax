@@ -32,7 +32,7 @@ type madd6ArgsT struct {
 	argSrc6 unsafe.Pointer
 	argFac6 float32
 	argN    int
-	argptr   [14]unsafe.Pointer
+	argptr  [14]unsafe.Pointer
 	sync.Mutex
 }
 

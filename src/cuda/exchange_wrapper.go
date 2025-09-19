@@ -24,8 +24,8 @@ type addexchangeArgsT struct {
 	argMx      unsafe.Pointer
 	argMy      unsafe.Pointer
 	argMz      unsafe.Pointer
-	argMs     unsafe.Pointer
-	argMsMul  float32
+	argMs      unsafe.Pointer
+	argMsMul   float32
 	argALUT2d  unsafe.Pointer
 	argRegions unsafe.Pointer
 	argWx      float32
@@ -35,7 +35,7 @@ type addexchangeArgsT struct {
 	argNy      int
 	argNz      int
 	argPBC     byte
-	argptr      [17]unsafe.Pointer
+	argptr     [17]unsafe.Pointer
 	sync.Mutex
 }
 

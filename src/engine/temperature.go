@@ -13,9 +13,9 @@ import (
 
 var (
 	Temp                      = newScalarParam("Temp", "K", "Temperature")
-	ETherm                   = newScalarValue("E_therm", "J", "Thermal energy", getThermalEnergy)
-	EdensTherm               = newScalarField("Edens_therm", "J/m3", "Thermal energy density", AddThermalEnergyDensity)
-	BTherm                   thermField // Thermal effective field (T)
+	ETherm                    = newScalarValue("E_therm", "J", "Thermal energy", getThermalEnergy)
+	EdensTherm                = newScalarField("Edens_therm", "J/m3", "Thermal energy density", AddThermalEnergyDensity)
+	BTherm                    thermField // Thermal effective field (T)
 	printedWarningTempOddGrid = false
 )
 
@@ -51,7 +51,7 @@ func (b *thermField) update() {
 	}
 
 	if b.generator == 0 {
-		b.generator = curand.CreateGenerator(curand.PSEUDO_DEFAULT)
+		b.generator = curand.CreateGenerator(curand.PseudoDefault)
 		b.generator.SetSeed(b.seed)
 	}
 	if b.noise == nil {
@@ -114,9 +114,8 @@ func (b *thermField) update() {
 func getThermalEnergy() float64 {
 	if Temp.isZero() || relaxing {
 		return 0
-	} else {
-		return -cellVolume() * dot(&MFull, &BTherm)
 	}
+	return -cellVolume() * dot(&MFull, &BTherm)
 }
 
 // Seeds the thermal noise generator

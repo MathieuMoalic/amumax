@@ -25,7 +25,7 @@ func init() {
 // input parameter, settable by user
 type regionwise struct {
 	lut
-	updReg    [NREGION]func() []float64 // time-dependent values
+	updReg     [NREGION]func() []float64 // time-dependent values
 	timestamp  float64                   // used not to double-evaluate f(t)
 	children   []derived                 // derived parameters
 	name, unit string
@@ -87,11 +87,10 @@ func (p *regionwise) init(nComp int, name, unit string, children []derived) {
 func (p *regionwise) MSlice() cuda.MSlice {
 	if p.IsUniform() {
 		return cuda.MakeMSlice(data.NilSlice(p.NComp(), GetMesh().Size()), p.getRegion(0))
-	} else {
-		buf, r := p.Slice()
-		log.AssertMsg(r, "Failed to retrieve slice: invalid state in regionwise.MSlice")
-		return cuda.ToMSlice(buf)
 	}
+	buf, r := p.Slice()
+	log.AssertMsg(r, "Failed to retrieve slice: invalid state in regionwise.MSlice")
+	return cuda.ToMSlice(buf)
 }
 
 func (p *regionwise) Name() string     { return p.name }
@@ -105,7 +104,7 @@ func (p *regionwise) update() {
 		for r := 0; r < NREGION; r++ {
 			updFunc := p.updReg[r]
 			if updFunc != nil {
-				p.bufset_(r, updFunc())
+				p.bufset(r, updFunc())
 				changed = true
 			}
 		}
@@ -137,12 +136,12 @@ func (p *regionwise) setRegions(r1, r2 int, v []float64) {
 
 	for r := r1; r < r2; r++ {
 		p.updReg[r] = nil
-		p.bufset_(r, v)
+		p.bufset(r, v)
 	}
 	p.invalidate()
 }
 
-func (p *regionwise) bufset_(region int, v []float64) {
+func (p *regionwise) bufset(region int, v []float64) {
 	for c := range p.cpuBuf {
 		p.cpuBuf[c][region] = float32(v[c])
 	}
@@ -268,9 +267,8 @@ func isConst(e script.Expr) bool {
 func cat(desc, unit string) string {
 	if unit == "" {
 		return desc
-	} else {
-		return desc + " (" + unit + ")"
 	}
+	return desc + " (" + unit + ")"
 }
 
 // these methods should only be accesible from Go

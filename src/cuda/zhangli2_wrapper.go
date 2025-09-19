@@ -18,12 +18,12 @@ var addzhanglitorque2Code cu.Function
 
 // Stores the arguments for addzhanglitorque2 kernel invocation
 type addzhanglitorque2ArgsT struct {
-	argTx        unsafe.Pointer
-	argTy        unsafe.Pointer
-	argTz        unsafe.Pointer
-	argMx        unsafe.Pointer
-	argMy        unsafe.Pointer
-	argMz        unsafe.Pointer
+	argTx       unsafe.Pointer
+	argTy       unsafe.Pointer
+	argTz       unsafe.Pointer
+	argMx       unsafe.Pointer
+	argMy       unsafe.Pointer
+	argMz       unsafe.Pointer
 	argMs       unsafe.Pointer
 	argMsMul    float32
 	argJx       unsafe.Pointer
@@ -38,14 +38,14 @@ type addzhanglitorque2ArgsT struct {
 	argXiMul    float32
 	argPol      unsafe.Pointer
 	argPolMul   float32
-	argCx        float32
-	argCy        float32
-	argCz        float32
-	argNx        int
-	argNy        int
-	argNz        int
-	argPBC       byte
-	argptr        [27]unsafe.Pointer
+	argCx       float32
+	argCy       float32
+	argCz       float32
+	argNx       int
+	argNy       int
+	argNz       int
+	argPBC      byte
+	argptr      [27]unsafe.Pointer
 	sync.Mutex
 }
 

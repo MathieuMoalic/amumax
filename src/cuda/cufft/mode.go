@@ -11,7 +11,7 @@ import (
 type CompatibilityMode int
 
 const (
-	COMPATIBILITY_FFTW_PADDING CompatibilityMode = C.CUFFT_COMPATIBILITY_FFTW_PADDING
+	CompatibilityFFTWPadding CompatibilityMode = C.CUFFT_COMPATIBILITY_FFTW_PADDING
 )
 
 func (t CompatibilityMode) String() string {
@@ -22,5 +22,5 @@ func (t CompatibilityMode) String() string {
 }
 
 var compatibilityModeString map[CompatibilityMode]string = map[CompatibilityMode]string{
-	COMPATIBILITY_FFTW_PADDING: "CUFFT_COMPATIBILITY_FFTW_PADDING",
+	CompatibilityFFTWPadding: "CUFFT_COMPATIBILITY_FFTW_PADDING",
 }

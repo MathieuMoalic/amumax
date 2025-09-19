@@ -91,9 +91,8 @@ func download(q Quantity) *data.Slice {
 	defer cuda.Recycle(buf)
 	if buf.CPUAccess() {
 		return buf
-	} else {
-		return buf.HostCopy()
 	}
+	return buf.HostCopy()
 }
 
 // print with special formatting for some known types
@@ -154,9 +153,8 @@ func unslice(v []float64) [3]float64 {
 func assureGPU(s *data.Slice) *data.Slice {
 	if s.GPUAccess() {
 		return s
-	} else {
-		return cuda.GPUCopy(s)
 	}
+	return cuda.GPUCopy(s)
 }
 
 func checkNaN1(x float64) {

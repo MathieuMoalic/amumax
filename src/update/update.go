@@ -26,7 +26,12 @@ func doUpdate(tag string) {
 		os.Exit(1)
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		cerr := resp.Body.Close()
+		if cerr != nil {
+			color.Red("Error closing response body: %v", cerr)
+		}
+	}()
 	err = selfupdate.Apply(resp.Body, selfupdate.Options{})
 	if err != nil {
 		color.Red("Error updating")
@@ -44,7 +49,12 @@ func getTags() (tags []string) {
 		color.Red(fmt.Sprintf("Error fetching tags: %s", err))
 		os.Exit(1)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		cerr := resp.Body.Close()
+		if cerr != nil {
+			color.Red("Error closing response body: %v", cerr)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		color.Red(fmt.Sprintf("unexpected status code: %d", resp.StatusCode))

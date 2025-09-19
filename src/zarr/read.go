@@ -101,7 +101,7 @@ func readAndDecompressData(binaryPath string) ([]byte, error) {
 	var dataBytes []byte
 	var lastErr error
 
-	for retries := 0; retries < maxRetries; retries++ {
+	for range maxRetries {
 		// Open the file
 		ioReader, err := fsutil.Open(binaryPath)
 		if err != nil {
@@ -113,7 +113,10 @@ func readAndDecompressData(binaryPath string) ([]byte, error) {
 
 		// Read the compressed data
 		compressedData, err := io.ReadAll(ioReader)
-		ioReader.Close()
+		cerr := ioReader.Close()
+		if cerr != nil {
+			log.Log.Err("Error closing file: %v", cerr)
+		}
 		if err != nil {
 			lastErr = err
 			log.Log.Info("Error reading file: %v, retrying in %v...", err, retryDelay)
@@ -162,10 +165,10 @@ func reconstructTensors(dataBytes []byte, tensors [][][][]float32) error {
 	}
 
 	count := 0
-	for iz := 0; iz < sizez; iz++ {
-		for iy := 0; iy < sizey; iy++ {
-			for ix := 0; ix < sizex; ix++ {
-				for c := 0; c < ncomp; c++ {
+	for iz := range sizez {
+		for iy := range sizey {
+			for ix := range sizex {
+				for c := range ncomp {
 					start := count * 4
 					end := start + 4
 					if end > len(dataBytes) {

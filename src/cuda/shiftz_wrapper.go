@@ -26,7 +26,7 @@ type shiftzArgsT struct {
 	argShz    int
 	argClampL float32
 	argClampR float32
-	argptr     [8]unsafe.Pointer
+	argptr    [8]unsafe.Pointer
 	sync.Mutex
 }
 

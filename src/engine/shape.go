@@ -2,8 +2,8 @@ package engine
 
 import (
 	"image"
-	_ "image/jpeg"
-	_ "image/png"
+	_ "image/jpeg" // register JPEG format for image decoding
+	_ "image/png"  // register PNG format for image decoding
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/fsutil"
@@ -110,12 +110,11 @@ func squircle(sidex, sidey, sidez, a float64) shape {
 
 		if math.Abs(x) > sidex/2 && math.Abs(y) > sidey/2 {
 			return false
-		} else {
-			inSquircleXY := value <= 1
-			rz := sidez / 2
-			inThickness := z >= -rz && z <= rz
-			return inSquircleXY && inThickness
 		}
+		inSquircleXY := value <= 1
+		rz := sidez / 2
+		inThickness := z >= -rz && z <= rz
+		return inSquircleXY && inThickness
 	}
 }
 
@@ -190,7 +189,11 @@ func universeInner(x, y, z float64) bool {
 func imageShape(fname string) shape {
 	r, err1 := fsutil.Open(fname)
 	log.Log.PanicIfError(err1)
-	defer r.Close()
+	defer func() {
+		if err := r.Close(); err != nil {
+			log.Log.PanicIfError(err)
+		}
+	}()
 	img, _, err2 := image.Decode(r)
 	log.Log.PanicIfError(err2)
 
@@ -222,9 +225,8 @@ func imageShape(fname string) shape {
 		iy := int((h/ny)*(y/cy) + 0.5*h)
 		if ix < 0 || ix >= width || iy < 0 || iy >= height {
 			return false
-		} else {
-			return inside[iy][ix]
 		}
+		return inside[iy][ix]
 	}
 }
 
@@ -264,9 +266,8 @@ func fmod(a, b float64) float64 {
 	}
 	if math.Abs(a) > b/2 {
 		return sign(a) * (math.Mod(math.Abs(a+b/2), b) - b/2)
-	} else {
-		return a
 	}
+	return a
 }
 
 // Scale returns a scaled copy of the shape.
@@ -281,9 +282,9 @@ func (s shape) RotZ(θ float64) shape {
 	cos := math.Cos(θ)
 	sin := math.Sin(θ)
 	return func(x, y, z float64) bool {
-		x_ := x*cos + y*sin
-		y_ := -x*sin + y*cos
-		return s(x_, y_, z)
+		xOut := x*cos + y*sin
+		yOut := -x*sin + y*cos
+		return s(xOut, yOut, z)
 	}
 }
 
@@ -292,9 +293,9 @@ func (s shape) RotY(θ float64) shape {
 	cos := math.Cos(θ)
 	sin := math.Sin(θ)
 	return func(x, y, z float64) bool {
-		x_ := x*cos - z*sin
-		z_ := x*sin + z*cos
-		return s(x_, y, z_)
+		xOut := x*cos - z*sin
+		zOut := x*sin + z*cos
+		return s(xOut, y, zOut)
 	}
 }
 
@@ -303,9 +304,9 @@ func (s shape) RotX(θ float64) shape {
 	cos := math.Cos(θ)
 	sin := math.Sin(θ)
 	return func(x, y, z float64) bool {
-		y_ := y*cos + z*sin
-		z_ := -y*sin + z*cos
-		return s(x, y_, z_)
+		yOut := y*cos + z*sin
+		zOut := -y*sin + z*cos
+		return s(x, yOut, zOut)
 	}
 }
 

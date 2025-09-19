@@ -30,7 +30,10 @@ func (l *Logs) AutoFlushToFile() {
 
 func (l *Logs) FlushToFile() {
 	if l.logfile != nil {
-		l.logfile.Flush()
+		err := l.logfile.Flush()
+		if err != nil {
+			color.Red(fmt.Sprintf("Error flushing log file: %v", err))
+		}
 	}
 }
 
@@ -98,12 +101,14 @@ func (l *Logs) Debug(msg string, args ...any) {
 	}
 }
 
+// Err prints an error message in red and adds it to the log history, does not exit or panic
 func (l *Logs) Err(msg string, args ...any) {
 	formattedMsg := "// " + fmt.Sprintf(msg, args...) + "\n"
 	color.Red(formattedMsg)
 	l.addAndWrite(formattedMsg)
 }
 
+// PanicIfError panics if err != nil, printing also the file and line number of the caller
 func (l *Logs) PanicIfError(err error) {
 	if err != nil {
 		_, file, line, _ := runtime.Caller(1)
@@ -112,6 +117,7 @@ func (l *Logs) PanicIfError(err error) {
 	}
 }
 
+// ErrAndExit prints an error message in red, adds it to the log history, and exits with code 1
 func (l *Logs) ErrAndExit(msg string, args ...any) {
 	l.Err(msg, args...)
 	os.Exit(1)

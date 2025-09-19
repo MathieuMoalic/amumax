@@ -27,7 +27,7 @@ type reducemaxvecdiff2ArgsT struct {
 	argDst     unsafe.Pointer
 	argInitVal float32
 	argN       int
-	argptr      [9]unsafe.Pointer
+	argptr     [9]unsafe.Pointer
 	sync.Mutex
 }
 

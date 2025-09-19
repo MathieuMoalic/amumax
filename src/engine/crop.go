@@ -107,9 +107,8 @@ func crop(parent Quantity, x1, x2, y1, y2, z1, z2 int) *cropped {
 func rangeStr(a, b int) string {
 	if a+1 == b {
 		return fmt.Sprint(a)
-	} else {
-		return fmt.Sprint(a, "-", b)
 	}
+	return fmt.Sprint(a, "-", b)
 	// (trailing underscore to separate from subsequent autosave number)
 }
 

@@ -30,7 +30,7 @@ type kernmulRSymm3DArgsT struct {
 	argNx     int
 	argNy     int
 	argNz     int
-	argptr     [12]unsafe.Pointer
+	argptr    [12]unsafe.Pointer
 	sync.Mutex
 }
 

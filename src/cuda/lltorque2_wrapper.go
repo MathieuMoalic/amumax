@@ -18,19 +18,19 @@ var lltorque2Code cu.Function
 
 // Stores the arguments for lltorque2 kernel invocation
 type lltorque2ArgsT struct {
-	argTx        unsafe.Pointer
-	argTy        unsafe.Pointer
-	argTz        unsafe.Pointer
-	argMx        unsafe.Pointer
-	argMy        unsafe.Pointer
-	argMz        unsafe.Pointer
-	argHx        unsafe.Pointer
-	argHy        unsafe.Pointer
-	argHz        unsafe.Pointer
+	argTx       unsafe.Pointer
+	argTy       unsafe.Pointer
+	argTz       unsafe.Pointer
+	argMx       unsafe.Pointer
+	argMy       unsafe.Pointer
+	argMz       unsafe.Pointer
+	argHx       unsafe.Pointer
+	argHy       unsafe.Pointer
+	argHz       unsafe.Pointer
 	argAlpha    unsafe.Pointer
 	argAlphaMul float32
-	argN         int
-	argptr        [12]unsafe.Pointer
+	argN        int
+	argptr      [12]unsafe.Pointer
 	sync.Mutex
 }
 

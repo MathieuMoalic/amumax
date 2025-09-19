@@ -28,7 +28,7 @@ type setmaxangleArgsT struct {
 	argNy      int
 	argNz      int
 	argPBC     byte
-	argptr      [10]unsafe.Pointer
+	argptr     [10]unsafe.Pointer
 	sync.Mutex
 }
 

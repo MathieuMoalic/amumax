@@ -53,7 +53,6 @@ func interpolateMaxpos(f0, d1, f1, d2, f2 float32) float64 {
 func abs(x float32) float32 {
 	if x > 0 {
 		return x
-	} else {
-		return -x
 	}
+	return -x
 }

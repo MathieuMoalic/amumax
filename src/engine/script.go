@@ -140,7 +140,6 @@ func (w *lValueWrapper) InputType() reflect.Type {
 		InputType() reflect.Type
 	}); ok {
 		return i.InputType()
-	} else {
-		return w.Type()
 	}
+	return w.Type()
 }

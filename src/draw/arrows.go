@@ -89,7 +89,6 @@ func (c *canvas) Arrow(x, y, mx, my, mz, size float32) {
 func imax(a, b int) int {
 	if a > b {
 		return a
-	} else {
-		return b
 	}
+	return b
 }

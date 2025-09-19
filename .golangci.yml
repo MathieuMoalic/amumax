@@ -3,7 +3,6 @@ version: "2"
 run:
   timeout: 3m
 
-# Formatters (were linters in v1)
 formatters:
   enable:
     - gofmt
@@ -11,7 +10,6 @@ formatters:
   settings:
     gofmt:
       simplify: true
-    # set your module path(s) if you want local imports grouped separately
     goimports:
       local-prefixes:
         - github.com/MathieuMoalic/amumax/src
@@ -22,9 +20,12 @@ linters:
     - misspell
     - staticcheck
   settings:
+    govet:
+      disable:
+        - unsafeptr
     revive:
       rules:
-        - name: exported
+        # - name: exported
         - name: var-naming
         - name: if-return
         - name: indent-error-flow

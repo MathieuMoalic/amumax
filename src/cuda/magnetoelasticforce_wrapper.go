@@ -18,24 +18,24 @@ var getmagnetoelasticforceCode cu.Function
 
 // Stores the arguments for getmagnetoelasticforce kernel invocation
 type getmagnetoelasticforceArgsT struct {
-	argFx     unsafe.Pointer
-	argFy     unsafe.Pointer
-	argFz     unsafe.Pointer
-	argMx     unsafe.Pointer
-	argMy     unsafe.Pointer
-	argMz     unsafe.Pointer
+	argFx    unsafe.Pointer
+	argFy    unsafe.Pointer
+	argFz    unsafe.Pointer
+	argMx    unsafe.Pointer
+	argMy    unsafe.Pointer
+	argMz    unsafe.Pointer
 	argB1    unsafe.Pointer
 	argB1Mul float32
 	argB2    unsafe.Pointer
 	argB2Mul float32
-	argRcsx   float32
-	argRcsy   float32
-	argRcsz   float32
-	argNx     int
-	argNy     int
-	argNz     int
-	argPBC    byte
-	argptr     [17]unsafe.Pointer
+	argRcsx  float32
+	argRcsy  float32
+	argRcsz  float32
+	argNx    int
+	argNy    int
+	argNz    int
+	argPBC   byte
+	argptr   [17]unsafe.Pointer
 	sync.Mutex
 }
 

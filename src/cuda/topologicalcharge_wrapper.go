@@ -27,7 +27,7 @@ type settopologicalchargeArgsT struct {
 	argNy    int
 	argNz    int
 	argPBC   byte
-	argptr    [9]unsafe.Pointer
+	argptr   [9]unsafe.Pointer
 	sync.Mutex
 }
 

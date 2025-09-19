@@ -20,7 +20,7 @@ var (
 
 	EnableDemag   = true // enable/disable global demag field
 	NoDemagSpins  = newScalarParam("NoDemagSpins", "", "Disable magnetostatic interaction per region (default=0, set to 1 to disable). ")
-	conv_         *cuda.DemagConvolution // does the heavy lifting
+	conv          *cuda.DemagConvolution // does the heavy lifting
 	DemagAccuracy = 6.0                  // Demag accuracy (divide cubes in at most N^3 points)
 )
 
@@ -97,15 +97,15 @@ func setMFull(dst *data.Slice) {
 
 // returns demag convolution, making sure it's initialized
 func demagConv() *cuda.DemagConvolution {
-	if conv_ == nil {
+	if conv == nil {
 		setBusy(true)
 		defer setBusy(false)
 		// these 2 lines make sure the progress bar doesn't break when calculating the kernel
 		fmt.Print("\033[2K\r") // clearline ANSI escape code
 		kernel := mag.DemagKernel(GetMesh().Size(), GetMesh().PBC(), GetMesh().CellSize(), DemagAccuracy, CacheDir, HideProgresBar)
-		conv_ = cuda.NewDemag(GetMesh().Size(), GetMesh().PBC(), kernel, SelfTest)
+		conv = cuda.NewDemag(GetMesh().Size(), GetMesh().PBC(), kernel, SelfTest)
 	}
-	return conv_
+	return conv
 }
 
 // Returns the current demag energy in Joules.

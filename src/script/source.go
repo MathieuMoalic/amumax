@@ -22,7 +22,6 @@ func (w *World) compileSource(n *ast.CallExpr) Expr {
 			panic(err(n.Pos(), err2))
 		}
 		return block
-	} else {
-		panic(err(n.Pos(), "source() needs literal string argument"))
 	}
+	panic(err(n.Pos(), "source() needs literal string argument"))
 }

@@ -68,7 +68,8 @@ func (ts *tableStruct) Flush() {
 		// saving .zarray before the data might help resolve some unsync
 		// errors when the simulation is running and the user loads data
 		zarr.SaveFileTableZarray(OD()+"table/"+ts.Columns[i].Name, ts.Step)
-		ts.Columns[i].io.Flush()
+		err = ts.Columns[i].io.Flush()
+		log.Log.PanicIfError(err)
 	}
 }
 

@@ -26,7 +26,7 @@ type copyunpadArgsT struct {
 	argSx  int
 	argSy  int
 	argSz  int
-	argptr  [8]unsafe.Pointer
+	argptr [8]unsafe.Pointer
 	sync.Mutex
 }
 

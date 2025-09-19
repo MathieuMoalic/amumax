@@ -69,9 +69,8 @@ func DefRegion(id int, s shape) {
 	f := func(x, y, z float64) int {
 		if s(x, y, z) {
 			return id
-		} else {
-			return -1
 		}
+		return -1
 	}
 	Regions.render(f)
 	Regions.AddIndex(id)
@@ -97,9 +96,8 @@ func RedefRegion(startID, endID int) {
 		}
 		if value == startID {
 			return endID
-		} else {
-			return value
 		}
+		return value
 	}
 	Regions.redefine(startID, endID)
 	Regions.hist = append(Regions.hist, f)
@@ -188,8 +186,8 @@ func defRegionID(id int) {
 
 // normalized volume (0..1) of region.
 // TODO: a tidbit too expensive
-func (rs *RegionsState) volume(region_ int) float64 {
-	region := byte(region_)
+func (rs *RegionsState) volume(regionIdx int) float64 {
+	region := byte(regionIdx)
 	vol := 0
 	list := rs.RegionListCPU()
 	for _, reg := range list {

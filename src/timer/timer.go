@@ -6,12 +6,14 @@ import (
 	"io"
 	"sort"
 	"time"
+
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 var (
-	clocks      map[string]*clock
+	clocks     map[string]*clock
 	firstStart time.Time
-	Enabled     bool
+	Enabled    bool
 )
 
 func Start(key string) {
@@ -102,6 +104,9 @@ func Print(out io.Writer) {
 	sort.Sort(lines)
 
 	for _, l := range lines {
-		fmt.Fprintln(out, &l)
+		_, err := fmt.Fprintln(out, &l)
+		if err != nil {
+			log.Log.Err("Error writing timer stats: %v", err)
+		}
 	}
 }

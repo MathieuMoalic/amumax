@@ -107,7 +107,6 @@ func norm(x float64) float64 {
 func sinc(x float64) float64 {
 	if x == 0 {
 		return 1
-	} else {
-		return math.Sin(x) / x
 	}
+	return math.Sin(x) / x
 }

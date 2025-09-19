@@ -23,7 +23,7 @@ type reducedotArgsT struct {
 	argDst     unsafe.Pointer
 	argInitVal float32
 	argN       int
-	argptr      [5]unsafe.Pointer
+	argptr     [5]unsafe.Pointer
 	sync.Mutex
 }
 

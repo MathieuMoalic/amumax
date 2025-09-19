@@ -17,7 +17,10 @@ func (w *World) CompileExpr(src string) (code Expr, e error) {
 		return nil, fmt.Errorf(`parse "%s": %v`, src, err)
 	}
 	if Debug {
-		ast.Print(nil, tree)
+		err = ast.Print(nil, tree)
+		if err != nil {
+			return nil, fmt.Errorf(`print "%s": %v`, src, err)
+		}
 	}
 
 	// catch compile errors
@@ -79,7 +82,10 @@ func (w *World) Compile(src string) (code *BlockStmt, e error) {
 	// compile
 	stmts := tree.(*ast.FuncLit).Body.List // strip func again
 	if Debug {
-		ast.Print(nil, stmts)
+		err = ast.Print(nil, stmts)
+		if err != nil {
+			return nil, fmt.Errorf(`print "%s": %v`, src, err)
+		}
 	}
 	block := new(BlockStmt)
 	for _, s := range stmts {

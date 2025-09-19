@@ -223,7 +223,7 @@ func GetLocalIP() string {
 func (s *stateTab) RenderHTML(w io.Writer) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	fmt.Fprintln(w, ` 
+	_, err := fmt.Fprintln(w, ` 
 <!DOCTYPE html> <html> <head> 
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<meta http-equiv="refresh" content="1">
@@ -255,15 +255,27 @@ func (s *stateTab) RenderHTML(w io.Writer) {
 	<span style="color:#ffb86c; font-weight:bold; font-size:1.5em"> amumax queue status </span><br/>
 	<hr/>
 	<pre>`)
+	if err != nil {
+		log.Log.Err("Error writing HTML header: %v", err)
+	}
 
 	for _, j := range s.jobs {
 		if j.webAddr != "" {
-			fmt.Fprint(w, `<b>`, j.uid, ` <a href="`, "http://", GetLocalIP()+j.webAddr, `">`, j.inFile, " ", j.webAddr, "</a></b>\n")
+			_, err := fmt.Fprint(w, `<b>`, j.uid, ` <a href="`, "http://", GetLocalIP()+j.webAddr, `">`, j.inFile, " ", j.webAddr, "</a></b>\n")
+			if err != nil {
+				log.Log.Err("Error writing job info: %v", err)
+			}
 		} else {
-			fmt.Fprint(w, j.uid, " ", j.inFile, "\n")
+			_, err := fmt.Fprint(w, j.uid, " ", j.inFile, "\n")
+			if err != nil {
+				log.Log.Err("Error writing job info: %v", err)
+			}
 		}
 	}
-	fmt.Fprintln(w, `</pre><hr/></body></html>`)
+	_, err = fmt.Fprintln(w, `</pre><hr/></body></html>`)
+	if err != nil {
+		log.Log.Err("Error writing HTML footer: %v", err)
+	}
 }
 
 func (s *stateTab) ListenAndServe(addr string) {

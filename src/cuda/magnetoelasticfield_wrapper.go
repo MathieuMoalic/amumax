@@ -18,12 +18,12 @@ var addmagnetoelasticfieldCode cu.Function
 
 // Stores the arguments for addmagnetoelasticfield kernel invocation
 type addmagnetoelasticfieldArgsT struct {
-	argBx      unsafe.Pointer
-	argBy      unsafe.Pointer
-	argBz      unsafe.Pointer
-	argMx      unsafe.Pointer
-	argMy      unsafe.Pointer
-	argMz      unsafe.Pointer
+	argBx     unsafe.Pointer
+	argBy     unsafe.Pointer
+	argBz     unsafe.Pointer
+	argMx     unsafe.Pointer
+	argMy     unsafe.Pointer
+	argMz     unsafe.Pointer
 	argExx    unsafe.Pointer
 	argExxMul float32
 	argEyy    unsafe.Pointer
@@ -42,8 +42,8 @@ type addmagnetoelasticfieldArgsT struct {
 	argB2Mul  float32
 	argMs     unsafe.Pointer
 	argMsMul  float32
-	argN       int
-	argptr      [25]unsafe.Pointer
+	argN      int
+	argptr    [25]unsafe.Pointer
 	sync.Mutex
 }
 

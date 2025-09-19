@@ -22,7 +22,7 @@ type reducemaxabsArgsT struct {
 	argDst     unsafe.Pointer
 	argInitVal float32
 	argN       int
-	argptr      [4]unsafe.Pointer
+	argptr     [4]unsafe.Pointer
 	sync.Mutex
 }
 

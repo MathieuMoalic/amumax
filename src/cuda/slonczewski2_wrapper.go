@@ -24,30 +24,30 @@ type addslonczewskitorque2ArgsT struct {
 	argMx                unsafe.Pointer
 	argMy                unsafe.Pointer
 	argMz                unsafe.Pointer
-	argMs               unsafe.Pointer
-	argMsMul            float32
-	argJz               unsafe.Pointer
-	argJzMul            float32
-	argPx               unsafe.Pointer
-	argPxMul            float32
-	argPy               unsafe.Pointer
-	argPyMul            float32
-	argPz               unsafe.Pointer
-	argPzMul            float32
-	argAlpha            unsafe.Pointer
-	argAlphaMul         float32
-	argPol              unsafe.Pointer
-	argPolMul           float32
-	argLambda           unsafe.Pointer
-	argLambdaMul        float32
-	argEpsPrime         unsafe.Pointer
-	argEpsPrimeMul      float32
-	argThickness        unsafe.Pointer
-	argThicknessMul     float32
+	argMs                unsafe.Pointer
+	argMsMul             float32
+	argJz                unsafe.Pointer
+	argJzMul             float32
+	argPx                unsafe.Pointer
+	argPxMul             float32
+	argPy                unsafe.Pointer
+	argPyMul             float32
+	argPz                unsafe.Pointer
+	argPzMul             float32
+	argAlpha             unsafe.Pointer
+	argAlphaMul          float32
+	argPol               unsafe.Pointer
+	argPolMul            float32
+	argLambda            unsafe.Pointer
+	argLambdaMul         float32
+	argEpsPrime          unsafe.Pointer
+	argEpsPrimeMul       float32
+	argThickness         unsafe.Pointer
+	argThicknessMul      float32
 	argMeshThickness     float32
 	argFreeLayerPosition float32
 	argN                 int
-	argptr                [29]unsafe.Pointer
+	argptr               [29]unsafe.Pointer
 	sync.Mutex
 }
 

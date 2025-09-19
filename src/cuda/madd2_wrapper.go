@@ -24,7 +24,7 @@ type madd2ArgsT struct {
 	argSrc2 unsafe.Pointer
 	argFac2 float32
 	argN    int
-	argptr   [6]unsafe.Pointer
+	argptr  [6]unsafe.Pointer
 	sync.Mutex
 }
 

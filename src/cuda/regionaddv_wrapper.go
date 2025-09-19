@@ -26,7 +26,7 @@ type regionaddvArgsT struct {
 	argLUTz    unsafe.Pointer
 	argRegions unsafe.Pointer
 	argN       int
-	argptr      [8]unsafe.Pointer
+	argptr     [8]unsafe.Pointer
 	sync.Mutex
 }
 

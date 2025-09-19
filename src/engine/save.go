@@ -93,7 +93,11 @@ func snapshotAs(q Quantity, fname string) {
 func snapshotSync(fname string, output *data.Slice) {
 	f, err := fsutil.Create(fname)
 	log.Log.PanicIfError(err)
-	defer f.Close()
+	defer func() {
+		if cerr := f.Close(); cerr != nil {
+			log.Log.Warn("Error while closing file: %v", cerr)
+		}
+	}()
 	arrowSize := 16
 	err = draw.RenderFormat(f, output, "auto", "auto", arrowSize, path.Ext(fname))
 	if err != nil {
@@ -105,7 +109,11 @@ func snapshotSync(fname string, output *data.Slice) {
 func saveAsSync(fname string, s *data.Slice, info oommf.Meta, format outputFormatType) {
 	f, err := fsutil.Create(fname)
 	log.Log.PanicIfError(err)
-	defer f.Close()
+	defer func() {
+		if cerr := f.Close(); cerr != nil {
+			log.Log.Warn("Error while closing file: %v", cerr)
+		}
+	}()
 
 	switch format {
 	case OVF1Text:

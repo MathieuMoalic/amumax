@@ -154,7 +154,6 @@ func (t *tesselation3d) truncNorm(lambda float64) int {
 	ret := lambda + math.Sqrt(lambda)*t.rnd.NormFloat64()
 	if ret <= 0 {
 		return 1
-	} else {
-		return int(ret + 0.5)
 	}
+	return int(ret + 0.5)
 }

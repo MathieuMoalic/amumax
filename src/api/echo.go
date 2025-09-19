@@ -105,7 +105,10 @@ func FindAvailablePort(host string, startPort int) (string, string, error) {
 		listener, err := net.Listen("tcp", address)
 		if err == nil {
 			// Close the listener immediately, we just wanted to check availability
-			listener.Close()
+			errl := listener.Close()
+			if errl != nil {
+				log.Log.Err("Failed to close listener: %v", errl)
+			}
 			return address, strconv.Itoa(port), nil
 		}
 	}

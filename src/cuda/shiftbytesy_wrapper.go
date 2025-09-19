@@ -25,7 +25,7 @@ type shiftbytesyArgsT struct {
 	argNz    int
 	argShy   int
 	argClamp byte
-	argptr    [7]unsafe.Pointer
+	argptr   [7]unsafe.Pointer
 	sync.Mutex
 }
 

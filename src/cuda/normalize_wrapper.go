@@ -23,7 +23,7 @@ type normalizeArgsT struct {
 	argVz  unsafe.Pointer
 	argVol unsafe.Pointer
 	argN   int
-	argptr  [5]unsafe.Pointer
+	argptr [5]unsafe.Pointer
 	sync.Mutex
 }
 

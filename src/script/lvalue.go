@@ -18,9 +18,8 @@ func (w *World) compileLvalue(lhs ast.Node) LValue {
 	case *ast.Ident:
 		if l, ok := w.resolve(lhs.Pos(), lhs.Name).(LValue); ok {
 			return l
-		} else {
-			panic(err(lhs.Pos(), "cannot assign to", lhs.Name))
 		}
+		panic(err(lhs.Pos(), "cannot assign to", lhs.Name))
 	}
 }
 

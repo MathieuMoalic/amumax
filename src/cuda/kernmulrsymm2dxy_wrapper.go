@@ -25,7 +25,7 @@ type kernmulRSymm2DxyArgsT struct {
 	argFftKxy unsafe.Pointer
 	argNx     int
 	argNy     int
-	argptr     [7]unsafe.Pointer
+	argptr    [7]unsafe.Pointer
 	sync.Mutex
 }
 

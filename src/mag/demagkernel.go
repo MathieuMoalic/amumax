@@ -3,6 +3,7 @@ package mag
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"time"
@@ -56,18 +57,17 @@ func DemagKernel(gridsize, pbc [3]int, cellsize [3]float64, accuracy float64, ca
 			kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, hideProgressBar)
 		}
 		return kernel
-	} else {
-		log.Log.Info("Calculating kernel and saving to cache")
-		timer := time.Now()
-		kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, hideProgressBar)
-		err := saveKernel(basename, kernel)
-		if err != nil {
-			log.Log.Warn("Couldn't save kernel to cache: %v \n %v", basename, err.Error())
-		}
-		timeTaken := time.Since(timer)
-		log.Log.Info("Saved kernel in %s", timeTaken.String())
-		return
 	}
+	log.Log.Info("Calculating kernel and saving to cache")
+	timer := time.Now()
+	kernel = calcDemagKernel(gridsize, pbc, cellsize, accuracy, hideProgressBar)
+	err := saveKernel(basename, kernel)
+	if err != nil {
+		log.Log.Warn("Couldn't save kernel to cache: %v \n %v", basename, err.Error())
+	}
+	timeTaken := time.Since(timer)
+	log.Log.Info("Saved kernel in %s", timeTaken.String())
+	return
 }
 
 func bytesToKernel(kernelBytes []byte, size [3]int) (kernel [3][3]*data.Slice) {
@@ -148,18 +148,33 @@ func loadKernel(fname string, size [3]int) ([3][3]*data.Slice, error) {
 	return bytesToKernel(kernelBytes, size), nil
 }
 
-func saveKernel(fname string, kernel [3][3]*data.Slice) error {
+// saveKernel writes the kernel bytes to fname atomically over the existing file.
+func saveKernel(fname string, kernel [3][3]*data.Slice) (retErr error) {
 	kernelBytes := kernelToBytes(kernel)
+
 	f, err := os.OpenFile(fname, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0o666)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if cerr := f.Close(); cerr != nil && retErr == nil {
+			retErr = cerr
+		}
+	}()
+
 	out := bufio.NewWriter(f)
-	defer out.Flush()
-	_, err = out.Write(kernelBytes)
+	defer func() {
+		if ferr := out.Flush(); ferr != nil && retErr == nil {
+			retErr = ferr
+		}
+	}()
+
+	n, err := out.Write(kernelBytes)
 	if err != nil {
 		return err
+	}
+	if n != len(kernelBytes) {
+		return io.ErrShortWrite
 	}
 	return nil
 }

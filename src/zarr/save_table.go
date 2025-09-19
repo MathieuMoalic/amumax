@@ -35,12 +35,18 @@ func SaveFileTableZarray(path string, zTableAutoSaveStep int) {
 	f, err := fsutil.Create(path + "/.zarray")
 	log.Log.PanicIfError(err)
 
-	defer f.Close()
+	defer func() {
+		cerr := f.Close()
+		if cerr != nil {
+			log.Log.Err("Error closing zarray file: %v", cerr)
+		}
+	}()
 	enc := json.NewEncoder(f)
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "\t")
 	log.Log.PanicIfError(enc.Encode(z))
-	f.Flush()
+	err = f.Flush()
+	log.Log.PanicIfError(err)
 }
 
 func pathExists(path string) bool {

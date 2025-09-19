@@ -64,7 +64,9 @@ func (cm *connectionManager) broadcast(msg []byte) {
 		err := ws.WriteMessage(websocket.BinaryMessage, msg)
 		if err != nil {
 			log.Log.Err("Error sending message via WebSocket: %v", err)
-			ws.Close()
+			if cerr := ws.Close(); cerr != nil {
+				log.Log.Err("Error closing WebSocket: %v", cerr)
+			}
 			delete(cm.conns, ws)
 		}
 	}
@@ -78,7 +80,11 @@ func (wsManager *WebSocketManager) websocketEntrypoint(c echo.Context) error {
 		log.Log.Err("Error upgrading connection to WebSocket: %v", err)
 		return err
 	}
-	defer ws.Close()
+	defer func() {
+		if err := ws.Close(); err != nil {
+			log.Log.Err("Error closing WebSocket: %v", err)
+		}
+	}()
 
 	wsManager.connections.add(ws)
 	defer wsManager.connections.remove(ws)

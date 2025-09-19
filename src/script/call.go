@@ -64,9 +64,8 @@ func (c *call) Eval() any {
 	assert(len(ret) <= 1)
 	if len(ret) == 0 {
 		return nil
-	} else {
-		return ret[0].Interface()
 	}
+	return ret[0].Interface()
 }
 
 func (c *call) Child() []Expr {

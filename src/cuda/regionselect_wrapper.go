@@ -23,7 +23,7 @@ type regionselectArgsT struct {
 	argRegions unsafe.Pointer
 	argRegion  byte
 	argN       int
-	argptr      [5]unsafe.Pointer
+	argptr     [5]unsafe.Pointer
 	sync.Mutex
 }
 

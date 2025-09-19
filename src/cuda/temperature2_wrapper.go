@@ -18,8 +18,8 @@ var settemperature2Code cu.Function
 
 // Stores the arguments for settemperature2 kernel invocation
 type settemperature2ArgsT struct {
-	argB            unsafe.Pointer
-	argNoise        unsafe.Pointer
+	argB           unsafe.Pointer
+	argNoise       unsafe.Pointer
 	argKB2VgammaDt float32
 	argMs          unsafe.Pointer
 	argMsMul       float32
@@ -27,8 +27,8 @@ type settemperature2ArgsT struct {
 	argTempMul     float32
 	argAlpha       unsafe.Pointer
 	argAlphaMul    float32
-	argN            int
-	argptr           [10]unsafe.Pointer
+	argN           int
+	argptr         [10]unsafe.Pointer
 	sync.Mutex
 }
 

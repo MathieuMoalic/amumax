@@ -3,6 +3,7 @@ package fsutil
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -36,7 +37,10 @@ func Touch(p string) error {
 	p = addWorkDir(p)
 	f, err := os.OpenFile(p, os.O_CREATE|os.O_WRONLY, FilePerm)
 	if err == nil {
-		f.Close()
+		errClose := f.Close()
+		if errClose != nil {
+			return errClose
+		}
 	}
 	return err
 }
@@ -71,15 +75,33 @@ func IsDir(p string) bool {
 }
 
 // Append appends data to the file.
-func Append(p string, data []byte) error {
+func Append(p string, data []byte) (retErr error) {
 	p = addWorkDir(p)
-	f, err := os.OpenFile(p, os.O_APPEND|os.O_WRONLY, FilePerm)
+
+	f, err := os.OpenFile(p, os.O_APPEND|os.O_WRONLY, FilePerm) // add os.O_CREATE if desired
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	_, err = f.Write(data)
-	return err
+
+	// Ensure we surface any close error as well.
+	defer func() {
+		if cerr := f.Close(); cerr != nil {
+			if retErr == nil {
+				retErr = cerr
+			} else {
+				retErr = fmt.Errorf("%w; close error: %v", retErr, cerr)
+			}
+		}
+	}()
+
+	n, err := f.Write(data)
+	if err != nil {
+		return err
+	}
+	if n != len(data) {
+		return io.ErrShortWrite
+	}
+	return nil
 }
 
 // Put creates a file at the path and writes data to it.
@@ -138,7 +160,10 @@ func (w *bufWriter) Flush() error {
 func (w *bufWriter) Close() error {
 	err := w.Flush()
 	if err != nil {
-		w.file.Close()
+		errClose := w.file.Close()
+		if errClose != nil {
+			return errClose
+		}
 		return err
 	}
 	return w.file.Close()

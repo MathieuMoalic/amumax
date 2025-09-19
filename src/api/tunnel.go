@@ -113,14 +113,22 @@ func (tunnel *SSHTunnel) Start() {
 		log.Log.Err("failed to dial SSH: %v", err)
 		return
 	}
-	defer sshConn.Close()
+	defer func() {
+		if err := sshConn.Close(); err != nil {
+			log.Log.Err("failed to close sshConn: %v", err)
+		}
+	}()
 
 	listener, err := sshConn.Listen("tcp", tunnel.remoteIP+":"+uint16ToString(tunnel.remotePort))
 	if err != nil {
 		log.Log.Err("failed to start reverse tunnel: %v", err)
 		return
 	}
-	defer listener.Close()
+	defer func() {
+		if err := listener.Close(); err != nil {
+			log.Log.Err("failed to close listener: %v", err)
+		}
+	}()
 	if tunnel.remotePort == 0 {
 		tunnel.remotePort, err = stringToUint16(strings.Split(listener.Addr().String(), ":")[1])
 		if err != nil {
@@ -144,20 +152,38 @@ func (tunnel *SSHTunnel) Start() {
 		remoteConn, err := net.Dial("tcp", net.JoinHostPort(tunnel.remoteIP, uint16ToString(tunnel.localPort)))
 		if err != nil {
 			log.Log.Debug("Error connecting to remote: %v", err)
-			clientConn.Close()
+			if cerr := clientConn.Close(); cerr != nil {
+				log.Log.Debug("Error closing clientConn: %v", cerr)
+			}
 			continue
 		}
 
 		// Start proxying the data between the connections
 		go func() {
-			defer clientConn.Close()
-			defer remoteConn.Close()
+			defer func() {
+				if err := clientConn.Close(); err != nil {
+					log.Log.Err("failed to close clientConn: %v", err)
+				}
+			}()
+			defer func() {
+				if err := remoteConn.Close(); err != nil {
+					log.Log.Err("failed to close remoteConn: %v", err)
+				}
+			}()
 			_, _ = io.Copy(clientConn, remoteConn)
 		}()
 
 		go func() {
-			defer clientConn.Close()
-			defer remoteConn.Close()
+			defer func() {
+				if err := clientConn.Close(); err != nil {
+					log.Log.Err("failed to close clientConn: %v", err)
+				}
+			}()
+			defer func() {
+				if err := remoteConn.Close(); err != nil {
+					log.Log.Err("failed to close remoteConn: %v", err)
+				}
+			}()
 			_, _ = io.Copy(remoteConn, clientConn)
 		}()
 	}

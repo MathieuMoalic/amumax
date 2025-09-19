@@ -31,8 +31,11 @@ type codec func(io.Writer, image.Image) error
 func render(out io.Writer, f *data.Slice, min, max string, arrowSize int, encode codec, colormap ...ColorMapSpec) error {
 	img := createRGBAImage(f, min, max, arrowSize, colormap...)
 	buf := bufio.NewWriter(out)
-	defer buf.Flush()
-	return encode(buf, img)
+	err := encode(buf, img)
+	if err != nil {
+		return err
+	}
+	return buf.Flush()
 }
 
 // full-quality jpeg codec, passable to Render()

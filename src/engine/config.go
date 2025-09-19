@@ -126,9 +126,8 @@ func vortexWall(mleft, mright float64, circ, pol int) config {
 func noNaN(v data.Vector, pol int) data.Vector {
 	if math.IsNaN(v[X]) || math.IsNaN(v[Y]) || math.IsNaN(v[Z]) {
 		return data.Vector{0, 0, float64(pol)}
-	} else {
-		return v
 	}
+	return v
 }
 
 // Make a 2-domain configuration with domain wall.
@@ -208,12 +207,12 @@ func (c config) RotZ(θ float64) config {
 	cos := math.Cos(θ)
 	sin := math.Sin(θ)
 	return func(x, y, z float64) data.Vector {
-		x_ := x*cos + y*sin
-		y_ := -x*sin + y*cos
-		m := c(x_, y_, z)
-		mx_ := m[X]*cos - m[Y]*sin
-		my_ := m[X]*sin + m[Y]*cos
-		return data.Vector{mx_, my_, m[Z]}
+		x2 := x*cos + y*sin
+		y2 := -x*sin + y*cos
+		m := c(x2, y2, z)
+		mx := m[X]*cos - m[Y]*sin
+		my := m[X]*sin + m[Y]*cos
+		return data.Vector{mx, my, m[Z]}
 	}
 }
 

@@ -116,12 +116,11 @@ func (w *scope) resolve(pos token.Pos, name string) Expr {
 	lname := strings.ToLower(name)
 	if v, ok := w.Identifiers[lname]; ok {
 		return v
-	} else {
-		if w.parent != nil {
-			return w.parent.resolve(pos, name)
-		}
-		panic(err(pos, "undefined:", name))
 	}
+	if w.parent != nil {
+		return w.parent.resolve(pos, name)
+	}
+	panic(err(pos, "undefined:", name))
 }
 
 func (w *World) Resolve(identifier string) (e Expr) {

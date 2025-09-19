@@ -20,7 +20,9 @@ func writeOVF2Header(out io.Writer, q *data.Slice, meta Meta) {
 	gridsize := q.Size()
 	cellsize := meta.CellSize
 
-	fmt.Fprintln(out, "# OOMMF OVF 2.0")
+	if _, err := fmt.Fprintln(out, "# OOMMF OVF 2.0"); err != nil {
+		log.Log.PanicIfError(err)
+	}
 	hdr(out, "Segment count", "1")
 	hdr(out, "Begin", "Segment")
 	hdr(out, "Begin", "Header")

@@ -43,9 +43,8 @@ func (g *geom) Slice() (*data.Slice, bool) {
 		buffer := cuda.Buffer(g.NComp(), g.Mesh().Size())
 		cuda.Memset(buffer, 1)
 		return buffer, true
-	} else {
-		return s, false
 	}
+	return s, false
 }
 
 func (g *geom) EvalTo(dst *data.Slice) { evalTo(g, dst) }

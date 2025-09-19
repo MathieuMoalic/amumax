@@ -22,7 +22,7 @@ type kernmulCArgsT struct {
 	argFftK unsafe.Pointer
 	argNx   int
 	argNy   int
-	argptr   [4]unsafe.Pointer
+	argptr  [4]unsafe.Pointer
 	sync.Mutex
 }
 

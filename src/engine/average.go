@@ -29,14 +29,13 @@ func sAverageUniverse(s *data.Slice) []float64 {
 func sAverageMagnet(s *data.Slice) []float64 {
 	if Geometry.Gpu().IsNil() {
 		return sAverageUniverse(s)
-	} else {
-		avg := make([]float64, s.NComp())
-		for i := range avg {
-			avg[i] = float64(cuda.Dot(s.Comp(i), Geometry.Gpu())) / magnetNCell()
-			checkNaN1(avg[i])
-		}
-		return avg
 	}
+	avg := make([]float64, s.NComp())
+	for i := range avg {
+		avg[i] = float64(cuda.Dot(s.Comp(i), Geometry.Gpu())) / magnetNCell()
+		checkNaN1(avg[i])
+	}
+	return avg
 }
 
 // number of cells in the magnet.
@@ -44,7 +43,6 @@ func sAverageMagnet(s *data.Slice) []float64 {
 func magnetNCell() float64 {
 	if Geometry.Gpu().IsNil() {
 		return float64(GetMesh().NCell())
-	} else {
-		return float64(cuda.Sum(Geometry.Gpu()))
 	}
+	return float64(cuda.Sum(Geometry.Gpu()))
 }

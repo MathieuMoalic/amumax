@@ -32,5 +32,5 @@ func ReCreateMesh(Nx, Ny, Nz int, dx, dy, dz float64, PBCx, PBCy, PBCz int) {
 	NormMag.Alloc()
 	Regions.Alloc()
 	kernel := mag.DemagKernel(Mesh.Size(), Mesh.PBC(), Mesh.CellSize(), DemagAccuracy, CacheDir, HideProgresBar)
-	conv_ = cuda.NewDemag(Mesh.Size(), Mesh.PBC(), kernel, SelfTest)
+	conv = cuda.NewDemag(Mesh.Size(), Mesh.PBC(), kernel, SelfTest)
 }

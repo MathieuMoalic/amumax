@@ -24,7 +24,7 @@ type setPhiArgsT struct {
 	argNx  int
 	argNy  int
 	argNz  int
-	argptr  [6]unsafe.Pointer
+	argptr [6]unsafe.Pointer
 	sync.Mutex
 }
 

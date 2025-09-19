@@ -14,7 +14,7 @@ var NormMag magnetization // reduced magnetization (unit length)
 // Special buffered quantity to store magnetization
 // makes sure it's normalized etc.
 type magnetization struct {
-	buffer_ *data.Slice
+	buffer *data.Slice
 }
 
 func (m *magnetization) GetRegionToString(region int) string {
@@ -26,7 +26,7 @@ func (m *magnetization) Mesh() *mesh.Mesh    { return GetMesh() }
 func (m *magnetization) NComp() int          { return 3 }
 func (m *magnetization) Name() string        { return "m" }
 func (m *magnetization) Unit() string        { return "" }
-func (m *magnetization) Buffer() *data.Slice { return m.buffer_ } // todo: rename Gpu()?
+func (m *magnetization) Buffer() *data.Slice { return m.buffer } // todo: rename Gpu()?
 
 func (m *magnetization) Comp(c int) ScalarField  { return comp(m, c) }
 func (m *magnetization) SetValue(v any)          { m.SetInShape(nil, v.(config)) }
@@ -39,7 +39,7 @@ func (m *magnetization) normalize()              { cuda.Normalize(m.Buffer(), Ge
 
 // Alloc allocate storage (not done by init, as mesh size may not yet be known then)
 func (m *magnetization) Alloc() {
-	m.buffer_ = cuda.NewSlice(3, m.Mesh().Size())
+	m.buffer = cuda.NewSlice(3, m.Mesh().Size())
 	m.Set(randomMag()) // sane starting config
 }
 
@@ -68,7 +68,7 @@ func (m *magnetization) Slice() (s *data.Slice, recycle bool) {
 }
 
 func (m *magnetization) EvalTo(dst *data.Slice) {
-	data.Copy(dst, m.buffer_)
+	data.Copy(dst, m.buffer)
 }
 
 func (m *magnetization) Region(r int) *vOneReg { return vOneRegion(m, r) }

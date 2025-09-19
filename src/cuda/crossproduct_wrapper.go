@@ -28,7 +28,7 @@ type crossproductArgsT struct {
 	argBy   unsafe.Pointer
 	argBz   unsafe.Pointer
 	argN    int
-	argptr   [10]unsafe.Pointer
+	argptr  [10]unsafe.Pointer
 	sync.Mutex
 }
 

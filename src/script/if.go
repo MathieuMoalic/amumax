@@ -6,7 +6,7 @@ import (
 
 // if statement
 type ifStmt struct {
-	cond, body, else_ Expr
+	cond, body, elseExpression Expr
 	void
 }
 
@@ -14,8 +14,8 @@ func (b *ifStmt) Eval() any {
 	if b.cond.Eval().(bool) {
 		b.body.Eval()
 	} else {
-		if b.else_ != nil {
-			b.else_.Eval()
+		if b.elseExpression != nil {
+			b.elseExpression.Eval()
 		}
 	}
 	return nil // void
@@ -30,15 +30,15 @@ func (w *World) compileIfStmt(n *ast.IfStmt) *ifStmt {
 		body: w.compileBlockStmtNoScopeST(n.Body),
 	}
 	if n.Else != nil {
-		stmt.else_ = w.compileStmt(n.Else)
+		stmt.elseExpression = w.compileStmt(n.Else)
 	}
 
 	return stmt
 }
 
 func (b *ifStmt) Child() []Expr {
-	child := []Expr{b.cond, b.body, b.else_}
-	if b.else_ == nil {
+	child := []Expr{b.cond, b.body, b.elseExpression}
+	if b.elseExpression == nil {
 		child = child[:2]
 	}
 	return child

@@ -44,7 +44,7 @@ func Init(gpu int) [6]string {
 	// test PTX load so that we can catch CUDA_ERROR_NO_BINARY_FOR_GPU early
 	fatbinLoad(madd2Map, "madd2")
 	GpuInfo1 := [6]string{
-		fmt.Sprintf("%d.%d", cu.CUDA_VERSION/1000, (cu.CUDA_VERSION%1000)/10),
+		fmt.Sprintf("%d.%d", cu.CUDAVersion/1000, (cu.CUDAVersion%1000)/10),
 		fmt.Sprintf("%d", UseCC),
 		DevName,
 		fmt.Sprintf("%d", TotalMem/(1024*1024)),

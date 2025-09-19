@@ -99,11 +99,11 @@ func interDind(region1, region2 int, value float64) {
 // stores interregion exchange stiffness and DMI
 // the interregion exchange/DMI by default is the harmonic mean (scale=1, inter=0)
 type exchParam struct {
-	parent         *regionwiseScalar
-	lut            [NREGION * (NREGION + 1) / 2]float32 // harmonic mean of regions (i,j)
-	scale          [NREGION * (NREGION + 1) / 2]float32 // extra scale factor for lut[SymmIdx(i, j)]
-	inter          [NREGION * (NREGION + 1) / 2]float32 // extra term for lut[SymmIdx(i, j)]
-	gpu            cuda.SymmLUT                         // gpu copy of lut, lazily transferred when needed
+	parent       *regionwiseScalar
+	lut          [NREGION * (NREGION + 1) / 2]float32 // harmonic mean of regions (i,j)
+	scale        [NREGION * (NREGION + 1) / 2]float32 // extra scale factor for lut[SymmIdx(i, j)]
+	inter        [NREGION * (NREGION + 1) / 2]float32 // extra term for lut[SymmIdx(i, j)]
+	gpu          cuda.SymmLUT                         // gpu copy of lut, lazily transferred when needed
 	gpuOk, cpuOk bool                                 // gpu cache up-to date with lut source
 }
 
@@ -177,9 +177,8 @@ func (p *exchParam) upload() {
 func symmidx(i, j int) int {
 	if j <= i {
 		return i*(i+1)/2 + j
-	} else {
-		return j*(j+1)/2 + i
 	}
+	return j*(j+1)/2 + i
 }
 
 // Returns the intermediate value of two exchange/dmi strengths.
@@ -189,10 +188,9 @@ func symmidx(i, j int) int {
 func exchAverage(exi, exj float32) float32 {
 	if exi*exj >= 0.0 {
 		return 2 / (1/exi + 1/exj)
-	} else {
-		exi_, exj_ := float64(exi), float64(exj)
-		sign := math.Copysign(1, exi_+exj_)
-		magn := math.Sqrt(math.Sqrt(-exi_*exj_) * math.Abs(exi_+exj_) / 2)
-		return float32(sign * magn)
 	}
+	exiF64, exjF64 := float64(exi), float64(exj)
+	sign := math.Copysign(1, exiF64+exjF64)
+	magn := math.Sqrt(math.Sqrt(-exiF64*exjF64) * math.Abs(exiF64+exjF64) / 2)
+	return float32(sign * magn)
 }
