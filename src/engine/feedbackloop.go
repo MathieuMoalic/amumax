@@ -24,11 +24,17 @@ func FeedbackLoop(inputMask, outputMask *data.Slice, multiplier float64) {
 	// Auto-zero: capture the initial pickup as baseline and subtract it forever after.
 	var once sync.Once
 	var baseline float64
+	var innerFunc func(maskSlice *data.Slice) float64
+	if outputMask.GPUAccess() {
+		innerFunc = magModulatedByMaskGPU
+	} else {
+		innerFunc = magModulatedByMask
+	}
 
 	BExt.AddGo(inputMask, func() float64 {
 		// Get the current value of m projected on outputMask
 		// (this is the "measured" signal from the output antenna)
-		s := magModulatedByMask(outputMask)
+		s := innerFunc(outputMask)
 
 		// On the first call, set the baseline to the current value.
 		// Thereafter, always subtract the baseline.
