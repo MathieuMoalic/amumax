@@ -25,6 +25,10 @@ func (a InputArray) Get(i int) float64 {
 	return a.data[i]
 }
 
+func (a InputArray) Len() int {
+	return len(a.data)
+}
+
 func readArrayFromFile(filename string) InputArray {
 	bytes, err := fsutil.Read(filename)
 	if err != nil {
