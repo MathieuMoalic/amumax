@@ -60,6 +60,7 @@ func (m *Metadata) Get(key string) any {
 func (m *Metadata) End() {
 	m.Add("end_time", time.Now().Format(time.UnixDate))
 	m.Add("total_time", fmt.Sprint(time.Since(m.startTime)))
+	log.Log.Info("Total simulation time: %s", time.Since(m.startTime))
 	m.Save()
 }
 
