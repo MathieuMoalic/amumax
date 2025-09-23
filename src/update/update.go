@@ -70,7 +70,7 @@ func getTags() (tags []string) {
 	for _, tag := range tempTags {
 		tags = append(tags, tag.Name)
 	}
-	return
+	return tags
 }
 
 func ShowUpdateMenu() {
@@ -86,7 +86,9 @@ func ShowUpdateMenu() {
 	// Run the prompt
 	_, tag, err := prompt.Run()
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+		if _, printErr := fmt.Printf("Prompt failed %v\n", err); printErr != nil {
+			color.Red(fmt.Sprintf("Error printing prompt failure: %v", printErr))
+		}
 		os.Exit(1)
 	}
 	doUpdate(tag)

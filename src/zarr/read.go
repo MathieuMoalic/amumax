@@ -1,11 +1,9 @@
 package zarr
 
 import (
-	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"io"
-	"math"
 	"os"
 	"path"
 	"time"
@@ -174,16 +172,11 @@ func reconstructTensors(dataBytes []byte, tensors [][][][]float32) error {
 					if end > len(dataBytes) {
 						return errors.New("index out of range while reconstructing tensors")
 					}
-					tensors[c][iz][iy][ix] = bytesToFloat32(dataBytes[start:end])
+					tensors[c][iz][iy][ix] = BytesToFloat32(dataBytes[start:end])
 					count++
 				}
 			}
 		}
 	}
 	return nil
-}
-
-// bytesToFloat32 converts a 4-byte slice to a float32
-func bytesToFloat32(b []byte) float32 {
-	return math.Float32frombits(binary.LittleEndian.Uint32(b))
 }

@@ -9,12 +9,12 @@ import (
 )
 
 // ParseAddrPath parse the --webui-host flag into host, port, and path
-func ParseAddrPath(URI string) (host string, port int, path string, err error) {
+func ParseAddrPath(uri string) (host string, port int, path string, err error) {
 	// Define the valid address format message
 	validFormatMsg := "Valid address format: `host:port`, `host`, `host:port/path`, `host/path`, `:port`, `:port/path`"
 
 	// Split the input into address and path parts
-	addrPath := strings.SplitN(URI, "/", 2)
+	addrPath := strings.SplitN(uri, "/", 2)
 
 	// Address parsing (host:port or host, port)
 	addr := addrPath[0]
@@ -30,14 +30,13 @@ func ParseAddrPath(URI string) (host string, port int, path string, err error) {
 	// Parse the host and port
 	host, portStr, err := net.SplitHostPort(addr)
 	if err != nil {
-		if strings.Contains(err.Error(), "missing port") {
-			// If there's no port, treat the entire addr as the host
-			host = addr
-			portStr = ""
-		} else {
+		if !strings.Contains(err.Error(), "missing port") {
 			// Handle malformed host-port cases
 			return "", 0, "", fmt.Errorf("invalid address: %v. %s", err, validFormatMsg)
 		}
+		// If there's no port, treat the entire addr as the host
+		host = addr
+		portStr = ""
 	}
 
 	// Validate port if present

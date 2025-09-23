@@ -391,5 +391,5 @@ func Template(path string, templateFlags *flags.TemplateFlags) (err error) {
 	if err != nil {
 		return fmt.Errorf("error generating files: %v", err)
 	}
-	return
+	return nil
 }

@@ -74,8 +74,8 @@ func (e *excitation) RemoveExtraTerms() {
 		return
 	}
 
-	// log.Log.Comment("REMOVING EXTRA TERMS FROM", e.Name())
 	for _, m := range e.extraTerms {
+		log.Log.Info("Removing excitation extra term with mask %v", m.mask)
 		m.mask.Free()
 	}
 	e.extraTerms = nil

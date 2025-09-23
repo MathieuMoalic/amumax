@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/MathieuMoalic/amumax/src/data"
+	"github.com/MathieuMoalic/amumax/src/log"
 )
 
 func init() {
@@ -109,30 +110,44 @@ func cpwVectorMask(I, width, height, distance, xoffset, zoffset float64) *data.S
 	return maskSlice
 }
 
-// magModulatedByMask computes the signal of the magnetic field modulated by a mask.
-// Works for masks with Ny == 1 (typical) or full Ny.
-func magModulatedByMask(maskSlice *data.Slice) float64 {
-	Nx, Ny, Nz := Mesh.GetNi()
-
+// magModulatedByMask computes ∑_{c,z,y,x} mask[c][z][y][x] * mag[c][z][y][x].
+func magModulatedByMask(maskSlice *data.Slice) (sum float64) {
 	magSlice, _ := NormMag.Slice()
-	mag := magSlice.HostCopy().Tensors() // [c][z][y][x]
-	mask := maskSlice.Tensors()          // [c][z][y][x]
 
-	yDimMask := len(mask[0][0]) // mask Ny (1 or Ny)
-	var signal float64
+	mag := magSlice.HostCopy().Tensors() // [c][z][y][x]float32
+	mask := maskSlice.Tensors()          // [c][z][y][x]float32
 
-	for iz := 0; iz < Nz; iz++ {
-		for iy := 0; iy < Ny; iy++ {
-			my := 0
-			if yDimMask > 1 {
-				my = iy
-			}
-			for ix := 0; ix < Nx; ix++ {
-				for ic := 0; ic < 3; ic++ {
-					signal += float64(mask[ic][iz][my][ix]) * float64(mag[ic][iz][iy][ix])
-				}
+	// Expect 3 components, but be defensive.
+	if len(mag) != 3 || len(mask) != 3 {
+		log.Log.Err("magModulatedByMask: expected 3 components, got %d and %d", len(mag), len(mask))
+		return 0
+	}
+
+	for iz := range mag[0] { // z
+		m0z, m1z, m2z := mag[0][iz], mag[1][iz], mag[2][iz]
+		k0z, k1z, k2z := mask[0][iz], mask[1][iz], mask[2][iz]
+
+		for iy := range m0z { // y
+			m0x, m1x, m2x := m0z[iy], m1z[iy], m2z[iy]
+			k0x, k1x, k2x := k0z[iy], k1z[iy], k2z[iy]
+
+			// (Optional) hints for bounds-check elimination
+			_ = m0x[len(m0x)-1]
+			_ = m1x[len(m1x)-1]
+			_ = m2x[len(m2x)-1]
+			_ = k0x[len(k0x)-1]
+			_ = k1x[len(k1x)-1]
+			_ = k2x[len(k2x)-1]
+
+			for ix := range m0x { // x
+				// Unrolled channel sum
+				sum += float64(
+					m0x[ix]*k0x[ix] +
+						m1x[ix]*k1x[ix] +
+						m2x[ix]*k2x[ix],
+				)
 			}
 		}
 	}
-	return signal
+	return sum
 }
