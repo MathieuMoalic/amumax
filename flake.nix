@@ -7,9 +7,7 @@
     system = "x86_64-linux";
     pkgs = import nixpkgs {
       inherit system;
-      config = {
-        allowUnfree = true; # cuda is unfree
-      };
+      config = {allowUnfree = true;}; # cuda is unfree
     };
 
     CGO_CFLAGS = ["-lcufft" "-lcurand"]; # needed to build ptx
@@ -34,11 +32,9 @@
       pkgs.buildNpmPackage {
         inherit version src npmDepsHash;
         pname = "frontend";
-
         npmBuild = ''
           npm run build
         '';
-
         installPhase = ''
           mv dist $out
         '';
@@ -56,6 +52,7 @@
         pname = "amumax";
 
         buildInputs = basepkgs ++ [pkgs.addDriverRunpath];
+        nativeBuildInputs = [pkgs.patchelf]; # needed to set PT_INTERP
 
         buildPhase = ''
           mkdir -p src/api/static
@@ -65,8 +62,9 @@
 
         doCheck = false;
 
+        # This step sets the interpreter for the binary, ensuring it uses the correct glibc loader
         postFixup = ''
-          addDriverRunpath $out/bin/*
+          patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 $out/bin/amumax
         '';
       };
 
@@ -78,6 +76,7 @@
       npmDepsHash = "sha256-0H7fcPivfjjztjzNOztFustsCN6ugZ1yXe3zRDCq+4E=";
       version = gitVersion;
     };
+
     GitBuildAmumax = with pkgs.lib.fileset;
       buildAmumax {
         src = toSource {
@@ -85,7 +84,7 @@
           fileset = unions [./src ./go.mod ./go.sum ./main.go];
         };
         frontend = GitFrontend;
-        vendorHash = "sha256-hSGqek8I59AiLKUrE82Rgc8e8vT5w5TDEXzdxCYQOXY=";
+        vendorHash = "sha256-3YIAxjpdurxr6t8vBznTLAoQhv1c6RwurjvExseuiwc=";
         version = gitVersion;
       };
 
@@ -101,14 +100,14 @@
 
     ReleaseFrontend = buildFrontend {
       src = "${ReleaseSrc}/frontend";
-      npmDepsHash = "sha256-0H7fcPivfjjztjzNOztFustsCN6ugZ1yXe3zRDCq+4E=";
+      npmDepsHash = "sha256-yIVe337Qp1mBTMCw+ElHlcKKDYIPklqQbYbr2yLQWBI=";
       version = releaseVersion;
     };
 
     ReleaseBuildAmumax = buildAmumax {
       src = ReleaseSrc;
       frontend = ReleaseFrontend;
-      vendorHash = "sha256-hSGqek8I59AiLKUrE82Rgc8e8vT5w5TDEXzdxCYQOXY=";
+      vendorHash = "sha256-tmjoUliSrev1aLBHBiwPNl4chURZ6drqRQ6M2Xz0Ilc=";
       version = releaseVersion;
     };
 
@@ -149,8 +148,8 @@
     };
   in {
     packages.${system} = {
-      default = ReleaseBuildAmumax;
-      git = GitBuildAmumax;
+      default = ReleaseBuildAmumax; # now patched to use /lib64/ld-linux-x86-64.so.2
+      git = GitBuildAmumax; # also patched
     };
     devShell.${system} = devEnv;
   };

@@ -46,3 +46,4 @@ node_modules
 src/engine_old/api_old/static
 src/api/static
 frontend/dist
+result

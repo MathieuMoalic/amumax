@@ -25,7 +25,15 @@ linters:
         - unsafeptr
     revive:
       rules:
+        # These rules are super strict:
         # - name: add-constant
+        # - name: cognitive-complexity
+        # - name: cyclomatic
+        # - name: deep-exit
+        # - name: exported
+        # - name: function-result-limit
+        # - name: line-length-limit
+        # These rules are not as strict:
         - name: argument-limit
         - name: atomic
         - name: banned-characters
@@ -33,7 +41,6 @@ linters:
         - name: blank-imports
         - name: bool-literal-in-expr
         - name: call-to-gc
-        # - name: cognitive-complexity
         - name: comment-spacings
         - name: comments-density
         - name: confusing-naming
@@ -41,9 +48,7 @@ linters:
         - name: constant-logical-expr
         - name: context-as-argument
         - name: context-keys-type
-        # - name: cyclomatic
         - name: datarace
-        # - name: deep-exit
         - name: defer
         - name: dot-imports
         - name: duplicated-imports
@@ -58,13 +63,11 @@ linters:
         - name: error-return
         - name: error-strings
         - name: errorf
-        # - name: exported
         - name: file-header
         - name: file-length-limit
         - name: filename-format
         - name: flag-parameter
         - name: function-length
-        # - name: function-result-limit
         - name: get-return
         - name: identical-branches
         - name: if-return
@@ -73,7 +76,6 @@ linters:
         - name: imports-blocklist
         - name: increment-decrement
         - name: indent-error-flow
-        # - name: line-length-limit
         - name: max-control-nesting
         - name: max-public-structs
         - name: modifies-parameter
