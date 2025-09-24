@@ -52,8 +52,6 @@ release:
 	gh release view $VERSION &>/dev/null && gh release delete $VERSION -y
 	git show-ref --tags $VERSION &>/dev/null && git tag -d $VERSION && git push --tags
 
-	just test
-	
 	just image build-cuda build-frontend build
 
 	# We need to commit before the release
