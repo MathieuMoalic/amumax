@@ -95,19 +95,19 @@
       owner = "MathieuMoalic";
       repo = "amumax";
       rev = releaseVersion;
-      hash = "sha256-5nQaPz6LZpDuII1AHGGg7eFDCELXXyc3YiF9ZIAX0Oc=";
+      hash = "sha256-zDEajL28urpc4Lt14deCPiu1t/OvvpGOseQdyKJPawE=";
     };
 
     ReleaseFrontend = buildFrontend {
       src = "${ReleaseSrc}/frontend";
-      npmDepsHash = "sha256-yIVe337Qp1mBTMCw+ElHlcKKDYIPklqQbYbr2yLQWBI=";
+      npmDepsHash = "sha256-0H7fcPivfjjztjzNOztFustsCN6ugZ1yXe3zRDCq+4E=";
       version = releaseVersion;
     };
 
     ReleaseBuildAmumax = buildAmumax {
       src = ReleaseSrc;
       frontend = ReleaseFrontend;
-      vendorHash = "sha256-tmjoUliSrev1aLBHBiwPNl4chURZ6drqRQ6M2Xz0Ilc=";
+      vendorHash = "sha256-3YIAxjpdurxr6t8vBznTLAoQhv1c6RwurjvExseuiwc=";
       version = releaseVersion;
     };
 
