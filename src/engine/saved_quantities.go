@@ -1,10 +1,12 @@
 package engine
 
 import (
-	"bytes"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"math"
+	"runtime"
+	"sync"
 
 	"github.com/DataDog/zstd"
 
@@ -185,13 +187,12 @@ func (sqs *savedQuantitiesType) saveAsChunk(q Quantity, name string, rchunks req
 	sqs.saveAsInner(q, name, rchunks)
 }
 
-// syncSave writes the data slice into chunked, compressed files compatible with the Zarr format.
+// syncSaveFast is a faster drop-in alternative to syncSave. It writes the exact same bytes.
 func syncSave(array *data.Slice, qname string, steps int, chunks chunks) error {
-	data := array.Tensors()
+	data4 := array.Tensors()
 	size := array.Size()
 	ncomp := array.NComp()
 
-	// Save .zarray metadata
 	zarr.SaveFileZarray(
 		fmt.Sprintf(OD()+"%s/.zarray", qname),
 		size,
@@ -199,42 +200,105 @@ func syncSave(array *data.Slice, qname string, steps int, chunks chunks) error {
 		steps+1,
 		chunks.z.len, chunks.y.len, chunks.x.len, chunks.c.len,
 	)
+	// Precompute sizes.
+	zLen, yLen, xLen, cLen := chunks.z.len, chunks.y.len, chunks.x.len, chunks.c.len
+	elemsPerChunk := zLen * yLen * xLen * cLen
+	bytesPerChunk := elemsPerChunk * 4 // float32
 
-	// Iterate over chunks and save data
-	for icx := range chunks.x.nb {
-		for icy := range chunks.y.nb {
-			for icz := range chunks.z.nb {
-				for icc := range chunks.c.nb {
-					var bdata bytes.Buffer
-					for iz := range chunks.z.len {
-						z := icz*chunks.z.len + iz
-						for iy := range chunks.y.len {
-							y := icy*chunks.y.len + iy
-							for ix := range chunks.x.len {
-								x := icx*chunks.x.len + ix
-								for ic := range chunks.c.len {
-									c := icc*chunks.c.len + ic
-									value := data[c][z][y][x]
-									err := binary.Write(&bdata, binary.LittleEndian, value)
-									if err != nil {
-										return err
-									}
-								}
-							}
+	// Reuse buffers.
+	var rawPool = sync.Pool{New: func() any {
+		b := make([]byte, bytesPerChunk)
+		return &b
+	}}
+	var cmpPool = sync.Pool{New: func() any {
+		b := make([]byte, 0, bytesPerChunk/2) // heuristic
+		return &b
+	}}
+
+	type job struct{ icx, icy, icz, icc int }
+	jobs := make(chan job, 2*runtime.GOMAXPROCS(0))
+	errs := make(chan error, 1)
+
+	// Small bounded pool.
+	totalJobs := zLen * yLen * xLen * cLen
+	workers := min(totalJobs, runtime.GOMAXPROCS(0))
+
+	var wg sync.WaitGroup
+	prefix := OD() + qname + "/"
+
+	worker := func() {
+		defer wg.Done()
+		for j := range jobs {
+			raw := *(rawPool.Get().(*[]byte))
+			k := 0
+
+			x0 := j.icx * xLen
+			y0 := j.icy * yLen
+			z0 := j.icz * zLen
+			c0 := j.icc * cLen
+
+			// Fill raw buffer in [z,y,x,c] order, c fastest (Zarr "C" order).
+			for iz := range zLen {
+				z := z0 + iz
+				for iy := range yLen {
+					y := y0 + iy
+					for ix := range xLen {
+						x := x0 + ix
+						for ic := range cLen {
+							v := data4[c0+ic][z][y][x]
+							binary.LittleEndian.PutUint32(raw[k:k+4], math.Float32bits(v))
+							k += 4
 						}
 					}
-					compressedData, err := zstd.Compress(nil, bdata.Bytes())
-					if err != nil {
-						return err
-					}
-					filename := fmt.Sprintf(OD()+"%s/%d.%d.%d.%d.%d", qname, steps, icz, icy, icx, icc)
-					err = fsutil.Put(filename, compressedData)
-					if err != nil {
-						return err
-					}
+				}
+			}
+
+			// Compress using the same codec (deterministic for same input).
+			dst := *(cmpPool.Get().(*[]byte))
+			compressed, err := zstd.Compress(dst[:0], raw[:k])
+			rawPool.Put(&raw)
+			if err != nil {
+				cmpPool.Put(&dst)
+				select {
+				case errs <- err:
+				default:
+				}
+				return
+			}
+
+			filename := fmt.Sprintf("%s%d.%d.%d.%d.%d", prefix, steps, j.icz, j.icy, j.icx, j.icc)
+			if err := fsutil.Put(filename, compressed); err != nil {
+				cmpPool.Put(&compressed)
+				select {
+				case errs <- err:
+				default:
+				}
+				return
+			}
+			cmpPool.Put(&compressed)
+		}
+	}
+
+	wg.Add(workers)
+	for range workers {
+		go worker()
+	}
+	for icx := 0; icx < chunks.x.nb; icx++ {
+		for icy := 0; icy < chunks.y.nb; icy++ {
+			for icz := 0; icz < chunks.z.nb; icz++ {
+				for icc := 0; icc < chunks.c.nb; icc++ {
+					jobs <- job{icx, icy, icz, icc}
 				}
 			}
 		}
 	}
-	return nil
+	close(jobs)
+	wg.Wait()
+
+	select {
+	case err := <-errs:
+		return err
+	default:
+		return nil
+	}
 }
