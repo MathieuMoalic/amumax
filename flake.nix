@@ -73,7 +73,7 @@
 
     GitFrontend = buildFrontend {
       src = ./frontend;
-      npmDepsHash = "sha256-0H7fcPivfjjztjzNOztFustsCN6ugZ1yXe3zRDCq+4E=";
+      npmDepsHash = "sha256-3DZWrNni4hGHEcY2efIBAhZFwAWVOjDzk2RYseG7iwE=";
       version = gitVersion;
     };
 
